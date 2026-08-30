@@ -42,6 +42,7 @@ function updateGamePanels() {
   const guest = document.getElementById("game-panel-guest");
   const member = document.getElementById("game-panel-member");
   const closed = document.getElementById("game-panel-closed");
+  const waiting = document.getElementById("game-panel-waiting");
   const adminPanel = document.getElementById("game-admin-panel");
   const guessInput = document.getElementById("guess-amount");
   const guessSubmit = document.getElementById("guess-submit");
@@ -49,13 +50,14 @@ function updateGamePanels() {
   const canGuess = gameEnabled && isSignedIn;
 
   adminPanel?.classList.toggle("is-hidden", !currentUser?.isAdmin);
-  closed?.classList.toggle("is-hidden", gameEnabled);
+  closed?.classList.toggle("is-hidden", gameEnabled || isSignedIn);
   guest?.classList.toggle("is-hidden", !gameEnabled || isSignedIn);
-  member?.classList.toggle("is-hidden", !canGuess);
+  member?.classList.toggle("is-hidden", !isSignedIn);
+  waiting?.classList.toggle("is-hidden", gameEnabled || !isSignedIn);
 
   if (guessInput) {
     guessInput.disabled = !canGuess;
-    guessInput.readOnly = !canGuess;
+    guessInput.removeAttribute("readonly");
   }
 
   if (guessSubmit) {
@@ -221,4 +223,4 @@ initAdminToggle();
 initGuessForm();
 bootstrapGuessPage();
 
-setInterval(loadGameStatus, 10000);
+setInterval(loadGameStatus, 5000);
