@@ -28,14 +28,20 @@ function renderAuthState(user) {
   const adminBadge = document.getElementById("auth-admin-badge");
   const avatarEl = document.getElementById("auth-avatar");
   const toast = document.getElementById("auth-toast");
+  const gameGuest = document.getElementById("game-panel-guest");
+  const gameMember = document.getElementById("game-panel-member");
+  const gameUsername = document.getElementById("game-username");
 
   if (!guest || !member) return;
 
   if (user) {
     guest.classList.add("is-hidden");
     member.classList.remove("is-hidden");
+    gameGuest?.classList.add("is-hidden");
+    gameMember?.classList.remove("is-hidden");
 
     if (usernameEl) usernameEl.textContent = user.username;
+    if (gameUsername) gameUsername.textContent = user.username;
     if (adminBadge) adminBadge.classList.toggle("is-hidden", !user.isAdmin);
     if (avatarEl) {
       if (user.profilePicture) {
@@ -50,6 +56,8 @@ function renderAuthState(user) {
   } else {
     guest.classList.remove("is-hidden");
     member.classList.add("is-hidden");
+    gameGuest?.classList.remove("is-hidden");
+    gameMember?.classList.add("is-hidden");
   }
 
   const authMessage = getAuthMessage();
@@ -63,7 +71,7 @@ function renderAuthState(user) {
 
 async function loadAuthState() {
   try {
-    const response = await fetch("/api/auth/me");
+    const response = await fetch("/api/auth/me", { credentials: "same-origin" });
     if (!response.ok) {
       renderAuthState(null);
       return;
@@ -77,6 +85,14 @@ async function loadAuthState() {
 }
 
 function initAuth() {
+  const returnTo = encodeURIComponent(
+    `${window.location.pathname}${window.location.search}`
+  );
+
+  document.querySelectorAll('a[href="/api/auth/login"]').forEach((link) => {
+    link.href = `/api/auth/login?returnTo=${returnTo}`;
+  });
+
   const logoutBtn = document.getElementById("auth-logout");
 
   logoutBtn?.addEventListener("click", async () => {

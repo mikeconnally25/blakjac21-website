@@ -62,11 +62,17 @@
           <p>How much is in the balance? Drop your guess and see how close you get.</p>
         </div>
 
-        <div class="game-panel">
+        <div class="game-panel" id="game-panel-guest">
           <p class="game-panel-text">
             Sign in with Kick to submit your guess when the round is live on stream.
           </p>
           <a href="/api/auth/login" class="btn btn-primary" id="game-sign-in">Sign in with Kick</a>
+        </div>
+
+        <div class="game-panel is-hidden" id="game-panel-member">
+          <p class="game-panel-text">
+            You're signed in as <strong id="game-username"></strong>. You're ready to guess when the round goes live on stream.
+          </p>
         </div>
       </div>
     </section>
