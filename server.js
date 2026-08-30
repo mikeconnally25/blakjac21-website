@@ -8,6 +8,7 @@ import {
   handleLogout,
   handleMe,
 } from "./lib/auth-handlers.js";
+import { handleGuessSubmit } from "./lib/guess-handlers.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -20,6 +21,7 @@ app.get("/api/auth/login", (req, res) => handleLogin(req, res));
 app.get("/api/auth/callback", (req, res) => handleCallback(req, res));
 app.get("/api/auth/me", (req, res) => handleMe(req, res));
 app.post("/api/auth/logout", (req, res) => handleLogout(req, res));
+app.post("/api/guess-the-balance/submit", (req, res) => handleGuessSubmit(req, res));
 
 app.listen(PORT, () => {
   console.log(`BLAKJAC21 site running at http://localhost:${PORT}`);
