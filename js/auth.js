@@ -28,8 +28,6 @@ function renderAuthState(user) {
   const adminBadge = document.getElementById("auth-admin-badge");
   const avatarEl = document.getElementById("auth-avatar");
   const toast = document.getElementById("auth-toast");
-  const gameGuest = document.getElementById("game-panel-guest");
-  const gameMember = document.getElementById("game-panel-member");
   const gameUsername = document.getElementById("game-username");
 
   if (!guest || !member) return;
@@ -37,8 +35,6 @@ function renderAuthState(user) {
   if (user) {
     guest.classList.add("is-hidden");
     member.classList.remove("is-hidden");
-    gameGuest?.classList.add("is-hidden");
-    gameMember?.classList.remove("is-hidden");
 
     if (usernameEl) usernameEl.textContent = user.username;
     if (gameUsername) gameUsername.textContent = user.username;
@@ -56,9 +52,13 @@ function renderAuthState(user) {
   } else {
     guest.classList.remove("is-hidden");
     member.classList.add("is-hidden");
-    gameGuest?.classList.remove("is-hidden");
-    gameMember?.classList.add("is-hidden");
   }
+
+  window.dispatchEvent(
+    new CustomEvent("auth:change", {
+      detail: { user: user || null },
+    })
+  );
 
   const authMessage = getAuthMessage();
   if (authMessage && toast) {

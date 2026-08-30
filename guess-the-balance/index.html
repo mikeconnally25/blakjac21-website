@@ -62,6 +62,25 @@
           <p>How much is in the balance? Drop your guess and see how close you get.</p>
         </div>
 
+        <div class="admin-panel is-hidden" id="game-admin-panel">
+          <div class="admin-panel-row">
+            <div>
+              <p class="admin-panel-label">Admin controls</p>
+              <p class="admin-panel-text" id="game-toggle-status">Guessing is off</p>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="game-toggle" aria-labelledby="game-toggle-status" />
+              <span class="toggle-slider" aria-hidden="true"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="game-panel is-hidden" id="game-panel-closed">
+          <p class="game-panel-text">
+            Guessing is currently closed. Check back when the round goes live on stream.
+          </p>
+        </div>
+
         <div class="game-panel" id="game-panel-guest">
           <p class="game-panel-text">
             Sign in with Kick to submit your guess when the round is live on stream.
