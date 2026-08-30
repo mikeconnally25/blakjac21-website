@@ -480,6 +480,12 @@ ul {
   box-shadow: 0 12px 40px rgba(88, 201, 243, 0.12);
 }
 
+.menu-card--center {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
 .menu-label {
   color: var(--text-muted);
   font-size: 0.8rem;
