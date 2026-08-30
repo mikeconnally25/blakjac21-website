@@ -172,4 +172,6 @@ function initMobileNav() {
 document.getElementById("year").textContent = String(new Date().getFullYear());
 
 initMobileNav();
-loadPlayer();
+if (document.getElementById("player-container")) {
+  loadPlayer();
+}

@@ -388,6 +388,40 @@ ul {
   margin: 0;
 }
 
+.page-section {
+  padding-top: 3rem;
+  min-height: calc(100vh - var(--header-height) - 12rem);
+}
+
+.page-content {
+  max-width: 42rem;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  transition: color 0.2s ease;
+}
+
+.back-link:hover,
+.back-link:focus-visible {
+  color: var(--accent);
+}
+
+.game-panel {
+  padding: 2rem;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(88, 201, 243, 0.08), rgba(0, 51, 77, 0.14));
+  border: 1px solid var(--border);
+}
+
+.game-panel-text {
+  margin: 0 0 1.25rem;
+  color: var(--text-muted);
+}
+
 /* Player */
 .player-wrap {
   position: relative;
