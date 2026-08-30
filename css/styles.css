@@ -264,6 +264,22 @@ ul {
   color: var(--text);
 }
 
+.auth-admin-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #041018;
+  background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
 .auth-toast {
   position: fixed;
   top: 5.5rem;

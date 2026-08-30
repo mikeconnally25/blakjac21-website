@@ -25,6 +25,7 @@ function renderAuthState(user) {
   const guest = document.getElementById("auth-guest");
   const member = document.getElementById("auth-member");
   const usernameEl = document.getElementById("auth-username");
+  const adminBadge = document.getElementById("auth-admin-badge");
   const avatarEl = document.getElementById("auth-avatar");
   const toast = document.getElementById("auth-toast");
 
@@ -35,6 +36,7 @@ function renderAuthState(user) {
     member.classList.remove("is-hidden");
 
     if (usernameEl) usernameEl.textContent = user.username;
+    if (adminBadge) adminBadge.classList.toggle("is-hidden", !user.isAdmin);
     if (avatarEl) {
       if (user.profilePicture) {
         avatarEl.src = user.profilePicture;
