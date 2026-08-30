@@ -43,18 +43,31 @@ function updateGamePanels() {
   const member = document.getElementById("game-panel-member");
   const closed = document.getElementById("game-panel-closed");
   const adminPanel = document.getElementById("game-admin-panel");
+  const guessInput = document.getElementById("guess-amount");
+  const guessSubmit = document.getElementById("guess-submit");
   const isSignedIn = Boolean(currentUser);
+  const canGuess = gameEnabled && isSignedIn;
 
   adminPanel?.classList.toggle("is-hidden", !currentUser?.isAdmin);
   closed?.classList.toggle("is-hidden", gameEnabled);
-  guest?.classList.toggle("is-hidden", gameEnabled || isSignedIn);
-  member?.classList.toggle("is-hidden", !gameEnabled || !isSignedIn);
+  guest?.classList.toggle("is-hidden", !gameEnabled || isSignedIn);
+  member?.classList.toggle("is-hidden", !canGuess);
+
+  if (guessInput) {
+    guessInput.disabled = !canGuess;
+    guessInput.readOnly = !canGuess;
+  }
+
+  if (guessSubmit) {
+    guessSubmit.disabled = !canGuess;
+  }
 }
 
 async function loadGameStatus() {
   try {
     const response = await fetch("/api/guess-the-balance/status", {
       credentials: "same-origin",
+      cache: "no-store",
     });
 
     if (!response.ok) return;
@@ -65,6 +78,30 @@ async function loadGameStatus() {
     updateGamePanels();
   } catch {
     // Keep the last known state.
+  }
+}
+
+async function loadCurrentUser() {
+  try {
+    const response = await fetch("/api/auth/me", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      currentUser = null;
+      return;
+    }
+
+    const data = await response.json();
+    currentUser = data.authenticated ? data.user : null;
+
+    const gameUsername = document.getElementById("game-username");
+    if (gameUsername && currentUser) {
+      gameUsername.textContent = currentUser.username;
+    }
+  } catch {
+    currentUser = null;
   }
 }
 
@@ -119,6 +156,11 @@ function initGuessForm() {
       return;
     }
 
+    if (!currentUser) {
+      setGuessStatus("Sign in with Kick to submit a guess.", "error");
+      return;
+    }
+
     const input = document.getElementById("guess-amount");
     const submitBtn = document.getElementById("guess-submit");
     const amount = Number(input?.value);
@@ -154,7 +196,7 @@ function initGuessForm() {
     } catch {
       setGuessStatus("Could not submit your guess. Try again.", "error");
     } finally {
-      submitBtn.disabled = false;
+      submitBtn.disabled = !gameEnabled || !currentUser;
     }
   });
 }
@@ -170,6 +212,13 @@ window.addEventListener("auth:change", (event) => {
   updateGamePanels();
 });
 
+async function bootstrapGuessPage() {
+  await Promise.all([loadGameStatus(), loadCurrentUser()]);
+  updateGamePanels();
+}
+
 initAdminToggle();
 initGuessForm();
-loadGameStatus();
+bootstrapGuessPage();
+
+setInterval(loadGameStatus, 10000);
