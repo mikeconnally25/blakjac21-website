@@ -1,0 +1,88 @@
+function getAuthMessage() {
+  const params = new URLSearchParams(window.location.search);
+  const auth = params.get("auth");
+  const message = params.get("message");
+
+  if (!auth) return null;
+
+  if (auth === "created") return "Account created with your Kick login.";
+  if (auth === "signed-in") return "Signed in with Kick.";
+  if (auth === "error") return message || "Kick sign-in failed.";
+
+  return null;
+}
+
+function clearAuthQuery() {
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has("auth")) return;
+
+  url.searchParams.delete("auth");
+  url.searchParams.delete("message");
+  window.history.replaceState({}, "", url);
+}
+
+function renderAuthState(user) {
+  const guest = document.getElementById("auth-guest");
+  const member = document.getElementById("auth-member");
+  const usernameEl = document.getElementById("auth-username");
+  const avatarEl = document.getElementById("auth-avatar");
+  const toast = document.getElementById("auth-toast");
+
+  if (!guest || !member) return;
+
+  if (user) {
+    guest.classList.add("is-hidden");
+    member.classList.remove("is-hidden");
+
+    if (usernameEl) usernameEl.textContent = user.username;
+    if (avatarEl) {
+      if (user.profilePicture) {
+        avatarEl.src = user.profilePicture;
+        avatarEl.alt = `${user.username} profile`;
+        avatarEl.classList.remove("is-hidden");
+      } else {
+        avatarEl.removeAttribute("src");
+        avatarEl.classList.add("is-hidden");
+      }
+    }
+  } else {
+    guest.classList.remove("is-hidden");
+    member.classList.add("is-hidden");
+  }
+
+  const authMessage = getAuthMessage();
+  if (authMessage && toast) {
+    toast.textContent = authMessage;
+    toast.classList.remove("is-hidden");
+    toast.classList.toggle("is-error", new URLSearchParams(window.location.search).get("auth") === "error");
+    clearAuthQuery();
+  }
+}
+
+async function loadAuthState() {
+  try {
+    const response = await fetch("/api/auth/me");
+    if (!response.ok) {
+      renderAuthState(null);
+      return;
+    }
+
+    const data = await response.json();
+    renderAuthState(data.authenticated ? data.user : null);
+  } catch {
+    renderAuthState(null);
+  }
+}
+
+function initAuth() {
+  const logoutBtn = document.getElementById("auth-logout");
+
+  logoutBtn?.addEventListener("click", async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    renderAuthState(null);
+  });
+
+  loadAuthState();
+}
+
+initAuth();

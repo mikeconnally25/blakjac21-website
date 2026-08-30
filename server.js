@@ -1,0 +1,27 @@
+import "dotenv/config";
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+import {
+  handleCallback,
+  handleLogin,
+  handleLogout,
+  handleMe,
+} from "./lib/auth-handlers.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const app = express();
+const PORT = Number(process.env.PORT) || 3000;
+
+app.use(express.json());
+app.use(express.static(__dirname));
+
+app.get("/api/auth/login", (req, res) => handleLogin(req, res));
+app.get("/api/auth/callback", (req, res) => handleCallback(req, res));
+app.get("/api/auth/me", (req, res) => handleMe(req, res));
+app.post("/api/auth/logout", (req, res) => handleLogout(req, res));
+
+app.listen(PORT, () => {
+  console.log(`BLAKJAC21 site running at http://localhost:${PORT}`);
+  console.log(`Kick redirect URI: ${process.env.KICK_REDIRECT_URI || `http://localhost:${PORT}/api/auth/callback`}`);
+});
