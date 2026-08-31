@@ -12,6 +12,7 @@ import {
   handleBonusHuntAdd,
   handleBonusHuntClear,
   handleBonusHuntGet,
+  handleBonusHuntSettings,
   handleBonusHuntRemove,
   handleBonusHuntUpdate,
   handleBonusHuntRequestRemove,
@@ -65,6 +66,9 @@ app.post("/api/guess-the-balance/ending-balance", (req, res) =>
   handleGuessSetEndingBalance(req, res)
 );
 app.get("/api/bonus-hunt", (req, res) => handleBonusHuntGet(req, res));
+app.post("/api/bonus-hunt/settings", (req, res) =>
+  handleBonusHuntSettings(req, res)
+);
 app.post("/api/bonus-hunt/add", (req, res) => handleBonusHuntAdd(req, res));
 app.post("/api/bonus-hunt/update", (req, res) => handleBonusHuntUpdate(req, res));
 app.post("/api/bonus-hunt/remove", (req, res) => handleBonusHuntRemove(req, res));

@@ -59,13 +59,77 @@
 
         <div class="section-header left">
           <h2>Bonus Hunt</h2>
-          <p>Follow every bonus buy, track the hunt total, and see how the session plays out live on stream.</p>
+          <p>Follow every bonus buy live on stream with running stats.</p>
+        </div>
+
+        <div class="hunt-tracker" id="hunt-tracker">
+          <div class="hunt-tracker-top">
+            <div class="hunt-tracker-heading">
+              <h3 class="hunt-title" id="hunt-title">Live Hunt</h3>
+              <p class="hunt-streamer">BLAKJAC21</p>
+            </div>
+            <span class="hunt-status hunt-status--collecting" id="hunt-status">Collecting</span>
+          </div>
+
+          <div class="hunt-stats">
+            <div class="hunt-stat">
+              <span class="hunt-stat-label">Bonuses</span>
+              <strong class="hunt-stat-value" id="summary-total">0</strong>
+            </div>
+            <div class="hunt-stat">
+              <span class="hunt-stat-label">Start</span>
+              <strong class="hunt-stat-value" id="summary-start">$0.00</strong>
+            </div>
+            <div class="hunt-stat">
+              <span class="hunt-stat-label">Profit</span>
+              <strong class="hunt-stat-value" id="summary-profit">$0.00</strong>
+            </div>
+          </div>
+
+          <p class="hunt-progress" id="hunt-progress">No bonuses yet.</p>
+
+          <p class="hunt-empty" id="bonus-empty">No bonuses in this hunt yet.</p>
+          <ul class="hunt-bonus-grid is-hidden" id="bonus-list"></ul>
         </div>
 
         <div class="admin-panel is-hidden" id="bonus-hunt-admin">
           <div class="admin-panel-section">
             <p class="admin-panel-label">Admin controls</p>
-            <p class="admin-panel-text">Add bonuses as you buy them on stream, then enter each payout when it opens.</p>
+            <p class="admin-panel-text">Log bonuses as you buy them, then enter each payout when it opens.</p>
+            <form class="hunt-settings-form is-hidden" id="hunt-settings-form">
+              <div class="hunt-settings-row">
+                <div class="bonus-field">
+                  <label class="guess-label" for="hunt-title-input">Hunt title</label>
+                  <input
+                    class="guess-input"
+                    id="hunt-title-input"
+                    name="title"
+                    type="text"
+                    maxlength="60"
+                    placeholder="Friday Send"
+                  />
+                </div>
+                <div class="bonus-field">
+                  <label class="guess-label" for="hunt-start-input">Start balance</label>
+                  <div class="guess-input-row">
+                    <span class="guess-prefix" aria-hidden="true">$</span>
+                    <input
+                      class="guess-input"
+                      id="hunt-start-input"
+                      name="startBalance"
+                      type="number"
+                      inputmode="decimal"
+                      min="0"
+                      step="0.01"
+                      placeholder="1000.00"
+                    />
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-sm btn-outline" id="hunt-settings-save">
+                  Save hunt
+                </button>
+              </div>
+            </form>
             <form class="bonus-add-form" id="bonus-add-form">
               <div class="bonus-add-row">
                 <div class="bonus-field">
@@ -145,43 +209,13 @@
           <a href="/api/auth/login" class="btn btn-primary">Sign in with Kick</a>
         </div>
 
-        <div class="game-panel guesses-panel slot-requests-panel" id="slot-requests-panel">
+        <div class="game-panel guesses-panel slot-requests-panel hunt-side-panel" id="slot-requests-panel">
           <div class="guesses-panel-header">
             <h3 class="guesses-heading">Requests</h3>
             <p class="guesses-count" id="slot-requests-count">0 requests</p>
           </div>
           <p class="guesses-empty" id="slot-requests-empty">No slot requests yet.</p>
           <ul class="slot-requests-list is-hidden" id="slot-requests-list"></ul>
-        </div>
-
-        <div class="game-panel bonus-hunt-summary" id="bonus-hunt-summary">
-          <div class="bonus-summary-grid">
-            <div class="bonus-summary-item">
-              <span class="bonus-summary-label">Bonuses</span>
-              <strong class="bonus-summary-value" id="summary-total">0</strong>
-            </div>
-            <div class="bonus-summary-item">
-              <span class="bonus-summary-label">Total cost</span>
-              <strong class="bonus-summary-value" id="summary-cost">$0.00</strong>
-            </div>
-            <div class="bonus-summary-item">
-              <span class="bonus-summary-label">Total won</span>
-              <strong class="bonus-summary-value" id="summary-won">$0.00</strong>
-            </div>
-            <div class="bonus-summary-item">
-              <span class="bonus-summary-label">Profit / loss</span>
-              <strong class="bonus-summary-value" id="summary-profit">$0.00</strong>
-            </div>
-          </div>
-        </div>
-
-        <div class="game-panel guesses-panel bonus-list-panel" id="bonus-list-panel">
-          <div class="guesses-panel-header">
-            <h3 class="guesses-heading">Current hunt</h3>
-            <p class="guesses-count" id="bonus-count">0 bonuses</p>
-          </div>
-          <p class="guesses-empty" id="bonus-empty">No bonuses in this hunt yet.</p>
-          <ul class="bonus-list is-hidden" id="bonus-list"></ul>
         </div>
       </div>
     </section>

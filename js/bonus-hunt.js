@@ -7,6 +7,48 @@ let slotCatalogUpdatedAt = null;
 let acceptingRequests = false;
 let stakeSyncPollTimer = null;
 let stakeSyncInProgress = false;
+let huntMeta = {
+  title: "Live Hunt",
+  startBalance: 0,
+  status: "collecting",
+};
+
+const HUNT_STATUS_LABELS = {
+  collecting: "Collecting",
+  opening: "Opening",
+  complete: "Complete",
+};
+
+function slotInitials(name) {
+  return String(name || "")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0] || "")
+    .join("")
+    .toUpperCase() || "?";
+}
+
+function avatarColor(name) {
+  let hash = 0;
+  for (const char of String(name || "")) {
+    hash = char.charCodeAt(0) + ((hash << 5) - hash);
+  }
+
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue} 58% 42%)`;
+}
+
+function formatMultiplier(value) {
+  if (!Number.isFinite(value)) {
+    return "—";
+  }
+
+  return `${value.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}x`;
+}
 
 function buildStakeBookmarkletHref(token) {
   const origin = window.location.origin;
@@ -196,78 +238,128 @@ function setRequestStatus(message, tone = "") {
   status.classList.toggle("is-success", tone === "success");
 }
 
-function renderSummary(summary) {
-  const totalBonuses = document.getElementById("summary-total");
-  const totalCost = document.getElementById("summary-cost");
-  const totalWon = document.getElementById("summary-won");
-  const profit = document.getElementById("summary-profit");
+function renderHuntHeader(hunt) {
+  const title = document.getElementById("hunt-title");
+  const status = document.getElementById("hunt-status");
+  const titleInput = document.getElementById("hunt-title-input");
+  const startInput = document.getElementById("hunt-start-input");
 
-  if (!totalBonuses || !totalCost || !totalWon || !profit) return;
+  if (title) {
+    title.textContent = hunt?.title || "Live Hunt";
+  }
+
+  if (status) {
+    const huntStatus = hunt?.status || "collecting";
+    status.textContent = HUNT_STATUS_LABELS[huntStatus] || "Collecting";
+    status.className = `hunt-status hunt-status--${huntStatus}`;
+  }
+
+  if (titleInput && document.activeElement !== titleInput) {
+    titleInput.value = hunt?.title || "Live Hunt";
+  }
+
+  if (startInput && document.activeElement !== startInput) {
+    startInput.value = Number(hunt?.startBalance || 0).toFixed(2);
+  }
+}
+
+function renderSummary(summary, hunt) {
+  const totalBonuses = document.getElementById("summary-total");
+  const startBalance = document.getElementById("summary-start");
+  const profit = document.getElementById("summary-profit");
+  const progress = document.getElementById("hunt-progress");
+
+  if (!totalBonuses || !startBalance || !profit) return;
 
   totalBonuses.textContent = String(summary.totalBonuses);
-  totalCost.textContent = formatCurrency(summary.totalCost);
-  totalWon.textContent = formatCurrency(summary.totalWon);
+  startBalance.textContent = formatCurrency(hunt?.startBalance || 0);
 
   profit.textContent = formatCurrency(summary.profit);
   profit.classList.toggle("is-positive", summary.profit > 0);
   profit.classList.toggle("is-negative", summary.profit < 0);
+
+  if (progress) {
+    if (!summary.totalBonuses) {
+      progress.textContent = "No bonuses yet.";
+    } else if (summary.pendingCount > 0) {
+      progress.textContent = `Opened ${summary.openedCount} of ${summary.totalBonuses} bonuses · ${formatCurrency(summary.totalWon)} won`;
+    } else {
+      progress.textContent = `All ${summary.totalBonuses} bonuses opened · ${formatCurrency(summary.totalWon)} won`;
+    }
+  }
 }
 
 function renderBonusList(bonuses) {
   const list = document.getElementById("bonus-list");
   const empty = document.getElementById("bonus-empty");
-  const count = document.getElementById("bonus-count");
 
-  if (!list || !empty || !count) return;
+  if (!list || !empty) return;
 
   const total = bonuses.length;
-  count.textContent =
-    total === 1 ? "1 bonus" : `${total} bonuses`;
   empty.classList.toggle("is-hidden", total > 0);
   list.classList.toggle("is-hidden", total === 0);
   list.replaceChildren();
 
+  const openingId = bonuses.find((bonus) => bonus.status === "pending")?.id;
+
   bonuses.forEach((bonus) => {
     const item = document.createElement("li");
-    item.className = "bonus-entry";
+    item.className = "hunt-bonus-card";
     item.dataset.id = bonus.id;
 
+    if (bonus.id === openingId) {
+      item.classList.add("is-opening");
+    }
+
+    const avatar = document.createElement("div");
+    avatar.className = "hunt-bonus-avatar";
+    avatar.textContent = slotInitials(bonus.slot);
+    avatar.style.background = avatarColor(bonus.slot);
+
     const main = document.createElement("div");
-    main.className = "bonus-entry-main";
+    main.className = "hunt-bonus-main";
 
-    const number = document.createElement("span");
-    number.className = "bonus-entry-number";
-    number.textContent = `#${bonus.number}`;
-
-    const slot = document.createElement("span");
-    slot.className = "bonus-entry-slot";
+    const slot = document.createElement("p");
+    slot.className = "hunt-bonus-slot";
     slot.textContent = bonus.slot;
 
-    const meta = document.createElement("div");
-    meta.className = "bonus-entry-meta";
+    const provider = document.createElement("p");
+    provider.className = "hunt-bonus-provider";
+    provider.textContent = `Bet ${formatCurrency(bonus.bet)}`;
 
-    const bet = document.createElement("span");
-    bet.className = "bonus-entry-bet";
-    bet.textContent = formatCurrency(bonus.bet);
+    main.append(slot, provider);
 
-    const payout = document.createElement("span");
-    payout.className = "bonus-entry-payout";
-    payout.textContent =
-      bonus.status === "opened"
-        ? formatCurrency(bonus.payout ?? 0)
-        : "Pending";
+    const result = document.createElement("div");
+    result.className = "hunt-bonus-result";
 
-    const status = document.createElement("span");
-    status.className = `bonus-entry-status bonus-entry-status--${bonus.status}`;
-    status.textContent = bonus.status === "opened" ? "Opened" : "Pending";
+    if (bonus.status === "opened") {
+      const payout = document.createElement("div");
+      payout.className = "hunt-bonus-payout";
+      if ((bonus.payout ?? 0) >= bonus.bet) {
+        payout.classList.add("is-win");
+      }
+      payout.textContent = formatCurrency(bonus.payout ?? 0);
 
-    meta.append(bet, payout, status);
-    main.append(number, slot, meta);
-    item.append(main);
+      const multiplier = document.createElement("div");
+      multiplier.className = "hunt-bonus-multiplier";
+      if ((bonus.multiplier ?? 0) >= 1) {
+        multiplier.classList.add("is-win");
+      }
+      multiplier.textContent = formatMultiplier(bonus.multiplier);
+
+      result.append(payout, multiplier);
+    } else {
+      const pending = document.createElement("div");
+      pending.className = "hunt-bonus-pending";
+      pending.textContent = bonus.id === openingId ? "Opening" : "—";
+      result.append(pending);
+    }
+
+    item.append(avatar, main, result);
 
     if (currentUser?.isAdmin) {
       const actions = document.createElement("div");
-      actions.className = "bonus-entry-actions";
+      actions.className = "hunt-bonus-admin";
 
       if (bonus.status === "pending") {
         const payoutInput = document.createElement("input");
@@ -282,7 +374,7 @@ function renderBonusList(bonuses) {
         const openBtn = document.createElement("button");
         openBtn.type = "button";
         openBtn.className = "btn btn-sm btn-primary";
-        openBtn.textContent = "Save";
+        openBtn.textContent = "Save payout";
         openBtn.addEventListener("click", () =>
           saveBonusPayout(bonus.id, payoutInput.value, openBtn)
         );
@@ -313,7 +405,9 @@ async function loadBonusHunt() {
     if (!response.ok) return;
 
     const data = await response.json();
-    renderSummary(data.summary);
+    huntMeta = data.hunt || huntMeta;
+    renderHuntHeader(huntMeta);
+    renderSummary(data.summary, huntMeta);
     renderBonusList(data.bonuses);
   } catch {
     // Keep the last known state.
@@ -453,8 +547,10 @@ function updateRequestPanels() {
 
 function updatePanels() {
   const adminPanel = document.getElementById("bonus-hunt-admin");
+  const settingsForm = document.getElementById("hunt-settings-form");
 
   adminPanel?.classList.toggle("is-hidden", !currentUser?.isAdmin);
+  settingsForm?.classList.toggle("is-hidden", !currentUser?.isAdmin);
   updateRequestPanels();
   updateToggleLabel();
 }
@@ -757,6 +853,42 @@ async function removeBonusEntry(id, button) {
 }
 
 function initAdminForm() {
+  const settingsForm = document.getElementById("hunt-settings-form");
+  settingsForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const title = document.getElementById("hunt-title-input")?.value?.trim();
+    const startBalance = document.getElementById("hunt-start-input")?.value;
+    const saveBtn = document.getElementById("hunt-settings-save");
+
+    saveBtn.disabled = true;
+    setStatus("Saving hunt settings...");
+
+    try {
+      const response = await fetch("/api/bonus-hunt/settings", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, startBalance }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setStatus(data.error || "Could not save hunt settings.", "error");
+        return;
+      }
+
+      huntMeta = data.hunt || huntMeta;
+      renderHuntHeader(huntMeta);
+      renderSummary(data.summary, huntMeta);
+      setStatus("Hunt settings saved.", "success");
+    } catch {
+      setStatus("Could not save hunt settings. Try again.", "error");
+    } finally {
+      saveBtn.disabled = false;
+    }
+  });
+
   const form = document.getElementById("bonus-add-form");
   const clearBtn = document.getElementById("bonus-clear-hunt");
 
