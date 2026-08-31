@@ -77,6 +77,68 @@ function renderGuessesList(guesses) {
   });
 }
 
+function createPodiumSlot(place, winner) {
+  const slot = document.createElement("div");
+  slot.className = `podium-slot place-${place}`;
+
+  const block = document.createElement("div");
+  block.className = "podium-block";
+
+  const medal = document.createElement("span");
+  medal.className = "podium-medal";
+  medal.textContent = place === 1 ? "1st" : place === 2 ? "2nd" : "3rd";
+
+  const user = document.createElement("span");
+  user.className = "podium-user";
+  user.textContent = winner?.username ?? "—";
+
+  block.append(medal, user);
+
+  if (winner) {
+    const guess = document.createElement("span");
+    guess.className = "podium-guess";
+    guess.textContent = formatCurrency(winner.amount);
+
+    const diff = document.createElement("span");
+    diff.className = "podium-diff";
+    diff.textContent = `${formatCurrency(winner.difference)} off`;
+
+    block.append(guess, diff);
+  }
+
+  slot.append(block);
+  return slot;
+}
+
+function renderPodium(results) {
+  const panel = document.getElementById("podium-panel");
+  const stage = document.getElementById("podium-stage");
+  const balance = document.getElementById("podium-ending-balance");
+
+  if (!panel || !stage || !balance) return;
+
+  const winners = results?.winners ?? [];
+  const hasResults =
+    results?.endingBalance !== null &&
+    results?.endingBalance !== undefined &&
+    winners.length > 0;
+
+  panel.classList.toggle("is-hidden", !hasResults);
+
+  if (!hasResults) {
+    stage.replaceChildren();
+    return;
+  }
+
+  balance.textContent = formatCurrency(results.endingBalance);
+  stage.replaceChildren();
+
+  [2, 1, 3].forEach((place) => {
+    const winner = winners.find((entry) => entry.place === place);
+    stage.append(createPodiumSlot(place, winner));
+  });
+}
+
 async function loadGuesses() {
   try {
     const response = await fetch("/api/guess-the-balance/guesses", {
@@ -88,6 +150,7 @@ async function loadGuesses() {
 
     const data = await response.json();
     renderGuessesList(Array.isArray(data.guesses) ? data.guesses : []);
+    renderPodium(data.results ?? null);
   } catch {
     // Keep the last rendered list.
   }
@@ -293,6 +356,7 @@ function initEndingBalanceForm() {
           : `Ending balance saved: ${formatCurrency(endingBalance)}`,
         "success"
       );
+      await loadGuesses();
     } catch {
       setEndingBalanceStatus("Could not save ending balance. Try again.", "error");
     } finally {
