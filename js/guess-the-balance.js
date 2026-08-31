@@ -50,7 +50,7 @@ function updateRoundTimer() {
   updateToggleLabel();
   updateGamePanels();
 
-  if (gameEnabled && roundEndsAt && remaining <= 0) {
+  if (roundEndsAt && remaining <= 0) {
     gameEnabled = false;
     roundEndsAt = null;
     setGuessStatus("Time is up! Guessing is now closed.", "success");
@@ -60,8 +60,21 @@ function updateRoundTimer() {
 }
 
 function applyStatusData(data) {
-  gameEnabled = Boolean(data.enabled);
-  roundEndsAt = data.endsAt ?? null;
+  const nextEndsAt = data.endsAt ?? null;
+  const localRemaining = getRoundTimeRemainingMs();
+
+  if (nextEndsAt) {
+    roundEndsAt = nextEndsAt;
+  } else if (localRemaining <= 0) {
+    roundEndsAt = null;
+  }
+
+  const active = Boolean(roundEndsAt && getRoundTimeRemainingMs() > 0);
+  gameEnabled = active || Boolean(data.enabled);
+
+  if (!active && !data.enabled) {
+    gameEnabled = false;
+  }
 
   if (data.roundMinutes !== undefined && data.roundMinutes !== null) {
     roundMinutes = Number(data.roundMinutes);
@@ -414,17 +427,6 @@ async function loadGameStatus() {
     const data = await response.json();
     const wasActive = isRoundActive();
     const wasEnabled = gameEnabled;
-    const nextEnabled = Boolean(data.enabled);
-
-    if (
-      Date.now() < enabledLockUntil &&
-      gameEnabled &&
-      !nextEnabled &&
-      currentUser?.isAdmin
-    ) {
-      schedulePolling();
-      return;
-    }
 
     applyStatusData(data);
 
