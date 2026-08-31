@@ -1,5 +1,8 @@
 let currentUser = null;
 let pollTimer = null;
+let slotCatalog = [];
+let slotGroups = [];
+let slotCatalogUpdatedAt = null;
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat("en-US", {
@@ -11,6 +14,16 @@ function formatCurrency(amount) {
 
 function setStatus(message, tone = "") {
   const status = document.getElementById("bonus-hunt-status");
+  if (!status) return;
+
+  status.textContent = message;
+  status.classList.toggle("is-hidden", !message);
+  status.classList.toggle("is-error", tone === "error");
+  status.classList.toggle("is-success", tone === "success");
+}
+
+function setRequestStatus(message, tone = "") {
+  const status = document.getElementById("slot-request-status");
   if (!status) return;
 
   status.textContent = message;
@@ -162,9 +175,212 @@ async function loadCurrentUser() {
   }
 }
 
-function updateAdminPanel() {
-  const panel = document.getElementById("bonus-hunt-admin");
-  panel?.classList.toggle("is-hidden", !currentUser?.isAdmin);
+function updatePanels() {
+  const adminPanel = document.getElementById("bonus-hunt-admin");
+  const requestPanel = document.getElementById("slot-request-panel");
+  const guestPanel = document.getElementById("slot-request-guest");
+
+  adminPanel?.classList.toggle("is-hidden", !currentUser?.isAdmin);
+  requestPanel?.classList.toggle("is-hidden", !currentUser || currentUser.isAdmin);
+  guestPanel?.classList.toggle("is-hidden", Boolean(currentUser));
+}
+
+function renderSlotCatalogSelect(selectedSlug = "") {
+  const select = document.getElementById("slot-request-select");
+  const count = document.getElementById("slot-catalog-count");
+  const meta = document.getElementById("slot-catalog-meta");
+
+  if (!select) return;
+
+  select.replaceChildren();
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = slotCatalog.length
+    ? "Choose a slot..."
+    : "No slots loaded yet";
+  select.append(placeholder);
+
+  const grouped = new Map();
+  for (const slot of slotCatalog) {
+    if (!grouped.has(slot.groupSlug)) {
+      grouped.set(slot.groupSlug, []);
+    }
+    grouped.get(slot.groupSlug).push(slot);
+  }
+
+  for (const group of slotGroups) {
+    const slots = grouped.get(group.slug) || [];
+    if (!slots.length) continue;
+
+    const optgroup = document.createElement("optgroup");
+    optgroup.label = group.label;
+
+    for (const slot of slots) {
+      const option = document.createElement("option");
+      option.value = slot.slug;
+      option.textContent = slot.name;
+      option.dataset.groupSlug = slot.groupSlug;
+      if (slot.slug === selectedSlug) {
+        option.selected = true;
+      }
+      optgroup.append(option);
+    }
+
+    select.append(optgroup);
+  }
+
+  if (count) {
+    count.textContent =
+      slotCatalog.length === 1
+        ? "1 allowed slot"
+        : `${slotCatalog.length} allowed slots`;
+  }
+
+  if (meta) {
+    meta.textContent = slotCatalogUpdatedAt
+      ? `Slot list updated ${new Date(slotCatalogUpdatedAt).toLocaleString()}`
+      : "";
+  }
+}
+
+function renderSlotRequests(requests) {
+  const list = document.getElementById("slot-requests-list");
+  const empty = document.getElementById("slot-requests-empty");
+
+  if (!list || !empty) return;
+
+  const visibleRequests = currentUser?.isAdmin ? requests : [];
+  empty.classList.toggle("is-hidden", visibleRequests.length > 0);
+  list.classList.toggle("is-hidden", visibleRequests.length === 0);
+  list.replaceChildren();
+
+  visibleRequests.forEach((request) => {
+    const item = document.createElement("li");
+    item.className = "slot-request-entry";
+
+    const main = document.createElement("div");
+    main.className = "slot-request-entry-main";
+
+    const user = document.createElement("span");
+    user.className = "slot-request-user";
+    user.textContent = request.username;
+
+    const slot = document.createElement("span");
+    slot.className = "slot-request-slot";
+    slot.textContent = request.slotName;
+
+    const group = document.createElement("span");
+    group.className = "slot-request-group";
+    group.textContent = request.groupLabel;
+
+    main.append(user, slot, group);
+    item.append(main);
+
+    if (currentUser?.isAdmin) {
+      const actions = document.createElement("div");
+      actions.className = "slot-request-actions";
+
+      const useBtn = document.createElement("button");
+      useBtn.type = "button";
+      useBtn.className = "btn btn-sm btn-primary";
+      useBtn.textContent = "Use";
+      useBtn.addEventListener("click", () => {
+        const slotInput = document.getElementById("bonus-slot");
+        if (slotInput) {
+          slotInput.value = request.slotName;
+          slotInput.focus();
+        }
+        setStatus(`Loaded ${request.slotName} into the add bonus form.`, "success");
+      });
+
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "btn btn-sm btn-outline";
+      removeBtn.textContent = "Dismiss";
+      removeBtn.addEventListener("click", () =>
+        removeSlotRequestEntry(request.id, removeBtn)
+      );
+
+      actions.append(useBtn, removeBtn);
+      item.append(actions);
+    }
+
+    list.append(item);
+  });
+}
+
+async function loadSlotCatalog() {
+  try {
+    const response = await fetch("/api/bonus-hunt/slots", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || "Could not load slot catalog.");
+    }
+
+    const data = await response.json();
+    slotCatalog = data.slots || [];
+    slotGroups = data.groups || [];
+    slotCatalogUpdatedAt = data.updatedAt || null;
+    renderSlotCatalogSelect();
+  } catch (error) {
+    const count = document.getElementById("slot-catalog-count");
+    if (count) {
+      count.textContent = "Slot list unavailable";
+    }
+    setRequestStatus(error.message, "error");
+  }
+}
+
+async function loadSlotRequests() {
+  try {
+    const response = await fetch("/api/bonus-hunt/requests", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+
+    if (!response.ok) return;
+
+    const data = await response.json();
+    renderSlotRequests(data.requests || []);
+
+    if (data.myRequest?.slotSlug) {
+      renderSlotCatalogSelect(data.myRequest.slotSlug);
+    }
+  } catch {
+    // Keep the last known state.
+  }
+}
+
+async function removeSlotRequestEntry(id, button) {
+  button.disabled = true;
+  setStatus("Removing slot request...");
+
+  try {
+    const response = await fetch("/api/bonus-hunt/requests/remove", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      setStatus(data.error || "Could not remove slot request.", "error");
+      return;
+    }
+
+    setStatus("Slot request dismissed.", "success");
+    await loadSlotRequests();
+  } catch {
+    setStatus("Could not remove slot request. Try again.", "error");
+  } finally {
+    button.disabled = false;
+  }
 }
 
 function schedulePolling() {
@@ -172,7 +388,10 @@ function schedulePolling() {
     clearInterval(pollTimer);
   }
 
-  pollTimer = setInterval(loadBonusHunt, 2000);
+  pollTimer = setInterval(() => {
+    loadBonusHunt();
+    loadSlotRequests();
+  }, 2000);
 }
 
 async function saveBonusPayout(id, rawPayout, button) {
@@ -313,25 +532,140 @@ function initAdminForm() {
       clearBtn.disabled = false;
     }
   });
+
+  document.getElementById("slot-catalog-refresh")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    setStatus("Refreshing slot list from Stake...");
+
+    try {
+      const response = await fetch("/api/bonus-hunt/slots/refresh", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setStatus(data.error || "Could not refresh slot list.", "error");
+        return;
+      }
+
+      setStatus(`Slot list refreshed (${data.count} slots).`, "success");
+      await loadSlotCatalog();
+    } catch {
+      setStatus("Could not refresh slot list. Try again.", "error");
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  document.getElementById("slot-requests-clear")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+
+    if (!window.confirm("Clear all slot requests?")) {
+      return;
+    }
+
+    button.disabled = true;
+    setStatus("Clearing slot requests...");
+
+    try {
+      const response = await fetch("/api/bonus-hunt/requests/clear", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setStatus(data.error || "Could not clear slot requests.", "error");
+        return;
+      }
+
+      setStatus("Slot requests cleared.", "success");
+      await loadSlotRequests();
+    } catch {
+      setStatus("Could not clear slot requests. Try again.", "error");
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
+
+function initSlotRequestForm() {
+  const form = document.getElementById("slot-request-form");
+  if (!form) return;
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    if (!currentUser) {
+      setRequestStatus("Sign in with Kick to request a slot.", "error");
+      return;
+    }
+
+    const select = document.getElementById("slot-request-select");
+    const submitBtn = document.getElementById("slot-request-submit");
+    const slotSlug = select?.value;
+
+    if (!slotCatalog.length) {
+      setRequestStatus(
+        "Slot list is empty. Ask the admin to refresh it from Stake.",
+        "error"
+      );
+      return;
+    }
+
+    if (!slotSlug) {
+      setRequestStatus("Choose a slot from the list.", "error");
+      return;
+    }
+
+    submitBtn.disabled = true;
+    setRequestStatus("Submitting your request...");
+
+    try {
+      const response = await fetch("/api/bonus-hunt/request", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slotSlug }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setRequestStatus(data.error || "Could not submit request.", "error");
+        return;
+      }
+
+      setRequestStatus(`Requested ${data.request.slotName}.`, "success");
+      await loadSlotRequests();
+    } catch {
+      setRequestStatus("Could not submit request. Try again.", "error");
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
 }
 
 window.addEventListener("auth:change", async (event) => {
   currentUser = event.detail?.user || null;
-  updateAdminPanel();
-  await loadBonusHunt();
+  updatePanels();
+  await Promise.all([loadBonusHunt(), loadSlotCatalog(), loadSlotRequests()]);
 });
 
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") {
     loadBonusHunt();
+    loadSlotRequests();
   }
 });
 
 async function bootstrapBonusHuntPage() {
-  await Promise.all([loadCurrentUser(), loadBonusHunt()]);
-  updateAdminPanel();
+  await Promise.all([loadCurrentUser(), loadBonusHunt(), loadSlotCatalog(), loadSlotRequests()]);
+  updatePanels();
   schedulePolling();
 }
 
 initAdminForm();
+initSlotRequestForm();
 bootstrapBonusHuntPage();

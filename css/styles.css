@@ -900,6 +900,82 @@ ul {
   margin-top: 0.85rem;
 }
 
+.slot-requests-admin-section {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.slot-catalog-meta {
+  margin: 0.75rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.slot-request-panel,
+.slot-request-guest {
+  margin-bottom: 1rem;
+}
+
+.slot-request-form {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.slot-request-select {
+  width: 100%;
+  padding: 0.8rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(4, 8, 12, 0.9);
+  color: var(--text);
+  font: inherit;
+}
+
+.slot-requests-list {
+  margin: 0.85rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.slot-request-entry {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(10, 15, 20, 0.45);
+}
+
+.slot-request-entry-main {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.slot-request-user {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.slot-request-slot {
+  font-size: 1.02rem;
+  color: var(--accent-bright);
+}
+
+.slot-request-group {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.slot-request-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
 @media (max-width: 900px) {
   .bonus-summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

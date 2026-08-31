@@ -14,6 +14,12 @@ import {
   handleBonusHuntGet,
   handleBonusHuntRemove,
   handleBonusHuntUpdate,
+  handleBonusHuntRequestRemove,
+  handleBonusHuntRequestSubmit,
+  handleBonusHuntRequestsClear,
+  handleBonusHuntRequestsList,
+  handleBonusHuntSlots,
+  handleBonusHuntSlotsRefresh,
 } from "./lib/bonus-hunt-handlers.js";
 import {
   handleGuessStatus,
@@ -46,6 +52,22 @@ app.post("/api/bonus-hunt/add", (req, res) => handleBonusHuntAdd(req, res));
 app.post("/api/bonus-hunt/update", (req, res) => handleBonusHuntUpdate(req, res));
 app.post("/api/bonus-hunt/remove", (req, res) => handleBonusHuntRemove(req, res));
 app.post("/api/bonus-hunt/clear", (req, res) => handleBonusHuntClear(req, res));
+app.get("/api/bonus-hunt/slots", (req, res) => handleBonusHuntSlots(req, res));
+app.post("/api/bonus-hunt/slots/refresh", (req, res) =>
+  handleBonusHuntSlotsRefresh(req, res)
+);
+app.get("/api/bonus-hunt/requests", (req, res) =>
+  handleBonusHuntRequestsList(req, res)
+);
+app.post("/api/bonus-hunt/request", (req, res) =>
+  handleBonusHuntRequestSubmit(req, res)
+);
+app.post("/api/bonus-hunt/requests/remove", (req, res) =>
+  handleBonusHuntRequestRemove(req, res)
+);
+app.post("/api/bonus-hunt/requests/clear", (req, res) =>
+  handleBonusHuntRequestsClear(req, res)
+);
 
 app.listen(PORT, () => {
   console.log(`BLAKJAC21 site running at http://localhost:${PORT}`);

@@ -8,5 +8,7 @@ node_modules/
 data/users.json
 data/guesses.json
 data/bonus-hunt.json
+data/slot-requests.json
+data/stake-slot-catalog.json
 .vercel
 .env*
