@@ -350,9 +350,14 @@ function renderSlotCatalogSelect(selectedSlug = "") {
   }
 
   if (meta) {
-    meta.textContent = slotCatalogUpdatedAt
-      ? `Slot list updated ${new Date(slotCatalogUpdatedAt).toLocaleString()}`
-      : "";
+    if (!slotCatalog.length) {
+      meta.textContent =
+        "No slots loaded yet. Click Refresh slot list in the admin panel.";
+    } else {
+      meta.textContent = slotCatalogUpdatedAt
+        ? `Slot list updated ${new Date(slotCatalogUpdatedAt).toLocaleString()}`
+        : "";
+    }
   }
 }
 
@@ -370,6 +375,12 @@ function renderSlotRequests(requests) {
 
   if (count) {
     count.textContent = total === 1 ? "1 request" : `${total} requests`;
+  }
+
+  if (!total) {
+    empty.textContent = acceptingRequests
+      ? "No slot requests yet."
+      : "Slot requests are closed. Turn on Accept requests in the admin panel.";
   }
 
   requests.forEach((request) => {
@@ -679,7 +690,16 @@ function initAdminForm() {
         return;
       }
 
-      setStatus("Kick chat !slot command enabled.", "success");
+      acceptingRequests = Boolean(data.acceptingRequests);
+      updateRequestPanels();
+      updateToggleLabel();
+      await Promise.all([loadSlotCatalog(), loadSlotRequests()]);
+
+      const slotMessage =
+        data.slotCount > 0
+          ? `Kick chat !slot enabled. ${data.slotCount} slots loaded.`
+          : "Kick chat !slot enabled, but no slots loaded yet. Click Refresh slot list.";
+      setStatus(slotMessage, data.slotCount > 0 ? "success" : "error");
     } catch {
       setStatus("Could not enable !slot in chat. Try again.", "error");
     } finally {
