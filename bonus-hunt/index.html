@@ -111,6 +111,22 @@
           </div>
 
           <div class="admin-panel-section slot-requests-admin-section">
+            <div class="admin-panel-row">
+              <div>
+                <p class="admin-panel-label">Accept requests</p>
+                <p class="admin-panel-text" id="slot-requests-toggle-status">
+                  Slot requests are closed
+                </p>
+              </div>
+              <label class="toggle">
+                <input
+                  type="checkbox"
+                  id="slot-requests-toggle"
+                  aria-labelledby="slot-requests-toggle-status"
+                />
+                <span class="toggle-slider" aria-hidden="true"></span>
+              </label>
+            </div>
             <p class="admin-panel-label">Chat slot requests</p>
             <p class="admin-panel-text">
               Viewers can type <strong>!slot &lt;slot name&gt;</strong> in Kick chat or use the request form below.
@@ -136,6 +152,12 @@
             <p class="slot-catalog-meta" id="kick-bot-status"></p>
             <p class="slot-catalog-meta" id="slot-catalog-meta"></p>
           </div>
+        </div>
+
+        <div class="game-panel slot-request-closed is-hidden" id="slot-request-closed">
+          <p class="game-panel-text">
+            Slot requests are closed right now. Check back when the stream opens them.
+          </p>
         </div>
 
         <div class="game-panel slot-request-panel is-hidden" id="slot-request-panel">

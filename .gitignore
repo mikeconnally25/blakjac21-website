@@ -9,6 +9,7 @@ data/users.json
 data/guesses.json
 data/bonus-hunt.json
 data/slot-requests.json
+data/slot-request-state.json
 data/stake-slot-catalog.json
 .vercel
 .env*

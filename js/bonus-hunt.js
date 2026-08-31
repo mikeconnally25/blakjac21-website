@@ -4,6 +4,7 @@ let slotPollTimer = null;
 let slotCatalog = [];
 let slotGroups = [];
 let slotCatalogUpdatedAt = null;
+let acceptingRequests = false;
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat("en-US", {
@@ -249,14 +250,52 @@ function handleKickBotRedirectParams() {
   window.history.replaceState({}, "", nextUrl);
 }
 
-function updatePanels() {
-  const adminPanel = document.getElementById("bonus-hunt-admin");
+function updateToggleLabel() {
+  const label = document.getElementById("slot-requests-toggle-status");
+  const toggle = document.getElementById("slot-requests-toggle");
+
+  if (label) {
+    label.textContent = acceptingRequests
+      ? "Accepting slot requests"
+      : "Slot requests are closed";
+  }
+
+  if (toggle && currentUser?.isAdmin) {
+    toggle.checked = acceptingRequests;
+  }
+}
+
+function updateRequestPanels() {
+  const closedPanel = document.getElementById("slot-request-closed");
   const requestPanel = document.getElementById("slot-request-panel");
   const guestPanel = document.getElementById("slot-request-guest");
+  const isAdmin = Boolean(currentUser?.isAdmin);
+  const isSignedIn = Boolean(currentUser);
+  const open = acceptingRequests;
+
+  closedPanel?.classList.toggle("is-hidden", open || isAdmin);
+  requestPanel?.classList.toggle("is-hidden", !open || isAdmin || !isSignedIn);
+  guestPanel?.classList.toggle("is-hidden", !open || isSignedIn);
+
+  const select = document.getElementById("slot-request-select");
+  const submitBtn = document.getElementById("slot-request-submit");
+  const canSubmit = open && isSignedIn && !isAdmin;
+
+  if (select) {
+    select.disabled = !canSubmit;
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = !canSubmit;
+  }
+}
+
+function updatePanels() {
+  const adminPanel = document.getElementById("bonus-hunt-admin");
 
   adminPanel?.classList.toggle("is-hidden", !currentUser?.isAdmin);
-  requestPanel?.classList.toggle("is-hidden", !currentUser || currentUser.isAdmin);
-  guestPanel?.classList.toggle("is-hidden", Boolean(currentUser));
+  updateRequestPanels();
+  updateToggleLabel();
 }
 
 function renderSlotCatalogSelect(selectedSlug = "") {
@@ -428,7 +467,10 @@ async function loadSlotRequests() {
     if (!response.ok) return;
 
     const data = await response.json();
+    acceptingRequests = Boolean(data.acceptingRequests);
     renderSlotRequests(data.requests || []);
+    updateRequestPanels();
+    updateToggleLabel();
 
     const select = document.getElementById("slot-request-select");
     if (!select?.value && data.myRequest?.slotSlug) {
@@ -672,6 +714,43 @@ function initAdminForm() {
     }
   });
 
+  document.getElementById("slot-requests-toggle")?.addEventListener("change", async (event) => {
+    const toggle = event.currentTarget;
+    const nextAccepting = toggle.checked;
+
+    toggle.disabled = true;
+    setStatus(nextAccepting ? "Opening slot requests..." : "Closing slot requests...");
+
+    try {
+      const response = await fetch("/api/bonus-hunt/requests/toggle", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accepting: nextAccepting }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        toggle.checked = !nextAccepting;
+        setStatus(data.error || "Could not update slot request setting.", "error");
+        return;
+      }
+
+      acceptingRequests = Boolean(data.acceptingRequests);
+      updateRequestPanels();
+      updateToggleLabel();
+      setStatus(
+        acceptingRequests ? "Slot requests are now open." : "Slot requests are now closed.",
+        "success"
+      );
+    } catch {
+      toggle.checked = !nextAccepting;
+      setStatus("Could not update slot request setting. Try again.", "error");
+    } finally {
+      toggle.disabled = false;
+    }
+  });
+
   document.getElementById("slot-requests-clear")?.addEventListener("click", async (event) => {
     const button = event.currentTarget;
 
@@ -713,6 +792,11 @@ function initSlotRequestForm() {
 
     if (!currentUser) {
       setRequestStatus("Sign in with Kick to request a slot.", "error");
+      return;
+    }
+
+    if (!acceptingRequests) {
+      setRequestStatus("Slot requests are closed right now.", "error");
       return;
     }
 

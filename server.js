@@ -18,6 +18,7 @@ import {
   handleBonusHuntRequestSubmit,
   handleBonusHuntRequestsClear,
   handleBonusHuntRequestsList,
+  handleBonusHuntRequestsToggle,
   handleBonusHuntSlots,
   handleBonusHuntSlotsRefresh,
   handleKickChatSubscribe,
@@ -78,6 +79,9 @@ app.post("/api/bonus-hunt/requests/remove", (req, res) =>
 );
 app.post("/api/bonus-hunt/requests/clear", (req, res) =>
   handleBonusHuntRequestsClear(req, res)
+);
+app.post("/api/bonus-hunt/requests/toggle", (req, res) =>
+  handleBonusHuntRequestsToggle(req, res)
 );
 app.post("/api/kick/subscribe", (req, res) => handleKickChatSubscribe(req, res));
 app.get("/api/kick/bot/login", (req, res) => handleKickBotLogin(req, res));
