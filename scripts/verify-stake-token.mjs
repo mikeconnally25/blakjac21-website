@@ -9,6 +9,8 @@ import {
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const loadedFiles = loadProjectEnv(rootDir);
 
+const STAKE_GRAPHQL_URL = "https://stake.com/_api/graphql";
+
 const QUERY = `
   query SlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!) {
     slugKuratorGroup(slug: $slug) {
@@ -23,12 +25,7 @@ const QUERY = `
   }
 `;
 
-const ENDPOINTS = [
-  { url: "https://stake.com/_api/graphql", site: "stake.com" },
-  { url: "https://stake.bet/_api/graphql", site: "stake.bet" },
-];
-
-async function testEndpoint({ url, site }, token) {
+async function testStakeGraphql(token) {
   const headers = {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -36,15 +33,15 @@ async function testEndpoint({ url, site }, token) {
     "x-language": "en",
     "User-Agent":
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-    Origin: `https://${site}`,
-    Referer: `https://${site}/casino/group/new-releases`,
+    Origin: "https://stake.com",
+    Referer: "https://stake.com/casino/group/new-releases",
   };
 
   if (token) {
     headers["x-access-token"] = token;
   }
 
-  const response = await fetch(url, {
+  const response = await fetch(STAKE_GRAPHQL_URL, {
     method: "POST",
     headers,
     body: JSON.stringify({
@@ -71,7 +68,7 @@ async function testEndpoint({ url, site }, token) {
       ?.map((entry) => entry?.game?.name)
       .filter(Boolean) || [];
 
-  return { response, data, games, site };
+  return { response, data, games };
 }
 
 function finish(code) {
@@ -120,60 +117,53 @@ async function main() {
     return;
   }
 
-  let lastStatus = null;
+  const { response, data, games } = await testStakeGraphql(token);
 
-  for (const endpoint of ENDPOINTS) {
-    const { response, data, games, site } = await testEndpoint(endpoint, token);
-    lastStatus = response.status;
+  console.log(`${STAKE_GRAPHQL_URL}: HTTP ${response.status}`);
 
-    console.log(`${endpoint.url}: HTTP ${response.status}`);
-
-    if (response.ok && games.length) {
-      console.log(`SUCCESS on ${site} - sample slots: ${games.join(", ")}`);
-      console.log("");
-      console.log("Next steps:");
-      console.log("1. npm run refresh:slots");
-      console.log("2. Add the same STAKE_ACCESS_TOKEN to Vercel");
-      console.log("3. Commit catalog/stake-allowed-slots.json and push");
-      finish(0);
-      return;
-    }
-
-    if (data.errors?.length) {
-      console.log("GraphQL errors:");
-      console.log(JSON.stringify(data.errors, null, 2));
-    } else if (data.parseError) {
-      console.log("Non-JSON response (often Cloudflare):");
-      console.log(data.parseError);
-    } else if (!response.ok) {
-      console.log(`Stake blocked this request on ${site}.`);
-    } else {
-      console.log("Request succeeded but returned no games for new-releases.");
-      console.log(
-        JSON.stringify(
-          {
-            groupName: data.data?.slugKuratorGroup?.name ?? null,
-            gameCount: data.data?.slugKuratorGroup?.groupGamesList?.length ?? 0,
-          },
-          null,
-          2
-        )
-      );
-    }
-
+  if (response.ok && games.length) {
+    console.log(`SUCCESS - sample slots: ${games.join(", ")}`);
     console.log("");
+    console.log("Next steps:");
+    console.log("1. npm run refresh:slots");
+    console.log("2. Add the same STAKE_ACCESS_TOKEN to Vercel");
+    console.log("3. Commit catalog/stake-allowed-slots.json and push");
+    finish(0);
+    return;
   }
 
+  if (data.errors?.length) {
+    console.log("GraphQL errors:");
+    console.log(JSON.stringify(data.errors, null, 2));
+  } else if (data.parseError) {
+    console.log("Non-JSON response (often Cloudflare):");
+    console.log(data.parseError);
+  } else if (!response.ok) {
+    console.log("Stake blocked this request.");
+  } else {
+    console.log("Request succeeded but returned no games for new-releases.");
+    console.log(
+      JSON.stringify(
+        {
+          groupName: data.data?.slugKuratorGroup?.name ?? null,
+          gameCount: data.data?.slugKuratorGroup?.groupGamesList?.length ?? 0,
+        },
+        null,
+        2
+      )
+    );
+  }
+
+  console.log("");
   console.error("FAILED - Stake catalog requests did not return games.");
   console.error("");
-  if (lastStatus === 403) {
+  if (response.status === 403) {
     console.error("HTTP 403 usually means:");
-    console.error("- Token was created on a different site (stake.com vs stake.bet)");
+    console.error("- STAKE_ACCESS_TOKEN is invalid or expired");
     console.error("- Stake/Cloudflare blocked the request from this network");
     console.error("");
-    console.error("Try creating the token on the same site you use in the browser.");
+    console.error("Create a new token at stake.com → Settings → Security → API Tokens.");
   }
-  console.error("Token path: Settings → Security → API Tokens on stake.com");
   console.error("Then run: npm run refresh:slots");
   finish(1);
 }
