@@ -113,12 +113,16 @@
           <div class="admin-panel-section slot-requests-admin-section">
             <p class="admin-panel-label">Chat slot requests</p>
             <p class="admin-panel-text">
-              Viewers signed in with Kick can request slots from
+              Viewers can type <strong>!r &lt;slot name&gt;</strong> in Kick chat or use the request form below.
+              Slots must be from
               <a href="https://stake.bet/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
               or
               <a href="https://stake.bet/casino/group/only-on-stake" target="_blank" rel="noopener noreferrer">Only on Stake</a>.
             </p>
             <div class="bonus-admin-actions">
+              <button type="button" class="btn btn-sm btn-outline" id="kick-chat-subscribe">
+                Enable !r in chat
+              </button>
               <button type="button" class="btn btn-sm btn-outline" id="slot-catalog-refresh">
                 Refresh slot list
               </button>
@@ -138,7 +142,8 @@
             <p class="guesses-count" id="slot-catalog-count">Loading slots...</p>
           </div>
           <p class="game-panel-text">
-            Pick a slot from Stake's New Releases or Only on Stake groups. You can update your request anytime.
+            Type <strong>!r &lt;slot name&gt;</strong> in Kick chat, or pick a slot below.
+            Only New Releases and Only on Stake slots are allowed.
           </p>
           <form class="slot-request-form" id="slot-request-form">
             <label class="guess-label" for="slot-request-select">Slot</label>
@@ -154,7 +159,7 @@
 
         <div class="game-panel slot-request-guest" id="slot-request-guest">
           <p class="game-panel-text">
-            Sign in with Kick to request a slot from New Releases or Only on Stake.
+            Sign in with Kick to use the request form, or type <strong>!r &lt;slot name&gt;</strong> in chat.
           </p>
           <a href="/api/auth/login" class="btn btn-primary">Sign in with Kick</a>
         </div>

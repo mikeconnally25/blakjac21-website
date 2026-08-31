@@ -20,7 +20,9 @@ import {
   handleBonusHuntRequestsList,
   handleBonusHuntSlots,
   handleBonusHuntSlotsRefresh,
+  handleKickChatSubscribe,
 } from "./lib/bonus-hunt-handlers.js";
+import { handleKickWebhook } from "./lib/kick-webhook.js";
 import {
   handleGuessStatus,
   handleGuessList,
@@ -32,6 +34,12 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
+
+app.post(
+  "/api/kick/webhook",
+  express.raw({ type: "application/json" }),
+  (req, res) => handleKickWebhook(req, res)
+);
 
 app.use(express.json());
 app.use(express.static(__dirname));
@@ -68,6 +76,7 @@ app.post("/api/bonus-hunt/requests/remove", (req, res) =>
 app.post("/api/bonus-hunt/requests/clear", (req, res) =>
   handleBonusHuntRequestsClear(req, res)
 );
+app.post("/api/kick/subscribe", (req, res) => handleKickChatSubscribe(req, res));
 
 app.listen(PORT, () => {
   console.log(`BLAKJAC21 site running at http://localhost:${PORT}`);

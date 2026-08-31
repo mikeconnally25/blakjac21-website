@@ -543,6 +543,31 @@ function initAdminForm() {
     }
   });
 
+  document.getElementById("kick-chat-subscribe")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    setStatus("Enabling !r in Kick chat...");
+
+    try {
+      const response = await fetch("/api/kick/subscribe", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setStatus(data.error || "Could not enable !r in chat.", "error");
+        return;
+      }
+
+      setStatus("Kick chat !r command enabled.", "success");
+    } catch {
+      setStatus("Could not enable !r in chat. Try again.", "error");
+    } finally {
+      button.disabled = false;
+    }
+  });
+
   document.getElementById("slot-catalog-refresh")?.addEventListener("click", async (event) => {
     const button = event.currentTarget;
     button.disabled = true;
