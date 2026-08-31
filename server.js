@@ -10,6 +10,7 @@ import {
 } from "./lib/auth-handlers.js";
 import {
   handleGuessStatus,
+  handleGuessSetEndingBalance,
   handleGuessSubmit,
   handleGuessToggle,
 } from "./lib/guess-handlers.js";
@@ -28,6 +29,9 @@ app.post("/api/auth/logout", (req, res) => handleLogout(req, res));
 app.post("/api/guess-the-balance/submit", (req, res) => handleGuessSubmit(req, res));
 app.get("/api/guess-the-balance/status", (req, res) => handleGuessStatus(req, res));
 app.post("/api/guess-the-balance/toggle", (req, res) => handleGuessToggle(req, res));
+app.post("/api/guess-the-balance/ending-balance", (req, res) =>
+  handleGuessSetEndingBalance(req, res)
+);
 
 app.listen(PORT, () => {
   console.log(`BLAKJAC21 site running at http://localhost:${PORT}`);

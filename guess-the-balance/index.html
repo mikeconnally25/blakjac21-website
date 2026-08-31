@@ -73,6 +73,30 @@
               <span class="toggle-slider" aria-hidden="true"></span>
             </label>
           </div>
+
+          <div class="admin-panel-section">
+            <label class="guess-label" for="ending-balance">Ending balance</label>
+            <p class="admin-panel-text">Enter the actual balance after the round ends.</p>
+            <div class="admin-balance-row">
+              <div class="guess-input-row admin-balance-input">
+                <span class="guess-prefix" aria-hidden="true">$</span>
+                <input
+                  class="guess-input"
+                  id="ending-balance"
+                  name="endingBalance"
+                  type="number"
+                  inputmode="decimal"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                />
+              </div>
+              <button type="button" class="btn btn-sm btn-primary" id="ending-balance-save">
+                Save
+              </button>
+            </div>
+            <p class="guess-status is-hidden" id="ending-balance-status" role="status" aria-live="polite"></p>
+          </div>
         </div>
 
         <div class="game-panel is-hidden" id="game-panel-closed">

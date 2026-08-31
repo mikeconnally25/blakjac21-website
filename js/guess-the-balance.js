@@ -1,4 +1,5 @@
 let gameEnabled = false;
+let endingBalance = null;
 let currentUser = null;
 let pollTimer = null;
 let enabledLockUntil = 0;
@@ -9,6 +10,32 @@ function formatCurrency(amount) {
     currency: "USD",
     maximumFractionDigits: 2,
   }).format(amount);
+}
+
+function setEndingBalanceStatus(message, type = "") {
+  const status = document.getElementById("ending-balance-status");
+  if (!status) return;
+
+  status.textContent = message;
+  status.classList.remove("is-hidden", "is-success", "is-error");
+  status.classList.toggle("is-success", type === "success");
+  status.classList.toggle("is-error", type === "error");
+
+  if (!message) {
+    status.classList.add("is-hidden");
+  }
+}
+
+function updateEndingBalanceInput() {
+  const input = document.getElementById("ending-balance");
+  if (!input || !currentUser?.isAdmin) return;
+
+  if (endingBalance === null || endingBalance === undefined) {
+    input.value = "";
+    return;
+  }
+
+  input.value = String(endingBalance);
 }
 
 function setGuessStatus(message, type = "") {
@@ -100,6 +127,10 @@ async function loadGameStatus() {
     }
 
     gameEnabled = nextEnabled;
+    if (Object.prototype.hasOwnProperty.call(data, "endingBalance")) {
+      endingBalance = data.endingBalance;
+      updateEndingBalanceInput();
+    }
     updateToggleLabel();
     updateGamePanels();
 
@@ -160,6 +191,59 @@ async function setGameEnabled(enabled) {
   updateToggleLabel();
   updateGamePanels();
   schedulePolling();
+}
+
+function initEndingBalanceForm() {
+  const saveBtn = document.getElementById("ending-balance-save");
+  const input = document.getElementById("ending-balance");
+  if (!saveBtn || !input) return;
+
+  saveBtn.addEventListener("click", async () => {
+    if (!currentUser?.isAdmin) return;
+
+    const rawValue = input.value.trim();
+    const amount = rawValue === "" ? null : Number(rawValue);
+
+    if (amount !== null && (!Number.isFinite(amount) || amount < 0)) {
+      setEndingBalanceStatus("Enter a valid balance amount.", "error");
+      return;
+    }
+
+    saveBtn.disabled = true;
+    setEndingBalanceStatus("Saving ending balance...");
+
+    try {
+      const response = await fetch("/api/guess-the-balance/ending-balance", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setEndingBalanceStatus(
+          data.error || "Could not save ending balance.",
+          "error"
+        );
+        return;
+      }
+
+      endingBalance = data.endingBalance ?? null;
+      updateEndingBalanceInput();
+      setEndingBalanceStatus(
+        endingBalance === null
+          ? "Ending balance cleared."
+          : `Ending balance saved: ${formatCurrency(endingBalance)}`,
+        "success"
+      );
+    } catch {
+      setEndingBalanceStatus("Could not save ending balance. Try again.", "error");
+    } finally {
+      saveBtn.disabled = false;
+    }
+  });
 }
 
 function initAdminToggle() {
@@ -255,6 +339,7 @@ window.addEventListener("auth:change", (event) => {
   }
 
   updateGamePanels();
+  updateEndingBalanceInput();
   schedulePolling();
 });
 
@@ -267,9 +352,11 @@ document.addEventListener("visibilitychange", () => {
 async function bootstrapGuessPage() {
   await Promise.all([loadGameStatus(), loadCurrentUser()]);
   updateGamePanels();
+  updateEndingBalanceInput();
   schedulePolling();
 }
 
 initAdminToggle();
+initEndingBalanceForm();
 initGuessForm();
 bootstrapGuessPage();
