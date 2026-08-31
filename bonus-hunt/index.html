@@ -53,49 +53,78 @@
   <main>
     <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
 
-    <section class="section page-section">
-      <div class="container page-content">
+    <section class="section page-section bonus-hunt-page">
+      <div class="container page-content bonus-hunt-layout">
         <a href="/#menu" class="back-link">← Back to menu</a>
 
-        <div class="section-header left">
-          <h2>Bonus Hunt</h2>
-          <p>Follow every bonus buy live on stream with running stats.</p>
+        <div class="hunt-page-hero">
+          <div>
+            <p class="hunt-page-eyebrow">Live tracker</p>
+            <h2 class="hunt-page-title">Bonus Hunt</h2>
+          </div>
+          <p class="hunt-page-subtitle">Follow every bonus buy on stream with live stats and multipliers.</p>
         </div>
 
-        <div class="hunt-tracker" id="hunt-tracker">
-          <div class="hunt-tracker-top">
-            <div class="hunt-tracker-heading">
-              <h3 class="hunt-title" id="hunt-title">Live Hunt</h3>
-              <p class="hunt-streamer">BLAKJAC21</p>
-            </div>
-            <span class="hunt-status hunt-status--collecting" id="hunt-status">Collecting</span>
-          </div>
+        <div class="hunt-layout-grid">
+          <div class="hunt-layout-main">
+            <div class="hunt-tracker" id="hunt-tracker">
+              <div class="hunt-tracker-glow" aria-hidden="true"></div>
 
-          <div class="hunt-stats">
-            <div class="hunt-stat">
-              <span class="hunt-stat-label">Bonuses</span>
-              <strong class="hunt-stat-value" id="summary-total">0</strong>
-            </div>
-            <div class="hunt-stat">
-              <span class="hunt-stat-label">Start</span>
-              <strong class="hunt-stat-value" id="summary-start">$0.00</strong>
-            </div>
-            <div class="hunt-stat">
-              <span class="hunt-stat-label">Profit</span>
-              <strong class="hunt-stat-value" id="summary-profit">$0.00</strong>
-            </div>
-          </div>
+              <div class="hunt-tracker-top">
+                <div class="hunt-tracker-heading">
+                  <h3 class="hunt-title" id="hunt-title">Live Hunt</h3>
+                  <p class="hunt-streamer">
+                    <span class="hunt-live-dot" aria-hidden="true"></span>
+                    BLAKJAC21
+                  </p>
+                </div>
+                <span class="hunt-status hunt-status--collecting" id="hunt-status">Collecting</span>
+              </div>
 
-          <p class="hunt-progress" id="hunt-progress">No bonuses yet.</p>
+              <div class="hunt-stats">
+                <div class="hunt-stat">
+                  <span class="hunt-stat-label">Bonuses</span>
+                  <strong class="hunt-stat-value" id="summary-total">0</strong>
+                </div>
+                <div class="hunt-stat">
+                  <span class="hunt-stat-label">Start</span>
+                  <strong class="hunt-stat-value" id="summary-start">$0.00</strong>
+                </div>
+                <div class="hunt-stat hunt-stat--profit">
+                  <span class="hunt-stat-label">Profit</span>
+                  <strong class="hunt-stat-value" id="summary-profit">$0.00</strong>
+                </div>
+              </div>
 
-          <p class="hunt-empty" id="bonus-empty">No bonuses in this hunt yet.</p>
-          <ul class="hunt-bonus-grid is-hidden" id="bonus-list"></ul>
-        </div>
+              <div class="hunt-progress-wrap">
+                <div class="hunt-progress-meta">
+                  <p class="hunt-progress" id="hunt-progress">No bonuses yet.</p>
+                  <p class="hunt-progress-count" id="hunt-progress-count"></p>
+                </div>
+                <div class="hunt-progress-bar" aria-hidden="true">
+                  <span class="hunt-progress-fill" id="hunt-progress-fill"></span>
+                </div>
+              </div>
 
-        <div class="admin-panel is-hidden" id="bonus-hunt-admin">
-          <div class="admin-panel-section">
-            <p class="admin-panel-label">Admin controls</p>
-            <p class="admin-panel-text">Log bonuses as you buy them, then enter each payout when it opens.</p>
+              <div class="hunt-bonus-section">
+                <div class="hunt-bonus-section-header">
+                  <h4>Bonuses</h4>
+                  <span id="hunt-bonus-count">0 total</span>
+                </div>
+
+                <p class="hunt-empty" id="bonus-empty">No bonuses in this hunt yet.</p>
+                <ul class="hunt-bonus-grid is-hidden" id="bonus-list"></ul>
+              </div>
+            </div>
+
+            <div class="admin-panel hunt-admin-card is-hidden" id="bonus-hunt-admin">
+              <div class="admin-panel-section">
+                <div class="hunt-admin-header">
+                  <div>
+                    <p class="admin-panel-label">Streamer controls</p>
+                    <p class="admin-panel-text">Log buys, save payouts, and manage the hunt.</p>
+                  </div>
+                </div>
             <form class="hunt-settings-form is-hidden" id="hunt-settings-form">
               <div class="hunt-settings-row">
                 <div class="bonus-field">
@@ -172,50 +201,53 @@
               </button>
             </div>
             <p class="guess-status is-hidden" id="bonus-hunt-status" role="status" aria-live="polite"></p>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="game-panel slot-request-closed is-hidden" id="slot-request-closed">
-          <p class="game-panel-text">
-            Slot requests are closed right now. Check back when the stream opens them.
-          </p>
-        </div>
+          <aside class="hunt-layout-side">
+            <div class="game-panel slot-request-closed is-hidden hunt-side-card" id="slot-request-closed">
+              <p class="game-panel-text">
+                Slot requests are closed right now. Check back when the stream opens them.
+              </p>
+            </div>
 
-        <div class="game-panel slot-request-panel is-hidden" id="slot-request-panel">
-          <div class="guesses-panel-header">
-            <h3 class="guesses-heading">Request a slot</h3>
-            <p class="guesses-count" id="slot-catalog-count">Loading slots...</p>
-          </div>
-          <p class="game-panel-text">
-            Type <strong>!slot &lt;slot name&gt;</strong> in Kick chat, or pick a slot below.
-            Only New Releases and Only on Stake slots are allowed.
-          </p>
-          <form class="slot-request-form" id="slot-request-form">
-            <label class="guess-label" for="slot-request-select">Slot</label>
-            <select class="slot-request-select" id="slot-request-select" required>
-              <option value="">Choose a slot...</option>
-            </select>
-            <button type="submit" class="btn btn-primary" id="slot-request-submit">
-              Submit request
-            </button>
-            <p class="guess-status is-hidden" id="slot-request-status" role="status" aria-live="polite"></p>
-          </form>
-        </div>
+            <div class="game-panel slot-request-panel is-hidden hunt-side-card" id="slot-request-panel">
+              <div class="guesses-panel-header">
+                <h3 class="guesses-heading">Request a slot</h3>
+                <p class="guesses-count" id="slot-catalog-count">Loading slots...</p>
+              </div>
+              <p class="game-panel-text">
+                Type <strong>!slot &lt;slot name&gt;</strong> in Kick chat, or pick a slot below.
+              </p>
+              <form class="slot-request-form" id="slot-request-form">
+                <label class="guess-label" for="slot-request-select">Slot</label>
+                <select class="slot-request-select" id="slot-request-select" required>
+                  <option value="">Choose a slot...</option>
+                </select>
+                <button type="submit" class="btn btn-primary" id="slot-request-submit">
+                  Submit request
+                </button>
+                <p class="guess-status is-hidden" id="slot-request-status" role="status" aria-live="polite"></p>
+              </form>
+            </div>
 
-        <div class="game-panel slot-request-guest" id="slot-request-guest">
-          <p class="game-panel-text">
-            Sign in with Kick to use the request form, or type <strong>!slot &lt;slot name&gt;</strong> in chat.
-          </p>
-          <a href="/api/auth/login" class="btn btn-primary">Sign in with Kick</a>
-        </div>
+            <div class="game-panel slot-request-guest hunt-side-card" id="slot-request-guest">
+              <p class="game-panel-text">
+                Sign in with Kick to request a slot, or type <strong>!slot &lt;slot name&gt;</strong> in chat.
+              </p>
+              <a href="/api/auth/login" class="btn btn-primary">Sign in with Kick</a>
+            </div>
 
-        <div class="game-panel guesses-panel slot-requests-panel hunt-side-panel" id="slot-requests-panel">
-          <div class="guesses-panel-header">
-            <h3 class="guesses-heading">Requests</h3>
-            <p class="guesses-count" id="slot-requests-count">0 requests</p>
-          </div>
-          <p class="guesses-empty" id="slot-requests-empty">No slot requests yet.</p>
-          <ul class="slot-requests-list is-hidden" id="slot-requests-list"></ul>
+            <div class="game-panel guesses-panel slot-requests-panel hunt-side-card" id="slot-requests-panel">
+              <div class="guesses-panel-header">
+                <h3 class="guesses-heading">Requests</h3>
+                <p class="guesses-count" id="slot-requests-count">0 requests</p>
+              </div>
+              <p class="guesses-empty" id="slot-requests-empty">No slot requests yet.</p>
+              <ul class="slot-requests-list is-hidden" id="slot-requests-list"></ul>
+            </div>
+          </aside>
         </div>
       </div>
     </section>

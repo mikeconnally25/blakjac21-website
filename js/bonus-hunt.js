@@ -268,6 +268,9 @@ function renderSummary(summary, hunt) {
   const startBalance = document.getElementById("summary-start");
   const profit = document.getElementById("summary-profit");
   const progress = document.getElementById("hunt-progress");
+  const progressCount = document.getElementById("hunt-progress-count");
+  const progressFill = document.getElementById("hunt-progress-fill");
+  const bonusCount = document.getElementById("hunt-bonus-count");
 
   if (!totalBonuses || !startBalance || !profit) return;
 
@@ -278,13 +281,33 @@ function renderSummary(summary, hunt) {
   profit.classList.toggle("is-positive", summary.profit > 0);
   profit.classList.toggle("is-negative", summary.profit < 0);
 
+  if (bonusCount) {
+    bonusCount.textContent =
+      summary.totalBonuses === 1 ? "1 total" : `${summary.totalBonuses} total`;
+  }
+
+  const progressPercent =
+    summary.totalBonuses > 0
+      ? Math.round((summary.openedCount / summary.totalBonuses) * 100)
+      : 0;
+
+  if (progressFill) {
+    progressFill.style.width = `${progressPercent}%`;
+  }
+
+  if (progressCount) {
+    progressCount.textContent = summary.totalBonuses
+      ? `${progressPercent}% opened`
+      : "";
+  }
+
   if (progress) {
     if (!summary.totalBonuses) {
-      progress.textContent = "No bonuses yet.";
+      progress.textContent = "Waiting for the first bonus buy.";
     } else if (summary.pendingCount > 0) {
-      progress.textContent = `Opened ${summary.openedCount} of ${summary.totalBonuses} bonuses · ${formatCurrency(summary.totalWon)} won`;
+      progress.textContent = `Opened ${summary.openedCount} of ${summary.totalBonuses} · ${formatCurrency(summary.totalWon)} won`;
     } else {
-      progress.textContent = `All ${summary.totalBonuses} bonuses opened · ${formatCurrency(summary.totalWon)} won`;
+      progress.textContent = `Hunt complete · ${formatCurrency(summary.totalWon)} won`;
     }
   }
 }
@@ -306,10 +329,15 @@ function renderBonusList(bonuses) {
     const item = document.createElement("li");
     item.className = "hunt-bonus-card";
     item.dataset.id = bonus.id;
+    item.style.animationDelay = `${Math.min(bonus.number, 8) * 40}ms`;
 
     if (bonus.id === openingId) {
       item.classList.add("is-opening");
     }
+
+    const index = document.createElement("span");
+    index.className = "hunt-bonus-index";
+    index.textContent = `#${bonus.number}`;
 
     const avatar = document.createElement("div");
     avatar.className = "hunt-bonus-avatar";
@@ -355,7 +383,7 @@ function renderBonusList(bonuses) {
       result.append(pending);
     }
 
-    item.append(avatar, main, result);
+    item.append(index, avatar, main, result);
 
     if (currentUser?.isAdmin) {
       const actions = document.createElement("div");
