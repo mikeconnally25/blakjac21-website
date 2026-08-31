@@ -1047,17 +1047,6 @@ async function bootstrapBonusHuntPage() {
   await Promise.all([loadCurrentUser(), loadBonusHunt(), loadSlotCatalog(), loadSlotRequests()]);
   updatePanels();
   await loadKickBotStatus();
-
-  if (
-    currentUser?.isAdmin &&
-    !slotCatalog.length &&
-    !sessionStorage.getItem("bj21_stake_sync_attempted")
-  ) {
-    sessionStorage.setItem("bj21_stake_sync_attempted", "1");
-    await syncSlotsFromStake({ auto: true });
-    await loadSlotCatalog();
-  }
-
   schedulePolling();
 }
 

@@ -109,61 +109,6 @@
             </div>
             <p class="guess-status is-hidden" id="bonus-hunt-status" role="status" aria-live="polite"></p>
           </div>
-
-          <div class="admin-panel-section slot-requests-admin-section">
-            <div class="admin-panel-row">
-              <div>
-                <p class="admin-panel-label">Accept requests</p>
-                <p class="admin-panel-text" id="slot-requests-toggle-status">
-                  Slot requests are closed
-                </p>
-              </div>
-              <label class="toggle">
-                <input
-                  type="checkbox"
-                  id="slot-requests-toggle"
-                  aria-labelledby="slot-requests-toggle-status"
-                />
-                <span class="toggle-slider" aria-hidden="true"></span>
-              </label>
-            </div>
-            <p class="admin-panel-label">Chat slot requests</p>
-            <p class="admin-panel-text">
-              Turn on <strong>Accept requests</strong> and click <strong>Enable !slot in chat</strong>.
-              Slots are loaded automatically from Stake <strong>New Releases</strong> and
-              <strong>Only on Stake</strong> when you sync.
-              Viewers can type <strong>!slot &lt;slot name&gt;</strong> in Kick chat or use the request form below.
-            </p>
-            <div class="bonus-admin-actions">
-              <button type="button" class="btn btn-sm btn-primary" id="slot-catalog-sync">
-                Sync from Stake
-              </button>
-              <button type="button" class="btn btn-sm btn-outline" id="kick-chat-subscribe">
-                Enable !slot in chat
-              </button>
-              <button type="button" class="btn btn-sm btn-outline" id="slot-catalog-refresh">
-                Retry server refresh
-              </button>
-              <button type="button" class="btn btn-sm btn-outline" id="slot-requests-clear">
-                Clear requests
-              </button>
-            </div>
-            <div class="admin-panel-section slot-import-section is-hidden" id="slot-sync-help">
-              <p class="admin-panel-label">Finish Stake sync</p>
-              <p class="admin-panel-text" id="slot-sync-help-text">
-                A stake.com tab should open. Drag <strong>BJ21 Stake Sync</strong> to your bookmarks bar once,
-                then click it on the stake.com tab. It loads New Releases and Only on Stake automatically.
-              </p>
-              <div class="bonus-admin-actions">
-                <a class="btn btn-sm btn-outline" id="slot-sync-bookmarklet" href="#">BJ21 Stake Sync bookmark</a>
-                <a class="btn btn-sm btn-outline" id="slot-sync-open-stake" href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">
-                  Open stake.com
-                </a>
-              </div>
-            </div>
-            <p class="slot-catalog-meta" id="kick-bot-status"></p>
-            <p class="slot-catalog-meta" id="slot-catalog-meta"></p>
-          </div>
         </div>
 
         <div class="game-panel slot-request-closed is-hidden" id="slot-request-closed">
