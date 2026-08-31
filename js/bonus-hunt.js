@@ -5,6 +5,168 @@ let slotCatalog = [];
 let slotGroups = [];
 let slotCatalogUpdatedAt = null;
 let acceptingRequests = false;
+let stakeSyncPollTimer = null;
+let stakeSyncInProgress = false;
+
+function buildStakeBookmarkletHref(token) {
+  const origin = window.location.origin;
+  const scriptUrl = `${origin}/js/stake-sync-bookmarklet.js?token=${encodeURIComponent(token)}&origin=${encodeURIComponent(origin)}`;
+  const code = `javascript:(function(){var s=document.createElement('script');s.src=${JSON.stringify(scriptUrl)};document.head.appendChild(s);})();`;
+  return code;
+}
+
+function updateStakeSyncHelp({ token, stakeUrl, message }) {
+  const section = document.getElementById("slot-sync-help");
+  const helpText = document.getElementById("slot-sync-help-text");
+  const bookmarklet = document.getElementById("slot-sync-bookmarklet");
+  const openStake = document.getElementById("slot-sync-open-stake");
+
+  if (!section || !token) {
+    section?.classList.add("is-hidden");
+    return;
+  }
+
+  section.classList.remove("is-hidden");
+  if (helpText && message) {
+    helpText.textContent = message;
+  }
+  if (bookmarklet) {
+    bookmarklet.href = buildStakeBookmarkletHref(token);
+  }
+  if (openStake && stakeUrl) {
+    openStake.href = stakeUrl;
+  }
+}
+
+function stopStakeSyncPolling() {
+  if (stakeSyncPollTimer) {
+    clearInterval(stakeSyncPollTimer);
+    stakeSyncPollTimer = null;
+  }
+  stakeSyncInProgress = false;
+}
+
+function startStakeSyncPolling(token) {
+  stopStakeSyncPolling();
+  stakeSyncInProgress = true;
+
+  stakeSyncPollTimer = setInterval(async () => {
+    try {
+      const response = await fetch(
+        `/api/bonus-hunt/slots/sync-status?token=${encodeURIComponent(token)}`,
+        { credentials: "same-origin", cache: "no-store" }
+      );
+      if (!response.ok) {
+        return;
+      }
+
+      const status = await response.json();
+      if (!status.complete) {
+        return;
+      }
+
+      stopStakeSyncPolling();
+      updateStakeSyncHelp({ token: null });
+
+      if (status.count > 0) {
+        setStatus(`Loaded ${status.count} slots from New Releases and Only on Stake.`, "success");
+        await loadSlotCatalog();
+        return;
+      }
+
+      setStatus(status.error || "Stake sync finished but no slots were imported.", "error");
+    } catch {
+      // Keep polling until token expires.
+    }
+  }, 2000);
+}
+
+async function tryServerSlotRefresh({ silent = false } = {}) {
+  try {
+    const response = await fetch("/api/bonus-hunt/slots/refresh", {
+      method: "POST",
+      credentials: "same-origin",
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      if (!silent) {
+        setStatus(data.error || "Could not refresh slot list.", "error");
+      }
+      return 0;
+    }
+
+    if (!silent) {
+      setStatus(`Slot list refreshed (${data.count} slots).`, "success");
+    }
+    await loadSlotCatalog();
+    return data.count || 0;
+  } catch {
+    if (!silent) {
+      setStatus("Could not refresh slot list. Try again.", "error");
+    }
+    return 0;
+  }
+}
+
+async function syncSlotsFromStake({ auto = false } = {}) {
+  if (!currentUser?.isAdmin) {
+    return 0;
+  }
+
+  if (stakeSyncInProgress) {
+    return slotCatalog.length;
+  }
+
+  if (!auto) {
+    setStatus("Syncing slots from Stake...");
+  }
+
+  const serverCount = await tryServerSlotRefresh({ silent: true });
+  if (serverCount > 0) {
+    if (!auto) {
+      setStatus(`Loaded ${serverCount} slots from Stake.`, "success");
+    }
+    updateStakeSyncHelp({ token: null });
+    return serverCount;
+  }
+
+  try {
+    const response = await fetch("/api/bonus-hunt/slots/sync-token", {
+      method: "POST",
+      credentials: "same-origin",
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      if (!auto) {
+        setStatus(data.error || "Could not start Stake sync.", "error");
+      }
+      return 0;
+    }
+
+    const message = auto
+      ? "Slot list is empty. A stake.com tab will open — click the BJ21 Stake Sync bookmark once to load New Releases and Only on Stake."
+      : "Stake tab opened. Click the BJ21 Stake Sync bookmark on stake.com to finish.";
+
+    updateStakeSyncHelp({
+      token: data.token,
+      stakeUrl: data.stakeUrl,
+      message,
+    });
+
+    if (!auto) {
+      setStatus(message);
+    }
+
+    window.open(data.stakeUrl, "_blank", "noopener,noreferrer");
+    startStakeSyncPolling(data.token);
+    return 0;
+  } catch {
+    if (!auto) {
+      setStatus("Could not start Stake sync. Try again.", "error");
+    }
+    return 0;
+  }
+}
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat("en-US", {
@@ -695,13 +857,30 @@ function initAdminForm() {
       updateToggleLabel();
       await Promise.all([loadSlotCatalog(), loadSlotRequests()]);
 
+      if (!data.slotCount) {
+        await syncSlotsFromStake({ auto: true });
+        await loadSlotCatalog();
+      }
+
+      const refreshedCount = slotCatalog.length;
       const slotMessage =
-        data.slotCount > 0
-          ? `Kick chat !slot enabled. ${data.slotCount} slots loaded.`
-          : "Kick chat !slot enabled, but no slots loaded yet. Click Refresh slot list.";
-      setStatus(slotMessage, data.slotCount > 0 ? "success" : "error");
+        refreshedCount > 0
+          ? `Kick chat !slot enabled. ${refreshedCount} slots loaded.`
+          : "Kick chat !slot enabled. Finish Stake sync to load slots.";
+      setStatus(slotMessage, refreshedCount > 0 ? "success" : "error");
     } catch {
       setStatus("Could not enable !slot in chat. Try again.", "error");
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  document.getElementById("slot-catalog-sync")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    button.disabled = true;
+
+    try {
+      await syncSlotsFromStake();
     } finally {
       button.disabled = false;
     }
@@ -713,21 +892,7 @@ function initAdminForm() {
     setStatus("Refreshing slot list from Stake...");
 
     try {
-      const response = await fetch("/api/bonus-hunt/slots/refresh", {
-        method: "POST",
-        credentials: "same-origin",
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        setStatus(data.error || "Could not refresh slot list.", "error");
-        return;
-      }
-
-      setStatus(`Slot list refreshed (${data.count} slots).`, "success");
-      await loadSlotCatalog();
-    } catch {
-      setStatus("Could not refresh slot list. Try again.", "error");
+      await tryServerSlotRefresh();
     } finally {
       button.disabled = false;
     }
@@ -882,6 +1047,17 @@ async function bootstrapBonusHuntPage() {
   await Promise.all([loadCurrentUser(), loadBonusHunt(), loadSlotCatalog(), loadSlotRequests()]);
   updatePanels();
   await loadKickBotStatus();
+
+  if (
+    currentUser?.isAdmin &&
+    !slotCatalog.length &&
+    !sessionStorage.getItem("bj21_stake_sync_attempted")
+  ) {
+    sessionStorage.setItem("bj21_stake_sync_attempted", "1");
+    await syncSlotsFromStake({ auto: true });
+    await loadSlotCatalog();
+  }
+
   schedulePolling();
 }
 

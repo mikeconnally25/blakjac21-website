@@ -21,6 +21,10 @@ import {
   handleBonusHuntRequestsToggle,
   handleBonusHuntSlots,
   handleBonusHuntSlotsRefresh,
+  handleBonusHuntSlotsImport,
+  handleBonusHuntSlotsSyncToken,
+  handleBonusHuntSlotsSyncStatus,
+  handleBonusHuntSlotsImportSync,
   handleKickChatSubscribe,
 } from "./lib/bonus-hunt-handlers.js";
 import { handleKickWebhook } from "./lib/kick-webhook.js";
@@ -68,6 +72,21 @@ app.post("/api/bonus-hunt/clear", (req, res) => handleBonusHuntClear(req, res));
 app.get("/api/bonus-hunt/slots", (req, res) => handleBonusHuntSlots(req, res));
 app.post("/api/bonus-hunt/slots/refresh", (req, res) =>
   handleBonusHuntSlotsRefresh(req, res)
+);
+app.post("/api/bonus-hunt/slots/import", (req, res) =>
+  handleBonusHuntSlotsImport(req, res)
+);
+app.post("/api/bonus-hunt/slots/sync-token", (req, res) =>
+  handleBonusHuntSlotsSyncToken(req, res)
+);
+app.get("/api/bonus-hunt/slots/sync-status", (req, res) =>
+  handleBonusHuntSlotsSyncStatus(req, res)
+);
+app.post("/api/bonus-hunt/slots/import-sync", (req, res) =>
+  handleBonusHuntSlotsImportSync(req, res)
+);
+app.options("/api/bonus-hunt/slots/import-sync", (req, res) =>
+  handleBonusHuntSlotsImportSync(req, res)
 );
 app.get("/api/bonus-hunt/requests", (req, res) =>
   handleBonusHuntRequestsList(req, res)

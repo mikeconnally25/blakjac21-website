@@ -129,26 +129,37 @@
             </div>
             <p class="admin-panel-label">Chat slot requests</p>
             <p class="admin-panel-text">
-              Turn on <strong>Accept requests</strong>, click <strong>Enable !slot in chat</strong>, then refresh the slot list.
-              If refresh fails with 403, create a Stake API token at
-              <strong>stake.com → Settings → Security → API Tokens</strong>,
-              add <strong>STAKE_ACCESS_TOKEN</strong> in Vercel, redeploy, and refresh again.
+              Turn on <strong>Accept requests</strong> and click <strong>Enable !slot in chat</strong>.
+              Slots are loaded automatically from Stake <strong>New Releases</strong> and
+              <strong>Only on Stake</strong> when you sync.
               Viewers can type <strong>!slot &lt;slot name&gt;</strong> in Kick chat or use the request form below.
-              Slots must be from
-              <a href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
-              or
-              <a href="https://stake.com/casino/group/only-on-stake" target="_blank" rel="noopener noreferrer">Only on Stake</a>.
             </p>
             <div class="bonus-admin-actions">
+              <button type="button" class="btn btn-sm btn-primary" id="slot-catalog-sync">
+                Sync from Stake
+              </button>
               <button type="button" class="btn btn-sm btn-outline" id="kick-chat-subscribe">
                 Enable !slot in chat
               </button>
               <button type="button" class="btn btn-sm btn-outline" id="slot-catalog-refresh">
-                Refresh slot list
+                Retry server refresh
               </button>
               <button type="button" class="btn btn-sm btn-outline" id="slot-requests-clear">
                 Clear requests
               </button>
+            </div>
+            <div class="admin-panel-section slot-import-section is-hidden" id="slot-sync-help">
+              <p class="admin-panel-label">Finish Stake sync</p>
+              <p class="admin-panel-text" id="slot-sync-help-text">
+                A stake.com tab should open. Drag <strong>BJ21 Stake Sync</strong> to your bookmarks bar once,
+                then click it on the stake.com tab. It loads New Releases and Only on Stake automatically.
+              </p>
+              <div class="bonus-admin-actions">
+                <a class="btn btn-sm btn-outline" id="slot-sync-bookmarklet" href="#">BJ21 Stake Sync bookmark</a>
+                <a class="btn btn-sm btn-outline" id="slot-sync-open-stake" href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">
+                  Open stake.com
+                </a>
+              </div>
             </div>
             <p class="slot-catalog-meta" id="kick-bot-status"></p>
             <p class="slot-catalog-meta" id="slot-catalog-meta"></p>

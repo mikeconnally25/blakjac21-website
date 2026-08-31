@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stake Slot Sync</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <style>
+      body {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 2rem;
+      }
+
+      .sync-card {
+        width: min(100%, 40rem);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        background: rgba(8, 12, 18, 0.92);
+      }
+
+      .sync-steps {
+        margin: 1rem 0 0;
+        padding-left: 1.2rem;
+        color: var(--text-muted);
+      }
+
+      .sync-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="sync-card">
+      <h1>Sync Stake slots</h1>
+      <p id="sync-status">Preparing sync...</p>
+      <ol class="sync-steps">
+        <li>Drag <strong>BJ21 Stake Sync</strong> to your bookmarks bar (one-time).</li>
+        <li>Open stake.com and make sure you are logged in.</li>
+        <li>Click the bookmark on the stake.com tab.</li>
+      </ol>
+      <div class="sync-actions">
+        <a class="btn btn-primary" id="stake-open-link" href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">
+          Open stake.com
+        </a>
+        <a class="btn btn-outline" id="stake-bookmarklet" href="#">BJ21 Stake Sync</a>
+        <a class="btn btn-outline" href="/bonus-hunt/">Back to bonus hunt</a>
+      </div>
+    </main>
+    <script>
+      (function initStakeSyncPage() {
+        const params = new URLSearchParams(location.search);
+        const token = params.get("token") || "";
+        const status = document.getElementById("sync-status");
+        const openLink = document.getElementById("stake-open-link");
+        const bookmarklet = document.getElementById("stake-bookmarklet");
+
+        if (!token) {
+          status.textContent = "Missing sync token. Go back to bonus-hunt and click Sync from Stake.";
+          return;
+        }
+
+        const origin = location.origin;
+        const stakeUrl = `https://stake.com/casino/group/new-releases#bj21sync=${encodeURIComponent(token)}`;
+        const scriptUrl = `${origin}/js/stake-sync-bookmarklet.js?token=${encodeURIComponent(token)}&origin=${encodeURIComponent(origin)}`;
+        const bookmarkletCode = `javascript:(function(){var s=document.createElement('script');s.src=${JSON.stringify(scriptUrl)};document.head.appendChild(s);})();`;
+
+        openLink.href = stakeUrl;
+        bookmarklet.href = bookmarkletCode;
+        status.textContent =
+          "Stake tab ready. Click Open stake.com, then click the BJ21 Stake Sync bookmark once.";
+
+        window.open(stakeUrl, "_blank", "noopener,noreferrer");
+      })();
+    </script>
+  </body>
+</html>

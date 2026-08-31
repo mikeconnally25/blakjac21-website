@@ -912,6 +912,42 @@ ul {
   font-size: 0.82rem;
 }
 
+.slot-import-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.slot-import-textarea {
+  width: 100%;
+  min-height: 10rem;
+  margin: 0.5rem 0 0.85rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(4, 8, 12, 0.9);
+  color: var(--text);
+  font: inherit;
+  resize: vertical;
+}
+
+.slot-import-script {
+  min-height: 8rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+}
+
+.slot-import-example {
+  margin: 0 0 0.85rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(4, 8, 12, 0.45);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}
+
 .slot-request-panel,
 .slot-request-guest,
 .slot-request-closed,
