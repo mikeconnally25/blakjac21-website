@@ -1,6 +1,7 @@
 let gameEnabled = false;
 let currentUser = null;
 let pollTimer = null;
+let enabledLockUntil = 0;
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat("en-US", {
@@ -86,7 +87,19 @@ async function loadGameStatus() {
 
     const data = await response.json();
     const wasEnabled = gameEnabled;
-    gameEnabled = Boolean(data.enabled);
+    const nextEnabled = Boolean(data.enabled);
+
+    if (
+      Date.now() < enabledLockUntil &&
+      gameEnabled &&
+      !nextEnabled &&
+      currentUser?.isAdmin
+    ) {
+      schedulePolling();
+      return;
+    }
+
+    gameEnabled = nextEnabled;
     updateToggleLabel();
     updateGamePanels();
 
@@ -139,6 +152,11 @@ async function setGameEnabled(enabled) {
   }
 
   gameEnabled = Boolean(data.enabled);
+  if (gameEnabled) {
+    enabledLockUntil = Date.now() + 15000;
+  } else {
+    enabledLockUntil = 0;
+  }
   updateToggleLabel();
   updateGamePanels();
   schedulePolling();
