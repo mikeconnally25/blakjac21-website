@@ -93,7 +93,21 @@ function normalizeRoundMinutesValue(value) {
 
 function getRoundMinutesFromInput() {
   const input = document.getElementById("round-minutes");
-  return normalizeRoundMinutesValue(input?.value);
+  if (!input) {
+    return normalizeRoundMinutesValue(roundMinutes);
+  }
+
+  const raw = input.value.trim();
+  if (!raw) {
+    return normalizeRoundMinutesValue(roundMinutes);
+  }
+
+  return normalizeRoundMinutesValue(raw);
+}
+
+function syncRoundMinutesFromInput() {
+  roundMinutes = getRoundMinutesFromInput();
+  updateToggleLabel();
 }
 
 function updateRoundMinutesInput() {
@@ -104,10 +118,14 @@ function updateRoundMinutesInput() {
 
   if (!input || !currentUser?.isAdmin) return;
 
-  roundMinutes = normalizeRoundMinutesValue(roundMinutes);
-  input.value = formatClockMinutes(roundMinutes);
-
+  const isFocused = document.activeElement === input;
   const disabled = isRoundActive();
+
+  if (!isFocused) {
+    roundMinutes = normalizeRoundMinutesValue(roundMinutes);
+    input.value = formatClockMinutes(roundMinutes);
+  }
+
   input.disabled = disabled;
   down?.toggleAttribute("disabled", disabled);
   up?.toggleAttribute("disabled", disabled);
@@ -121,9 +139,15 @@ function initRoundMinutesClock() {
 
   if (!input) return;
 
+  input.addEventListener("input", () => {
+    if (isRoundActive()) return;
+    syncRoundMinutesFromInput();
+  });
+
   input.addEventListener("blur", () => {
     roundMinutes = getRoundMinutesFromInput();
     input.value = formatClockMinutes(roundMinutes);
+    updateToggleLabel();
   });
 
   input.addEventListener("keydown", (event) => {
@@ -449,8 +473,11 @@ async function loadCurrentUser() {
 
 async function setGameEnabled(enabled, minutes) {
   const payload = { enabled };
-  if (enabled && minutes !== undefined) {
-    payload.minutes = minutes;
+
+  if (enabled) {
+    payload.minutes = normalizeRoundMinutesValue(
+      minutes ?? getRoundMinutesFromInput()
+    );
   }
 
   const response = await fetch("/api/guess-the-balance/toggle", {
@@ -544,7 +571,11 @@ function initAdminToggle() {
     let minutes;
 
     if (nextEnabled) {
+      document.getElementById("round-minutes")?.blur();
       minutes = getRoundMinutesFromInput();
+      roundMinutes = minutes;
+      updateRoundMinutesInput();
+
       if (!Number.isFinite(minutes) || minutes < 1 || minutes > 120) {
         toggle.checked = false;
         setGuessStatus("Enter a round length between 1 and 120 minutes.", "error");
