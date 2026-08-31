@@ -410,6 +410,33 @@ ul {
   color: var(--accent);
 }
 
+.round-timer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(88, 201, 243, 0.35);
+  background: rgba(88, 201, 243, 0.1);
+}
+
+.round-timer-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.round-timer-value {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  letter-spacing: 0.06em;
+  color: var(--accent-bright);
+}
+
 .game-panel {
   padding: 2rem;
   border-radius: var(--radius);

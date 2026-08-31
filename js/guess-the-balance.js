@@ -1,9 +1,74 @@
 let gameEnabled = false;
 let endingBalance = null;
+let roundEndsAt = null;
 let currentUser = null;
 let pollTimer = null;
 let guessesPollTimer = null;
+let timerTickTimer = null;
 let enabledLockUntil = 0;
+
+function formatTimeRemaining(ms) {
+  const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function getRoundTimeRemainingMs() {
+  if (!roundEndsAt) {
+    return 0;
+  }
+
+  return Math.max(0, Date.parse(roundEndsAt) - Date.now());
+}
+
+function isRoundActive() {
+  return gameEnabled && getRoundTimeRemainingMs() > 0;
+}
+
+function scheduleTimerTick() {
+  if (timerTickTimer) {
+    clearInterval(timerTickTimer);
+  }
+
+  timerTickTimer = setInterval(updateRoundTimer, 1000);
+}
+
+function updateRoundTimer() {
+  const panel = document.getElementById("round-timer");
+  const value = document.getElementById("round-timer-value");
+  const remaining = getRoundTimeRemainingMs();
+  const active = isRoundActive();
+
+  panel?.classList.toggle("is-hidden", !active);
+
+  if (value && active) {
+    value.textContent = formatTimeRemaining(remaining);
+  }
+
+  updateToggleLabel();
+  updateGamePanels();
+
+  if (gameEnabled && roundEndsAt && remaining <= 0) {
+    gameEnabled = false;
+    roundEndsAt = null;
+    setGuessStatus("Time is up! Guessing is now closed.", "success");
+    loadGameStatus();
+    loadGuesses();
+  }
+}
+
+function applyStatusData(data) {
+  gameEnabled = Boolean(data.enabled);
+  roundEndsAt = data.endsAt ?? null;
+
+  if (Object.prototype.hasOwnProperty.call(data, "endingBalance")) {
+    endingBalance = data.endingBalance;
+    updateEndingBalanceInput();
+  }
+
+  updateRoundTimer();
+}
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat("en-US", {
@@ -172,12 +237,14 @@ function setGuessStatus(message, type = "") {
 
 function resetPageState() {
   endingBalance = null;
+  roundEndsAt = null;
   updateEndingBalanceInput();
   document.getElementById("guess-form")?.reset();
   setGuessStatus("");
   setEndingBalanceStatus("");
   renderGuessesList([]);
   renderPodium(null);
+  updateRoundTimer();
 }
 
 function updateToggleLabel() {
@@ -185,13 +252,17 @@ function updateToggleLabel() {
   const toggle = document.getElementById("game-toggle");
 
   if (label) {
-    label.textContent = gameEnabled
-      ? "Guessing is on — viewers can submit guesses"
-      : "Guessing is off — viewers cannot submit guesses";
+    if (isRoundActive()) {
+      label.textContent = `Round live — ${formatTimeRemaining(getRoundTimeRemainingMs())} left`;
+    } else if (gameEnabled) {
+      label.textContent = "Round ending...";
+    } else {
+      label.textContent = "Start a 5-minute guessing round";
+    }
   }
 
   if (toggle && currentUser?.isAdmin) {
-    toggle.checked = gameEnabled;
+    toggle.checked = isRoundActive();
   }
 }
 
@@ -204,13 +275,13 @@ function updateGamePanels() {
   const guessInput = document.getElementById("guess-amount");
   const guessSubmit = document.getElementById("guess-submit");
   const isSignedIn = Boolean(currentUser);
-  const canGuess = gameEnabled && isSignedIn;
+  const canGuess = isRoundActive() && isSignedIn;
 
   adminPanel?.classList.toggle("is-hidden", !currentUser?.isAdmin);
-  closed?.classList.toggle("is-hidden", gameEnabled || isSignedIn);
-  guest?.classList.toggle("is-hidden", !gameEnabled || isSignedIn);
+  closed?.classList.toggle("is-hidden", isRoundActive() || isSignedIn);
+  guest?.classList.toggle("is-hidden", !isRoundActive() || isSignedIn);
   member?.classList.toggle("is-hidden", !isSignedIn);
-  waiting?.classList.toggle("is-hidden", gameEnabled || !isSignedIn);
+  waiting?.classList.toggle("is-hidden", isRoundActive() || !isSignedIn);
 
   if (guessInput) {
     guessInput.disabled = !canGuess;
@@ -241,6 +312,7 @@ async function loadGameStatus() {
     if (!response.ok) return;
 
     const data = await response.json();
+    const wasActive = isRoundActive();
     const wasEnabled = gameEnabled;
     const nextEnabled = Boolean(data.enabled);
 
@@ -254,22 +326,18 @@ async function loadGameStatus() {
       return;
     }
 
-    gameEnabled = nextEnabled;
-    if (Object.prototype.hasOwnProperty.call(data, "endingBalance")) {
-      endingBalance = data.endingBalance;
-      updateEndingBalanceInput();
-    }
+    applyStatusData(data);
 
-    if (wasEnabled && !nextEnabled) {
-      resetPageState();
+    if (wasActive && !isRoundActive() && wasEnabled) {
+      setGuessStatus("Time is up! Guessing is now closed.", "success");
       await loadGuesses();
     }
 
     updateToggleLabel();
     updateGamePanels();
 
-    if (!wasEnabled && gameEnabled && currentUser) {
-      setGuessStatus("Guessing is open. Enter your guess below.", "success");
+    if (!wasEnabled && isRoundActive() && currentUser) {
+      setGuessStatus("Guessing is open. You have 5 minutes to submit your guess.", "success");
     }
 
     schedulePolling();
@@ -316,11 +384,13 @@ async function setGameEnabled(enabled) {
     throw new Error(data.error || "Could not update guessing status.");
   }
 
-  gameEnabled = Boolean(data.enabled);
-  if (gameEnabled) {
+  if (data.enabled) {
     enabledLockUntil = Date.now() + 15000;
+    applyStatusData(data);
+    await loadGuesses();
   } else {
     enabledLockUntil = 0;
+    gameEnabled = false;
     resetPageState();
     await loadGuesses();
   }
@@ -417,7 +487,7 @@ function initGuessForm() {
 
     await loadGameStatus();
 
-    if (!gameEnabled) {
+    if (!isRoundActive()) {
       setGuessStatus("Guessing is currently closed.", "error");
       return;
     }
@@ -463,7 +533,7 @@ function initGuessForm() {
     } catch {
       setGuessStatus("Could not submit your guess. Try again.", "error");
     } finally {
-      submitBtn.disabled = !gameEnabled || !currentUser;
+      submitBtn.disabled = !isRoundActive() || !currentUser;
     }
   });
 }
@@ -492,8 +562,10 @@ async function bootstrapGuessPage() {
   await Promise.all([loadGameStatus(), loadCurrentUser(), loadGuesses()]);
   updateGamePanels();
   updateEndingBalanceInput();
+  updateRoundTimer();
   schedulePolling();
   scheduleGuessesPolling();
+  scheduleTimerTick();
 }
 
 initAdminToggle();
