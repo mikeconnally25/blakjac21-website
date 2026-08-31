@@ -176,6 +176,74 @@ async function loadCurrentUser() {
   }
 }
 
+function renderKickBotStatus(status) {
+  const meta = document.getElementById("kick-bot-status");
+  const connectBtn = document.getElementById("kick-bot-connect");
+  if (!meta) return;
+
+  if (!status?.connected) {
+    meta.textContent =
+      "Chat bot not connected. Connect your Kick account to send !r replies in chat.";
+    connectBtn?.classList.remove("is-hidden");
+    return;
+  }
+
+  const label =
+    status.source === "env"
+      ? "Kick chat bot token is set in Vercel (KICK_BOT_ACCESS_TOKEN)."
+      : status.source === "env-refresh"
+        ? "Kick chat bot refresh token is set in Vercel (KICK_BOT_REFRESH_TOKEN)."
+        : status.username
+          ? `Kick chat bot connected as ${status.username}.`
+          : "Kick chat bot connected.";
+
+  meta.textContent = label;
+  connectBtn?.classList.toggle("is-hidden", status.source === "env" || status.source === "env-refresh");
+}
+
+async function loadKickBotStatus() {
+  if (!currentUser?.isAdmin) return;
+
+  try {
+    const response = await fetch("/api/kick/bot/status", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+
+    if (!response.ok) return;
+
+    const status = await response.json();
+    renderKickBotStatus(status);
+  } catch {
+    // Keep the last known state.
+  }
+}
+
+function handleKickBotRedirectParams() {
+  const params = new URLSearchParams(window.location.search);
+  const kickBot = params.get("kickBot");
+  if (!kickBot) return;
+
+  if (kickBot === "connected") {
+    const username = params.get("username");
+    setStatus(
+      username
+        ? `Kick chat bot connected as ${username}.`
+        : "Kick chat bot connected.",
+      "success"
+    );
+  } else if (kickBot === "error") {
+    setStatus(params.get("message") || "Could not connect Kick chat bot.", "error");
+  }
+
+  params.delete("kickBot");
+  params.delete("username");
+  params.delete("message");
+  const query = params.toString();
+  const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}`;
+  window.history.replaceState({}, "", nextUrl);
+}
+
 function updatePanels() {
   const adminPanel = document.getElementById("bonus-hunt-admin");
   const requestPanel = document.getElementById("slot-request-panel");
@@ -685,7 +753,7 @@ function initSlotRequestForm() {
 window.addEventListener("auth:change", async (event) => {
   currentUser = event.detail?.user || null;
   updatePanels();
-  await Promise.all([loadBonusHunt(), loadSlotCatalog(), loadSlotRequests()]);
+  await Promise.all([loadBonusHunt(), loadSlotCatalog(), loadSlotRequests(), loadKickBotStatus()]);
 });
 
 document.addEventListener("visibilitychange", () => {
@@ -697,8 +765,10 @@ document.addEventListener("visibilitychange", () => {
 });
 
 async function bootstrapBonusHuntPage() {
+  handleKickBotRedirectParams();
   await Promise.all([loadCurrentUser(), loadBonusHunt(), loadSlotCatalog(), loadSlotRequests()]);
   updatePanels();
+  await loadKickBotStatus();
   schedulePolling();
 }
 

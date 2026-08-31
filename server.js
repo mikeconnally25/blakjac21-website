@@ -23,6 +23,7 @@ import {
   handleKickChatSubscribe,
 } from "./lib/bonus-hunt-handlers.js";
 import { handleKickWebhook } from "./lib/kick-webhook.js";
+import { handleKickBotLogin, handleKickBotStatus } from "./lib/kick-bot-auth-handlers.js";
 import {
   handleGuessStatus,
   handleGuessList,
@@ -77,6 +78,8 @@ app.post("/api/bonus-hunt/requests/clear", (req, res) =>
   handleBonusHuntRequestsClear(req, res)
 );
 app.post("/api/kick/subscribe", (req, res) => handleKickChatSubscribe(req, res));
+app.get("/api/kick/bot/login", (req, res) => handleKickBotLogin(req, res));
+app.get("/api/kick/bot/status", (req, res) => handleKickBotStatus(req, res));
 
 app.listen(PORT, () => {
   console.log(`BLAKJAC21 site running at http://localhost:${PORT}`);
