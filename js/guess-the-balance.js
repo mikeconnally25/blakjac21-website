@@ -2,6 +2,7 @@ let gameEnabled = false;
 let endingBalance = null;
 let currentUser = null;
 let pollTimer = null;
+let guessesPollTimer = null;
 let enabledLockUntil = 0;
 
 function formatCurrency(amount) {
@@ -36,6 +37,60 @@ function updateEndingBalanceInput() {
   }
 
   input.value = String(endingBalance);
+}
+
+function scheduleGuessesPolling() {
+  if (guessesPollTimer) {
+    clearInterval(guessesPollTimer);
+  }
+
+  guessesPollTimer = setInterval(loadGuesses, 5000);
+}
+
+function renderGuessesList(guesses) {
+  const list = document.getElementById("guesses-list");
+  const empty = document.getElementById("guesses-empty");
+  const count = document.getElementById("guesses-count");
+
+  if (!list || !empty || !count) return;
+
+  const total = guesses.length;
+  count.textContent = total === 1 ? "1 guess" : `${total} guesses`;
+  empty.classList.toggle("is-hidden", total > 0);
+  list.classList.toggle("is-hidden", total === 0);
+  list.replaceChildren();
+
+  guesses.forEach((guess) => {
+    const item = document.createElement("li");
+    item.className = "guess-entry";
+
+    const user = document.createElement("span");
+    user.className = "guess-entry-user";
+    user.textContent = guess.username;
+
+    const amount = document.createElement("span");
+    amount.className = "guess-entry-amount";
+    amount.textContent = formatCurrency(guess.amount);
+
+    item.append(user, amount);
+    list.append(item);
+  });
+}
+
+async function loadGuesses() {
+  try {
+    const response = await fetch("/api/guess-the-balance/guesses", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+
+    if (!response.ok) return;
+
+    const data = await response.json();
+    renderGuessesList(Array.isArray(data.guesses) ? data.guesses : []);
+  } catch {
+    // Keep the last rendered list.
+  }
 }
 
 function setGuessStatus(message, type = "") {
@@ -322,6 +377,7 @@ function initGuessForm() {
         "success"
       );
       form.reset();
+      await loadGuesses();
     } catch {
       setGuessStatus("Could not submit your guess. Try again.", "error");
     } finally {
@@ -346,14 +402,16 @@ window.addEventListener("auth:change", (event) => {
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") {
     loadGameStatus();
+    loadGuesses();
   }
 });
 
 async function bootstrapGuessPage() {
-  await Promise.all([loadGameStatus(), loadCurrentUser()]);
+  await Promise.all([loadGameStatus(), loadCurrentUser(), loadGuesses()]);
   updateGamePanels();
   updateEndingBalanceInput();
   schedulePolling();
+  scheduleGuessesPolling();
 }
 
 initAdminToggle();
