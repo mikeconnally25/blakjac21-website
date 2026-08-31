@@ -170,6 +170,16 @@ function setGuessStatus(message, type = "") {
   }
 }
 
+function resetPageState() {
+  endingBalance = null;
+  updateEndingBalanceInput();
+  document.getElementById("guess-form")?.reset();
+  setGuessStatus("");
+  setEndingBalanceStatus("");
+  renderGuessesList([]);
+  renderPodium(null);
+}
+
 function updateToggleLabel() {
   const label = document.getElementById("game-toggle-status");
   const toggle = document.getElementById("game-toggle");
@@ -249,6 +259,12 @@ async function loadGameStatus() {
       endingBalance = data.endingBalance;
       updateEndingBalanceInput();
     }
+
+    if (wasEnabled && !nextEnabled) {
+      resetPageState();
+      await loadGuesses();
+    }
+
     updateToggleLabel();
     updateGamePanels();
 
@@ -305,6 +321,8 @@ async function setGameEnabled(enabled) {
     enabledLockUntil = Date.now() + 15000;
   } else {
     enabledLockUntil = 0;
+    resetPageState();
+    await loadGuesses();
   }
   updateToggleLabel();
   updateGamePanels();
