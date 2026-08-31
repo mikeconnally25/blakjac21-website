@@ -913,7 +913,8 @@ ul {
 }
 
 .slot-request-panel,
-.slot-request-guest {
+.slot-request-guest,
+.slot-requests-panel {
   margin-bottom: 1rem;
 }
 

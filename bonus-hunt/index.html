@@ -135,8 +135,6 @@
             </div>
             <p class="slot-catalog-meta" id="kick-bot-status"></p>
             <p class="slot-catalog-meta" id="slot-catalog-meta"></p>
-            <p class="guesses-empty" id="slot-requests-empty">No slot requests yet.</p>
-            <ul class="slot-requests-list is-hidden" id="slot-requests-list"></ul>
           </div>
         </div>
 
@@ -166,6 +164,15 @@
             Sign in with Kick to use the request form, or type <strong>!slot &lt;slot name&gt;</strong> in chat.
           </p>
           <a href="/api/auth/login" class="btn btn-primary">Sign in with Kick</a>
+        </div>
+
+        <div class="game-panel guesses-panel slot-requests-panel" id="slot-requests-panel">
+          <div class="guesses-panel-header">
+            <h3 class="guesses-heading">Requests</h3>
+            <p class="guesses-count" id="slot-requests-count">0 requests</p>
+          </div>
+          <p class="guesses-empty" id="slot-requests-empty">No slot requests yet.</p>
+          <ul class="slot-requests-list is-hidden" id="slot-requests-list"></ul>
         </div>
 
         <div class="game-panel bonus-hunt-summary" id="bonus-hunt-summary">

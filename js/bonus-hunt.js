@@ -321,15 +321,20 @@ function renderSlotCatalogSelect(selectedSlug = "") {
 function renderSlotRequests(requests) {
   const list = document.getElementById("slot-requests-list");
   const empty = document.getElementById("slot-requests-empty");
+  const count = document.getElementById("slot-requests-count");
 
   if (!list || !empty) return;
 
-  const visibleRequests = currentUser?.isAdmin ? requests : [];
-  empty.classList.toggle("is-hidden", visibleRequests.length > 0);
-  list.classList.toggle("is-hidden", visibleRequests.length === 0);
+  const total = requests.length;
+  empty.classList.toggle("is-hidden", total > 0);
+  list.classList.toggle("is-hidden", total === 0);
   list.replaceChildren();
 
-  visibleRequests.forEach((request) => {
+  if (count) {
+    count.textContent = total === 1 ? "1 request" : `${total} requests`;
+  }
+
+  requests.forEach((request) => {
     const item = document.createElement("li");
     item.className = "slot-request-entry";
 
