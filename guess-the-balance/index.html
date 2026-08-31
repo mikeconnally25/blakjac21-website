@@ -69,19 +69,40 @@
 
         <div class="admin-panel is-hidden" id="game-admin-panel">
           <div class="admin-panel-section admin-duration-section">
-            <label class="guess-label" for="round-minutes">Round length (minutes)</label>
+            <label class="guess-label" for="round-minutes">Round length</label>
             <p class="admin-panel-text">Set how long viewers have to submit guesses when you start a round.</p>
-            <input
-              class="admin-minutes-input"
-              id="round-minutes"
-              name="roundMinutes"
-              type="number"
-              inputmode="numeric"
-              min="1"
-              max="120"
-              step="1"
-              value="5"
-            />
+            <div class="digital-clock-picker" id="round-minutes-picker">
+              <button
+                type="button"
+                class="digital-clock-step"
+                id="round-minutes-down"
+                aria-label="Decrease round length by one minute"
+              >
+                −
+              </button>
+              <div class="digital-clock-screen">
+                <input
+                  class="digital-clock-minutes"
+                  id="round-minutes"
+                  name="roundMinutes"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="3"
+                  value="05"
+                  aria-label="Round length in minutes"
+                />
+                <span class="digital-clock-colon" aria-hidden="true">:</span>
+                <span class="digital-clock-seconds" aria-hidden="true">00</span>
+              </div>
+              <button
+                type="button"
+                class="digital-clock-step"
+                id="round-minutes-up"
+                aria-label="Increase round length by one minute"
+              >
+                +
+              </button>
+            </div>
           </div>
 
           <div class="admin-panel-row">

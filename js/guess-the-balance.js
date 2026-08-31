@@ -76,12 +76,74 @@ function applyStatusData(data) {
   updateRoundTimer();
 }
 
+function formatClockMinutes(value) {
+  const minutes = normalizeRoundMinutesValue(value);
+  return String(minutes).padStart(2, "0");
+}
+
+function normalizeRoundMinutesValue(value) {
+  const minutes = Math.round(Number(value));
+
+  if (!Number.isFinite(minutes)) {
+    return 5;
+  }
+
+  return Math.min(120, Math.max(1, minutes));
+}
+
+function getRoundMinutesFromInput() {
+  const input = document.getElementById("round-minutes");
+  return normalizeRoundMinutesValue(input?.value);
+}
+
 function updateRoundMinutesInput() {
   const input = document.getElementById("round-minutes");
+  const picker = document.getElementById("round-minutes-picker");
+  const down = document.getElementById("round-minutes-down");
+  const up = document.getElementById("round-minutes-up");
+
   if (!input || !currentUser?.isAdmin) return;
 
-  input.value = String(roundMinutes);
-  input.disabled = isRoundActive();
+  roundMinutes = normalizeRoundMinutesValue(roundMinutes);
+  input.value = formatClockMinutes(roundMinutes);
+
+  const disabled = isRoundActive();
+  input.disabled = disabled;
+  down?.toggleAttribute("disabled", disabled);
+  up?.toggleAttribute("disabled", disabled);
+  picker?.classList.toggle("is-disabled", disabled);
+}
+
+function initRoundMinutesClock() {
+  const input = document.getElementById("round-minutes");
+  const down = document.getElementById("round-minutes-down");
+  const up = document.getElementById("round-minutes-up");
+
+  if (!input) return;
+
+  input.addEventListener("blur", () => {
+    roundMinutes = getRoundMinutesFromInput();
+    input.value = formatClockMinutes(roundMinutes);
+  });
+
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      input.blur();
+    }
+  });
+
+  down?.addEventListener("click", () => {
+    if (isRoundActive()) return;
+    roundMinutes = normalizeRoundMinutesValue(roundMinutes - 1);
+    updateRoundMinutesInput();
+  });
+
+  up?.addEventListener("click", () => {
+    if (isRoundActive()) return;
+    roundMinutes = normalizeRoundMinutesValue(roundMinutes + 1);
+    updateRoundMinutesInput();
+  });
 }
 
 function formatCurrency(amount) {
@@ -271,7 +333,7 @@ function updateToggleLabel() {
     } else if (gameEnabled) {
       label.textContent = "Round ending...";
     } else {
-      label.textContent = "Start a guessing round";
+      label.textContent = `Start round — ${formatClockMinutes(roundMinutes)}:00`;
     }
   }
 
@@ -482,7 +544,7 @@ function initAdminToggle() {
     let minutes;
 
     if (nextEnabled) {
-      minutes = Number(document.getElementById("round-minutes")?.value);
+      minutes = getRoundMinutesFromInput();
       if (!Number.isFinite(minutes) || minutes < 1 || minutes > 120) {
         toggle.checked = false;
         setGuessStatus("Enter a round length between 1 and 120 minutes.", "error");
@@ -602,6 +664,7 @@ async function bootstrapGuessPage() {
 }
 
 initAdminToggle();
+initRoundMinutesClock();
 initEndingBalanceForm();
 initGuessForm();
 bootstrapGuessPage();
