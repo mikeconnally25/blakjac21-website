@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "verify:kick": "node scripts/verify-kick-credentials.mjs"
+    "verify:kick": "node scripts/verify-kick-credentials.mjs",
+    "verify:stake": "node scripts/verify-stake-token.mjs",
+    "refresh:slots": "node scripts/refresh-stake-catalog.mjs"
   },
   "dependencies": {
     "dotenv": "^16.4.7",

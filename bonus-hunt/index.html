@@ -130,11 +130,14 @@
             <p class="admin-panel-label">Chat slot requests</p>
             <p class="admin-panel-text">
               Turn on <strong>Accept requests</strong>, click <strong>Enable !slot in chat</strong>, then refresh the slot list.
+              If refresh fails with 403, create a Stake API token at
+              <strong>stake.com → Settings → Security → API Tokens</strong>,
+              add <strong>STAKE_ACCESS_TOKEN</strong> in Vercel, redeploy, and refresh again.
               Viewers can type <strong>!slot &lt;slot name&gt;</strong> in Kick chat or use the request form below.
               Slots must be from
-              <a href="https://stake.bet/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
+              <a href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
               or
-              <a href="https://stake.bet/casino/group/only-on-stake" target="_blank" rel="noopener noreferrer">Only on Stake</a>.
+              <a href="https://stake.com/casino/group/only-on-stake" target="_blank" rel="noopener noreferrer">Only on Stake</a>.
             </p>
             <div class="bonus-admin-actions">
               <button type="button" class="btn btn-sm btn-outline" id="kick-chat-subscribe">

@@ -1,4 +1,4 @@
-import "dotenv/config";
+import { loadProjectEnv } from "./lib/load-dotenv.js";
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -36,6 +36,7 @@ import {
 } from "./lib/guess-handlers.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+loadProjectEnv(__dirname);
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
