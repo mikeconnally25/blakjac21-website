@@ -183,7 +183,7 @@ function renderKickBotStatus(status) {
 
   if (!status?.connected) {
     meta.textContent =
-      "Chat bot not connected. Connect your Kick account to send !r replies in chat.";
+      "Chat bot not connected. Connect your Kick account to send !slot replies in chat.";
     connectBtn?.classList.remove("is-hidden");
     return;
   }
@@ -619,7 +619,7 @@ function initAdminForm() {
   document.getElementById("kick-chat-subscribe")?.addEventListener("click", async (event) => {
     const button = event.currentTarget;
     button.disabled = true;
-    setStatus("Enabling !r in Kick chat...");
+    setStatus("Enabling !slot in Kick chat...");
 
     try {
       const response = await fetch("/api/kick/subscribe", {
@@ -629,13 +629,13 @@ function initAdminForm() {
 
       const data = await response.json();
       if (!response.ok) {
-        setStatus(data.error || "Could not enable !r in chat.", "error");
+        setStatus(data.error || "Could not enable !slot in chat.", "error");
         return;
       }
 
-      setStatus("Kick chat !r command enabled.", "success");
+      setStatus("Kick chat !slot command enabled.", "success");
     } catch {
-      setStatus("Could not enable !r in chat. Try again.", "error");
+      setStatus("Could not enable !slot in chat. Try again.", "error");
     } finally {
       button.disabled = false;
     }
