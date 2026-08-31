@@ -1,4 +1,4 @@
-import { handleKickSetupStatus } from "../../../lib/kick-setup-status.js";
+import { handleKickSetupStatus } from "../../lib/kick-setup-status.js";
 
 export default function handler(req, res) {
   if (req.method !== "GET") {

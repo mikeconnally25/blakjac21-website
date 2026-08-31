@@ -1,4 +1,4 @@
-import { handleKickCredentialsCheck } from "../../../lib/kick-credentials-check.js";
+import { handleKickCredentialsCheck } from "../../lib/kick-credentials-check.js";
 
 export default function handler(req, res) {
   if (req.method !== "GET") {
