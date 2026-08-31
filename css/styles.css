@@ -747,7 +747,8 @@ ul {
 }
 
 .bonus-hunt-page .page-content {
-  width: min(100% - 2rem, 72rem);
+  width: min(100% - 2rem, 84rem);
+  max-width: none;
 }
 
 .bonus-hunt-layout {
@@ -786,8 +787,8 @@ ul {
 
 .hunt-layout-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(18rem, 0.85fr);
-  gap: 1.25rem;
+  grid-template-columns: minmax(0, 1.7fr) minmax(22rem, 1fr);
+  gap: 1.5rem;
   align-items: start;
 }
 
@@ -806,7 +807,7 @@ ul {
   position: relative;
   overflow: hidden;
   margin-bottom: 0;
-  padding: 1.5rem;
+  padding: 1.75rem 1.85rem;
   border-radius: calc(var(--radius) + 4px);
   border: 1px solid rgba(88, 201, 243, 0.16);
   background:
@@ -840,9 +841,10 @@ ul {
   margin: 0;
   font-family: var(--font-display);
   font-size: clamp(2.1rem, 5vw, 2.85rem);
-  line-height: 0.95;
+  line-height: 1.05;
   letter-spacing: 0.02em;
   color: var(--text);
+  overflow-wrap: anywhere;
 }
 
 .hunt-streamer {
@@ -1065,10 +1067,10 @@ ul {
 
 .hunt-bonus-card {
   display: grid;
-  grid-template-columns: auto auto 1fr auto;
-  gap: 0.8rem;
-  align-items: center;
-  padding: 0.95rem 1rem;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: start;
+  padding: 1.1rem 1.15rem;
   border-radius: calc(var(--radius-sm) + 2px);
   border: 1px solid rgba(88, 201, 243, 0.1);
   background:
@@ -1134,12 +1136,12 @@ ul {
 
 .hunt-bonus-slot {
   margin: 0;
-  font-size: 1.02rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .hunt-bonus-provider {
@@ -1210,6 +1212,38 @@ ul {
     linear-gradient(180deg, rgba(16, 24, 34, 0.82), rgba(8, 12, 18, 0.78));
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
   backdrop-filter: blur(14px);
+}
+
+.bonus-hunt-page .hunt-admin-card {
+  padding: 1.5rem 1.65rem;
+}
+
+.bonus-hunt-page .hunt-side-card {
+  padding: 1.65rem 1.75rem;
+}
+
+.bonus-hunt-page .hunt-settings-row,
+.bonus-hunt-page .bonus-add-row {
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto;
+  gap: 1rem;
+}
+
+.bonus-hunt-page .guess-input,
+.bonus-hunt-page .slot-request-select {
+  min-height: 3rem;
+  padding: 0.95rem 1rem;
+  font-size: 1rem;
+}
+
+.bonus-hunt-page .guess-input-row {
+  min-height: 3rem;
+  padding: 0.55rem 1rem;
+}
+
+.bonus-hunt-page .slot-request-slot,
+.bonus-hunt-page .slot-request-user {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .hunt-admin-card {
@@ -1471,10 +1505,14 @@ ul {
 .slot-request-entry {
   display: grid;
   gap: 0.75rem;
-  padding: 0.9rem 1rem;
+  padding: 1.1rem 1.15rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: rgba(10, 15, 20, 0.45);
+}
+
+.bonus-hunt-page .slot-request-entry {
+  padding: 1.15rem 1.2rem;
 }
 
 .slot-request-entry-main {
@@ -1521,11 +1559,40 @@ ul {
   }
 
   .hunt-bonus-card {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "index main"
+      "avatar main"
+      "result result"
+      "admin admin";
   }
 
   .hunt-bonus-index {
-    display: none;
+    display: block;
+    grid-area: index;
+  }
+
+  .hunt-bonus-avatar {
+    grid-area: avatar;
+  }
+
+  .hunt-bonus-main {
+    grid-area: main;
+  }
+
+  .hunt-bonus-result {
+    grid-area: result;
+    justify-items: start;
+    text-align: left;
+  }
+
+  .hunt-bonus-admin {
+    grid-area: admin;
+  }
+
+  .bonus-hunt-page .hunt-settings-row,
+  .bonus-hunt-page .bonus-add-row {
+    grid-template-columns: 1fr;
   }
 
   .bonus-summary-grid {
