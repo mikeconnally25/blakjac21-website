@@ -2,6 +2,7 @@ let gameEnabled = false;
 let endingBalance = null;
 let roundEndsAt = null;
 let roundMinutes = 5;
+let idleRoundMinutesHydrated = false;
 let currentUser = null;
 let pollTimer = null;
 let guessesPollTimer = null;
@@ -76,9 +77,7 @@ function applyStatusData(data) {
     gameEnabled = false;
   }
 
-  if (data.roundMinutes !== undefined && data.roundMinutes !== null) {
-    roundMinutes = Number(data.roundMinutes);
-  }
+  applyRoundMinutesFromStatus(data);
 
   if (Object.prototype.hasOwnProperty.call(data, "endingBalance")) {
     endingBalance = data.endingBalance;
@@ -118,6 +117,46 @@ function getRoundMinutesFromInput() {
   return normalizeRoundMinutesValue(raw);
 }
 
+function applyRoundMinutesFromStatus(data) {
+  if (data.roundMinutes === undefined || data.roundMinutes === null) {
+    return;
+  }
+
+  const input = document.getElementById("round-minutes");
+  const isEditingMinutes = input && document.activeElement === input;
+
+  if (isEditingMinutes) {
+    return;
+  }
+
+  if (isRoundActive()) {
+    roundMinutes = Number(data.roundMinutes);
+    return;
+  }
+
+  if (currentUser?.isAdmin) {
+    if (!idleRoundMinutesHydrated) {
+      roundMinutes = Number(data.roundMinutes);
+      idleRoundMinutesHydrated = true;
+    }
+    return;
+  }
+
+  roundMinutes = Number(data.roundMinutes);
+}
+
+function setRoundMinutes(nextValue) {
+  roundMinutes = normalizeRoundMinutesValue(nextValue);
+  const input = document.getElementById("round-minutes");
+
+  if (input) {
+    input.value = formatClockMinutes(roundMinutes);
+  }
+
+  updateRoundMinutesInput();
+  updateToggleLabel();
+}
+
 function syncRoundMinutesFromInput() {
   roundMinutes = getRoundMinutesFromInput();
   updateToggleLabel();
@@ -129,20 +168,19 @@ function updateRoundMinutesInput() {
   const down = document.getElementById("round-minutes-down");
   const up = document.getElementById("round-minutes-up");
 
-  if (!input || !currentUser?.isAdmin) return;
+  if (!input) return;
 
   const isFocused = document.activeElement === input;
-  const disabled = isRoundActive();
+  const canEdit = Boolean(currentUser?.isAdmin) && !isRoundActive();
 
   if (!isFocused) {
-    roundMinutes = normalizeRoundMinutesValue(roundMinutes);
-    input.value = formatClockMinutes(roundMinutes);
+    input.value = formatClockMinutes(normalizeRoundMinutesValue(roundMinutes));
   }
 
-  input.disabled = disabled;
-  down?.toggleAttribute("disabled", disabled);
-  up?.toggleAttribute("disabled", disabled);
-  picker?.classList.toggle("is-disabled", disabled);
+  input.disabled = !canEdit;
+  down?.toggleAttribute("disabled", !canEdit);
+  up?.toggleAttribute("disabled", !canEdit);
+  picker?.classList.toggle("is-disabled", !canEdit);
 }
 
 function initRoundMinutesClock() {
@@ -153,14 +191,13 @@ function initRoundMinutesClock() {
   if (!input) return;
 
   input.addEventListener("input", () => {
-    if (isRoundActive()) return;
+    if (!currentUser?.isAdmin || isRoundActive()) return;
     syncRoundMinutesFromInput();
   });
 
   input.addEventListener("blur", () => {
-    roundMinutes = getRoundMinutesFromInput();
-    input.value = formatClockMinutes(roundMinutes);
-    updateToggleLabel();
+    if (!currentUser?.isAdmin) return;
+    setRoundMinutes(getRoundMinutesFromInput());
   });
 
   input.addEventListener("keydown", (event) => {
@@ -171,15 +208,15 @@ function initRoundMinutesClock() {
   });
 
   down?.addEventListener("click", () => {
-    if (isRoundActive()) return;
-    roundMinutes = normalizeRoundMinutesValue(roundMinutes - 1);
-    updateRoundMinutesInput();
+    if (!currentUser?.isAdmin || isRoundActive()) return;
+    input.blur();
+    setRoundMinutes(roundMinutes - 1);
   });
 
   up?.addEventListener("click", () => {
-    if (isRoundActive()) return;
-    roundMinutes = normalizeRoundMinutesValue(roundMinutes + 1);
-    updateRoundMinutesInput();
+    if (!currentUser?.isAdmin || isRoundActive()) return;
+    input.blur();
+    setRoundMinutes(roundMinutes + 1);
   });
 }
 
@@ -575,8 +612,7 @@ function initAdminToggle() {
     if (nextEnabled) {
       document.getElementById("round-minutes")?.blur();
       minutes = getRoundMinutesFromInput();
-      roundMinutes = minutes;
-      updateRoundMinutesInput();
+      setRoundMinutes(minutes);
 
       if (!Number.isFinite(minutes) || minutes < 1 || minutes > 120) {
         toggle.checked = false;
@@ -664,7 +700,7 @@ function initGuessForm() {
   });
 }
 
-window.addEventListener("auth:change", (event) => {
+window.addEventListener("auth:change", async (event) => {
   currentUser = event.detail?.user || null;
 
   const gameUsername = document.getElementById("game-username");
@@ -674,6 +710,12 @@ window.addEventListener("auth:change", (event) => {
 
   updateGamePanels();
   updateEndingBalanceInput();
+
+  if (currentUser?.isAdmin) {
+    await loadGameStatus();
+    idleRoundMinutesHydrated = true;
+  }
+
   updateRoundMinutesInput();
   schedulePolling();
 });
@@ -689,6 +731,9 @@ async function bootstrapGuessPage() {
   await Promise.all([loadGameStatus(), loadCurrentUser(), loadGuesses()]);
   updateGamePanels();
   updateEndingBalanceInput();
+  if (currentUser?.isAdmin) {
+    idleRoundMinutesHydrated = true;
+  }
   updateRoundMinutesInput();
   updateRoundTimer();
   schedulePolling();

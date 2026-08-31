@@ -584,7 +584,8 @@ ul {
 }
 
 .digital-clock-minutes {
-  width: 2.6ch;
+  width: 2.8ch;
+  min-width: 2.8ch;
   border: 0;
   padding: 0;
   background: transparent;
