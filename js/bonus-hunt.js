@@ -1,5 +1,6 @@
 let currentUser = null;
 let pollTimer = null;
+let slotPollTimer = null;
 let slotCatalog = [];
 let slotGroups = [];
 let slotCatalogUpdatedAt = null;
@@ -326,13 +327,16 @@ async function loadSlotCatalog() {
     slotCatalog = data.slots || [];
     slotGroups = data.groups || [];
     slotCatalogUpdatedAt = data.updatedAt || null;
-    renderSlotCatalogSelect();
+
+    const select = document.getElementById("slot-request-select");
+    const selectedSlug = select?.value || "";
+    renderSlotCatalogSelect(selectedSlug);
   } catch (error) {
     const count = document.getElementById("slot-catalog-count");
-    if (count) {
+    if (count && !slotCatalog.length) {
       count.textContent = "Slot list unavailable";
+      setRequestStatus(error.message, "error");
     }
-    setRequestStatus(error.message, "error");
   }
 }
 
@@ -348,7 +352,8 @@ async function loadSlotRequests() {
     const data = await response.json();
     renderSlotRequests(data.requests || []);
 
-    if (data.myRequest?.slotSlug) {
+    const select = document.getElementById("slot-request-select");
+    if (!select?.value && data.myRequest?.slotSlug) {
       renderSlotCatalogSelect(data.myRequest.slotSlug);
     }
   } catch {
@@ -388,10 +393,15 @@ function schedulePolling() {
     clearInterval(pollTimer);
   }
 
-  pollTimer = setInterval(() => {
-    loadBonusHunt();
+  if (slotPollTimer) {
+    clearInterval(slotPollTimer);
+  }
+
+  pollTimer = setInterval(loadBonusHunt, 2000);
+  slotPollTimer = setInterval(() => {
+    loadSlotCatalog();
     loadSlotRequests();
-  }, 2000);
+  }, 1000);
 }
 
 async function saveBonusPayout(id, rawPayout, button) {
@@ -656,6 +666,7 @@ window.addEventListener("auth:change", async (event) => {
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") {
     loadBonusHunt();
+    loadSlotCatalog();
     loadSlotRequests();
   }
 });
