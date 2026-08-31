@@ -1,6 +1,7 @@
 let gameEnabled = false;
 let endingBalance = null;
 let roundEndsAt = null;
+let roundMinutes = 5;
 let currentUser = null;
 let pollTimer = null;
 let guessesPollTimer = null;
@@ -62,12 +63,25 @@ function applyStatusData(data) {
   gameEnabled = Boolean(data.enabled);
   roundEndsAt = data.endsAt ?? null;
 
+  if (data.roundMinutes !== undefined && data.roundMinutes !== null) {
+    roundMinutes = Number(data.roundMinutes);
+  }
+
   if (Object.prototype.hasOwnProperty.call(data, "endingBalance")) {
     endingBalance = data.endingBalance;
     updateEndingBalanceInput();
   }
 
+  updateRoundMinutesInput();
   updateRoundTimer();
+}
+
+function updateRoundMinutesInput() {
+  const input = document.getElementById("round-minutes");
+  if (!input || !currentUser?.isAdmin) return;
+
+  input.value = String(roundMinutes);
+  input.disabled = isRoundActive();
 }
 
 function formatCurrency(amount) {
@@ -257,7 +271,7 @@ function updateToggleLabel() {
     } else if (gameEnabled) {
       label.textContent = "Round ending...";
     } else {
-      label.textContent = "Start a 5-minute guessing round";
+      label.textContent = "Start a guessing round";
     }
   }
 
@@ -337,7 +351,8 @@ async function loadGameStatus() {
     updateGamePanels();
 
     if (!wasEnabled && isRoundActive() && currentUser) {
-      setGuessStatus("Guessing is open. You have 5 minutes to submit your guess.", "success");
+      const minuteLabel = roundMinutes === 1 ? "1 minute" : `${roundMinutes} minutes`;
+      setGuessStatus(`Guessing is open. You have ${minuteLabel} to submit your guess.`, "success");
     }
 
     schedulePolling();
@@ -370,12 +385,17 @@ async function loadCurrentUser() {
   }
 }
 
-async function setGameEnabled(enabled) {
+async function setGameEnabled(enabled, minutes) {
+  const payload = { enabled };
+  if (enabled && minutes !== undefined) {
+    payload.minutes = minutes;
+  }
+
   const response = await fetch("/api/guess-the-balance/toggle", {
     method: "POST",
     credentials: "same-origin",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ enabled }),
+    body: JSON.stringify(payload),
   });
 
   const data = await response.json();
@@ -459,10 +479,21 @@ function initAdminToggle() {
 
   toggle.addEventListener("change", async () => {
     const nextEnabled = toggle.checked;
+    let minutes;
+
+    if (nextEnabled) {
+      minutes = Number(document.getElementById("round-minutes")?.value);
+      if (!Number.isFinite(minutes) || minutes < 1 || minutes > 120) {
+        toggle.checked = false;
+        setGuessStatus("Enter a round length between 1 and 120 minutes.", "error");
+        return;
+      }
+    }
+
     toggle.disabled = true;
 
     try {
-      await setGameEnabled(nextEnabled);
+      await setGameEnabled(nextEnabled, minutes);
       setGuessStatus("");
     } catch (error) {
       toggle.checked = !nextEnabled;
@@ -548,6 +579,7 @@ window.addEventListener("auth:change", (event) => {
 
   updateGamePanels();
   updateEndingBalanceInput();
+  updateRoundMinutesInput();
   schedulePolling();
 });
 
@@ -562,6 +594,7 @@ async function bootstrapGuessPage() {
   await Promise.all([loadGameStatus(), loadCurrentUser(), loadGuesses()]);
   updateGamePanels();
   updateEndingBalanceInput();
+  updateRoundMinutesInput();
   updateRoundTimer();
   schedulePolling();
   scheduleGuessesPolling();

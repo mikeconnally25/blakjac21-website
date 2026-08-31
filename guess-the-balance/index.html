@@ -68,6 +68,22 @@
         </div>
 
         <div class="admin-panel is-hidden" id="game-admin-panel">
+          <div class="admin-panel-section admin-duration-section">
+            <label class="guess-label" for="round-minutes">Round length (minutes)</label>
+            <p class="admin-panel-text">Set how long viewers have to submit guesses when you start a round.</p>
+            <input
+              class="admin-minutes-input"
+              id="round-minutes"
+              name="roundMinutes"
+              type="number"
+              inputmode="numeric"
+              min="1"
+              max="120"
+              step="1"
+              value="5"
+            />
+          </div>
+
           <div class="admin-panel-row">
             <div>
               <p class="admin-panel-label">Admin controls</p>

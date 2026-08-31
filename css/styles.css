@@ -556,6 +556,31 @@ ul {
   gap: 0.75rem;
 }
 
+.admin-duration-section {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.admin-minutes-input {
+  width: 100%;
+  max-width: 120px;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(10, 15, 20, 0.55);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 600;
+  outline: none;
+}
+
+.admin-minutes-input:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 .admin-balance-row {
   display: flex;
   align-items: stretch;
