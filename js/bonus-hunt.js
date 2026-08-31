@@ -233,7 +233,12 @@ function handleKickBotRedirectParams() {
       "success"
     );
   } else if (kickBot === "error") {
-    setStatus(params.get("message") || "Could not connect Kick chat bot.", "error");
+    const message = params.get("message");
+    const text =
+      message === "Client authentication failed"
+        ? "Kick Client Secret is invalid on the server. Regenerate it in the Kick Developer Portal, update KICK_CLIENT_SECRET in Vercel, and redeploy."
+        : message || "Could not connect Kick chat bot.";
+    setStatus(text, "error");
   }
 
   params.delete("kickBot");

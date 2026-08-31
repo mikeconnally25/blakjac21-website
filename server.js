@@ -25,6 +25,7 @@ import {
 import { handleKickWebhook } from "./lib/kick-webhook.js";
 import { handleKickBotLogin, handleKickBotStatus } from "./lib/kick-bot-auth-handlers.js";
 import { handleKickCredentialsCheck } from "./lib/kick-credentials-check.js";
+import { handleKickSetupStatus } from "./lib/kick-setup-status.js";
 import {
   handleGuessStatus,
   handleGuessList,
@@ -82,6 +83,7 @@ app.post("/api/kick/subscribe", (req, res) => handleKickChatSubscribe(req, res))
 app.get("/api/kick/bot/login", (req, res) => handleKickBotLogin(req, res));
 app.get("/api/kick/bot/status", (req, res) => handleKickBotStatus(req, res));
 app.get("/api/kick/credentials-check", (req, res) => handleKickCredentialsCheck(req, res));
+app.get("/api/kick/setup-status", (req, res) => handleKickSetupStatus(req, res));
 
 app.listen(PORT, () => {
   console.log(`BLAKJAC21 site running at http://localhost:${PORT}`);

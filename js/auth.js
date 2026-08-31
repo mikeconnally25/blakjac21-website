@@ -7,7 +7,12 @@ function getAuthMessage() {
 
   if (auth === "created") return "Account created with your Kick login.";
   if (auth === "signed-in") return "Signed in with Kick.";
-  if (auth === "error") return message || "Kick sign-in failed.";
+  if (auth === "error") {
+    if (message === "Client authentication failed") {
+      return "Kick Client Secret is invalid on the server. Regenerate it in the Kick Developer Portal, update KICK_CLIENT_SECRET in Vercel, and redeploy.";
+    }
+    return message || "Kick sign-in failed.";
+  }
 
   return null;
 }
