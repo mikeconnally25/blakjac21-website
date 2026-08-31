@@ -62,11 +62,83 @@
           <p>Follow every bonus buy, track the hunt total, and see how the session plays out live on stream.</p>
         </div>
 
-        <div class="game-panel">
-          <p class="game-panel-text">
-            Bonus hunt tracking is coming soon. Check back during the next hunt on stream — or head to
-            <a href="/#watch">the live player</a> when BLAKJAC21 is online.
-          </p>
+        <div class="admin-panel is-hidden" id="bonus-hunt-admin">
+          <div class="admin-panel-section">
+            <p class="admin-panel-label">Admin controls</p>
+            <p class="admin-panel-text">Add bonuses as you buy them on stream, then enter each payout when it opens.</p>
+            <form class="bonus-add-form" id="bonus-add-form">
+              <div class="bonus-add-row">
+                <div class="bonus-field">
+                  <label class="guess-label" for="bonus-slot">Slot</label>
+                  <input
+                    class="guess-input bonus-slot-input"
+                    id="bonus-slot"
+                    name="slot"
+                    type="text"
+                    maxlength="80"
+                    placeholder="Gates of Olympus"
+                    required
+                  />
+                </div>
+                <div class="bonus-field">
+                  <label class="guess-label" for="bonus-bet">Bet</label>
+                  <div class="guess-input-row">
+                    <span class="guess-prefix" aria-hidden="true">$</span>
+                    <input
+                      class="guess-input"
+                      id="bonus-bet"
+                      name="bet"
+                      type="number"
+                      inputmode="decimal"
+                      min="0"
+                      step="0.01"
+                      placeholder="100.00"
+                      required
+                    />
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary" id="bonus-add-submit">
+                  Add bonus
+                </button>
+              </div>
+            </form>
+            <div class="bonus-admin-actions">
+              <button type="button" class="btn btn-sm btn-outline" id="bonus-clear-hunt">
+                Clear hunt
+              </button>
+            </div>
+            <p class="guess-status is-hidden" id="bonus-hunt-status" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div class="game-panel bonus-hunt-summary" id="bonus-hunt-summary">
+          <div class="bonus-summary-grid">
+            <div class="bonus-summary-item">
+              <span class="bonus-summary-label">Bonuses</span>
+              <strong class="bonus-summary-value" id="summary-total">0</strong>
+            </div>
+            <div class="bonus-summary-item">
+              <span class="bonus-summary-label">Total cost</span>
+              <strong class="bonus-summary-value" id="summary-cost">$0.00</strong>
+            </div>
+            <div class="bonus-summary-item">
+              <span class="bonus-summary-label">Total won</span>
+              <strong class="bonus-summary-value" id="summary-won">$0.00</strong>
+            </div>
+            <div class="bonus-summary-item">
+              <span class="bonus-summary-label">Profit / loss</span>
+              <strong class="bonus-summary-value" id="summary-profit">$0.00</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="game-panel guesses-panel bonus-list-panel" id="bonus-list-panel">
+          <div class="guesses-panel-header">
+            <h3 class="guesses-heading">Current hunt</h3>
+            <p class="guesses-count" id="bonus-count">0 bonuses</p>
+          </div>
+          <p class="guesses-empty" id="bonus-empty">No bonuses in this hunt yet.</p>
+          <ul class="bonus-list is-hidden" id="bonus-list"></ul>
         </div>
       </div>
     </section>
@@ -89,5 +161,6 @@
 
   <script src="/js/main.js"></script>
   <script src="/js/auth.js"></script>
+  <script src="/js/bonus-hunt.js"></script>
 </body>
 </html>

@@ -7,5 +7,6 @@ Thumbs.db
 node_modules/
 data/users.json
 data/guesses.json
+data/bonus-hunt.json
 .vercel
 .env*

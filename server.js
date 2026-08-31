@@ -9,6 +9,13 @@ import {
   handleMe,
 } from "./lib/auth-handlers.js";
 import {
+  handleBonusHuntAdd,
+  handleBonusHuntClear,
+  handleBonusHuntGet,
+  handleBonusHuntRemove,
+  handleBonusHuntUpdate,
+} from "./lib/bonus-hunt-handlers.js";
+import {
   handleGuessStatus,
   handleGuessList,
   handleGuessSetEndingBalance,
@@ -34,6 +41,11 @@ app.get("/api/guess-the-balance/guesses", (req, res) => handleGuessList(req, res
 app.post("/api/guess-the-balance/ending-balance", (req, res) =>
   handleGuessSetEndingBalance(req, res)
 );
+app.get("/api/bonus-hunt", (req, res) => handleBonusHuntGet(req, res));
+app.post("/api/bonus-hunt/add", (req, res) => handleBonusHuntAdd(req, res));
+app.post("/api/bonus-hunt/update", (req, res) => handleBonusHuntUpdate(req, res));
+app.post("/api/bonus-hunt/remove", (req, res) => handleBonusHuntRemove(req, res));
+app.post("/api/bonus-hunt/clear", (req, res) => handleBonusHuntClear(req, res));
 
 app.listen(PORT, () => {
   console.log(`BLAKJAC21 site running at http://localhost:${PORT}`);
