@@ -1,5 +1,6 @@
 let gameEnabled = false;
 let currentUser = null;
+let pollTimer = null;
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat("en-US", {
@@ -33,7 +34,7 @@ function updateToggleLabel() {
       : "Guessing is off — viewers cannot submit guesses";
   }
 
-  if (toggle) {
+  if (toggle && currentUser?.isAdmin) {
     toggle.checked = gameEnabled;
   }
 }
@@ -65,6 +66,15 @@ function updateGamePanels() {
   }
 }
 
+function schedulePolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+  }
+
+  const interval = currentUser && !gameEnabled ? 2000 : 5000;
+  pollTimer = setInterval(loadGameStatus, interval);
+}
+
 async function loadGameStatus() {
   try {
     const response = await fetch("/api/guess-the-balance/status", {
@@ -75,9 +85,16 @@ async function loadGameStatus() {
     if (!response.ok) return;
 
     const data = await response.json();
+    const wasEnabled = gameEnabled;
     gameEnabled = Boolean(data.enabled);
     updateToggleLabel();
     updateGamePanels();
+
+    if (!wasEnabled && gameEnabled && currentUser) {
+      setGuessStatus("Guessing is open. Enter your guess below.", "success");
+    }
+
+    schedulePolling();
   } catch {
     // Keep the last known state.
   }
@@ -124,6 +141,7 @@ async function setGameEnabled(enabled) {
   gameEnabled = Boolean(data.enabled);
   updateToggleLabel();
   updateGamePanels();
+  schedulePolling();
 }
 
 function initAdminToggle() {
@@ -153,13 +171,15 @@ function initGuessForm() {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    if (!gameEnabled) {
-      setGuessStatus("Guessing is currently closed.", "error");
+    if (!currentUser) {
+      setGuessStatus("Sign in with Kick to submit a guess.", "error");
       return;
     }
 
-    if (!currentUser) {
-      setGuessStatus("Sign in with Kick to submit a guess.", "error");
+    await loadGameStatus();
+
+    if (!gameEnabled) {
+      setGuessStatus("Guessing is currently closed.", "error");
       return;
     }
 
@@ -187,6 +207,11 @@ function initGuessForm() {
 
       if (!response.ok) {
         setGuessStatus(data.error || "Could not submit your guess.", "error");
+        if (response.status === 403) {
+          gameEnabled = false;
+          updateGamePanels();
+          schedulePolling();
+        }
         return;
       }
 
@@ -212,15 +237,21 @@ window.addEventListener("auth:change", (event) => {
   }
 
   updateGamePanels();
+  schedulePolling();
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    loadGameStatus();
+  }
 });
 
 async function bootstrapGuessPage() {
   await Promise.all([loadGameStatus(), loadCurrentUser()]);
   updateGamePanels();
+  schedulePolling();
 }
 
 initAdminToggle();
 initGuessForm();
 bootstrapGuessPage();
-
-setInterval(loadGameStatus, 5000);
