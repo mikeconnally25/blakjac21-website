@@ -1,5 +1,10 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+import path from "path";
 import { cleanEnv } from "../lib/config.js";
+
+const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+dotenv.config({ path: path.join(rootDir, ".env"), override: true });
 
 const KICK_TOKEN_URL = "https://id.kick.com/oauth/token";
 
@@ -37,6 +42,10 @@ async function main() {
 
   console.log(`Client ID: ${clientId}`);
   console.log(`Secret length: ${clientSecret.length} characters`);
+  if (clientId === "your_client_id" || clientSecret === "your_client_secret") {
+    console.error("\nStill using placeholder values. Save .env and try again.");
+    process.exit(1);
+  }
   console.log("Testing Kick client credentials...\n");
 
   const body = new URLSearchParams({ grant_type: "client_credentials" });
