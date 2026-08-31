@@ -179,27 +179,26 @@ async function loadCurrentUser() {
 
 function renderKickBotStatus(status) {
   const meta = document.getElementById("kick-bot-status");
-  const connectBtn = document.getElementById("kick-bot-connect");
   if (!meta) return;
 
   if (!status?.connected) {
     meta.textContent =
-      "Chat bot not connected. Connect your Kick account to send !slot replies in chat.";
-    connectBtn?.classList.remove("is-hidden");
+      "Kick chat bot is not configured. Set KICK_CLIENT_ID, KICK_CLIENT_SECRET, and KICK_BROADCASTER_USER_ID in Vercel.";
     return;
   }
 
   const label =
     status.source === "env"
-      ? "Kick chat bot token is set in Vercel (KICK_BOT_ACCESS_TOKEN)."
+      ? "Kick chat bot ready (KICK_BOT_ACCESS_TOKEN)."
       : status.source === "env-refresh"
-        ? "Kick chat bot refresh token is set in Vercel (KICK_BOT_REFRESH_TOKEN)."
-        : status.username
-          ? `Kick chat bot connected as ${status.username}.`
-          : "Kick chat bot connected.";
+        ? "Kick chat bot ready (KICK_BOT_REFRESH_TOKEN)."
+        : status.source === "app"
+          ? "Kick chat bot ready."
+          : status.username
+            ? `Kick chat bot ready as ${status.username}.`
+            : "Kick chat bot ready.";
 
   meta.textContent = label;
-  connectBtn?.classList.toggle("is-hidden", status.source === "env" || status.source === "env-refresh");
 }
 
 async function loadKickBotStatus() {
@@ -229,8 +228,8 @@ function handleKickBotRedirectParams() {
     const username = params.get("username");
     setStatus(
       username
-        ? `Kick chat bot connected as ${username}.`
-        : "Kick chat bot connected.",
+        ? `Kick chat bot ready as ${username}.`
+        : "Kick chat bot ready.",
       "success"
     );
   } else if (kickBot === "error") {
