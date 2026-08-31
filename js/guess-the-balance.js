@@ -44,7 +44,7 @@ function scheduleGuessesPolling() {
     clearInterval(guessesPollTimer);
   }
 
-  guessesPollTimer = setInterval(loadGuesses, 5000);
+  guessesPollTimer = setInterval(loadGuesses, 1000);
 }
 
 function renderGuessesList(guesses) {
