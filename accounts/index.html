@@ -57,40 +57,51 @@
     <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
 
     <section class="section page-section accounts-page">
-      <div class="container page-content">
+      <div class="container page-content accounts-shell">
         <a href="/#menu" class="back-link">← Back to menu</a>
 
-        <div class="section-header left">
-          <h2>Accounts</h2>
-          <p>All users registered on the site through Kick sign-in.</p>
+        <div class="accounts-hero">
+          <div class="accounts-hero-copy">
+            <p class="accounts-hero-brand">BLAKJAC<span class="accent">21</span></p>
+            <h1 class="accounts-hero-title">Accounts</h1>
+            <p class="accounts-hero-subtitle">
+              Every player registered through Kick sign-in and tracked site activity.
+            </p>
+          </div>
+          <div class="accounts-hero-stat">
+            <span class="accounts-hero-stat-value" id="accounts-hero-count">0</span>
+            <div>
+              <p class="accounts-hero-stat-label">Registered</p>
+              <p class="accounts-hero-stat-copy">site users</p>
+            </div>
+          </div>
         </div>
 
-        <p class="accounts-denied is-hidden" id="accounts-denied">
-          Admin access required to view registered accounts.
-        </p>
+        <div class="accounts-denied-card is-hidden" id="accounts-denied">
+          <p class="accounts-denied-label">Admin only</p>
+          <p class="accounts-denied-title">Access restricted</p>
+          <p class="accounts-denied-copy">
+            Sign in with an admin Kick account to view registered users.
+          </p>
+        </div>
 
-        <div class="accounts-card hunt-side-card is-hidden" id="accounts-panel">
-          <div class="accounts-header">
-            <div>
-              <p class="accounts-eyebrow">Registered users</p>
-              <h3 class="accounts-title">Site accounts</h3>
+        <div class="accounts-card is-hidden" id="accounts-panel">
+          <div class="accounts-card-top">
+            <div class="accounts-total-badge" id="accounts-count-badge" aria-hidden="true">0</div>
+            <div class="accounts-card-heading">
+              <p class="accounts-eyebrow">Directory</p>
+              <h2 class="accounts-title">Registered players</h2>
+              <p class="accounts-subtitle">Sorted by most recent activity.</p>
             </div>
-            <span class="accounts-count" id="accounts-count">0 registered</span>
+            <span class="accounts-count-pill" id="accounts-count">0 registered</span>
           </div>
 
           <p class="guess-status is-hidden" id="accounts-status" role="status" aria-live="polite"></p>
 
-          <div class="accounts-table-head is-hidden" id="accounts-table-head">
-            <span>#</span>
-            <span>Player</span>
-            <span>Kick ID</span>
-            <span>Joined</span>
-            <span>Last login</span>
+          <div class="accounts-viewport">
+            <p class="accounts-empty" id="accounts-empty">No registered users yet.</p>
+            <ol class="accounts-list is-hidden" id="accounts-list"></ol>
           </div>
-
-          <p class="accounts-empty" id="accounts-empty">No registered users yet.</p>
-
-          <ol class="accounts-list is-hidden" id="accounts-list"></ol>
         </div>
       </div>
     </section>

@@ -30,6 +30,18 @@ function renderAccessState() {
   denied?.classList.toggle("is-hidden", isAdmin);
 }
 
+function updateAccountCounts(total) {
+  const heroCount = document.getElementById("accounts-hero-count");
+  const countBadge = document.getElementById("accounts-count-badge");
+  const countPill = document.getElementById("accounts-count");
+
+  if (heroCount) heroCount.textContent = String(total);
+  if (countBadge) countBadge.textContent = String(total);
+  if (countPill) {
+    countPill.textContent = `${total} registered`;
+  }
+}
+
 function createAvatar(user) {
   const avatar = document.createElement("span");
   avatar.className = "accounts-avatar";
@@ -38,8 +50,8 @@ function createAvatar(user) {
     const image = document.createElement("img");
     image.src = user.profilePicture;
     image.alt = "";
-    image.width = 36;
-    image.height = 36;
+    image.width = 40;
+    image.height = 40;
     avatar.append(image);
     return avatar;
   }
@@ -48,23 +60,33 @@ function createAvatar(user) {
   return avatar;
 }
 
+function createMetaItem(label, value) {
+  const item = document.createElement("div");
+  item.className = "accounts-meta-item";
+
+  const labelEl = document.createElement("span");
+  labelEl.className = "accounts-meta-label";
+  labelEl.textContent = label;
+
+  const valueEl = document.createElement("span");
+  valueEl.className = "accounts-date";
+  valueEl.textContent = value;
+
+  item.append(labelEl, valueEl);
+  return item;
+}
+
 function renderAccounts(users, total) {
   const list = document.getElementById("accounts-list");
   const empty = document.getElementById("accounts-empty");
-  const tableHead = document.getElementById("accounts-table-head");
-  const count = document.getElementById("accounts-count");
 
-  if (!list || !empty || !tableHead) return;
+  if (!list || !empty) return;
 
-  if (count) {
-    count.textContent = `${total} registered`;
-  }
-
+  updateAccountCounts(total);
   list.replaceChildren();
 
   const hasUsers = users.length > 0;
   empty.classList.toggle("is-hidden", hasUsers);
-  tableHead.classList.toggle("is-hidden", !hasUsers);
   list.classList.toggle("is-hidden", !hasUsers);
 
   if (!hasUsers) {
@@ -77,31 +99,39 @@ function renderAccounts(users, total) {
     item.className = "accounts-entry";
 
     const rank = document.createElement("span");
-    rank.className = "accounts-rank";
+    rank.className = "accounts-entry-rank";
     rank.textContent = String(index + 1).padStart(2, "0");
+
+    const main = document.createElement("div");
+    main.className = "accounts-entry-main";
 
     const player = document.createElement("div");
     player.className = "accounts-player";
     player.append(createAvatar(user));
 
+    const copy = document.createElement("div");
+    copy.className = "accounts-entry-copy";
+
     const name = document.createElement("span");
     name.className = "accounts-username";
     name.textContent = user.username;
-    player.append(name);
 
     const kickId = document.createElement("span");
     kickId.className = "accounts-kick-id";
-    kickId.textContent = user.kickUserId;
+    kickId.textContent = `Kick ID ${user.kickUserId}`;
 
-    const joined = document.createElement("span");
-    joined.className = "accounts-date";
-    joined.textContent = formatDate(user.createdAt);
+    copy.append(name, kickId);
+    player.append(copy);
 
-    const lastLogin = document.createElement("span");
-    lastLogin.className = "accounts-date";
-    lastLogin.textContent = formatDate(user.lastLoginAt);
+    const meta = document.createElement("div");
+    meta.className = "accounts-entry-meta";
+    meta.append(
+      createMetaItem("Joined", formatDate(user.createdAt)),
+      createMetaItem("Last login", formatDate(user.lastLoginAt))
+    );
 
-    item.append(rank, player, kickId, joined, lastLogin);
+    main.append(player, meta);
+    item.append(rank, main);
     list.append(item);
   });
 }
