@@ -11,5 +11,7 @@ data/bonus-hunt.json
 data/slot-requests.json
 data/slot-request-state.json
 data/stake-slot-catalog.json
+data/giveaway-state.json
+data/giveaway-entries.json
 .vercel
 .env*

@@ -73,6 +73,36 @@
               <span class="toggle-slider" aria-hidden="true"></span>
             </label>
           </div>
+
+          <div class="admin-panel-section">
+            <label class="guess-label" for="giveaways-keyword">Chat keyword</label>
+            <p class="admin-panel-text">
+              Viewers enter by typing this exact keyword in Kick chat while the giveaway is open.
+            </p>
+            <form class="admin-balance-row" id="giveaways-keyword-form">
+              <div class="guess-input-row admin-balance-input">
+                <input
+                  class="guess-input"
+                  id="giveaways-keyword"
+                  name="keyword"
+                  type="text"
+                  maxlength="64"
+                  autocomplete="off"
+                  spellcheck="false"
+                  placeholder="e.g. BLAKJAC"
+                />
+              </div>
+              <button type="submit" class="btn btn-sm btn-primary" id="giveaways-keyword-save">
+                Save keyword
+              </button>
+            </form>
+            <p class="guess-status is-hidden" id="giveaways-admin-status" role="status" aria-live="polite"></p>
+            <div class="giveaways-admin-actions">
+              <button type="button" class="btn btn-sm btn-outline" id="giveaways-clear-entries">
+                Clear entries
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="giveaways-card hunt-side-card">
@@ -81,18 +111,20 @@
               <p class="giveaways-eyebrow">Community</p>
               <h3 class="giveaways-title">Active giveaways</h3>
             </div>
-            <span class="giveaways-count" id="giveaways-count">0 live</span>
+            <span class="giveaways-count" id="giveaways-count">0 entries</span>
           </div>
 
           <p class="giveaways-empty" id="giveaways-empty">
             No active giveaways right now. Watch live on Kick and check back when the next drop goes up.
           </p>
 
-          <p class="giveaways-open is-hidden" id="giveaways-open">
-            Giveaways are live! Watch the Kick stream or check chat for entry details.
-          </p>
+          <div class="giveaways-open is-hidden" id="giveaways-open">
+            <p class="giveaways-open-copy">
+              Type <strong id="giveaways-keyword-display">keyword</strong> in Kick chat to enter.
+            </p>
+          </div>
 
-          <ul class="giveaways-list is-hidden" id="giveaways-list"></ul>
+          <ol class="giveaways-list is-hidden" id="giveaways-list"></ol>
         </div>
       </div>
     </section>
