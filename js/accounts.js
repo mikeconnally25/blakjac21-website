@@ -73,7 +73,12 @@ function filterUsers(users, query) {
   return users.filter((user) => {
     const username = String(user.username || "").toLowerCase();
     const kickUserId = String(user.kickUserId || "").toLowerCase();
-    return username.includes(term) || kickUserId.includes(term);
+    const stakeUsername = String(user.stakeUsername || "").toLowerCase();
+    return (
+      username.includes(term) ||
+      kickUserId.includes(term) ||
+      stakeUsername.includes(term)
+    );
   });
 }
 
@@ -165,7 +170,9 @@ function renderAccounts(users) {
 
     const kickId = document.createElement("span");
     kickId.className = "accounts-kick-id";
-    kickId.textContent = `Kick ID ${user.kickUserId}`;
+    kickId.textContent = user.stakeUsername
+      ? `Stake: ${user.stakeUsername}`
+      : `Kick ID ${user.kickUserId}`;
 
     copy.append(name, kickId);
     player.append(copy);
@@ -174,7 +181,11 @@ function renderAccounts(users) {
     meta.className = "accounts-entry-meta";
     meta.append(
       createMetaItem("Joined", formatDate(user.createdAt)),
-      createMetaItem("Last login", formatDate(user.lastLoginAt))
+      createMetaItem("Last login", formatDate(user.lastLoginAt)),
+      createMetaItem(
+        "Stake linked",
+        user.stakeLinkedAt ? formatDate(user.stakeLinkedAt) : "Not linked"
+      )
     );
 
     main.append(player, meta);
