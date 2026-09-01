@@ -214,6 +214,53 @@
                 Clear hunt
               </button>
             </div>
+
+            <div class="hunt-admin-queue is-hidden" id="hunt-admin-queue">
+              <div class="hunt-admin-queue-header">
+                <div>
+                  <p class="admin-panel-label">Slot queue</p>
+                  <p class="admin-panel-text">Set bets and load requests into the bonus form.</p>
+                </div>
+              </div>
+              <div class="requests-hub-list-wrap hunt-admin-queue-list">
+                <div class="slot-requests-table-head is-hidden" id="slot-requests-table-head" aria-hidden="true">
+                  <span>Viewer</span>
+                  <span>Slot</span>
+                  <span>Bet</span>
+                  <span class="slot-requests-table-head-actions" aria-hidden="true"></span>
+                </div>
+                <p class="requests-hub-empty" id="slot-requests-empty">No slot requests yet.</p>
+                <ul class="slot-requests-list is-hidden" id="slot-requests-list"></ul>
+              </div>
+              <div class="requests-hub-admin hunt-admin-queue-tools is-hidden" id="slot-requests-admin">
+                <div class="requests-hub-kick is-hidden" id="kick-chat-admin">
+                  <p class="requests-hub-kick-title">Kick chat setup</p>
+                  <p class="requests-hub-kick-status" id="kick-chat-status">
+                    Checking Kick chat connection...
+                  </p>
+                  <p class="requests-hub-kick-meta" id="kick-bot-status"></p>
+                  <div class="requests-hub-kick-actions">
+                    <a href="/api/kick/bot/login" class="btn btn-sm btn-kick" id="kick-bot-connect">
+                      Connect chat bot
+                    </a>
+                    <button type="button" class="btn btn-sm btn-primary" id="kick-chat-subscribe">
+                      Enable !s in chat
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline" id="kick-test-command">
+                      Test queue
+                    </button>
+                  </div>
+                  <p class="requests-hub-kick-meta is-hidden" id="kick-webhook-log"></p>
+                </div>
+                <button type="button" class="btn btn-sm btn-primary" id="slot-catalog-sync">
+                  Sync slots from Stake
+                </button>
+                <button type="button" class="btn btn-sm btn-outline" id="slot-requests-clear">
+                  Clear requests
+                </button>
+              </div>
+            </div>
+
             <p class="guess-status is-hidden" id="bonus-hunt-status" role="status" aria-live="polite"></p>
               </div>
             </div>
@@ -282,43 +329,7 @@
                 <p class="requests-hub-catalog" id="slot-catalog-count">Loading slots...</p>
               </div>
 
-              <div class="requests-hub-list-wrap">
-                <div class="slot-requests-table-head is-hidden" id="slot-requests-table-head" aria-hidden="true">
-                  <span>Viewer</span>
-                  <span>Slot</span>
-                  <span>Bet</span>
-                </div>
-                <p class="requests-hub-empty" id="slot-requests-empty">No slot requests yet.</p>
-                <ul class="slot-requests-list is-hidden" id="slot-requests-list"></ul>
-              </div>
-
-              <div class="requests-hub-admin is-hidden" id="slot-requests-admin">
-                <div class="requests-hub-kick is-hidden" id="kick-chat-admin">
-                  <p class="requests-hub-kick-title">Kick chat setup</p>
-                  <p class="requests-hub-kick-status" id="kick-chat-status">
-                    Checking Kick chat connection...
-                  </p>
-                  <p class="requests-hub-kick-meta" id="kick-bot-status"></p>
-                  <div class="requests-hub-kick-actions">
-                    <a href="/api/kick/bot/login" class="btn btn-sm btn-kick" id="kick-bot-connect">
-                      Connect chat bot
-                    </a>
-                    <button type="button" class="btn btn-sm btn-primary" id="kick-chat-subscribe">
-                      Enable !s in chat
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline" id="kick-test-command">
-                      Test queue
-                    </button>
-                  </div>
-                  <p class="requests-hub-kick-meta is-hidden" id="kick-webhook-log"></p>
-                </div>
-                <button type="button" class="btn btn-sm btn-primary" id="slot-catalog-sync">
-                  Sync slots from Stake
-                </button>
-                <button type="button" class="btn btn-sm btn-outline" id="slot-requests-clear">
-                  Clear requests
-                </button>
-              </div>
+              <div id="slot-requests-viewer-mount"></div>
             </div>
           </aside>
         </div>
