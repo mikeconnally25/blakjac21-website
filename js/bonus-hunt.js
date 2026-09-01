@@ -618,6 +618,57 @@ async function loadBonusHunt() {
   }
 }
 
+async function addBonusToHunt(slot, bet) {
+  const slotName = slot?.trim();
+  const betAmount = Number(bet);
+
+  if (!slotName) {
+    setStatus("Enter a slot name.", "error");
+    return null;
+  }
+
+  if (!Number.isFinite(betAmount) || betAmount < 0) {
+    setStatus("Enter a valid bet amount.", "error");
+    return null;
+  }
+
+  setStatus("Adding bonus...");
+
+  try {
+    const response = await fetch("/api/bonus-hunt/add", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slot: slotName, bet: betAmount }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      setStatus(data.error || "Could not add bonus.", "error");
+      return null;
+    }
+
+    setStatus("Bonus added.", "success");
+    await loadBonusHunt();
+    return data.bonus || null;
+  } catch {
+    setStatus("Could not add bonus. Try again.", "error");
+    return null;
+  }
+}
+
+function scrollToBonusCard(bonusId) {
+  const card = bonusId
+    ? document.querySelector(`.hunt-bonus-card[data-id="${bonusId}"]`)
+    : null;
+  const target = card || document.querySelector(".hunt-bonus-section");
+
+  target?.scrollIntoView({
+    behavior: "smooth",
+    block: "nearest",
+  });
+}
+
 async function loadCurrentUser() {
   try {
     const response = await fetch("/api/auth/me", {
@@ -1139,16 +1190,29 @@ function renderSlotRequests(requests) {
           return;
         }
 
-        const slotInput = document.getElementById("bonus-slot");
-        const bonusBetInput = document.getElementById("bonus-bet");
-        if (slotInput) {
-          slotInput.value = request.slotName;
+        addBonusBtn.disabled = true;
+
+        const bonus = await addBonusToHunt(request.slotName, betAmount);
+
+        if (bonus) {
+          slotBetDrafts.delete(request.id);
+
+          try {
+            await fetch("/api/bonus-hunt/requests/remove", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: request.id }),
+            });
+            await loadSlotRequests();
+          } catch {
+            // Bonus was added; queue refresh can catch up on the next poll.
+          }
+
+          scrollToBonusCard(bonus.id);
         }
-        if (bonusBetInput) {
-          bonusBetInput.value = Number(betAmount).toFixed(2);
-        }
-        slotInput?.focus();
-        setStatus(`Loaded ${request.slotName} into the add bonus form.`, "success");
+
+        addBonusBtn.disabled = false;
       });
 
       const removeBtn = document.createElement("button");
@@ -1470,43 +1534,17 @@ function initAdminForm() {
     const betInput = document.getElementById("bonus-bet");
     const submitBtn = document.getElementById("bonus-add-submit");
     const slot = slotInput?.value.trim();
-    const bet = Number(betInput?.value);
-
-    if (!slot) {
-      setStatus("Enter a slot name.", "error");
-      return;
-    }
-
-    if (!Number.isFinite(bet) || bet < 0) {
-      setStatus("Enter a valid bet amount.", "error");
-      return;
-    }
+    const bet = betInput?.value;
 
     submitBtn.disabled = true;
-    setStatus("Adding bonus...");
 
-    try {
-      const response = await fetch("/api/bonus-hunt/add", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slot, bet }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        setStatus(data.error || "Could not add bonus.", "error");
-        return;
-      }
-
+    const bonus = await addBonusToHunt(slot, bet);
+    if (bonus) {
       form.reset();
-      setStatus("Bonus added.", "success");
-      await loadBonusHunt();
-    } catch {
-      setStatus("Could not add bonus. Try again.", "error");
-    } finally {
-      submitBtn.disabled = false;
+      scrollToBonusCard(bonus.id);
     }
+
+    submitBtn.disabled = false;
   });
 
   clearBtn?.addEventListener("click", async () => {
