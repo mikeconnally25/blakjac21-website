@@ -5,6 +5,7 @@ let slotCatalog = [];
 let slotGroups = [];
 let slotCatalogUpdatedAt = null;
 let acceptingRequests = false;
+let slotRequests = [];
 let stakeSyncPollTimer = null;
 let stakeSyncInProgress = false;
 let huntMeta = {
@@ -527,23 +528,35 @@ function handleKickBotRedirectParams() {
 
 function updateCollectingStatus() {
   const status = document.getElementById("hunt-status");
+  const panelStatus = document.getElementById("requests-panel-status");
   const isAdmin = Boolean(currentUser?.isAdmin);
 
-  if (!status) return;
-
-  status.textContent = acceptingRequests
+  const label = acceptingRequests
     ? REQUEST_STATUS_LABELS.open
     : REQUEST_STATUS_LABELS.closed;
-  status.className = acceptingRequests
+  const statusClass = acceptingRequests
     ? "hunt-status hunt-status--collecting hunt-status-toggle"
     : "hunt-status hunt-status--closed hunt-status-toggle";
-  status.setAttribute("aria-pressed", acceptingRequests ? "true" : "false");
-  status.disabled = !isAdmin;
-  status.title = isAdmin
-    ? "Click to toggle slot request collection"
-    : acceptingRequests
-      ? "Collecting slot requests"
-      : "Check back later for slot requests";
+  const panelClass = acceptingRequests
+    ? "requests-hub-status requests-hub-status--open"
+    : "requests-hub-status requests-hub-status--closed";
+
+  if (status) {
+    status.textContent = label;
+    status.className = statusClass;
+    status.setAttribute("aria-pressed", acceptingRequests ? "true" : "false");
+    status.disabled = !isAdmin;
+    status.title = isAdmin
+      ? "Click to toggle slot request collection"
+      : acceptingRequests
+        ? "Collecting slot requests"
+        : "Check back later for slot requests";
+  }
+
+  if (panelStatus) {
+    panelStatus.textContent = label;
+    panelStatus.className = panelClass;
+  }
 }
 
 function updateToggleLabel() {
@@ -579,6 +592,7 @@ async function setAcceptingRequests(nextAccepting) {
   acceptingRequests = Boolean(data.acceptingRequests);
   updateRequestPanels();
   updateToggleLabel();
+  renderSlotRequests(slotRequests);
   return acceptingRequests;
 }
 
@@ -586,6 +600,7 @@ function updateRequestPanels() {
   const closedPanel = document.getElementById("slot-request-closed");
   const requestPanel = document.getElementById("slot-request-panel");
   const guestPanel = document.getElementById("slot-request-guest");
+  const adminActions = document.getElementById("slot-requests-admin");
   const isAdmin = Boolean(currentUser?.isAdmin);
   const isSignedIn = Boolean(currentUser);
   const open = acceptingRequests;
@@ -593,6 +608,7 @@ function updateRequestPanels() {
   closedPanel?.classList.toggle("is-hidden", open || isAdmin);
   requestPanel?.classList.toggle("is-hidden", !open || isAdmin || !isSignedIn);
   guestPanel?.classList.toggle("is-hidden", !open || isSignedIn);
+  adminActions?.classList.toggle("is-hidden", !isAdmin);
 
   const select = document.getElementById("slot-request-select");
   const submitBtn = document.getElementById("slot-request-submit");
@@ -620,7 +636,6 @@ function updatePanels() {
 function renderSlotCatalogSelect(selectedSlug = "") {
   const select = document.getElementById("slot-request-select");
   const count = document.getElementById("slot-catalog-count");
-  const meta = document.getElementById("slot-catalog-meta");
 
   if (!select) return;
 
@@ -668,17 +683,6 @@ function renderSlotCatalogSelect(selectedSlug = "") {
         ? "1 allowed slot"
         : `${slotCatalog.length} allowed slots`;
   }
-
-  if (meta) {
-    if (!slotCatalog.length) {
-      meta.textContent =
-        "No slots loaded yet. Click Refresh slot list in the admin panel.";
-    } else {
-      meta.textContent = slotCatalogUpdatedAt
-        ? `Slot list updated ${new Date(slotCatalogUpdatedAt).toLocaleString()}`
-        : "";
-    }
-  }
 }
 
 function renderSlotRequests(requests) {
@@ -698,32 +702,40 @@ function renderSlotRequests(requests) {
   }
 
   if (!total) {
-    empty.textContent = acceptingRequests
-      ? "No slot requests yet."
-      : "Slot requests are closed. Turn on Accept requests in the admin panel.";
+    const isAdmin = Boolean(currentUser?.isAdmin);
+    if (acceptingRequests) {
+      empty.textContent = "No slot requests yet.";
+    } else if (isAdmin) {
+      empty.textContent =
+        "No requests in the queue. Click Collecting in the hunt header to start accepting them.";
+    } else {
+      empty.textContent =
+        "Nothing in the queue yet. Check back when the stream is Collecting.";
+    }
   }
 
   requests.forEach((request) => {
     const item = document.createElement("li");
     item.className = "slot-request-entry";
 
-    const main = document.createElement("div");
-    main.className = "slot-request-entry-main";
+    const top = document.createElement("div");
+    top.className = "slot-request-entry-top";
 
     const user = document.createElement("span");
     user.className = "slot-request-user";
     user.textContent = request.username;
 
-    const slot = document.createElement("span");
-    slot.className = "slot-request-slot";
-    slot.textContent = request.slotName;
-
     const group = document.createElement("span");
     group.className = "slot-request-group";
     group.textContent = request.groupLabel;
 
-    main.append(user, slot, group);
-    item.append(main);
+    top.append(user, group);
+
+    const slot = document.createElement("p");
+    slot.className = "slot-request-slot";
+    slot.textContent = request.slotName;
+
+    item.append(top, slot);
 
     if (currentUser?.isAdmin) {
       const actions = document.createElement("div");
@@ -798,7 +810,8 @@ async function loadSlotRequests() {
 
     const data = await response.json();
     acceptingRequests = Boolean(data.acceptingRequests);
-    renderSlotRequests(data.requests || []);
+    slotRequests = data.requests || [];
+    renderSlotRequests(slotRequests);
     updateRequestPanels();
     updateToggleLabel();
 
