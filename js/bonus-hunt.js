@@ -261,6 +261,7 @@ function renderSummary(summary, hunt) {
   const totalBonuses = document.getElementById("summary-total");
   const startBalance = document.getElementById("summary-start");
   const profit = document.getElementById("summary-profit");
+  const breakeven = document.getElementById("summary-breakeven");
   const progress = document.getElementById("hunt-progress");
   const progressCount = document.getElementById("hunt-progress-count");
   const progressFill = document.getElementById("hunt-progress-fill");
@@ -274,6 +275,22 @@ function renderSummary(summary, hunt) {
   profit.textContent = formatCurrency(summary.profit);
   profit.classList.toggle("is-positive", summary.profit > 0);
   profit.classList.toggle("is-negative", summary.profit < 0);
+
+  if (breakeven) {
+    if (summary.breakevenX === null || summary.breakevenX === undefined) {
+      breakeven.textContent = "—";
+      breakeven.classList.remove("is-positive", "is-negative", "is-target");
+    } else if (summary.breakevenX <= 0) {
+      breakeven.textContent = "0.00x";
+      breakeven.classList.add("is-positive");
+      breakeven.classList.remove("is-negative", "is-target");
+    } else {
+      breakeven.textContent = formatMultiplier(summary.breakevenX);
+      breakeven.classList.remove("is-positive", "is-negative");
+      breakeven.classList.toggle("is-target", summary.breakevenX >= 1);
+      breakeven.classList.toggle("is-negative", summary.breakevenX > 100);
+    }
+  }
 
   if (bonusCount) {
     bonusCount.textContent =

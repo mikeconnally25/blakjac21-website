@@ -926,7 +926,7 @@ ul {
 .hunt-stats {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.8rem;
   margin-bottom: 1.1rem;
 }
@@ -953,6 +953,18 @@ ul {
 }
 
 .hunt-stat--profit .hunt-stat-value.is-negative {
+  color: #ff8f98;
+}
+
+.hunt-stat--breakeven .hunt-stat-value.is-positive {
+  color: #7dffb0;
+}
+
+.hunt-stat--breakeven .hunt-stat-value.is-target {
+  color: #f0c98e;
+}
+
+.hunt-stat--breakeven .hunt-stat-value.is-negative {
   color: #ff8f98;
 }
 
@@ -1902,7 +1914,7 @@ ul {
   }
 
   .hunt-stats {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .past-hunt-entry-detail-stats {
