@@ -1,4 +1,4 @@
-import { handleBonusHuntRequestBet } from "../../lib/bonus-hunt-handlers.js";
+import { handleBonusHuntRequestBet } from "../../../lib/bonus-hunt-handlers.js";
 
 export default function handler(req, res) {
   if (req.method !== "POST") {

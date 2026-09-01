@@ -1,4 +1,4 @@
-import { handleGiveawayEntriesClear } from "../../lib/giveaway-handlers.js";
+import { handleGiveawayEntriesClear } from "../../../lib/giveaway-handlers.js";
 
 export default function handler(req, res) {
   if (req.method !== "POST") {

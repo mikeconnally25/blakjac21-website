@@ -16,6 +16,7 @@ import {
   handleBonusHuntRemove,
   handleBonusHuntUpdate,
   handleBonusHuntRequestRemove,
+  handleBonusHuntRequestBet,
   handleBonusHuntRequestSubmit,
   handleBonusHuntRequestsClear,
   handleBonusHuntRequestsList,
@@ -110,6 +111,9 @@ app.post("/api/bonus-hunt/request", (req, res) =>
 );
 app.post("/api/bonus-hunt/requests/remove", (req, res) =>
   handleBonusHuntRequestRemove(req, res)
+);
+app.post("/api/bonus-hunt/requests/bet", (req, res) =>
+  handleBonusHuntRequestBet(req, res)
 );
 app.post("/api/bonus-hunt/requests/clear", (req, res) =>
   handleBonusHuntRequestsClear(req, res)

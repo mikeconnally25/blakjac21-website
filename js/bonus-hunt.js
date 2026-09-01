@@ -1501,7 +1501,7 @@ async function removeSlotRequestEntry(id, button) {
       body: JSON.stringify({ id }),
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       pendingSlotRequestRemovals.delete(id);
       setStatus(data.error || "Could not remove slot request.", "error");
@@ -1512,9 +1512,9 @@ async function removeSlotRequestEntry(id, button) {
     pendingSlotRequestRemovals.delete(id);
     setStatus("Slot request removed.", "success");
     await loadSlotRequests({ forceRender: true });
-  } catch {
+  } catch (error) {
     pendingSlotRequestRemovals.delete(id);
-    setStatus("Could not remove slot request. Try again.", "error");
+    setStatus(error.message || "Could not remove slot request. Try again.", "error");
     await loadSlotRequests({ forceRender: true });
   } finally {
     if (button.isConnected) {

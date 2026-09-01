@@ -1,4 +1,4 @@
-import { handleBonusHuntRequestRemove } from "../../lib/bonus-hunt-handlers.js";
+import { handleBonusHuntRequestRemove } from "../../../lib/bonus-hunt-handlers.js";
 
 export default function handler(req, res) {
   if (req.method !== "POST") {

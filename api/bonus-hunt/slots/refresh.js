@@ -1,4 +1,4 @@
-import { handleBonusHuntSlotsRefresh } from "../../lib/bonus-hunt-handlers.js";
+import { handleBonusHuntSlotsRefresh } from "../../../lib/bonus-hunt-handlers.js";
 
 export default function handler(req, res) {
   if (req.method !== "POST") {
