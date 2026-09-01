@@ -6,11 +6,6 @@ export const config = {
   },
 };
 
-export default function handler(req, res) {
-  if (req.method !== "POST") {
-    res.statusCode = 405;
-    return res.end("Method not allowed");
-  }
-
+export default async function handler(req, res) {
   return handleKickWebhook(req, res);
 }

@@ -640,6 +640,7 @@ function renderKickChatStatus(status) {
   const panel = document.getElementById("kick-chat-admin");
   const chatStatus = document.getElementById("kick-chat-status");
   const botMeta = document.getElementById("kick-bot-status");
+  const webhookLog = document.getElementById("kick-webhook-log");
   const connectButton = document.getElementById("kick-bot-connect");
   const subscribeButton = document.getElementById("kick-chat-subscribe");
 
@@ -660,19 +661,32 @@ function renderKickChatStatus(status) {
 
   const lines = [];
   if (status.kickChatSubscribed) {
-    lines.push("Chat listener is active. !s commands should reach the queue.");
+    lines.push("Chat listener is subscribed.");
   } else {
-    lines.push("Chat listener is not active. Click Enable !s in chat.");
+    lines.push("Chat listener is not subscribed. Click Enable !s in chat.");
   }
 
   if (status.chatRepliesReady) {
     lines.push("Bot replies are configured.");
   } else {
-    lines.push("Bot replies are not configured. Connect chat bot for confirmations in chat.");
+    lines.push("Connect chat bot if you want confirmation messages in Kick chat.");
   }
 
   if (status.subscriptionError) {
     lines.push(status.subscriptionError);
+  }
+
+  const latestWebhook = status.recentWebhookEvents?.[0];
+  if (latestWebhook) {
+    if (latestWebhook.ok && latestWebhook.handled) {
+      lines.push(`Last chat event processed ${new Date(latestWebhook.at).toLocaleTimeString()}.`);
+    } else if (latestWebhook.error) {
+      lines.push(`Last webhook issue: ${latestWebhook.error}`);
+    } else if (latestWebhook.reason === "not-command") {
+      lines.push(`Last chat event received ${new Date(latestWebhook.at).toLocaleTimeString()} (not a !s command).`);
+    }
+  } else {
+    lines.push("No chat webhook events received yet.");
   }
 
   if (chatStatus) {
@@ -683,10 +697,28 @@ function renderKickChatStatus(status) {
   }
 
   if (botMeta) {
-    const webhook = status.webhookUrl
-      ? `Webhook URL for Kick Developer Portal: ${status.webhookUrl}`
+    botMeta.textContent = status.webhookUrl
+      ? `Kick Developer Portal webhook URL: ${status.webhookUrl}`
       : "";
-    botMeta.textContent = webhook;
+  }
+
+  if (webhookLog) {
+    const entries = status.recentWebhookEvents || [];
+    if (entries.length) {
+      webhookLog.textContent = entries
+        .slice(0, 3)
+        .map((entry) => {
+          const time = new Date(entry.at).toLocaleTimeString();
+          if (entry.error) return `${time}: ${entry.error}`;
+          if (entry.handled) return `${time}: processed !s from ${entry.username || "viewer"}`;
+          return `${time}: ${entry.reason || entry.stage || "event"}`;
+        })
+        .join(" | ");
+      webhookLog.classList.remove("is-hidden");
+    } else {
+      webhookLog.textContent = "";
+      webhookLog.classList.add("is-hidden");
+    }
   }
 
   if (connectButton) {
@@ -1482,6 +1514,39 @@ function initAdminForm() {
       await loadKickChatStatus();
     } catch {
       setStatus("Could not enable !s in chat. Try again.", "error");
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  document.getElementById("kick-test-command")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    setStatus("Testing slot queue...");
+
+    try {
+      const response = await fetch("/api/kick/test-command", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slotQuery: "gates of olympus" }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setStatus(data.error || "Queue test failed.", "error");
+        return;
+      }
+
+      await loadSlotRequests();
+      setStatus(
+        data.latestRequest
+          ? `Queue test worked. Added ${data.latestRequest.slotName}.`
+          : "Queue test ran but no request was saved.",
+        data.latestRequest ? "success" : "error"
+      );
+      await loadKickChatStatus();
+    } catch {
+      setStatus("Queue test failed. Try again.", "error");
     } finally {
       button.disabled = false;
     }

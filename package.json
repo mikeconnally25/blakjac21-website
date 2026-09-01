@@ -7,6 +7,7 @@
     "start": "node server.js",
     "dev": "node server.js",
     "verify:kick": "node scripts/verify-kick-credentials.mjs",
+    "diagnose:kick": "node scripts/diagnose-kick-chat.mjs",
     "verify:stake": "node scripts/verify-stake-token.mjs",
     "refresh:slots": "node scripts/refresh-stake-catalog.mjs"
   },
