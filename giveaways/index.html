@@ -54,16 +54,28 @@
     <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
 
     <section class="section page-section giveaways-page">
-      <div class="container page-content">
+      <div class="container page-content giveaways-shell">
         <a href="/#menu" class="back-link">← Back to menu</a>
 
-        <div class="section-header left">
-          <h2>Giveaways</h2>
-          <p>Stream rewards, community prizes, and bonus drops for BLAKJAC21 viewers.</p>
+        <div class="giveaways-hero">
+          <div class="giveaways-hero-copy">
+            <p class="giveaways-hero-brand">BLAKJAC<span class="accent">21</span></p>
+            <h1 class="giveaways-hero-title">Giveaways</h1>
+            <p class="giveaways-hero-subtitle">
+              Type the live keyword in Kick chat to enter. Watch the case spin when a winner drops.
+            </p>
+          </div>
+          <div class="giveaways-hero-status" id="giveaways-hero-status" data-state="closed">
+            <span class="giveaways-status-dot" aria-hidden="true"></span>
+            <div>
+              <p class="giveaways-status-label">Status</p>
+              <p class="giveaways-status-value" id="giveaways-status-value">Closed</p>
+            </div>
+          </div>
         </div>
 
-        <div class="admin-panel is-hidden" id="giveaways-admin-panel">
-          <div class="admin-panel-row">
+        <div class="admin-panel giveaways-admin is-hidden" id="giveaways-admin-panel">
+          <div class="giveaways-admin-top">
             <div>
               <p class="admin-panel-label">Admin controls</p>
               <p class="admin-panel-text" id="giveaways-toggle-status">Giveaways are closed</p>
@@ -74,87 +86,103 @@
             </label>
           </div>
 
-          <div class="admin-panel-section">
-            <label class="guess-label" for="giveaways-keyword">Chat keyword</label>
-            <p class="admin-panel-text">
-              Viewers enter by typing this exact keyword in Kick chat while the giveaway is open.
-            </p>
-            <form class="admin-balance-row" id="giveaways-keyword-form">
-              <div class="guess-input-row admin-balance-input">
-                <input
-                  class="guess-input"
-                  id="giveaways-keyword"
-                  name="keyword"
-                  type="text"
-                  maxlength="64"
-                  autocomplete="off"
-                  spellcheck="false"
-                  placeholder="e.g. BLAKJAC"
-                />
-              </div>
-              <button type="submit" class="btn btn-sm btn-primary" id="giveaways-keyword-save">
-                Save keyword
-              </button>
-            </form>
-            <p class="guess-status is-hidden" id="giveaways-admin-status" role="status" aria-live="polite"></p>
-            <div class="giveaways-admin-actions">
+          <div class="giveaways-admin-grid">
+            <div class="giveaways-admin-block">
+              <label class="guess-label" for="giveaways-keyword">Chat keyword</label>
+              <p class="admin-panel-text">
+                Viewers enter by typing this exact keyword in Kick chat while the giveaway is open.
+              </p>
+              <form class="giveaways-keyword-form" id="giveaways-keyword-form">
+                <div class="guess-input-row">
+                  <input
+                    class="guess-input"
+                    id="giveaways-keyword"
+                    name="keyword"
+                    type="text"
+                    maxlength="64"
+                    autocomplete="off"
+                    spellcheck="false"
+                    placeholder="e.g. BLAKJAC"
+                  />
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary" id="giveaways-keyword-save">
+                  Save keyword
+                </button>
+              </form>
+            </div>
+
+            <div class="giveaways-admin-block giveaways-admin-tools">
+              <p class="guess-label">Entrants</p>
+              <p class="admin-panel-text">Reset the pool before the next drop.</p>
               <button type="button" class="btn btn-sm btn-outline" id="giveaways-clear-entries">
                 Clear entries
               </button>
             </div>
           </div>
+
+          <p class="guess-status is-hidden" id="giveaways-admin-status" role="status" aria-live="polite"></p>
         </div>
 
-        <div class="giveaways-card hunt-side-card">
-          <div class="giveaways-header">
-            <div>
-              <p class="giveaways-eyebrow">Community</p>
-              <h3 class="giveaways-title">Active giveaways</h3>
-            </div>
-            <span class="giveaways-count" id="giveaways-count">0 entries</span>
-          </div>
+        <div class="giveaways-layout">
+          <div class="giveaways-layout-main">
+            <div class="giveaways-card giveaways-reveal-card">
+              <div class="giveaways-header">
+                <div>
+                  <p class="giveaways-eyebrow">Case opening</p>
+                  <h2 class="giveaways-title">Reveal winner</h2>
+                </div>
+                <span class="giveaways-count" id="giveaways-reveal-count">Need entrants</span>
+              </div>
 
-          <p class="giveaways-empty" id="giveaways-empty">
-            No active giveaways right now. Watch live on Kick and check back when the next drop goes up.
-          </p>
+              <p class="giveaways-empty" id="giveaways-reveal-empty">
+                Entrants will fill the reel once people join. Spin the case to lock in a winner.
+              </p>
 
-          <div class="giveaways-open is-hidden" id="giveaways-open">
-            <p class="giveaways-open-copy">
-              Type <strong id="giveaways-keyword-display">keyword</strong> in Kick chat to enter.
-            </p>
-          </div>
+              <div class="case-reel is-hidden" id="case-reel" aria-live="polite">
+                <div class="case-reel-fade case-reel-fade-left" aria-hidden="true"></div>
+                <div class="case-reel-fade case-reel-fade-right" aria-hidden="true"></div>
+                <div class="case-reel-marker" aria-hidden="true"></div>
+                <div class="case-reel-window">
+                  <div class="case-reel-track" id="case-reel-track"></div>
+                </div>
+              </div>
 
-          <ol class="giveaways-list is-hidden" id="giveaways-list"></ol>
-        </div>
+              <p class="case-reel-result is-hidden" id="case-reel-result"></p>
 
-        <div class="giveaways-card hunt-side-card giveaways-reveal-card">
-          <div class="giveaways-header">
-            <div>
-              <p class="giveaways-eyebrow">Winner</p>
-              <h3 class="giveaways-title">Reveal winner</h3>
-            </div>
-            <span class="giveaways-count" id="giveaways-reveal-count">Need entrants</span>
-          </div>
-
-          <p class="giveaways-empty" id="giveaways-reveal-empty">
-            Entrants will appear here. Once people join, spin the case to reveal a winner.
-          </p>
-
-          <div class="case-reel is-hidden" id="case-reel" aria-live="polite">
-            <div class="case-reel-fade case-reel-fade-left" aria-hidden="true"></div>
-            <div class="case-reel-fade case-reel-fade-right" aria-hidden="true"></div>
-            <div class="case-reel-marker" aria-hidden="true"></div>
-            <div class="case-reel-window">
-              <div class="case-reel-track" id="case-reel-track"></div>
+              <div class="giveaways-reveal-actions is-hidden" id="giveaways-reveal-actions">
+                <button type="button" class="btn btn-primary giveaways-reveal-btn" id="giveaways-reveal-btn">
+                  Reveal Winner
+                </button>
+              </div>
             </div>
           </div>
 
-          <p class="case-reel-result is-hidden" id="case-reel-result"></p>
+          <div class="giveaways-layout-side">
+            <div class="giveaways-card">
+              <div class="giveaways-header">
+                <div>
+                  <p class="giveaways-eyebrow">Live drop</p>
+                  <h2 class="giveaways-title">Active giveaway</h2>
+                </div>
+                <span class="giveaways-count" id="giveaways-count">0 entries</span>
+              </div>
 
-          <div class="giveaways-reveal-actions is-hidden" id="giveaways-reveal-actions">
-            <button type="button" class="btn btn-primary" id="giveaways-reveal-btn">
-              Reveal Winner
-            </button>
+              <p class="giveaways-empty" id="giveaways-empty">
+                No active giveaway right now. Watch live on Kick and check back when the next keyword drops.
+              </p>
+
+              <div class="giveaways-open is-hidden" id="giveaways-open">
+                <p class="giveaways-open-label">Type this in Kick chat</p>
+                <p class="giveaways-keyword-chip" id="giveaways-keyword-display">keyword</p>
+                <p class="giveaways-open-copy">One entry per viewer. Exact match only.</p>
+              </div>
+
+              <div class="giveaways-list-head is-hidden" id="giveaways-list-head">
+                <span>#</span>
+                <span>Viewer</span>
+              </div>
+              <ol class="giveaways-list is-hidden" id="giveaways-list"></ol>
+            </div>
           </div>
         </div>
       </div>

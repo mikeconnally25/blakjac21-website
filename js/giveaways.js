@@ -41,8 +41,26 @@ function updateToggleLabel() {
   }
 }
 
+function updateHeroStatus() {
+  const status = document.getElementById("giveaways-hero-status");
+  const value = document.getElementById("giveaways-status-value");
+  if (!status || !value) return;
+
+  if (giveawayWinner) {
+    status.dataset.state = "winner";
+    value.textContent = `Winner · ${giveawayWinner.username}`;
+  } else if (giveawaysOpen) {
+    status.dataset.state = "open";
+    value.textContent = "Open";
+  } else {
+    status.dataset.state = "closed";
+    value.textContent = "Closed";
+  }
+}
+
 function renderEntries() {
   const list = document.getElementById("giveaways-list");
+  const listHead = document.getElementById("giveaways-list-head");
   const count = document.getElementById("giveaways-count");
   const empty = document.getElementById("giveaways-empty");
   const openPanel = document.getElementById("giveaways-open");
@@ -57,23 +75,25 @@ function renderEntries() {
     keywordDisplay.textContent = giveawayKeyword || "keyword";
   }
 
-  empty?.classList.toggle("is-hidden", giveawaysOpen);
+  empty?.classList.toggle("is-hidden", giveawaysOpen || giveawayEntries.length > 0);
   openPanel?.classList.toggle("is-hidden", !giveawaysOpen);
 
   if (!list) return;
 
   list.innerHTML = "";
 
-  if (!giveawaysOpen || giveawayEntries.length === 0) {
-    list.classList.add("is-hidden");
+  const showList = giveawayEntries.length > 0;
+  list.classList.toggle("is-hidden", !showList);
+  listHead?.classList.toggle("is-hidden", !showList);
+
+  if (!showList) {
     return;
   }
-
-  list.classList.remove("is-hidden");
 
   giveawayEntries.forEach((entry, index) => {
     const item = document.createElement("li");
     item.className = "giveaways-entry";
+    item.style.animationDelay = `${Math.min(index, 12) * 35}ms`;
 
     const rank = document.createElement("span");
     rank.className = "giveaways-entry-rank";
@@ -273,6 +293,7 @@ function updatePanels() {
   }
 
   updateToggleLabel();
+  updateHeroStatus();
   renderEntries();
   updateRevealPanel();
 }
