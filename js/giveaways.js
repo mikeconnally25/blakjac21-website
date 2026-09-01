@@ -58,17 +58,56 @@ function updateHeroStatus() {
   }
 }
 
+function buildEntryItem(entry, index) {
+  const item = document.createElement("li");
+  item.className = "giveaways-entry";
+
+  const rank = document.createElement("span");
+  rank.className = "giveaways-entry-rank";
+  rank.textContent = String(index + 1).padStart(2, "0");
+
+  const user = document.createElement("span");
+  user.className = "giveaways-entry-user";
+  user.textContent = entry.username || "viewer";
+
+  item.append(rank, user);
+  return item;
+}
+
+function updateRollingAnimation() {
+  const viewport = document.getElementById("giveaways-rolling-viewport");
+  const track = document.getElementById("giveaways-list");
+  if (!viewport || !track) return;
+
+  const uniqueCount = giveawayEntries.length;
+  const shouldRoll = uniqueCount > 3;
+
+  track.classList.toggle("is-rolling", shouldRoll);
+  viewport.classList.toggle("is-rolling", shouldRoll);
+
+  if (!shouldRoll) {
+    track.style.removeProperty("--roll-duration");
+    track.style.transform = "";
+    return;
+  }
+
+  const halfHeight = track.scrollHeight / 2;
+  const duration = Math.max(12, uniqueCount * 1.8);
+  track.style.setProperty("--roll-distance", `${halfHeight}px`);
+  track.style.setProperty("--roll-duration", `${duration}s`);
+}
+
 function renderEntries() {
   const list = document.getElementById("giveaways-list");
-  const listHead = document.getElementById("giveaways-list-head");
+  const viewport = document.getElementById("giveaways-rolling-viewport");
+  const entrantsEmpty = document.getElementById("giveaways-entrants-empty");
   const count = document.getElementById("giveaways-count");
   const empty = document.getElementById("giveaways-empty");
   const openPanel = document.getElementById("giveaways-open");
   const keywordDisplay = document.getElementById("giveaways-keyword-display");
 
   if (count) {
-    const total = giveawayEntries.length;
-    count.textContent = `${total} ${total === 1 ? "entry" : "entries"}`;
+    count.textContent = String(giveawayEntries.length);
   }
 
   if (keywordDisplay) {
@@ -78,34 +117,29 @@ function renderEntries() {
   empty?.classList.toggle("is-hidden", giveawaysOpen || giveawayEntries.length > 0);
   openPanel?.classList.toggle("is-hidden", !giveawaysOpen);
 
+  const hasEntries = giveawayEntries.length > 0;
+  entrantsEmpty?.classList.toggle("is-hidden", hasEntries);
+  viewport?.classList.toggle("is-hidden", !hasEntries);
+
   if (!list) return;
 
   list.innerHTML = "";
 
-  const showList = giveawayEntries.length > 0;
-  list.classList.toggle("is-hidden", !showList);
-  listHead?.classList.toggle("is-hidden", !showList);
-
-  if (!showList) {
+  if (!hasEntries) {
     return;
   }
 
   giveawayEntries.forEach((entry, index) => {
-    const item = document.createElement("li");
-    item.className = "giveaways-entry";
-    item.style.animationDelay = `${Math.min(index, 12) * 35}ms`;
-
-    const rank = document.createElement("span");
-    rank.className = "giveaways-entry-rank";
-    rank.textContent = String(index + 1);
-
-    const user = document.createElement("span");
-    user.className = "giveaways-entry-user";
-    user.textContent = entry.username || "viewer";
-
-    item.append(rank, user);
-    list.appendChild(item);
+    list.appendChild(buildEntryItem(entry, index));
   });
+
+  if (giveawayEntries.length > 3) {
+    giveawayEntries.forEach((entry, index) => {
+      list.appendChild(buildEntryItem(entry, index));
+    });
+  }
+
+  requestAnimationFrame(updateRollingAnimation);
 }
 
 function createCaseItem(entry, isWinner = false) {
@@ -566,6 +600,10 @@ window.addEventListener("auth:change", async (event) => {
   updatePanels();
   await loadGiveawayStatus();
   schedulePolling();
+});
+
+window.addEventListener("resize", () => {
+  updateRollingAnimation();
 });
 
 document.addEventListener("visibilitychange", () => {

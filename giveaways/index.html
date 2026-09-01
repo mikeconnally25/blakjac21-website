@@ -124,7 +124,48 @@
         </div>
 
         <div class="giveaways-layout">
+          <div class="giveaways-layout-side">
+            <div class="giveaways-card giveaways-entrants-card">
+              <div class="giveaways-entrants-top">
+                <span class="giveaways-entrants-total" id="giveaways-count">0</span>
+                <div class="giveaways-entrants-heading">
+                  <p class="giveaways-eyebrow">Eligible</p>
+                  <h2 class="giveaways-title">Entrants</h2>
+                </div>
+              </div>
+
+              <p class="giveaways-empty" id="giveaways-entrants-empty">
+                No entrants yet. They will roll in here once viewers type the keyword in Kick chat.
+              </p>
+
+              <div class="giveaways-rolling-viewport is-hidden" id="giveaways-rolling-viewport" aria-label="Eligible giveaway entrants">
+                <div class="giveaways-rolling-fade giveaways-rolling-fade-top" aria-hidden="true"></div>
+                <div class="giveaways-rolling-fade giveaways-rolling-fade-bottom" aria-hidden="true"></div>
+                <ol class="giveaways-rolling-track" id="giveaways-list"></ol>
+              </div>
+            </div>
+          </div>
+
           <div class="giveaways-layout-main">
+            <div class="giveaways-card">
+              <div class="giveaways-header">
+                <div>
+                  <p class="giveaways-eyebrow">Live drop</p>
+                  <h2 class="giveaways-title">Active giveaway</h2>
+                </div>
+              </div>
+
+              <p class="giveaways-empty" id="giveaways-empty">
+                No active giveaway right now. Watch live on Kick and check back when the next keyword drops.
+              </p>
+
+              <div class="giveaways-open is-hidden" id="giveaways-open">
+                <p class="giveaways-open-label">Type this in Kick chat</p>
+                <p class="giveaways-keyword-chip" id="giveaways-keyword-display">keyword</p>
+                <p class="giveaways-open-copy">One entry per viewer. Exact match only.</p>
+              </div>
+            </div>
+
             <div class="giveaways-card giveaways-reveal-card">
               <div class="giveaways-header">
                 <div>
@@ -154,34 +195,6 @@
                   Reveal Winner
                 </button>
               </div>
-            </div>
-          </div>
-
-          <div class="giveaways-layout-side">
-            <div class="giveaways-card">
-              <div class="giveaways-header">
-                <div>
-                  <p class="giveaways-eyebrow">Live drop</p>
-                  <h2 class="giveaways-title">Active giveaway</h2>
-                </div>
-                <span class="giveaways-count" id="giveaways-count">0 entries</span>
-              </div>
-
-              <p class="giveaways-empty" id="giveaways-empty">
-                No active giveaway right now. Watch live on Kick and check back when the next keyword drops.
-              </p>
-
-              <div class="giveaways-open is-hidden" id="giveaways-open">
-                <p class="giveaways-open-label">Type this in Kick chat</p>
-                <p class="giveaways-keyword-chip" id="giveaways-keyword-display">keyword</p>
-                <p class="giveaways-open-copy">One entry per viewer. Exact match only.</p>
-              </div>
-
-              <div class="giveaways-list-head is-hidden" id="giveaways-list-head">
-                <span>#</span>
-                <span>Viewer</span>
-              </div>
-              <ol class="giveaways-list is-hidden" id="giveaways-list"></ol>
             </div>
           </div>
         </div>
