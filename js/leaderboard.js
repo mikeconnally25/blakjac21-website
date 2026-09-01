@@ -10,6 +10,27 @@ function formatCurrency(amount) {
   }).format(amount);
 }
 
+function maskUsername(username) {
+  const name = String(username || "").trim();
+  if (!name) {
+    return "—";
+  }
+
+  if (name.length <= 6) {
+    if (name.length <= 2) {
+      return "*".repeat(name.length);
+    }
+
+    const head = name.slice(0, 1);
+    const tail = name.slice(-1);
+    return `${head}${"*".repeat(name.length - 2)}${tail}`;
+  }
+
+  const head = name.slice(0, 3);
+  const tail = name.slice(-3);
+  return `${head}${"*".repeat(name.length - 6)}${tail}`;
+}
+
 function setLeaderboardStatus(message, tone = "") {
   const status = document.getElementById("leaderboard-status");
   if (!status) return;
@@ -32,7 +53,7 @@ function createLeaderboardPodiumSlot(place, entry) {
 
   const user = document.createElement("span");
   user.className = "podium-user";
-  user.textContent = entry?.username ?? "—";
+  user.textContent = maskUsername(entry?.username);
 
   block.append(medal, user);
 
@@ -91,7 +112,7 @@ function renderLeaderboardList(entries) {
 
     const user = document.createElement("span");
     user.className = "leaderboard-user";
-    user.textContent = entry.username;
+    user.textContent = maskUsername(entry.username);
 
     const score = document.createElement("span");
     score.className = "leaderboard-score";
