@@ -1167,18 +1167,28 @@ function renderSlotRequests(requests) {
       const controls = document.createElement("div");
       controls.className = "slot-request-controls";
 
+      const betRow = document.createElement("div");
+      betRow.className = "guess-input-row slot-request-bet-row";
+
+      const prefix = document.createElement("span");
+      prefix.className = "guess-prefix";
+      prefix.setAttribute("aria-hidden", "true");
+      prefix.textContent = "$";
+
       const betInput = document.createElement("input");
       betInput.type = "number";
-      betInput.className = "slot-request-bet-input";
+      betInput.className = "guess-input slot-request-bet-input";
       betInput.min = "0.01";
       betInput.max = "1000";
       betInput.step = "0.01";
       betInput.inputMode = "decimal";
-      betInput.placeholder = "Bet";
+      betInput.placeholder = "0.00";
       betInput.value = slotBetDrafts.has(request.id)
         ? slotBetDrafts.get(request.id)
         : formatSlotBetValue(request.bet);
       betInput.setAttribute("aria-label", `Bet size for ${request.slotName}`);
+
+      betRow.append(prefix, betInput);
 
       betInput.addEventListener("input", () => {
         slotBetDrafts.set(request.id, betInput.value);
@@ -1207,8 +1217,8 @@ function renderSlotRequests(requests) {
 
       const addBonusBtn = document.createElement("button");
       addBonusBtn.type = "button";
-      addBonusBtn.className = "slot-request-add-btn";
-      addBonusBtn.textContent = "Add Bonus";
+      addBonusBtn.className = "btn btn-sm btn-primary";
+      addBonusBtn.textContent = "Add bonus";
       addBonusBtn.addEventListener("click", async () => {
         let betAmount = request.bet;
 
@@ -1262,7 +1272,7 @@ function renderSlotRequests(requests) {
         removeSlotRequestEntry(request.id, removeBtn)
       );
 
-      controls.append(betInput, addBonusBtn, removeBtn);
+      controls.append(betRow, addBonusBtn, removeBtn);
       item.append(controls);
     } else {
       const betCell = document.createElement("div");
