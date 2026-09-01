@@ -792,11 +792,16 @@ function updateRequestPanels() {
   adminActions?.classList.toggle("is-hidden", !isAdmin);
 
   const select = document.getElementById("slot-request-select");
+  const betInput = document.getElementById("slot-request-bet");
   const submitBtn = document.getElementById("slot-request-submit");
   const canSubmit = open && isSignedIn && !isAdmin;
 
   if (select) {
     select.disabled = !canSubmit;
+  }
+
+  if (betInput) {
+    betInput.disabled = !canSubmit;
   }
 
   if (submitBtn) {
@@ -870,12 +875,14 @@ function renderSlotRequests(requests) {
   const list = document.getElementById("slot-requests-list");
   const empty = document.getElementById("slot-requests-empty");
   const count = document.getElementById("slot-requests-count");
+  const tableHead = document.getElementById("slot-requests-table-head");
 
   if (!list || !empty) return;
 
   const total = requests.length;
   empty.classList.toggle("is-hidden", total > 0);
   list.classList.toggle("is-hidden", total === 0);
+  tableHead?.classList.toggle("is-hidden", total === 0);
   list.replaceChildren();
 
   if (count) {
@@ -885,7 +892,7 @@ function renderSlotRequests(requests) {
   if (!total) {
     const isAdmin = Boolean(currentUser?.isAdmin);
     if (acceptingRequests) {
-      empty.textContent = "No slot requests yet.";
+      empty.textContent = "No requests yet. Viewers can type !s slot bet in chat.";
     } else if (isAdmin) {
       empty.textContent =
         "No requests in the queue. Click Collecting in the hunt header to start accepting them.";
@@ -899,24 +906,31 @@ function renderSlotRequests(requests) {
     const item = document.createElement("li");
     item.className = "slot-request-entry";
 
-    const top = document.createElement("div");
-    top.className = "slot-request-entry-top";
-
     const user = document.createElement("span");
     user.className = "slot-request-user";
     user.textContent = request.username;
+
+    const slotWrap = document.createElement("div");
+    slotWrap.className = "slot-request-slot-wrap";
+
+    const slot = document.createElement("span");
+    slot.className = "slot-request-slot";
+    slot.textContent = request.slotName;
 
     const group = document.createElement("span");
     group.className = "slot-request-group";
     group.textContent = request.groupLabel;
 
-    top.append(user, group);
+    slotWrap.append(slot, group);
 
-    const slot = document.createElement("p");
-    slot.className = "slot-request-slot";
-    slot.textContent = request.slotName;
+    const bet = document.createElement("span");
+    bet.className = "slot-request-bet";
+    bet.textContent =
+      request.bet === null || request.bet === undefined
+        ? "—"
+        : formatCurrency(request.bet);
 
-    item.append(top, slot);
+    item.append(user, slotWrap, bet);
 
     if (currentUser?.isAdmin) {
       const actions = document.createElement("div");
@@ -928,9 +942,13 @@ function renderSlotRequests(requests) {
       useBtn.textContent = "Use";
       useBtn.addEventListener("click", () => {
         const slotInput = document.getElementById("bonus-slot");
+        const betInput = document.getElementById("bonus-bet");
         if (slotInput) {
           slotInput.value = request.slotName;
           slotInput.focus();
+        }
+        if (betInput && request.bet !== null && request.bet !== undefined) {
+          betInput.value = Number(request.bet).toFixed(2);
         }
         setStatus(`Loaded ${request.slotName} into the add bonus form.`, "success");
       });
@@ -1265,7 +1283,7 @@ function initAdminForm() {
   document.getElementById("kick-chat-subscribe")?.addEventListener("click", async (event) => {
     const button = event.currentTarget;
     button.disabled = true;
-    setStatus("Enabling !slot in Kick chat...");
+    setStatus("Enabling !s in Kick chat...");
 
     try {
       const response = await fetch("/api/kick/subscribe", {
@@ -1275,7 +1293,7 @@ function initAdminForm() {
 
       const data = await response.json();
       if (!response.ok) {
-        setStatus(data.error || "Could not enable !slot in chat.", "error");
+        setStatus(data.error || "Could not enable !s in chat.", "error");
         return;
       }
 
@@ -1292,11 +1310,11 @@ function initAdminForm() {
       const refreshedCount = slotCatalog.length;
       const slotMessage =
         refreshedCount > 0
-          ? `Kick chat !slot enabled. ${refreshedCount} slots loaded.`
-          : "Kick chat !slot enabled. Finish Stake sync to load slots.";
+          ? `Kick chat !s enabled. ${refreshedCount} slots loaded.`
+          : "Kick chat !s enabled. Finish Stake sync to load slots.";
       setStatus(slotMessage, refreshedCount > 0 ? "success" : "error");
     } catch {
-      setStatus("Could not enable !slot in chat. Try again.", "error");
+      setStatus("Could not enable !s in chat. Try again.", "error");
     } finally {
       button.disabled = false;
     }
@@ -1419,8 +1437,10 @@ function initSlotRequestForm() {
     }
 
     const select = document.getElementById("slot-request-select");
+    const betInput = document.getElementById("slot-request-bet");
     const submitBtn = document.getElementById("slot-request-submit");
     const slotSlug = select?.value;
+    const bet = Number(betInput?.value);
 
     if (!slotCatalog.length) {
       setRequestStatus(
@@ -1435,6 +1455,11 @@ function initSlotRequestForm() {
       return;
     }
 
+    if (!Number.isFinite(bet) || bet <= 0) {
+      setRequestStatus("Enter a valid bet amount.", "error");
+      return;
+    }
+
     submitBtn.disabled = true;
     setRequestStatus("Submitting your request...");
 
@@ -1443,7 +1468,7 @@ function initSlotRequestForm() {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slotSlug }),
+        body: JSON.stringify({ slotSlug, bet }),
       });
 
       const data = await response.json();
@@ -1452,7 +1477,11 @@ function initSlotRequestForm() {
         return;
       }
 
-      setRequestStatus(`Requested ${data.request.slotName}.`, "success");
+      form.reset();
+      setRequestStatus(
+        `Requested ${data.request.slotName} at ${formatCurrency(data.request.bet)}.`,
+        "success"
+      );
       await loadSlotRequests();
     } catch {
       setRequestStatus("Could not submit request. Try again.", "error");
