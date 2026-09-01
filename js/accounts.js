@@ -180,6 +180,14 @@ function renderAccounts(users) {
       nameRow.append(affBadge);
     }
 
+    if (user.kickSubActive) {
+      const subBadge = document.createElement("span");
+      subBadge.className = "accounts-sub-badge";
+      subBadge.textContent = "SUB";
+      subBadge.title = "Active Kick subscriber";
+      nameRow.append(subBadge);
+    }
+
     copy.append(nameRow);
 
     const kickId = document.createElement("span");

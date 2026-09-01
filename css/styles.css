@@ -1351,6 +1351,21 @@ ul {
   flex-shrink: 0;
 }
 
+.accounts-sub-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.16rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(83, 45, 255, 0.28);
+  background: rgba(83, 45, 255, 0.16);
+  color: #c4b5ff;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
 .accounts-username {
   overflow: hidden;
   text-overflow: ellipsis;
