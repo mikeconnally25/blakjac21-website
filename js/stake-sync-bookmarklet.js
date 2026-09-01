@@ -15,7 +15,17 @@
     slugKuratorGroup(slug: $slug) {
       name
       groupGamesList(limit: $limit, offset: $offset) {
-        game { name slug }
+        game {
+          name
+          slug
+          thumbnailUrl
+          groupGames {
+            group {
+              translation
+              type
+            }
+          }
+        }
       }
     }
   }`;

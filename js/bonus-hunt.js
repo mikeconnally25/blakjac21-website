@@ -1042,6 +1042,60 @@ function formatSlotBetValue(bet) {
   return Number(bet).toFixed(2);
 }
 
+function findCatalogSlot(request) {
+  if (!request) {
+    return null;
+  }
+
+  const slug = String(request.slotSlug || "").trim().toLowerCase();
+  const name = String(request.slotName || "").trim().toLowerCase();
+
+  return (
+    slotCatalog.find((slot) => slug && slot.slug === slug) ||
+    slotCatalog.find((slot) => slot.name.toLowerCase() === name) ||
+    null
+  );
+}
+
+function getSlotRequestProvider(request, catalogSlot) {
+  if (catalogSlot?.provider) {
+    return catalogSlot.provider;
+  }
+
+  if (request.groupSlug === "pending") {
+    return "";
+  }
+
+  return "";
+}
+
+function createSlotRequestThumb(slotName, thumbnailUrl) {
+  const thumb = document.createElement("div");
+  thumb.className = "slot-request-thumb";
+
+  if (thumbnailUrl) {
+    const image = document.createElement("img");
+    image.className = "slot-request-thumb-image";
+    image.src = thumbnailUrl;
+    image.alt = "";
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.addEventListener("error", () => {
+      image.remove();
+      thumb.textContent = slotInitials(slotName);
+      thumb.classList.add("is-fallback");
+      thumb.style.background = avatarColor(slotName);
+    });
+    thumb.append(image);
+  } else {
+    thumb.textContent = slotInitials(slotName);
+    thumb.classList.add("is-fallback");
+    thumb.style.background = avatarColor(slotName);
+  }
+
+  return thumb;
+}
+
 function renderSlotRequests(requests) {
   const list = document.getElementById("slot-requests-list");
   const empty = document.getElementById("slot-requests-empty");
@@ -1053,8 +1107,7 @@ function renderSlotRequests(requests) {
   const total = requests.length;
   empty.classList.toggle("is-hidden", total > 0);
   list.classList.toggle("is-hidden", total === 0);
-  tableHead?.classList.toggle("is-hidden", total === 0);
-  tableHead?.classList.toggle("is-admin", Boolean(currentUser?.isAdmin) && total > 0);
+  tableHead?.classList.add("is-hidden");
   list.replaceChildren();
 
   if (count) {
@@ -1075,55 +1128,57 @@ function renderSlotRequests(requests) {
   }
 
   requests.forEach((request) => {
+    const catalogSlot = findCatalogSlot(request);
+    const provider = getSlotRequestProvider(request, catalogSlot);
+    const thumbnailUrl = catalogSlot?.thumbnailUrl || null;
+
     const item = document.createElement("li");
     item.className = "slot-request-entry";
 
-    const user = document.createElement("span");
-    user.className = "slot-request-user";
-    user.textContent = request.username;
+    const thumb = createSlotRequestThumb(request.slotName, thumbnailUrl);
 
-    const slotWrap = document.createElement("div");
-    slotWrap.className = "slot-request-slot-wrap";
+    const info = document.createElement("div");
+    info.className = "slot-request-info";
+
+    const titleRow = document.createElement("div");
+    titleRow.className = "slot-request-title-row";
 
     const slot = document.createElement("span");
     slot.className = "slot-request-slot";
     slot.textContent = request.slotName;
 
-    const group = document.createElement("span");
-    group.className = "slot-request-group";
-    group.textContent = request.groupLabel;
+    titleRow.append(slot);
 
-    slotWrap.append(slot, group);
+    if (provider) {
+      const providerEl = document.createElement("span");
+      providerEl.className = "slot-request-provider";
+      providerEl.textContent = provider;
+      titleRow.append(providerEl);
+    }
 
-    const betCell = document.createElement("div");
-    betCell.className = "slot-request-bet-cell";
+    const user = document.createElement("span");
+    user.className = "slot-request-user";
+    user.textContent = `by ${request.username}`;
+
+    info.append(titleRow, user);
+    item.append(thumb, info);
 
     if (currentUser?.isAdmin) {
-      const betAdmin = document.createElement("div");
-      betAdmin.className = "slot-request-bet-admin";
-
-      const betRow = document.createElement("div");
-      betRow.className = "guess-input-row slot-request-bet-row";
-
-      const prefix = document.createElement("span");
-      prefix.className = "guess-prefix";
-      prefix.setAttribute("aria-hidden", "true");
-      prefix.textContent = "$";
+      const controls = document.createElement("div");
+      controls.className = "slot-request-controls";
 
       const betInput = document.createElement("input");
       betInput.type = "number";
-      betInput.className = "guess-input slot-request-bet-input";
+      betInput.className = "slot-request-bet-input";
       betInput.min = "0.01";
       betInput.max = "1000";
       betInput.step = "0.01";
       betInput.inputMode = "decimal";
-      betInput.placeholder = "0.00";
+      betInput.placeholder = "Bet";
       betInput.value = slotBetDrafts.has(request.id)
         ? slotBetDrafts.get(request.id)
         : formatSlotBetValue(request.bet);
       betInput.setAttribute("aria-label", `Bet size for ${request.slotName}`);
-
-      betRow.append(prefix, betInput);
 
       betInput.addEventListener("input", () => {
         slotBetDrafts.set(request.id, betInput.value);
@@ -1150,28 +1205,10 @@ function renderSlotRequests(requests) {
         }
       });
 
-      betAdmin.append(betRow);
-      betCell.append(betAdmin);
-    } else {
-      const bet = document.createElement("span");
-      bet.className = "slot-request-bet";
-      bet.textContent =
-        request.bet === null || request.bet === undefined
-          ? "—"
-          : formatCurrency(request.bet);
-      betCell.append(bet);
-    }
-
-    item.append(user, slotWrap, betCell);
-
-    if (currentUser?.isAdmin) {
-      const actions = document.createElement("div");
-      actions.className = "slot-request-actions";
-
       const addBonusBtn = document.createElement("button");
       addBonusBtn.type = "button";
-      addBonusBtn.className = "btn btn-sm btn-primary";
-      addBonusBtn.textContent = "Add bonus";
+      addBonusBtn.className = "slot-request-add-btn";
+      addBonusBtn.textContent = "Add Bonus";
       addBonusBtn.addEventListener("click", async () => {
         let betAmount = request.bet;
 
@@ -1217,7 +1254,7 @@ function renderSlotRequests(requests) {
 
       const removeBtn = document.createElement("button");
       removeBtn.type = "button";
-      removeBtn.className = "btn btn-sm btn-outline slot-request-remove";
+      removeBtn.className = "slot-request-remove";
       removeBtn.setAttribute("aria-label", `Remove ${request.slotName} request`);
       removeBtn.innerHTML =
         '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M9 3h6l1 2h5v2H3V5h5l1-2Zm1 6h2v9h-2V9Zm4 0h2v9h-2V9ZM6 9h2v9H6V9Z"/></svg>';
@@ -1225,8 +1262,20 @@ function renderSlotRequests(requests) {
         removeSlotRequestEntry(request.id, removeBtn)
       );
 
-      actions.append(addBonusBtn, removeBtn);
-      item.append(actions);
+      controls.append(betInput, addBonusBtn, removeBtn);
+      item.append(controls);
+    } else {
+      const betCell = document.createElement("div");
+      betCell.className = "slot-request-bet-cell";
+
+      const bet = document.createElement("span");
+      bet.className = "slot-request-bet";
+      bet.textContent =
+        request.bet === null || request.bet === undefined
+          ? "—"
+          : formatCurrency(request.bet);
+      betCell.append(bet);
+      item.append(betCell);
     }
 
     list.append(item);

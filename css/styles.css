@@ -1704,19 +1704,213 @@ ul {
   gap: 1rem;
 }
 
-.hunt-admin-queue-list .slot-requests-table-head.is-admin,
-.hunt-admin-queue-list .slot-request-entry:has(.slot-request-actions) {
-  grid-template-columns: minmax(4.5rem, 0.7fr) minmax(0, 1.35fr) minmax(7.5rem, 0.95fr) auto;
+.hunt-admin-queue-list .slot-requests-list {
+  gap: 0;
+}
+
+.hunt-admin-queue-list .slot-request-entry {
+  padding: 0.9rem 0;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0;
+  background: transparent;
+}
+
+.hunt-admin-queue-list .slot-request-entry:last-child {
+  border-bottom: none;
+}
+
+.slot-request-bet-cell {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.slot-request-bet-input {
+  width: 4.75rem;
+  min-width: 4.75rem;
+  min-height: 2.15rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.84rem;
+}
+
+.slot-request-bet-input::placeholder {
+  color: rgba(255, 255, 255, 0.34);
+}
+
+.slot-request-bet-input:focus-visible {
+  outline: none;
+  border-color: rgba(145, 70, 255, 0.55);
+  box-shadow: 0 0 0 2px rgba(145, 70, 255, 0.18);
+}
+
+.slot-request-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.slot-request-add-btn {
+  min-height: 2.15rem;
+  padding: 0.45rem 0.9rem;
+  border: none;
+  border-radius: 0.55rem;
+  background: #9146ff;
+  color: #fff;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.slot-request-add-btn:hover,
+.slot-request-add-btn:focus-visible {
+  background: #a25cff;
+}
+
+.slot-request-add-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.slot-request-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  min-width: 2.15rem;
+  height: 2.15rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.72);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.slot-request-remove svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.slot-request-remove:hover,
+.slot-request-remove:focus-visible {
+  color: #ffb8b8;
+  background: rgba(255, 120, 120, 0.12);
+}
+
+.slot-requests-table-head {
+  display: none;
+}
+
+.slot-requests-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0;
+}
+
+.slot-request-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: transparent;
+}
+
+.slot-request-entry:last-child {
+  border-bottom: none;
+}
+
+.slot-request-thumb {
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.55rem;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.slot-request-thumb.is-fallback {
+  text-transform: uppercase;
+}
+
+.slot-request-thumb-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.slot-request-info {
+  display: grid;
+  gap: 0.18rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.slot-request-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.slot-request-slot {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: rgba(255, 255, 255, 0.28);
+  text-underline-offset: 0.18rem;
+  overflow-wrap: anywhere;
+}
+
+.slot-request-provider {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.42);
+  overflow-wrap: anywhere;
+}
+
+.slot-request-user {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.38);
+  overflow-wrap: anywhere;
+}
+
+.slot-request-bet {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f0c98e;
+  white-space: nowrap;
 }
 
 .hunt-admin-queue-tools {
   border-top: none;
   padding-top: 0;
-}
-
-.hunt-admin-queue-list .slot-request-actions {
-  flex-direction: row;
-  gap: 0.35rem;
 }
 
 .hunt-admin-queue-tools > .btn {
@@ -1728,78 +1922,6 @@ ul {
   border-radius: var(--radius-sm);
   border: 1px solid rgba(88, 201, 243, 0.12);
   background: rgba(8, 12, 18, 0.55);
-}
-
-.slot-request-bet-cell {
-  min-width: 0;
-}
-
-.slot-request-bet-admin {
-  display: block;
-}
-
-.slot-request-bet-row {
-  width: 100%;
-  min-height: 0;
-  padding: 0.35rem 0.45rem;
-  gap: 0.25rem;
-}
-
-.slot-request-bet-row .guess-prefix {
-  font-size: 0.95rem;
-}
-
-.slot-request-bet-input {
-  min-width: 3.25rem;
-  min-height: 0;
-  padding: 0;
-  font-size: 0.85rem;
-}
-
-.slot-request-remove {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  min-width: 2rem;
-  padding: 0.38rem;
-  color: #ff9f9f;
-  border-color: rgba(255, 120, 120, 0.28);
-}
-
-.slot-request-remove svg {
-  width: 0.95rem;
-  height: 0.95rem;
-}
-
-.slot-request-remove:hover,
-.slot-request-remove:focus-visible {
-  color: #ffb8b8;
-  border-color: rgba(255, 120, 120, 0.5);
-  background: rgba(255, 120, 120, 0.08);
-}
-
-.slot-requests-table-head,
-.slot-request-entry {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr) minmax(0, 0.7fr);
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.slot-requests-table-head {
-  padding: 0 0.35rem 0.55rem;
-  border-bottom: 1px solid rgba(88, 201, 243, 0.1);
-  color: var(--text-muted);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.slot-requests-table-head span:last-child,
-.slot-request-bet {
-  text-align: right;
 }
 
 .slot-request-form {
@@ -1820,120 +1942,6 @@ ul {
   background: rgba(4, 8, 12, 0.9);
   color: var(--text);
   font: inherit;
-}
-
-.slot-requests-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 0.55rem;
-}
-
-.slot-request-entry {
-  padding: 0.6rem 0.5rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(88, 201, 243, 0.1);
-  background: rgba(8, 12, 18, 0.45);
-  overflow: hidden;
-}
-
-.bonus-hunt-page .slot-request-entry {
-  padding: 0.6rem 0.5rem;
-}
-
-.slot-requests-table-head.is-admin,
-.slot-request-entry:has(.slot-request-actions) {
-  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.05fr) minmax(0, 0.95fr) auto;
-  grid-template-areas: "user slot bet actions";
-  align-items: center;
-  gap: 0.45rem 0.5rem;
-}
-
-.slot-request-user {
-  grid-area: user;
-  font-weight: 600;
-  color: var(--text);
-  font-size: 0.82rem;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-}
-
-.slot-request-slot-wrap {
-  grid-area: slot;
-  display: grid;
-  gap: 0.15rem;
-  min-width: 0;
-}
-
-.slot-request-bet-cell {
-  grid-area: bet;
-}
-
-.slot-request-entry:has(.slot-request-actions) {
-  padding: 0.55rem 0.5rem;
-}
-
-.slot-request-entry:not(:has(.slot-request-actions)) {
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr) minmax(0, 0.7fr);
-}
-
-.slot-request-slot {
-  margin: 0;
-  font-size: 0.88rem;
-  font-weight: 600;
-  line-height: 1.25;
-  color: var(--accent-bright);
-  overflow-wrap: anywhere;
-}
-
-.slot-request-bet {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 700;
-  color: #f0c98e;
-  white-space: nowrap;
-}
-
-.slot-request-group {
-  justify-self: start;
-  padding: 0.1rem 0.4rem;
-  border-radius: 999px;
-  border: 1px solid rgba(88, 201, 243, 0.18);
-  background: rgba(88, 201, 243, 0.08);
-  color: var(--text-muted);
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  line-height: 1.2;
-}
-
-.slot-request-actions {
-  grid-area: actions;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  align-items: stretch;
-  padding: 0;
-  margin: 0;
-  border-top: none;
-}
-
-.slot-request-actions .btn-sm {
-  padding: 0.38rem 0.55rem;
-  font-size: 0.76rem;
-  line-height: 1.1;
-  white-space: nowrap;
-}
-
-.slot-request-actions .btn-primary {
-  box-shadow: 0 2px 10px rgba(88, 201, 243, 0.18);
-}
-
-.slot-request-actions .btn:hover,
-.slot-request-actions .btn:focus-visible {
-  transform: none;
 }
 
 .past-hunts-card {
@@ -2173,50 +2181,24 @@ ul {
   }
 
   .slot-request-form-row,
-  .slot-requests-table-head,
-  .slot-request-entry {
-    grid-template-columns: 1fr;
-  }
-
-  .hunt-admin-queue-list .slot-requests-table-head.is-admin,
-  .hunt-admin-queue-list .slot-request-entry:has(.slot-request-actions) {
-    grid-template-columns: minmax(4rem, 0.75fr) minmax(0, 1.2fr) minmax(6.5rem, 0.9fr) auto;
-    grid-template-areas: "user slot bet actions";
-  }
-
-  .requests-hub .slot-request-entry:has(.slot-request-actions) {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "user"
-      "slot"
-      "bet"
-      "actions";
-    align-items: stretch;
-  }
-
-  .slot-request-bet-admin {
-    justify-items: stretch;
-  }
-
   .slot-requests-table-head {
     display: none;
   }
 
-  .requests-hub .slot-request-entry:has(.slot-request-actions) {
-    gap: 0.45rem;
+  .slot-request-entry {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.7rem;
   }
 
-  .hunt-admin-queue-list .slot-request-entry:has(.slot-request-actions) {
-    gap: 0.45rem 0.5rem;
-  }
-
-  .slot-request-actions {
-    flex-direction: row;
+  .slot-request-controls {
+    width: 100%;
+    margin-left: 0;
     justify-content: flex-end;
   }
 
-  .slot-request-bet {
-    text-align: left;
+  .slot-request-bet-cell {
+    margin-left: auto;
   }
 
   .hunt-settings-row {
