@@ -43,6 +43,7 @@ import {
   handleGuessToggle,
 } from "./lib/guess-handlers.js";
 import { handleLeaderboardGet } from "./lib/leaderboard-handlers.js";
+import { handleUsersList } from "./lib/user-handlers.js";
 import {
   handleGiveawayEntriesClear,
   handleGiveawayKeyword,
@@ -129,6 +130,7 @@ app.get("/api/kick/bot/status", (req, res) => handleKickBotStatus(req, res));
 app.get("/api/kick/credentials-check", (req, res) => handleKickCredentialsCheck(req, res));
 app.get("/api/kick/setup-status", (req, res) => handleKickSetupStatus(req, res));
 app.get("/api/leaderboard", (req, res) => handleLeaderboardGet(req, res));
+app.get("/api/users", (req, res) => handleUsersList(req, res));
 app.get("/api/giveaways/status", (req, res) => handleGiveawayStatus(req, res));
 app.post("/api/giveaways/toggle", (req, res) => handleGiveawayToggle(req, res));
 app.post("/api/giveaways/keyword", (req, res) => handleGiveawayKeyword(req, res));

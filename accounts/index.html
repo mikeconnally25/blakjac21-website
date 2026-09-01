@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Leaderboard — top viewers and stream game standings on BLAKJAC21." />
-  <title>Leaderboard | BLAKJAC21</title>
+  <meta name="description" content="Accounts — registered BLAKJAC21 site users." />
+  <title>Accounts | BLAKJAC21</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -56,40 +56,41 @@
   <main>
     <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
 
-    <section class="section page-section leaderboard-page">
+    <section class="section page-section accounts-page">
       <div class="container page-content">
         <a href="/#menu" class="back-link">← Back to menu</a>
 
         <div class="section-header left">
-          <h2>Leaderboard</h2>
-          <p>Top wagered players on code <strong>BLAKJAC21</strong>.</p>
+          <h2>Accounts</h2>
+          <p>All users registered on the site through Kick sign-in.</p>
         </div>
 
-        <div class="leaderboard-card hunt-side-card">
-          <div class="leaderboard-header">
+        <p class="accounts-denied is-hidden" id="accounts-denied">
+          Admin access required to view registered accounts.
+        </p>
+
+        <div class="accounts-card hunt-side-card is-hidden" id="accounts-panel">
+          <div class="accounts-header">
             <div>
-              <p class="leaderboard-eyebrow">Rankings</p>
-              <h3 class="leaderboard-title">Top 10 wagered</h3>
-              <p class="leaderboard-period is-hidden" id="leaderboard-period"></p>
+              <p class="accounts-eyebrow">Registered users</p>
+              <h3 class="accounts-title">Site accounts</h3>
             </div>
-            <span class="leaderboard-count" id="leaderboard-count">Top 10</span>
+            <span class="accounts-count" id="accounts-count">0 registered</span>
           </div>
 
-          <p class="guess-status is-hidden" id="leaderboard-status" role="status" aria-live="polite"></p>
+          <p class="guess-status is-hidden" id="accounts-status" role="status" aria-live="polite"></p>
 
-          <div class="podium-panel is-hidden" id="leaderboard-podium-panel">
-            <div class="podium-stage" id="leaderboard-podium-stage" aria-label="Top 3 wagered players"></div>
-          </div>
-
-          <div class="leaderboard-table-head is-hidden" id="leaderboard-table-head">
-            <span>Rank</span>
+          <div class="accounts-table-head is-hidden" id="accounts-table-head">
+            <span>#</span>
             <span>Player</span>
-            <span>Wagered</span>
+            <span>Kick ID</span>
+            <span>Joined</span>
+            <span>Last login</span>
           </div>
 
-          <p class="leaderboard-empty" id="leaderboard-empty">No leaderboard entries yet.</p>
+          <p class="accounts-empty" id="accounts-empty">No registered users yet.</p>
 
-          <ol class="leaderboard-list is-hidden" id="leaderboard-list"></ol>
+          <ol class="accounts-list is-hidden" id="accounts-list"></ol>
         </div>
       </div>
     </section>
@@ -112,6 +113,6 @@
 
   <script src="/js/main.js"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/leaderboard.js"></script>
+  <script src="/js/accounts.js"></script>
 </body>
 </html>

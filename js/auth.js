@@ -31,6 +31,7 @@ function renderAuthState(user) {
   const member = document.getElementById("auth-member");
   const usernameEl = document.getElementById("auth-username");
   const adminBadge = document.getElementById("auth-admin-badge");
+  const adminAccountsNav = document.getElementById("admin-nav-accounts");
   const avatarEl = document.getElementById("auth-avatar");
   const toast = document.getElementById("auth-toast");
   const gameUsername = document.getElementById("game-username");
@@ -44,6 +45,9 @@ function renderAuthState(user) {
     if (usernameEl) usernameEl.textContent = user.username;
     if (gameUsername) gameUsername.textContent = user.username;
     if (adminBadge) adminBadge.classList.toggle("is-hidden", !user.isAdmin);
+    if (adminAccountsNav) {
+      adminAccountsNav.classList.toggle("is-hidden", !user.isAdmin);
+    }
     if (avatarEl) {
       if (user.profilePicture) {
         avatarEl.src = user.profilePicture;
@@ -57,6 +61,7 @@ function renderAuthState(user) {
   } else {
     guest.classList.remove("is-hidden");
     member.classList.add("is-hidden");
+    if (adminAccountsNav) adminAccountsNav.classList.add("is-hidden");
   }
 
   window.dispatchEvent(
