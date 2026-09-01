@@ -139,4 +139,25 @@ window.addEventListener("auth:change", async (event) => {
   await loadAccounts();
 });
 
-renderAccessState();
+async function initAccounts() {
+  try {
+    const response = await fetch("/api/auth/me", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      renderAccessState();
+      return;
+    }
+
+    const data = await response.json();
+    currentUser = data.authenticated ? data.user : null;
+    renderAccessState();
+    await loadAccounts();
+  } catch {
+    renderAccessState();
+  }
+}
+
+initAccounts();
