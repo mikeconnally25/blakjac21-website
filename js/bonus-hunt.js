@@ -6,6 +6,7 @@ let slotGroups = [];
 let slotCatalogUpdatedAt = null;
 let acceptingRequests = false;
 let slotRequests = [];
+const pendingSlotRequestRemovals = new Set();
 let slotBetDrafts = new Map();
 let stakeSyncPollTimer = null;
 let stakeSyncInProgress = false;
@@ -1172,6 +1173,7 @@ function renderSlotRequests(requests) {
 
     const item = document.createElement("li");
     item.className = "slot-request-entry";
+    item.dataset.requestId = request.id;
 
     const thumb = createSlotRequestThumb(request.slotName, thumbnailUrl);
 
@@ -1292,9 +1294,11 @@ function renderSlotRequests(requests) {
       removeBtn.setAttribute("aria-label", `Remove ${request.slotName} request`);
       removeBtn.innerHTML =
         '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M9 3h6l1 2h5v2H3V5h5l1-2Zm1 6h2v9h-2V9Zm4 0h2v9h-2V9ZM6 9h2v9H6V9Z"/></svg>';
-      removeBtn.addEventListener("click", () =>
-        removeSlotRequestEntry(request.id, removeBtn)
-      );
+      removeBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        void removeSlotRequestEntry(request.id, removeBtn);
+      });
 
       controls.append(betRow, addBonusBtn, removeBtn);
       item.append(controls);
@@ -1345,7 +1349,7 @@ async function loadSlotCatalog() {
   }
 }
 
-async function loadSlotRequests() {
+async function loadSlotRequests({ forceRender = false } = {}) {
   try {
     const response = await fetch("/api/bonus-hunt/requests", {
       credentials: "same-origin",
@@ -1356,9 +1360,15 @@ async function loadSlotRequests() {
 
     const data = await response.json();
     acceptingRequests = Boolean(data.acceptingRequests);
-    slotRequests = data.requests || [];
+    let incoming = data.requests || [];
+    if (pendingSlotRequestRemovals.size) {
+      incoming = incoming.filter(
+        (entry) => !pendingSlotRequestRemovals.has(entry.id)
+      );
+    }
+    slotRequests = incoming;
 
-    if (!isEditingSlotRequestBet()) {
+    if (forceRender || !isEditingSlotRequestBet()) {
       renderSlotRequests(slotRequests);
     } else {
       const count = document.getElementById("slot-requests-count");
@@ -1467,7 +1477,20 @@ async function saveSlotRequestBet(id, betValue, { button, silent = false, skipRe
 }
 
 async function removeSlotRequestEntry(id, button) {
+  if (!id || pendingSlotRequestRemovals.has(id)) {
+    return;
+  }
+
   button.disabled = true;
+  pendingSlotRequestRemovals.add(id);
+  slotBetDrafts.delete(id);
+
+  if (document.activeElement?.classList?.contains("slot-request-bet-input")) {
+    document.activeElement.blur();
+  }
+
+  slotRequests = slotRequests.filter((entry) => entry.id !== id);
+  renderSlotRequests(slotRequests);
   setStatus("Removing slot request...");
 
   try {
@@ -1480,17 +1503,49 @@ async function removeSlotRequestEntry(id, button) {
 
     const data = await response.json();
     if (!response.ok) {
+      pendingSlotRequestRemovals.delete(id);
       setStatus(data.error || "Could not remove slot request.", "error");
+      await loadSlotRequests({ forceRender: true });
       return;
     }
 
+    pendingSlotRequestRemovals.delete(id);
     setStatus("Slot request removed.", "success");
-    await loadSlotRequests();
+    await loadSlotRequests({ forceRender: true });
   } catch {
+    pendingSlotRequestRemovals.delete(id);
     setStatus("Could not remove slot request. Try again.", "error");
+    await loadSlotRequests({ forceRender: true });
   } finally {
-    button.disabled = false;
+    if (button.isConnected) {
+      button.disabled = false;
+    }
   }
+}
+
+function initSlotRequestListActions() {
+  const list = document.getElementById("slot-requests-list");
+  if (!list || list.dataset.actionsBound === "true") {
+    return;
+  }
+
+  list.dataset.actionsBound = "true";
+  list.addEventListener("click", (event) => {
+    const removeBtn = event.target.closest(".slot-request-remove");
+    if (!removeBtn || removeBtn.disabled) {
+      return;
+    }
+
+    const entry = removeBtn.closest(".slot-request-entry");
+    const id = entry?.dataset.requestId;
+    if (!id) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    void removeSlotRequestEntry(id, removeBtn);
+  });
 }
 
 function schedulePolling() {
@@ -1935,10 +1990,12 @@ async function bootstrapBonusHuntPage() {
   handleKickBotRedirectParams();
   await Promise.all([loadCurrentUser(), loadBonusHunt(), loadPastHunts(), loadSlotCatalog(), loadSlotRequests()]);
   updatePanels();
+  renderSlotRequests(slotRequests);
   await loadKickChatStatus();
   schedulePolling();
 }
 
 initAdminForm();
 initSlotRequestForm();
+initSlotRequestListActions();
 bootstrapBonusHuntPage();

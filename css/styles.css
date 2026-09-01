@@ -2533,6 +2533,9 @@ ul {
   align-items: center;
   justify-content: center;
   align-self: center;
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
   width: 2.15rem;
   min-width: 2.15rem;
   height: 2.15rem;
@@ -2543,6 +2546,11 @@ ul {
   color: rgba(255, 255, 255, 0.72);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
+}
+
+.slot-request-remove:disabled {
+  opacity: 0.55;
+  cursor: wait;
 }
 
 .slot-request-remove svg {
