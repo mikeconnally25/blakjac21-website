@@ -1291,8 +1291,9 @@ function renderSlotRequests(requests) {
         });
 
         if (bonus) {
-          slotBetDrafts.delete(request.id);
-          renderSlotRequests(slotRequests);
+          await removeSlotRequestEntry(request.id, addBonusBtn, {
+            successMessage: "Bonus added.",
+          });
         }
       });
 
@@ -1488,12 +1489,14 @@ async function saveSlotRequestBet(id, betValue, { button, silent = false, skipRe
   }
 }
 
-async function removeSlotRequestEntry(id, button) {
+async function removeSlotRequestEntry(id, button, { successMessage } = {}) {
   if (!id || pendingSlotRequestRemovals.has(id)) {
-    return;
+    return false;
   }
 
-  button.disabled = true;
+  if (button) {
+    button.disabled = true;
+  }
   pendingSlotRequestRemovals.add(id);
   slotBetDrafts.delete(id);
 
@@ -1503,7 +1506,10 @@ async function removeSlotRequestEntry(id, button) {
 
   slotRequests = slotRequests.filter((entry) => entry.id !== id);
   renderSlotRequests(slotRequests);
-  setStatus("Removing slot request...");
+
+  if (!successMessage) {
+    setStatus("Removing slot request...");
+  }
 
   try {
     const response = await fetch("/api/bonus-hunt/requests/remove", {
@@ -1518,18 +1524,20 @@ async function removeSlotRequestEntry(id, button) {
       pendingSlotRequestRemovals.delete(id);
       setStatus(data.error || "Could not remove slot request.", "error");
       await loadSlotRequests({ forceRender: true });
-      return;
+      return false;
     }
 
     pendingSlotRequestRemovals.delete(id);
-    setStatus("Slot request removed.", "success");
+    setStatus(successMessage || "Slot request removed.", "success");
     await loadSlotRequests({ forceRender: true });
+    return true;
   } catch (error) {
     pendingSlotRequestRemovals.delete(id);
     setStatus(error.message || "Could not remove slot request. Try again.", "error");
     await loadSlotRequests({ forceRender: true });
+    return false;
   } finally {
-    if (button.isConnected) {
+    if (button?.isConnected) {
       button.disabled = false;
     }
   }
