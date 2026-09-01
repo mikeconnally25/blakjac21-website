@@ -943,10 +943,11 @@ ul {
   display: grid;
   gap: 0.35rem;
   padding: 1rem 1.05rem;
-  border-radius: calc(var(--radius-sm) + 2px);
+  border-radius: 1.15rem;
   border: 1px solid rgba(88, 201, 243, 0.12);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(4, 8, 12, 0.2));
+  overflow: hidden;
   transition: border-color 0.2s ease, transform 0.2s ease;
 }
 
