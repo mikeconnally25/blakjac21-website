@@ -25,6 +25,11 @@
         margin: 1rem 0 0;
         padding-left: 1.2rem;
         color: var(--text-muted);
+        line-height: 1.6;
+      }
+
+      .sync-steps li + li {
+        margin-top: 0.65rem;
       }
 
       .sync-actions {
@@ -33,17 +38,39 @@
         gap: 0.75rem;
         margin-top: 1.25rem;
       }
+
+      .sync-note {
+        margin-top: 1rem;
+        padding: 0.85rem 1rem;
+        border-radius: var(--radius-sm);
+        border: 1px solid rgba(88, 201, 243, 0.18);
+        background: rgba(88, 201, 243, 0.08);
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      .sync-note strong {
+        color: var(--text);
+      }
     </style>
   </head>
   <body>
     <main class="sync-card">
       <h1>Sync Stake slots</h1>
       <p id="sync-status">Preparing sync...</p>
-      <ol class="sync-steps">
-        <li>Drag <strong>BJ21 Stake Sync</strong> to your bookmarks bar (one-time).</li>
+      <ol class="sync-steps" id="sync-steps">
+        <li>Press <strong>Ctrl + Shift + B</strong> to show your favorites bar in Edge.</li>
+        <li>
+          <strong>Right-click</strong> the <strong>BJ21 Stake Sync</strong> button below and choose
+          <strong>Add to favorites bar</strong>.
+        </li>
         <li>Open stake.com and make sure you are logged in.</li>
-        <li>Click the bookmark on the stake.com tab.</li>
+        <li>Click <strong>BJ21 Stake Sync</strong> on your favorites bar once.</li>
       </ol>
+      <div class="sync-note is-hidden" id="sync-edge-tip">
+        In Edge, if it asks to run a script, click <strong>Allow</strong>.
+      </div>
       <div class="sync-actions">
         <a class="btn btn-primary" id="stake-open-link" href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">
           Open stake.com
@@ -57,11 +84,20 @@
         const params = new URLSearchParams(location.search);
         const token = params.get("token") || "";
         const status = document.getElementById("sync-status");
+        const steps = document.getElementById("sync-steps");
+        const edgeTip = document.getElementById("sync-edge-tip");
         const openLink = document.getElementById("stake-open-link");
         const bookmarklet = document.getElementById("stake-bookmarklet");
 
         if (!token) {
-          status.textContent = "Missing sync token. Go back to bonus-hunt and click Sync from Stake.";
+          status.textContent =
+            "This page needs to be opened from the bonus hunt page. Do not bookmark this URL.";
+          if (steps) {
+            steps.innerHTML =
+              "<li>Go to the <strong>bonus hunt</strong> page while logged in as admin.</li>" +
+              "<li>Click <strong>Sync slots from Stake</strong>.</li>" +
+              "<li>This setup page will open automatically with everything ready.</li>";
+          }
           return;
         }
 
@@ -73,7 +109,8 @@
         openLink.href = stakeUrl;
         bookmarklet.href = bookmarkletCode;
         status.textContent =
-          "Stake tab ready. Click Open stake.com, then click the BJ21 Stake Sync bookmark once.";
+          "Step 1: right-click BJ21 Stake Sync below and add it to your favorites bar.";
+        edgeTip?.classList.remove("is-hidden");
 
         window.open(stakeUrl, "_blank", "noopener,noreferrer");
       })();

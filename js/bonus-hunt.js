@@ -187,8 +187,8 @@ async function syncSlotsFromStake({ auto = false } = {}) {
     }
 
     const message = auto
-      ? "Slot list is empty. A stake.com tab will open — click the BJ21 Stake Sync bookmark once to load New Releases and Only on Stake."
-      : "Stake tab opened. Click the BJ21 Stake Sync bookmark on stake.com to finish.";
+      ? "Follow the setup steps on the sync page, then click BJ21 Stake Sync on stake.com."
+      : "Follow the setup steps on the sync page, then click BJ21 Stake Sync on stake.com.";
 
     updateStakeSyncHelp({
       token: data.token,
@@ -200,7 +200,8 @@ async function syncSlotsFromStake({ auto = false } = {}) {
       setStatus(message);
     }
 
-    window.open(data.stakeUrl, "_blank", "noopener,noreferrer");
+    const syncPageUrl = data.syncPageUrl || `/stake-sync.html?token=${encodeURIComponent(data.token)}`;
+    window.open(syncPageUrl, "_blank", "noopener,noreferrer");
     startStakeSyncPolling(data.token);
     return 0;
   } catch {
