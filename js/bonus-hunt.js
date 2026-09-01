@@ -1072,28 +1072,34 @@ function renderSlotRequests(requests) {
         : formatSlotBetValue(request.bet);
       betInput.setAttribute("aria-label", `Bet size for ${request.slotName}`);
 
+      betRow.append(prefix, betInput);
+
       betInput.addEventListener("input", () => {
         slotBetDrafts.set(request.id, betInput.value);
       });
 
-      betRow.append(prefix, betInput);
+      betInput.addEventListener("blur", () => {
+        const value = betInput.value.trim();
+        if (!value) {
+          return;
+        }
 
-      const saveBtn = document.createElement("button");
-      saveBtn.type = "button";
-      saveBtn.className = "btn btn-sm btn-outline slot-request-bet-save";
-      saveBtn.textContent = "Set";
-      saveBtn.addEventListener("click", () =>
-        saveSlotRequestBet(request.id, betInput.value, saveBtn)
-      );
+        if (value === formatSlotBetValue(request.bet)) {
+          slotBetDrafts.delete(request.id);
+          return;
+        }
+
+        void saveSlotRequestBet(request.id, value, { silent: true });
+      });
 
       betInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
           event.preventDefault();
-          saveSlotRequestBet(request.id, betInput.value, saveBtn);
+          void saveSlotRequestBet(request.id, betInput.value);
         }
       });
 
-      betAdmin.append(betRow, saveBtn);
+      betAdmin.append(betRow);
       betCell.append(betAdmin);
     } else {
       const bet = document.createElement("span");
@@ -1111,37 +1117,51 @@ function renderSlotRequests(requests) {
       const actions = document.createElement("div");
       actions.className = "slot-request-actions";
 
-      const useBtn = document.createElement("button");
-      useBtn.type = "button";
-      useBtn.className = "btn btn-sm btn-primary";
-      useBtn.textContent = "Use";
-      useBtn.addEventListener("click", () => {
-        if (request.bet === null || request.bet === undefined) {
-          setStatus("Set a bet size for this request before using it.", "error");
+      const addBonusBtn = document.createElement("button");
+      addBonusBtn.type = "button";
+      addBonusBtn.className = "btn btn-sm btn-primary";
+      addBonusBtn.textContent = "Add bonus";
+      addBonusBtn.addEventListener("click", async () => {
+        let betAmount = request.bet;
+
+        if (betInput.value.trim()) {
+          const saved = await saveSlotRequestBet(request.id, betInput.value, {
+            silent: true,
+          });
+          if (saved) {
+            betAmount = Number(betInput.value);
+          }
+        }
+
+        if (betAmount === null || betAmount === undefined || !Number.isFinite(Number(betAmount))) {
+          setStatus("Enter a bet size before adding the bonus.", "error");
+          betInput.focus();
           return;
         }
 
         const slotInput = document.getElementById("bonus-slot");
-        const betInput = document.getElementById("bonus-bet");
+        const bonusBetInput = document.getElementById("bonus-bet");
         if (slotInput) {
           slotInput.value = request.slotName;
-          slotInput.focus();
         }
-        if (betInput) {
-          betInput.value = Number(request.bet).toFixed(2);
+        if (bonusBetInput) {
+          bonusBetInput.value = Number(betAmount).toFixed(2);
         }
+        slotInput?.focus();
         setStatus(`Loaded ${request.slotName} into the add bonus form.`, "success");
       });
 
       const removeBtn = document.createElement("button");
       removeBtn.type = "button";
-      removeBtn.className = "btn btn-sm btn-outline";
-      removeBtn.textContent = "Dismiss";
+      removeBtn.className = "btn btn-sm btn-outline slot-request-remove";
+      removeBtn.setAttribute("aria-label", `Remove ${request.slotName} request`);
+      removeBtn.innerHTML =
+        '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M9 3h6l1 2h5v2H3V5h5l1-2Zm1 6h2v9h-2V9Zm4 0h2v9h-2V9ZM6 9h2v9H6V9Z"/></svg>';
       removeBtn.addEventListener("click", () =>
         removeSlotRequestEntry(request.id, removeBtn)
       );
 
-      actions.append(useBtn, removeBtn);
+      actions.append(addBonusBtn, removeBtn);
       item.append(actions);
     }
 
@@ -1244,9 +1264,14 @@ async function loadSlotRequests() {
   }
 }
 
-async function saveSlotRequestBet(id, betValue, button) {
-  button.disabled = true;
-  setStatus("Saving bet size...");
+async function saveSlotRequestBet(id, betValue, { button, silent = false } = {}) {
+  if (button) {
+    button.disabled = true;
+  }
+
+  if (!silent) {
+    setStatus("Saving bet size...");
+  }
 
   try {
     const response = await fetch("/api/bonus-hunt/requests/bet", {
@@ -1258,17 +1283,39 @@ async function saveSlotRequestBet(id, betValue, button) {
 
     const data = await response.json();
     if (!response.ok) {
-      setStatus(data.error || "Could not save bet size.", "error");
-      return;
+      if (!silent) {
+        setStatus(data.error || "Could not save bet size.", "error");
+      }
+      return false;
     }
 
-    setStatus("Bet size saved.", "success");
+    if (!silent) {
+      setStatus("Bet size saved.", "success");
+    }
+
     slotBetDrafts.delete(id);
-    await loadSlotRequests();
+
+    const savedRequest = data.request;
+    if (savedRequest) {
+      slotRequests = slotRequests.map((entry) =>
+        entry.id === savedRequest.id ? savedRequest : entry
+      );
+    }
+
+    if (!isEditingSlotRequestBet()) {
+      renderSlotRequests(slotRequests);
+    }
+
+    return true;
   } catch {
-    setStatus("Could not save bet size. Try again.", "error");
+    if (!silent) {
+      setStatus("Could not save bet size. Try again.", "error");
+    }
+    return false;
   } finally {
-    button.disabled = false;
+    if (button) {
+      button.disabled = false;
+    }
   }
 }
 
@@ -1290,7 +1337,7 @@ async function removeSlotRequestEntry(id, button) {
       return;
     }
 
-    setStatus("Slot request dismissed.", "success");
+    setStatus("Slot request removed.", "success");
     await loadSlotRequests();
   } catch {
     setStatus("Could not remove slot request. Try again.", "error");

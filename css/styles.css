@@ -1735,10 +1735,7 @@ ul {
 }
 
 .slot-request-bet-admin {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.35rem;
-  align-items: center;
+  display: block;
 }
 
 .slot-request-bet-row {
@@ -1759,11 +1756,27 @@ ul {
   font-size: 0.85rem;
 }
 
-.slot-request-bet-save {
-  width: auto;
-  padding: 0.38rem 0.55rem;
-  font-size: 0.78rem;
-  white-space: nowrap;
+.slot-request-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  min-width: 2rem;
+  padding: 0.38rem;
+  color: #ff9f9f;
+  border-color: rgba(255, 120, 120, 0.28);
+}
+
+.slot-request-remove svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.slot-request-remove:hover,
+.slot-request-remove:focus-visible {
+  color: #ffb8b8;
+  border-color: rgba(255, 120, 120, 0.5);
+  background: rgba(255, 120, 120, 0.08);
 }
 
 .slot-requests-table-head,
@@ -2195,10 +2208,6 @@ ul {
 
   .hunt-admin-queue-list .slot-request-entry:has(.slot-request-actions) {
     gap: 0.45rem 0.5rem;
-  }
-
-  .slot-request-bet-admin {
-    grid-template-columns: minmax(0, 1fr) auto;
   }
 
   .slot-request-actions {
