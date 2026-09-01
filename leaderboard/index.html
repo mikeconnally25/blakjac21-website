@@ -59,19 +59,28 @@
 
         <div class="section-header left">
           <h2>Leaderboard</h2>
-          <p>Top standings from stream games and community activity.</p>
+          <p>Top wagered players on code <strong>BLAKJAC21</strong>.</p>
         </div>
 
         <div class="leaderboard-card hunt-side-card">
           <div class="leaderboard-header">
             <div>
               <p class="leaderboard-eyebrow">Rankings</p>
-              <h3 class="leaderboard-title">All-time standings</h3>
+              <h3 class="leaderboard-title">Top 10 wagered</h3>
+              <p class="leaderboard-period is-hidden" id="leaderboard-period"></p>
             </div>
-            <span class="leaderboard-count" id="leaderboard-count">0 players</span>
+            <span class="leaderboard-count" id="leaderboard-count">Top 10</span>
           </div>
 
-          <p class="leaderboard-empty" id="leaderboard-empty">No leaderboard entries yet. Check back after the next stream game.</p>
+          <p class="guess-status is-hidden" id="leaderboard-status" role="status" aria-live="polite"></p>
+
+          <div class="leaderboard-table-head">
+            <span>Rank</span>
+            <span>Player</span>
+            <span>Wagered</span>
+          </div>
+
+          <p class="leaderboard-empty" id="leaderboard-empty">No leaderboard entries yet.</p>
 
           <ol class="leaderboard-list is-hidden" id="leaderboard-list"></ol>
         </div>
@@ -96,5 +105,6 @@
 
   <script src="/js/main.js"></script>
   <script src="/js/auth.js"></script>
+  <script src="/js/leaderboard.js"></script>
 </body>
 </html>
