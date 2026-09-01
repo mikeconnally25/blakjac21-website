@@ -1,3 +1,7 @@
+let pollTimer = null;
+let lastSignature = "";
+let hasLoadedOnce = false;
+
 function formatCurrency(amount) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -98,6 +102,18 @@ function renderLeaderboardList(entries) {
   });
 }
 
+function leaderboardSignature(data) {
+  if (data.signature) {
+    return String(data.signature);
+  }
+
+  return JSON.stringify({
+    entries: data.entries,
+    periodStart: data.periodStart,
+    periodEnd: data.periodEnd,
+  });
+}
+
 function renderLeaderboard({ entries, periodStart, periodEnd }) {
   const empty = document.getElementById("leaderboard-empty");
   const count = document.getElementById("leaderboard-count");
@@ -126,8 +142,10 @@ function renderLeaderboard({ entries, periodStart, periodEnd }) {
   renderLeaderboardList(entries.slice(3));
 }
 
-async function loadLeaderboard() {
-  setLeaderboardStatus("Loading leaderboard...");
+async function loadLeaderboard({ quiet = false } = {}) {
+  if (!quiet) {
+    setLeaderboardStatus("Loading leaderboard...");
+  }
 
   try {
     const response = await fetch("/api/leaderboard", {
@@ -140,12 +158,33 @@ async function loadLeaderboard() {
       throw new Error(data.error || "Could not load leaderboard.");
     }
 
-    renderLeaderboard(data);
+    const signature = leaderboardSignature(data);
+    if (signature !== lastSignature) {
+      lastSignature = signature;
+      renderLeaderboard(data);
+    }
+
+    hasLoadedOnce = true;
     setLeaderboardStatus("");
   } catch (error) {
-    renderLeaderboard({ entries: [], periodStart: null, periodEnd: null });
-    setLeaderboardStatus(error.message || "Could not load leaderboard.", "error");
+    if (!hasLoadedOnce) {
+      renderLeaderboard({ entries: [], periodStart: null, periodEnd: null });
+    }
+    if (!quiet || !hasLoadedOnce) {
+      setLeaderboardStatus(error.message || "Could not load leaderboard.", "error");
+    }
   }
 }
 
+function scheduleLeaderboardPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+  }
+
+  pollTimer = setInterval(() => {
+    void loadLeaderboard({ quiet: true });
+  }, 1000);
+}
+
 loadLeaderboard();
+scheduleLeaderboardPolling();
