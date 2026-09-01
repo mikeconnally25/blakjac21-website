@@ -1097,6 +1097,10 @@ function findCatalogSlot(request) {
 }
 
 function getSlotRequestProvider(request, catalogSlot) {
+  if (request.provider) {
+    return request.provider;
+  }
+
   if (catalogSlot?.provider) {
     return catalogSlot.provider;
   }
@@ -1106,6 +1110,10 @@ function getSlotRequestProvider(request, catalogSlot) {
   }
 
   return "";
+}
+
+function getSlotRequestThumbnail(request, catalogSlot) {
+  return request.thumbnailUrl || catalogSlot?.thumbnailUrl || null;
 }
 
 function createSlotRequestThumb(slotName, thumbnailUrl) {
@@ -1169,7 +1177,7 @@ function renderSlotRequests(requests) {
   requests.forEach((request) => {
     const catalogSlot = findCatalogSlot(request);
     const provider = getSlotRequestProvider(request, catalogSlot);
-    const thumbnailUrl = catalogSlot?.thumbnailUrl || null;
+    const thumbnailUrl = getSlotRequestThumbnail(request, catalogSlot);
 
     const item = document.createElement("li");
     item.className = "slot-request-entry";
@@ -1340,6 +1348,10 @@ async function loadSlotCatalog() {
     const select = document.getElementById("slot-request-select");
     const selectedSlug = select?.value || "";
     renderSlotCatalogSelect(selectedSlug);
+
+    if (slotRequests.length && !isEditingSlotRequestBet()) {
+      renderSlotRequests(slotRequests);
+    }
   } catch (error) {
     const count = document.getElementById("slot-catalog-count");
     if (count && !slotCatalog.length) {
