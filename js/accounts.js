@@ -164,9 +164,23 @@ function renderAccounts(users) {
     const copy = document.createElement("div");
     copy.className = "accounts-entry-copy";
 
+    const nameRow = document.createElement("div");
+    nameRow.className = "accounts-name-row";
+
     const name = document.createElement("span");
     name.className = "accounts-username";
     name.textContent = user.username;
+    nameRow.append(name);
+
+    if (user.stakeCodeVerified) {
+      const affBadge = document.createElement("span");
+      affBadge.className = "accounts-aff-badge";
+      affBadge.textContent = "AFF";
+      affBadge.title = "Verified on code BLAKJAC21";
+      nameRow.append(affBadge);
+    }
+
+    copy.append(nameRow);
 
     const kickId = document.createElement("span");
     kickId.className = "accounts-kick-id";
@@ -174,7 +188,7 @@ function renderAccounts(users) {
       ? `Stake: ${user.stakeUsername}`
       : `Kick ID ${user.kickUserId}`;
 
-    copy.append(name, kickId);
+    copy.append(kickId);
     player.append(copy);
 
     const meta = document.createElement("div");

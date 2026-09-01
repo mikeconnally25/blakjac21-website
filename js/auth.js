@@ -172,6 +172,14 @@ async function submitStakeLink() {
     currentAuthUser = data.user;
     renderAuthState(data.user);
     hideStakeLinkModal();
+
+    const toast = document.getElementById("auth-toast");
+    if (toast) {
+      toast.textContent = data.user.stakeCodeVerified
+        ? `Stake account linked and verified on code BLAKJAC21.`
+        : `Stake account linked. We could not find that username on the BLAKJAC21 leaderboard yet.`;
+      toast.classList.remove("is-hidden", "is-error");
+    }
   } catch {
     setStakeLinkError("Could not link Stake account. Try again.");
   } finally {
@@ -206,9 +214,15 @@ function renderAuthState(user) {
     }
     if (stakeBadge) {
       stakeBadge.textContent = user.stakeUsername
-        ? `Stake: ${user.stakeUsername}`
+        ? user.stakeCodeVerified
+          ? `Stake: ${user.stakeUsername}`
+          : `Stake: ${user.stakeUsername} (unverified)`
         : "Link Stake";
       stakeBadge.classList.toggle("is-linked", Boolean(user.stakeUsername));
+      stakeBadge.classList.toggle(
+        "is-verified",
+        Boolean(user.stakeUsername && user.stakeCodeVerified)
+      );
       stakeBadge.classList.remove("is-hidden");
     }
     if (avatarEl) {

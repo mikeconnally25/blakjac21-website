@@ -321,6 +321,18 @@ ul {
   cursor: default;
 }
 
+.auth-stake-badge.is-linked:not(.is-verified) {
+  border-color: rgba(240, 201, 142, 0.24);
+  background: rgba(240, 201, 142, 0.1);
+  color: #f0c98e;
+}
+
+.auth-stake-badge.is-verified {
+  border-color: rgba(83, 252, 24, 0.22);
+  background: rgba(83, 252, 24, 0.1);
+  color: #9dff73;
+}
+
 .stake-link-modal {
   position: fixed;
   inset: 0;
@@ -1315,6 +1327,28 @@ ul {
   display: grid;
   gap: 0.15rem;
   min-width: 0;
+}
+
+.accounts-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.accounts-aff-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.16rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(83, 252, 24, 0.24);
+  background: rgba(83, 252, 24, 0.12);
+  color: #9dff73;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .accounts-username {
