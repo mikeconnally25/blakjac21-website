@@ -51,9 +51,9 @@ function formatMultiplier(value) {
   })}x`;
 }
 
-function buildStakeBookmarkletHref(token) {
+function buildStakeBookmarkletHref() {
   const origin = window.location.origin;
-  const scriptUrl = `${origin}/js/stake-sync-bookmarklet.js?token=${encodeURIComponent(token)}&origin=${encodeURIComponent(origin)}`;
+  const scriptUrl = `${origin}/js/stake-sync-bookmarklet.js?origin=${encodeURIComponent(origin)}`;
   const code = `javascript:(function(){var s=document.createElement('script');s.src=${JSON.stringify(scriptUrl)};document.head.appendChild(s);})();`;
   return code;
 }
@@ -74,7 +74,7 @@ function updateStakeSyncHelp({ token, stakeUrl, message }) {
     helpText.textContent = message;
   }
   if (bookmarklet) {
-    bookmarklet.href = buildStakeBookmarkletHref(token);
+    bookmarklet.href = buildStakeBookmarkletHref();
   }
   if (openStake && stakeUrl) {
     openStake.href = stakeUrl;

@@ -3,7 +3,7 @@
     (document.currentScript && document.currentScript.src.split("?")[1]) || ""
   );
   const hashMatch = location.hash.match(/bj21sync=([^&]+)/);
-  const token = params.get("token") || (hashMatch && hashMatch[1]) || "";
+  const token = (hashMatch && hashMatch[1]) || params.get("token") || "";
 
   if (!token) {
     window.alert("Missing sync token. Start sync from the bonus-hunt admin page first.");

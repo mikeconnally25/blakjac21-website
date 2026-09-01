@@ -63,7 +63,7 @@
         <li>Press <strong>Ctrl + Shift + B</strong> to show your favorites bar in Edge.</li>
         <li>
           <strong>Right-click</strong> the <strong>BJ21 Stake Sync</strong> button below and choose
-          <strong>Add to favorites bar</strong>.
+          <strong>Add to favorites bar</strong>. If you added an older version before, delete it and add this one.
         </li>
         <li>Open stake.com and make sure you are logged in.</li>
         <li>Click <strong>BJ21 Stake Sync</strong> on your favorites bar once.</li>
@@ -103,13 +103,13 @@
 
         const origin = location.origin;
         const stakeUrl = `https://stake.com/casino/group/new-releases#bj21sync=${encodeURIComponent(token)}`;
-        const scriptUrl = `${origin}/js/stake-sync-bookmarklet.js?token=${encodeURIComponent(token)}&origin=${encodeURIComponent(origin)}`;
+        const scriptUrl = `${origin}/js/stake-sync-bookmarklet.js?origin=${encodeURIComponent(origin)}`;
         const bookmarkletCode = `javascript:(function(){var s=document.createElement('script');s.src=${JSON.stringify(scriptUrl)};document.head.appendChild(s);})();`;
 
         openLink.href = stakeUrl;
         bookmarklet.href = bookmarkletCode;
         status.textContent =
-          "Step 1: right-click BJ21 Stake Sync below and add it to your favorites bar.";
+          "Step 1: right-click BJ21 Stake Sync below and add it to your favorites bar. You only need to do this once.";
         edgeTip?.classList.remove("is-hidden");
 
         window.open(stakeUrl, "_blank", "noopener,noreferrer");
