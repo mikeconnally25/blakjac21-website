@@ -45,6 +45,7 @@ import { handleLeaderboardGet } from "./lib/leaderboard-handlers.js";
 import {
   handleGiveawayEntriesClear,
   handleGiveawayKeyword,
+  handleGiveawayReveal,
   handleGiveawayStatus,
   handleGiveawayToggle,
 } from "./lib/giveaway-handlers.js";
@@ -130,6 +131,7 @@ app.post("/api/giveaways/keyword", (req, res) => handleGiveawayKeyword(req, res)
 app.post("/api/giveaways/entries/clear", (req, res) =>
   handleGiveawayEntriesClear(req, res)
 );
+app.post("/api/giveaways/reveal", (req, res) => handleGiveawayReveal(req, res));
 
 app.listen(PORT, () => {
   console.log(`BLAKJAC21 site running at http://localhost:${PORT}`);

@@ -126,6 +126,37 @@
 
           <ol class="giveaways-list is-hidden" id="giveaways-list"></ol>
         </div>
+
+        <div class="giveaways-card hunt-side-card giveaways-reveal-card">
+          <div class="giveaways-header">
+            <div>
+              <p class="giveaways-eyebrow">Winner</p>
+              <h3 class="giveaways-title">Reveal winner</h3>
+            </div>
+            <span class="giveaways-count" id="giveaways-reveal-count">Need entrants</span>
+          </div>
+
+          <p class="giveaways-empty" id="giveaways-reveal-empty">
+            Entrants will appear here. Once people join, spin the case to reveal a winner.
+          </p>
+
+          <div class="case-reel is-hidden" id="case-reel" aria-live="polite">
+            <div class="case-reel-fade case-reel-fade-left" aria-hidden="true"></div>
+            <div class="case-reel-fade case-reel-fade-right" aria-hidden="true"></div>
+            <div class="case-reel-marker" aria-hidden="true"></div>
+            <div class="case-reel-window">
+              <div class="case-reel-track" id="case-reel-track"></div>
+            </div>
+          </div>
+
+          <p class="case-reel-result is-hidden" id="case-reel-result"></p>
+
+          <div class="giveaways-reveal-actions is-hidden" id="giveaways-reveal-actions">
+            <button type="button" class="btn btn-primary" id="giveaways-reveal-btn">
+              Reveal Winner
+            </button>
+          </div>
+        </div>
       </div>
     </section>
   </main>
