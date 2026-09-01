@@ -684,25 +684,17 @@ function resolveSlotRequestBet(request, betInput) {
 }
 
 async function submitBonusAddForm({ button, slot, bet } = {}) {
-  const form = document.getElementById("bonus-add-form");
-  const slotInput = document.getElementById("bonus-slot");
-  const betInput = document.getElementById("bonus-bet");
-  const submitBtn = button || document.getElementById("bonus-add-submit");
-  const slotName = slot ?? slotInput?.value.trim();
-  const betValue = bet ?? betInput?.value;
-
-  if (submitBtn) {
-    submitBtn.disabled = true;
+  if (button) {
+    button.disabled = true;
   }
 
-  const bonus = await addBonusToHunt(slotName, betValue);
+  const bonus = await addBonusToHunt(slot, bet);
   if (bonus) {
-    form?.reset();
     scrollToBonusCard(bonus.id);
   }
 
-  if (submitBtn) {
-    submitBtn.disabled = false;
+  if (button) {
+    button.disabled = false;
   }
 
   return bonus;
@@ -1681,14 +1673,8 @@ function initAdminForm() {
     }
   });
 
-  const form = document.getElementById("bonus-add-form");
   const clearBtn = document.getElementById("bonus-clear-hunt");
   const endBtn = document.getElementById("bonus-end-hunt");
-
-  form?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    await submitBonusAddForm();
-  });
 
   clearBtn?.addEventListener("click", async () => {
     if (!window.confirm("Clear the entire bonus hunt? This will not save it to past hunts.")) {

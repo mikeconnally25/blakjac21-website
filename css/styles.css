@@ -2012,8 +2012,7 @@ ul {
   padding: 1.65rem 1.75rem;
 }
 
-.bonus-hunt-page .hunt-settings-row,
-.bonus-hunt-page .bonus-add-row {
+.bonus-hunt-page .hunt-settings-row {
   grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto;
   gap: 1rem;
 }
@@ -2189,24 +2188,9 @@ ul {
   color: var(--text);
 }
 
-.bonus-add-form {
-  margin-top: 0.75rem;
-}
-
-.bonus-add-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr) auto;
-  gap: 0.85rem;
-  align-items: end;
-}
-
 .bonus-field {
   display: grid;
   gap: 0.45rem;
-}
-
-.bonus-slot-input {
-  width: 100%;
 }
 
 .bonus-admin-actions {
@@ -2993,17 +2977,12 @@ ul {
     grid-area: admin;
   }
 
-  .bonus-hunt-page .hunt-settings-row,
-  .bonus-hunt-page .bonus-add-row {
+  .bonus-hunt-page .hunt-settings-row {
     grid-template-columns: 1fr;
   }
 
   .bonus-summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .bonus-add-row {
-    grid-template-columns: 1fr;
   }
 }
 
