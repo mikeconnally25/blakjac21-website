@@ -784,6 +784,11 @@ ul {
   font-size: 0.82rem;
 }
 
+.leaderboard-card .podium-panel {
+  margin-top: 0.25rem;
+  margin-bottom: 0.35rem;
+}
+
 .leaderboard-table-head,
 .leaderboard-entry {
   display: grid;
