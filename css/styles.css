@@ -1744,8 +1744,8 @@ ul {
 
 .slot-request-bet-input:focus-visible {
   outline: none;
-  border-color: rgba(145, 70, 255, 0.55);
-  box-shadow: 0 0 0 2px rgba(145, 70, 255, 0.18);
+  border-color: rgba(88, 201, 243, 0.55);
+  box-shadow: 0 0 0 2px rgba(88, 201, 243, 0.18);
 }
 
 .slot-request-controls {
@@ -1761,19 +1761,20 @@ ul {
   padding: 0.45rem 0.9rem;
   border: none;
   border-radius: 0.55rem;
-  background: #9146ff;
-  color: #fff;
+  background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+  color: var(--teal-deep);
+  box-shadow: 0 4px 18px rgba(88, 201, 243, 0.24);
   font: inherit;
   font-size: 0.82rem;
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .slot-request-add-btn:hover,
 .slot-request-add-btn:focus-visible {
-  background: #a25cff;
+  box-shadow: 0 6px 22px rgba(88, 201, 243, 0.36);
 }
 
 .slot-request-add-btn:disabled {
