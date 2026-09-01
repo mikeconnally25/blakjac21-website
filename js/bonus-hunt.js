@@ -669,19 +669,32 @@ function scrollToBonusCard(bonusId) {
   });
 }
 
-async function submitBonusAddForm({ button } = {}) {
+function resolveSlotRequestBet(request, betInput) {
+  const typedBet = betInput?.value?.trim() || slotBetDrafts.get(request.id)?.trim() || "";
+  if (typedBet) {
+    return typedBet;
+  }
+
+  if (request.bet === null || request.bet === undefined) {
+    return "";
+  }
+
+  return formatSlotBetValue(request.bet);
+}
+
+async function submitBonusAddForm({ button, slot, bet } = {}) {
   const form = document.getElementById("bonus-add-form");
   const slotInput = document.getElementById("bonus-slot");
   const betInput = document.getElementById("bonus-bet");
   const submitBtn = button || document.getElementById("bonus-add-submit");
-  const slot = slotInput?.value.trim();
-  const bet = betInput?.value;
+  const slotName = slot ?? slotInput?.value.trim();
+  const betValue = bet ?? betInput?.value;
 
   if (submitBtn) {
     submitBtn.disabled = true;
   }
 
-  const bonus = await addBonusToHunt(slot, bet);
+  const bonus = await addBonusToHunt(slotName, betValue);
   if (bonus) {
     form?.reset();
     scrollToBonusCard(bonus.id);
@@ -1245,29 +1258,32 @@ function renderSlotRequests(requests) {
       addBonusBtn.className = "btn btn-sm btn-primary";
       addBonusBtn.textContent = "Add bonus";
       addBonusBtn.addEventListener("click", async () => {
-        let betValue = betInput.value.trim();
+        const betValue = resolveSlotRequestBet(request, betInput);
+        const betAmount = Number(betValue);
 
-        if (betValue) {
-          const saved = await saveSlotRequestBet(request.id, betValue, {
+        if (!betValue || !Number.isFinite(betAmount) || betAmount < 0.01) {
+          setStatus("Enter a bet size before adding the bonus.", "error");
+          betInput.focus();
+          return;
+        }
+
+        if (betInput.value.trim()) {
+          await saveSlotRequestBet(request.id, betInput.value, {
             silent: true,
+            skipRender: true,
           });
-          if (!saved && betValue !== formatSlotBetValue(request.bet)) {
-            return;
-          }
-        } else if (request.bet !== null && request.bet !== undefined) {
-          betValue = formatSlotBetValue(request.bet);
         }
 
-        const slotInput = document.getElementById("bonus-slot");
-        const bonusBetInput = document.getElementById("bonus-bet");
-        if (slotInput) {
-          slotInput.value = request.slotName;
-        }
-        if (bonusBetInput) {
-          bonusBetInput.value = betValue;
-        }
+        const bonus = await submitBonusAddForm({
+          button: addBonusBtn,
+          slot: request.slotName,
+          bet: betValue,
+        });
 
-        await submitBonusAddForm({ button: addBonusBtn });
+        if (bonus) {
+          slotBetDrafts.delete(request.id);
+          renderSlotRequests(slotRequests);
+        }
       });
 
       const removeBtn = document.createElement("button");
@@ -1395,7 +1411,7 @@ async function loadSlotRequests() {
   }
 }
 
-async function saveSlotRequestBet(id, betValue, { button, silent = false } = {}) {
+async function saveSlotRequestBet(id, betValue, { button, silent = false, skipRender = false } = {}) {
   if (button) {
     button.disabled = true;
   }
@@ -1433,7 +1449,7 @@ async function saveSlotRequestBet(id, betValue, { button, silent = false } = {})
       );
     }
 
-    if (!isEditingSlotRequestBet()) {
+    if (!skipRender && !isEditingSlotRequestBet()) {
       renderSlotRequests(slotRequests);
     }
 
