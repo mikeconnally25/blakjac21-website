@@ -1065,6 +1065,28 @@ async function loadSlotRequests() {
     updateRequestPanels();
     updateToggleLabel();
 
+    const catalogCount = document.getElementById("slot-catalog-count");
+    if (catalogCount) {
+      if (data.slotCatalogCount > 0) {
+        catalogCount.textContent =
+          data.slotCatalogCount === 1
+            ? "1 allowed slot loaded"
+            : `${data.slotCatalogCount} allowed slots loaded`;
+      } else if (currentUser?.isAdmin) {
+        catalogCount.textContent =
+          "Slot list is empty. Click Sync slots from Stake so !s requests can be validated.";
+      } else {
+        catalogCount.textContent = "Slot list is loading...";
+      }
+    }
+
+    if (currentUser?.isAdmin && data.kickChatSubscribed === false) {
+      setStatus(
+        "Kick chat is not subscribed yet. Toggle Collecting again to reconnect !s.",
+        "error"
+      );
+    }
+
     const select = document.getElementById("slot-request-select");
     if (!select?.value && data.myRequest?.slotSlug) {
       renderSlotCatalogSelect(data.myRequest.slotSlug);

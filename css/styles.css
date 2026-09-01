@@ -1641,7 +1641,9 @@ ul {
 
 .requests-hub-admin {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
+  gap: 0.55rem;
   padding-top: 0.35rem;
   border-top: 1px solid rgba(88, 201, 243, 0.1);
 }
