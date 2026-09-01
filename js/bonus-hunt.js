@@ -13,6 +13,7 @@ let huntMeta = {
   startBalance: 0,
   status: "collecting",
 };
+let pastHunts = [];
 
 const REQUEST_STATUS_LABELS = {
   open: "Collecting",
@@ -414,6 +415,169 @@ function renderBonusList(bonuses) {
 
     list.append(item);
   });
+}
+
+function formatHuntDate(value) {
+  if (!value) return "";
+
+  return new Date(value).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function huntStatusLabel(status) {
+  switch (status) {
+    case "complete":
+      return "Complete";
+    case "opening":
+      return "Opening";
+    case "collecting":
+      return "Collecting";
+    default:
+      return "Ended";
+  }
+}
+
+function renderPastHunts(hunts) {
+  const list = document.getElementById("past-hunts-list");
+  const empty = document.getElementById("past-hunts-empty");
+  const count = document.getElementById("past-hunts-count");
+
+  if (!list || !empty) return;
+
+  const total = hunts.length;
+  empty.classList.toggle("is-hidden", total > 0);
+  list.classList.toggle("is-hidden", total === 0);
+  list.replaceChildren();
+
+  if (count) {
+    count.textContent = total === 1 ? "1 hunt" : `${total} hunts`;
+  }
+
+  hunts.forEach((hunt) => {
+    const item = document.createElement("li");
+    item.className = "past-hunt-entry";
+
+    const summary = hunt.summary || {};
+    const profit = Number(summary.profit || 0);
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "past-hunt-entry-toggle";
+    toggle.setAttribute("aria-expanded", "false");
+
+    const top = document.createElement("div");
+    top.className = "past-hunt-entry-top";
+
+    const main = document.createElement("div");
+    main.className = "past-hunt-entry-main";
+
+    const title = document.createElement("h4");
+    title.className = "past-hunt-entry-title";
+    title.textContent = hunt.title || "Live Hunt";
+
+    const meta = document.createElement("p");
+    meta.className = "past-hunt-entry-meta";
+    meta.textContent = `${formatHuntDate(hunt.endedAt)} · ${summary.totalBonuses || 0} bonuses`;
+
+    main.append(title, meta);
+
+    const stats = document.createElement("div");
+    stats.className = "past-hunt-entry-stats";
+
+    const profitValue = document.createElement("span");
+    profitValue.className = "past-hunt-entry-profit";
+    profitValue.textContent = formatCurrency(profit);
+    profitValue.classList.toggle("is-positive", profit > 0);
+    profitValue.classList.toggle("is-negative", profit < 0);
+
+    const status = document.createElement("span");
+    status.className = `past-hunt-entry-status past-hunt-entry-status--${hunt.status || "complete"}`;
+    status.textContent = huntStatusLabel(hunt.status);
+
+    stats.append(profitValue, status);
+    top.append(main, stats);
+    toggle.append(top);
+
+    const details = document.createElement("div");
+    details.className = "past-hunt-entry-details is-hidden";
+
+    const detailStats = document.createElement("div");
+    detailStats.className = "past-hunt-entry-detail-stats";
+
+    const startStat = document.createElement("div");
+    startStat.className = "past-hunt-detail-stat";
+    startStat.innerHTML = `<span>Start</span><strong>${formatCurrency(hunt.startBalance || 0)}</strong>`;
+
+    const wonStat = document.createElement("div");
+    wonStat.className = "past-hunt-detail-stat";
+    wonStat.innerHTML = `<span>Won</span><strong>${formatCurrency(summary.totalWon || 0)}</strong>`;
+
+    const costStat = document.createElement("div");
+    costStat.className = "past-hunt-detail-stat";
+    costStat.innerHTML = `<span>Cost</span><strong>${formatCurrency(summary.totalCost || 0)}</strong>`;
+
+    detailStats.append(startStat, wonStat, costStat);
+
+    const bonusList = document.createElement("ul");
+    bonusList.className = "past-hunt-bonus-list";
+
+    (hunt.bonuses || []).forEach((bonus) => {
+      const bonusItem = document.createElement("li");
+      bonusItem.className = "past-hunt-bonus-item";
+
+      const slot = document.createElement("span");
+      slot.className = "past-hunt-bonus-slot";
+      slot.textContent = bonus.slot;
+
+      const result = document.createElement("span");
+      result.className = "past-hunt-bonus-result";
+      if (bonus.status === "opened") {
+        result.textContent = `${formatCurrency(bonus.payout ?? 0)} · ${formatMultiplier(bonus.multiplier)}`;
+        if ((bonus.payout ?? 0) >= bonus.bet) {
+          result.classList.add("is-win");
+        }
+      } else {
+        result.textContent = "Not opened";
+      }
+
+      bonusItem.append(slot, result);
+      bonusList.append(bonusItem);
+    });
+
+    details.append(detailStats, bonusList);
+
+    toggle.addEventListener("click", () => {
+      const expanded = toggle.getAttribute("aria-expanded") === "true";
+      toggle.setAttribute("aria-expanded", expanded ? "false" : "true");
+      details.classList.toggle("is-hidden", expanded);
+      item.classList.toggle("is-expanded", !expanded);
+    });
+
+    item.append(toggle, details);
+    list.append(item);
+  });
+}
+
+async function loadPastHunts() {
+  try {
+    const response = await fetch("/api/bonus-hunt/history", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+
+    if (!response.ok) return;
+
+    const data = await response.json();
+    pastHunts = data.pastHunts || [];
+    renderPastHunts(pastHunts);
+  } catch {
+    // Keep the last known state.
+  }
 }
 
 async function loadBonusHunt() {
@@ -966,6 +1130,7 @@ function initAdminForm() {
 
   const form = document.getElementById("bonus-add-form");
   const clearBtn = document.getElementById("bonus-clear-hunt");
+  const endBtn = document.getElementById("bonus-end-hunt");
 
   form?.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -1014,7 +1179,7 @@ function initAdminForm() {
   });
 
   clearBtn?.addEventListener("click", async () => {
-    if (!window.confirm("Clear the entire bonus hunt?")) {
+    if (!window.confirm("Clear the entire bonus hunt? This will not save it to past hunts.")) {
       return;
     }
 
@@ -1039,6 +1204,44 @@ function initAdminForm() {
       setStatus("Could not clear bonus hunt. Try again.", "error");
     } finally {
       clearBtn.disabled = false;
+    }
+  });
+
+  endBtn?.addEventListener("click", async () => {
+    const bonusCount = Number(document.getElementById("summary-total")?.textContent || 0);
+    const message = bonusCount
+      ? "End this hunt and save it to past hunts? The live tracker will reset."
+      : "End this hunt with no bonuses? It will still be saved to past hunts.";
+
+    if (!window.confirm(message)) {
+      return;
+    }
+
+    endBtn.disabled = true;
+    setStatus("Ending hunt...");
+
+    try {
+      const response = await fetch("/api/bonus-hunt/end", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setStatus(data.error || "Could not end hunt.", "error");
+        return;
+      }
+
+      huntMeta = data.hunt || huntMeta;
+      renderHuntHeader(huntMeta);
+      renderSummary(data.summary, huntMeta);
+      renderBonusList(data.bonuses || []);
+      setStatus("Hunt ended and saved to past hunts.", "success");
+      await loadPastHunts();
+    } catch {
+      setStatus("Could not end hunt. Try again.", "error");
+    } finally {
+      endBtn.disabled = false;
     }
   });
 
@@ -1258,7 +1461,7 @@ document.addEventListener("visibilitychange", () => {
 
 async function bootstrapBonusHuntPage() {
   handleKickBotRedirectParams();
-  await Promise.all([loadCurrentUser(), loadBonusHunt(), loadSlotCatalog(), loadSlotRequests()]);
+  await Promise.all([loadCurrentUser(), loadBonusHunt(), loadPastHunts(), loadSlotCatalog(), loadSlotRequests()]);
   updatePanels();
   await loadKickBotStatus();
   schedulePolling();

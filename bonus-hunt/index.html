@@ -199,6 +199,9 @@
               </div>
             </form>
             <div class="bonus-admin-actions">
+              <button type="button" class="btn btn-sm btn-primary" id="bonus-end-hunt">
+                End hunt
+              </button>
               <button type="button" class="btn btn-sm btn-outline" id="bonus-clear-hunt">
                 Clear hunt
               </button>
@@ -206,6 +209,18 @@
             <p class="guess-status is-hidden" id="bonus-hunt-status" role="status" aria-live="polite"></p>
               </div>
             </div>
+
+            <section class="past-hunts-card hunt-side-card" id="past-hunts-section" aria-labelledby="past-hunts-heading">
+              <div class="past-hunts-header">
+                <div>
+                  <p class="past-hunts-eyebrow">Archive</p>
+                  <h3 class="past-hunts-title" id="past-hunts-heading">Past hunts</h3>
+                </div>
+                <span class="past-hunts-count" id="past-hunts-count">0 hunts</span>
+              </div>
+              <p class="past-hunts-empty" id="past-hunts-empty">No completed hunts yet.</p>
+              <ul class="past-hunts-list is-hidden" id="past-hunts-list"></ul>
+            </section>
           </div>
 
           <aside class="hunt-layout-side">

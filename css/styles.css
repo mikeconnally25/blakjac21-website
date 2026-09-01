@@ -1413,6 +1413,9 @@ ul {
 }
 
 .bonus-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
   margin-top: 0.85rem;
 }
 
@@ -1678,6 +1681,217 @@ ul {
   border-top: 1px solid rgba(88, 201, 243, 0.08);
 }
 
+.past-hunts-card {
+  margin-top: 1.25rem;
+}
+
+.past-hunts-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(88, 201, 243, 0.1);
+}
+
+.past-hunts-eyebrow {
+  margin: 0 0 0.2rem;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.past-hunts-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.past-hunts-count {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.past-hunts-empty {
+  margin: 0;
+  padding: 1rem 1.05rem;
+  border-radius: var(--radius-sm);
+  border: 1px dashed rgba(88, 201, 243, 0.18);
+  background: rgba(4, 8, 12, 0.35);
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.past-hunts-list {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.past-hunt-entry {
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(88, 201, 243, 0.12);
+  background: rgba(8, 12, 18, 0.55);
+  overflow: hidden;
+}
+
+.past-hunt-entry.is-expanded {
+  border-color: rgba(88, 201, 243, 0.22);
+}
+
+.past-hunt-entry-toggle {
+  width: 100%;
+  padding: 1rem 1.05rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.past-hunt-entry-toggle:hover {
+  background: rgba(88, 201, 243, 0.04);
+}
+
+.past-hunt-entry-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.past-hunt-entry-main {
+  min-width: 0;
+}
+
+.past-hunt-entry-title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.past-hunt-entry-meta {
+  margin: 0.35rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.past-hunt-entry-stats {
+  display: grid;
+  justify-items: end;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+.past-hunt-entry-profit {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.past-hunt-entry-profit.is-positive {
+  color: #8ef0c4;
+}
+
+.past-hunt-entry-profit.is-negative {
+  color: #ff8f98;
+}
+
+.past-hunt-entry-status {
+  display: inline-flex;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.past-hunt-entry-status--complete {
+  color: #8ef0c4;
+  background: rgba(72, 214, 150, 0.12);
+}
+
+.past-hunt-entry-status--opening,
+.past-hunt-entry-status--collecting {
+  color: #f0c98e;
+  background: rgba(240, 201, 142, 0.1);
+}
+
+.past-hunt-entry-details {
+  padding: 0 1.05rem 1rem;
+}
+
+.past-hunt-entry-detail-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 0.85rem;
+}
+
+.past-hunt-detail-stat {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.75rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(88, 201, 243, 0.1);
+  background: rgba(4, 8, 12, 0.35);
+}
+
+.past-hunt-detail-stat span {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.past-hunt-detail-stat strong {
+  font-size: 0.95rem;
+}
+
+.past-hunt-bonus-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.past-hunt-bonus-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(88, 201, 243, 0.08);
+  background: rgba(4, 8, 12, 0.28);
+}
+
+.past-hunt-bonus-slot {
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.past-hunt-bonus-result {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.past-hunt-bonus-result.is-win {
+  color: #8ef0c4;
+}
+
 @media (max-width: 900px) {
   .hunt-layout-grid {
     grid-template-columns: 1fr;
@@ -1689,6 +1903,18 @@ ul {
 
   .hunt-stats {
     grid-template-columns: 1fr;
+  }
+
+  .past-hunt-entry-detail-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .past-hunt-entry-top {
+    flex-direction: column;
+  }
+
+  .past-hunt-entry-stats {
+    justify-items: start;
   }
 
   .hunt-settings-row {
