@@ -13,10 +13,9 @@ let huntMeta = {
   status: "collecting",
 };
 
-const HUNT_STATUS_LABELS = {
-  collecting: "Collecting",
-  opening: "Opening",
-  complete: "Complete",
+const REQUEST_STATUS_LABELS = {
+  open: "Collecting",
+  closed: "Check back later",
 };
 
 function slotInitials(name) {
@@ -240,18 +239,11 @@ function setRequestStatus(message, tone = "") {
 
 function renderHuntHeader(hunt) {
   const title = document.getElementById("hunt-title");
-  const status = document.getElementById("hunt-status");
   const titleInput = document.getElementById("hunt-title-input");
   const startInput = document.getElementById("hunt-start-input");
 
   if (title) {
     title.textContent = hunt?.title || "Live Hunt";
-  }
-
-  if (status) {
-    const huntStatus = hunt?.status || "collecting";
-    status.textContent = HUNT_STATUS_LABELS[huntStatus] || "Collecting";
-    status.className = `hunt-status hunt-status--${huntStatus}`;
   }
 
   if (titleInput && document.activeElement !== titleInput) {
@@ -533,6 +525,27 @@ function handleKickBotRedirectParams() {
   window.history.replaceState({}, "", nextUrl);
 }
 
+function updateCollectingStatus() {
+  const status = document.getElementById("hunt-status");
+  const isAdmin = Boolean(currentUser?.isAdmin);
+
+  if (!status) return;
+
+  status.textContent = acceptingRequests
+    ? REQUEST_STATUS_LABELS.open
+    : REQUEST_STATUS_LABELS.closed;
+  status.className = acceptingRequests
+    ? "hunt-status hunt-status--collecting hunt-status-toggle"
+    : "hunt-status hunt-status--closed hunt-status-toggle";
+  status.setAttribute("aria-pressed", acceptingRequests ? "true" : "false");
+  status.disabled = !isAdmin;
+  status.title = isAdmin
+    ? "Click to toggle slot request collection"
+    : acceptingRequests
+      ? "Collecting slot requests"
+      : "Check back later for slot requests";
+}
+
 function updateToggleLabel() {
   const label = document.getElementById("slot-requests-toggle-status");
   const toggle = document.getElementById("slot-requests-toggle");
@@ -546,6 +559,27 @@ function updateToggleLabel() {
   if (toggle && currentUser?.isAdmin) {
     toggle.checked = acceptingRequests;
   }
+
+  updateCollectingStatus();
+}
+
+async function setAcceptingRequests(nextAccepting) {
+  const response = await fetch("/api/bonus-hunt/requests/toggle", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ accepting: nextAccepting }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || "Could not update slot request setting.");
+  }
+
+  acceptingRequests = Boolean(data.acceptingRequests);
+  updateRequestPanels();
+  updateToggleLabel();
+  return acceptingRequests;
 }
 
 function updateRequestPanels() {
@@ -1058,6 +1092,29 @@ function initAdminForm() {
     }
   });
 
+  document.getElementById("hunt-status")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    if (!currentUser?.isAdmin || button.disabled) {
+      return;
+    }
+
+    const nextAccepting = !acceptingRequests;
+    button.disabled = true;
+    setStatus(nextAccepting ? "Opening slot requests..." : "Closing slot requests...");
+
+    try {
+      await setAcceptingRequests(nextAccepting);
+      setStatus(
+        acceptingRequests ? "Now collecting slot requests." : "Slot requests closed for now.",
+        "success"
+      );
+    } catch (error) {
+      setStatus(error.message || "Could not update slot request setting.", "error");
+    } finally {
+      button.disabled = !currentUser?.isAdmin;
+    }
+  });
+
   document.getElementById("slot-requests-toggle")?.addEventListener("change", async (event) => {
     const toggle = event.currentTarget;
     const nextAccepting = toggle.checked;
@@ -1066,23 +1123,7 @@ function initAdminForm() {
     setStatus(nextAccepting ? "Opening slot requests..." : "Closing slot requests...");
 
     try {
-      const response = await fetch("/api/bonus-hunt/requests/toggle", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accepting: nextAccepting }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        toggle.checked = !nextAccepting;
-        setStatus(data.error || "Could not update slot request setting.", "error");
-        return;
-      }
-
-      acceptingRequests = Boolean(data.acceptingRequests);
-      updateRequestPanels();
-      updateToggleLabel();
+      await setAcceptingRequests(nextAccepting);
       setStatus(
         acceptingRequests ? "Slot requests are now open." : "Slot requests are now closed.",
         "success"
