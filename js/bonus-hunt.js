@@ -669,6 +669,31 @@ function scrollToBonusCard(bonusId) {
   });
 }
 
+async function submitBonusAddForm({ button } = {}) {
+  const form = document.getElementById("bonus-add-form");
+  const slotInput = document.getElementById("bonus-slot");
+  const betInput = document.getElementById("bonus-bet");
+  const submitBtn = button || document.getElementById("bonus-add-submit");
+  const slot = slotInput?.value.trim();
+  const bet = betInput?.value;
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+  }
+
+  const bonus = await addBonusToHunt(slot, bet);
+  if (bonus) {
+    form?.reset();
+    scrollToBonusCard(bonus.id);
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = false;
+  }
+
+  return bonus;
+}
+
 async function loadCurrentUser() {
   try {
     const response = await fetch("/api/auth/me", {
@@ -1168,7 +1193,7 @@ function renderSlotRequests(requests) {
       controls.className = "slot-request-controls";
 
       const betRow = document.createElement("div");
-      betRow.className = "guess-input-row slot-request-bet-row";
+      betRow.className = "guess-input-row";
 
       const prefix = document.createElement("span");
       prefix.className = "guess-prefix";
@@ -1220,46 +1245,29 @@ function renderSlotRequests(requests) {
       addBonusBtn.className = "btn btn-sm btn-primary";
       addBonusBtn.textContent = "Add bonus";
       addBonusBtn.addEventListener("click", async () => {
-        let betAmount = request.bet;
+        let betValue = betInput.value.trim();
 
-        if (betInput.value.trim()) {
-          const saved = await saveSlotRequestBet(request.id, betInput.value, {
+        if (betValue) {
+          const saved = await saveSlotRequestBet(request.id, betValue, {
             silent: true,
           });
-          if (saved) {
-            betAmount = Number(betInput.value);
+          if (!saved && betValue !== formatSlotBetValue(request.bet)) {
+            return;
           }
+        } else if (request.bet !== null && request.bet !== undefined) {
+          betValue = formatSlotBetValue(request.bet);
         }
 
-        if (betAmount === null || betAmount === undefined || !Number.isFinite(Number(betAmount))) {
-          setStatus("Enter a bet size before adding the bonus.", "error");
-          betInput.focus();
-          return;
+        const slotInput = document.getElementById("bonus-slot");
+        const bonusBetInput = document.getElementById("bonus-bet");
+        if (slotInput) {
+          slotInput.value = request.slotName;
+        }
+        if (bonusBetInput) {
+          bonusBetInput.value = betValue;
         }
 
-        addBonusBtn.disabled = true;
-
-        const bonus = await addBonusToHunt(request.slotName, betAmount);
-
-        if (bonus) {
-          slotBetDrafts.delete(request.id);
-
-          try {
-            await fetch("/api/bonus-hunt/requests/remove", {
-              method: "POST",
-              credentials: "same-origin",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ id: request.id }),
-            });
-            await loadSlotRequests();
-          } catch {
-            // Bonus was added; queue refresh can catch up on the next poll.
-          }
-
-          scrollToBonusCard(bonus.id);
-        }
-
-        addBonusBtn.disabled = false;
+        await submitBonusAddForm({ button: addBonusBtn });
       });
 
       const removeBtn = document.createElement("button");
@@ -1588,22 +1596,7 @@ function initAdminForm() {
 
   form?.addEventListener("submit", async (event) => {
     event.preventDefault();
-
-    const slotInput = document.getElementById("bonus-slot");
-    const betInput = document.getElementById("bonus-bet");
-    const submitBtn = document.getElementById("bonus-add-submit");
-    const slot = slotInput?.value.trim();
-    const bet = betInput?.value;
-
-    submitBtn.disabled = true;
-
-    const bonus = await addBonusToHunt(slot, bet);
-    if (bonus) {
-      form.reset();
-      scrollToBonusCard(bonus.id);
-    }
-
-    submitBtn.disabled = false;
+    await submitBonusAddForm();
   });
 
   clearBtn?.addEventListener("click", async () => {
