@@ -792,16 +792,11 @@ function updateRequestPanels() {
   adminActions?.classList.toggle("is-hidden", !isAdmin);
 
   const select = document.getElementById("slot-request-select");
-  const betInput = document.getElementById("slot-request-bet");
   const submitBtn = document.getElementById("slot-request-submit");
   const canSubmit = open && isSignedIn && !isAdmin;
 
   if (select) {
     select.disabled = !canSubmit;
-  }
-
-  if (betInput) {
-    betInput.disabled = !canSubmit;
   }
 
   if (submitBtn) {
@@ -892,7 +887,7 @@ function renderSlotRequests(requests) {
   if (!total) {
     const isAdmin = Boolean(currentUser?.isAdmin);
     if (acceptingRequests) {
-      empty.textContent = "No requests yet. Viewers can type !s slot bet in chat.";
+      empty.textContent = "No requests yet. Viewers can type !s slot name in chat.";
     } else if (isAdmin) {
       empty.textContent =
         "No requests in the queue. Click Collecting in the hunt header to start accepting them.";
@@ -923,14 +918,65 @@ function renderSlotRequests(requests) {
 
     slotWrap.append(slot, group);
 
-    const bet = document.createElement("span");
-    bet.className = "slot-request-bet";
-    bet.textContent =
-      request.bet === null || request.bet === undefined
-        ? "—"
-        : formatCurrency(request.bet);
+    const betCell = document.createElement("div");
+    betCell.className = "slot-request-bet-cell";
 
-    item.append(user, slotWrap, bet);
+    if (currentUser?.isAdmin) {
+      const betAdmin = document.createElement("div");
+      betAdmin.className = "slot-request-bet-admin";
+
+      const betRow = document.createElement("div");
+      betRow.className = "guess-input-row slot-request-bet-row";
+
+      const prefix = document.createElement("span");
+      prefix.className = "guess-prefix";
+      prefix.setAttribute("aria-hidden", "true");
+      prefix.textContent = "$";
+
+      const betInput = document.createElement("input");
+      betInput.type = "number";
+      betInput.className = "guess-input slot-request-bet-input";
+      betInput.min = "0.01";
+      betInput.max = "1000";
+      betInput.step = "0.01";
+      betInput.inputMode = "decimal";
+      betInput.placeholder = "0.00";
+      betInput.value =
+        request.bet === null || request.bet === undefined
+          ? ""
+          : Number(request.bet).toFixed(2);
+      betInput.setAttribute("aria-label", `Bet size for ${request.slotName}`);
+
+      betRow.append(prefix, betInput);
+
+      const saveBtn = document.createElement("button");
+      saveBtn.type = "button";
+      saveBtn.className = "btn btn-sm btn-outline slot-request-bet-save";
+      saveBtn.textContent = "Set";
+      saveBtn.addEventListener("click", () =>
+        saveSlotRequestBet(request.id, betInput.value, saveBtn)
+      );
+
+      betInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          saveSlotRequestBet(request.id, betInput.value, saveBtn);
+        }
+      });
+
+      betAdmin.append(betRow, saveBtn);
+      betCell.append(betAdmin);
+    } else {
+      const bet = document.createElement("span");
+      bet.className = "slot-request-bet";
+      bet.textContent =
+        request.bet === null || request.bet === undefined
+          ? "—"
+          : formatCurrency(request.bet);
+      betCell.append(bet);
+    }
+
+    item.append(user, slotWrap, betCell);
 
     if (currentUser?.isAdmin) {
       const actions = document.createElement("div");
@@ -941,13 +987,18 @@ function renderSlotRequests(requests) {
       useBtn.className = "btn btn-sm btn-primary";
       useBtn.textContent = "Use";
       useBtn.addEventListener("click", () => {
+        if (request.bet === null || request.bet === undefined) {
+          setStatus("Set a bet size for this request before using it.", "error");
+          return;
+        }
+
         const slotInput = document.getElementById("bonus-slot");
         const betInput = document.getElementById("bonus-bet");
         if (slotInput) {
           slotInput.value = request.slotName;
           slotInput.focus();
         }
-        if (betInput && request.bet !== null && request.bet !== undefined) {
+        if (betInput) {
           betInput.value = Number(request.bet).toFixed(2);
         }
         setStatus(`Loaded ${request.slotName} into the add bonus form.`, "success");
@@ -1020,6 +1071,33 @@ async function loadSlotRequests() {
     }
   } catch {
     // Keep the last known state.
+  }
+}
+
+async function saveSlotRequestBet(id, betValue, button) {
+  button.disabled = true;
+  setStatus("Saving bet size...");
+
+  try {
+    const response = await fetch("/api/bonus-hunt/requests/bet", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, bet: betValue }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      setStatus(data.error || "Could not save bet size.", "error");
+      return;
+    }
+
+    setStatus("Bet size saved.", "success");
+    await loadSlotRequests();
+  } catch {
+    setStatus("Could not save bet size. Try again.", "error");
+  } finally {
+    button.disabled = false;
   }
 }
 
@@ -1437,10 +1515,8 @@ function initSlotRequestForm() {
     }
 
     const select = document.getElementById("slot-request-select");
-    const betInput = document.getElementById("slot-request-bet");
     const submitBtn = document.getElementById("slot-request-submit");
     const slotSlug = select?.value;
-    const bet = Number(betInput?.value);
 
     if (!slotCatalog.length) {
       setRequestStatus(
@@ -1455,11 +1531,6 @@ function initSlotRequestForm() {
       return;
     }
 
-    if (!Number.isFinite(bet) || bet <= 0) {
-      setRequestStatus("Enter a valid bet amount.", "error");
-      return;
-    }
-
     submitBtn.disabled = true;
     setRequestStatus("Submitting your request...");
 
@@ -1468,7 +1539,7 @@ function initSlotRequestForm() {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slotSlug, bet }),
+        body: JSON.stringify({ slotSlug }),
       });
 
       const data = await response.json();
@@ -1478,10 +1549,7 @@ function initSlotRequestForm() {
       }
 
       form.reset();
-      setRequestStatus(
-        `Requested ${data.request.slotName} at ${formatCurrency(data.request.bet)}.`,
-        "success"
-      );
+      setRequestStatus(`Requested ${data.request.slotName}.`, "success");
       await loadSlotRequests();
     } catch {
       setRequestStatus("Could not submit request. Try again.", "error");

@@ -248,8 +248,8 @@
 
               <div class="requests-hub-command">
                 <p class="requests-hub-command-label">Request in Kick chat</p>
-                <code class="requests-hub-command-code">!s &lt;slot name&gt; &lt;bet&gt;</code>
-                <p class="requests-hub-command-example">Example: <strong>!s Gates of Olympus 2</strong></p>
+                <code class="requests-hub-command-code">!s &lt;slot name&gt;</code>
+                <p class="requests-hub-command-example">Example: <strong>!s Gates of Olympus</strong></p>
                 <p class="requests-hub-command-note">
                   Slots must be from
                   <a href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
@@ -263,38 +263,17 @@
               </div>
 
               <div class="requests-hub-notice is-hidden" id="slot-request-guest">
-                <p>Sign in with Kick to request here, or type <strong>!s &lt;slot&gt; &lt;bet&gt;</strong> in chat.</p>
+                <p>Sign in with Kick to request here, or type <strong>!s &lt;slot&gt;</strong> in chat.</p>
                 <a href="/api/auth/login" class="btn btn-primary btn-sm">Sign in with Kick</a>
               </div>
 
               <div class="requests-hub-form is-hidden" id="slot-request-panel">
                 <p class="requests-hub-form-text">Or submit a request on the site:</p>
                 <form class="slot-request-form" id="slot-request-form">
-                  <div class="slot-request-form-row">
-                    <div class="slot-request-form-field slot-request-form-field--slot">
-                      <label class="guess-label" for="slot-request-select">Slot</label>
-                      <select class="slot-request-select" id="slot-request-select" required>
-                        <option value="">Choose a slot...</option>
-                      </select>
-                    </div>
-                    <div class="slot-request-form-field slot-request-form-field--bet">
-                      <label class="guess-label" for="slot-request-bet">Bet</label>
-                      <div class="guess-input-row">
-                        <span class="guess-prefix" aria-hidden="true">$</span>
-                        <input
-                          class="guess-input"
-                          id="slot-request-bet"
-                          name="bet"
-                          type="number"
-                          inputmode="decimal"
-                          min="0.01"
-                          step="0.01"
-                          placeholder="2.00"
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  <label class="guess-label" for="slot-request-select">Slot</label>
+                  <select class="slot-request-select" id="slot-request-select" required>
+                    <option value="">Choose a slot...</option>
+                  </select>
                   <button type="submit" class="btn btn-primary" id="slot-request-submit">
                     Submit request
                   </button>

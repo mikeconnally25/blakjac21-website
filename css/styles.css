@@ -1653,14 +1653,29 @@ ul {
   background: rgba(8, 12, 18, 0.55);
 }
 
-.slot-request-form-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 0.8fr);
-  gap: 0.85rem;
+.slot-request-bet-cell {
+  min-width: 0;
 }
 
-.slot-request-form-field--bet .guess-input-row {
-  min-height: 3rem;
+.slot-request-bet-admin {
+  display: grid;
+  gap: 0.45rem;
+  justify-items: end;
+}
+
+.slot-request-bet-row {
+  width: 100%;
+  min-height: 2.35rem;
+}
+
+.slot-request-bet-input {
+  min-height: 2.35rem;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.92rem;
+}
+
+.slot-request-bet-save {
+  width: 100%;
 }
 
 .slot-requests-table-head,
@@ -2029,6 +2044,10 @@ ul {
   .slot-requests-table-head,
   .slot-request-entry {
     grid-template-columns: 1fr;
+  }
+
+  .slot-request-bet-admin {
+    justify-items: stretch;
   }
 
   .slot-requests-table-head {
