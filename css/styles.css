@@ -1753,6 +1753,7 @@ ul {
 }
 
 .slot-request-bet-input {
+  min-width: 3.25rem;
   min-height: 0;
   padding: 0;
   font-size: 0.85rem;

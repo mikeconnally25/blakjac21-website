@@ -6,6 +6,7 @@ let slotGroups = [];
 let slotCatalogUpdatedAt = null;
 let acceptingRequests = false;
 let slotRequests = [];
+let slotBetDrafts = new Map();
 let stakeSyncPollTimer = null;
 let stakeSyncInProgress = false;
 let huntMeta = {
@@ -977,6 +978,19 @@ function renderSlotCatalogSelect(selectedSlug = "") {
   }
 }
 
+function isEditingSlotRequestBet() {
+  const active = document.activeElement;
+  return active?.classList?.contains("slot-request-bet-input") ?? false;
+}
+
+function formatSlotBetValue(bet) {
+  if (bet === null || bet === undefined || bet === "") {
+    return "";
+  }
+
+  return Number(bet).toFixed(2);
+}
+
 function renderSlotRequests(requests) {
   const list = document.getElementById("slot-requests-list");
   const empty = document.getElementById("slot-requests-empty");
@@ -1053,11 +1067,14 @@ function renderSlotRequests(requests) {
       betInput.step = "0.01";
       betInput.inputMode = "decimal";
       betInput.placeholder = "0.00";
-      betInput.value =
-        request.bet === null || request.bet === undefined
-          ? ""
-          : Number(request.bet).toFixed(2);
+      betInput.value = slotBetDrafts.has(request.id)
+        ? slotBetDrafts.get(request.id)
+        : formatSlotBetValue(request.bet);
       betInput.setAttribute("aria-label", `Bet size for ${request.slotName}`);
+
+      betInput.addEventListener("input", () => {
+        slotBetDrafts.set(request.id, betInput.value);
+      });
 
       betRow.append(prefix, betInput);
 
@@ -1173,7 +1190,17 @@ async function loadSlotRequests() {
     const data = await response.json();
     acceptingRequests = Boolean(data.acceptingRequests);
     slotRequests = data.requests || [];
-    renderSlotRequests(slotRequests);
+
+    if (!isEditingSlotRequestBet()) {
+      renderSlotRequests(slotRequests);
+    } else {
+      const count = document.getElementById("slot-requests-count");
+      if (count) {
+        const total = slotRequests.length;
+        count.textContent = total === 1 ? "1 request" : `${total} requests`;
+      }
+    }
+
     updateRequestPanels();
     updateToggleLabel();
 
@@ -1236,6 +1263,7 @@ async function saveSlotRequestBet(id, betValue, button) {
     }
 
     setStatus("Bet size saved.", "success");
+    slotBetDrafts.delete(id);
     await loadSlotRequests();
   } catch {
     setStatus("Could not save bet size. Try again.", "error");
