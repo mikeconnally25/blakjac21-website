@@ -27,6 +27,7 @@ import {
   handleBonusHuntSlotsSyncStatus,
   handleBonusHuntSlotsImportSync,
   handleKickChatSubscribe,
+  handleKickChatStatus,
 } from "./lib/bonus-hunt-handlers.js";
 import { handleKickWebhook } from "./lib/kick-webhook.js";
 import { handleKickBotLogin, handleKickBotStatus } from "./lib/kick-bot-auth-handlers.js";
@@ -108,6 +109,7 @@ app.post("/api/bonus-hunt/requests/toggle", (req, res) =>
   handleBonusHuntRequestsToggle(req, res)
 );
 app.post("/api/kick/subscribe", (req, res) => handleKickChatSubscribe(req, res));
+app.get("/api/kick/chat-status", (req, res) => handleKickChatStatus(req, res));
 app.get("/api/kick/bot/login", (req, res) => handleKickBotLogin(req, res));
 app.get("/api/kick/bot/status", (req, res) => handleKickBotStatus(req, res));
 app.get("/api/kick/credentials-check", (req, res) => handleKickCredentialsCheck(req, res));

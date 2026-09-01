@@ -1641,11 +1641,56 @@ ul {
 
 .requests-hub-admin {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.55rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
   padding-top: 0.35rem;
   border-top: 1px solid rgba(88, 201, 243, 0.1);
+}
+
+.requests-hub-kick {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(88, 201, 243, 0.14);
+  background: rgba(8, 12, 18, 0.55);
+}
+
+.requests-hub-kick-title {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.requests-hub-kick-status,
+.requests-hub-kick-meta {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.requests-hub-kick-status.is-error {
+  color: #ff8f8f;
+}
+
+.requests-hub-kick-status.is-success {
+  color: #8ce4a8;
+}
+
+.requests-hub-kick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.requests-hub-admin > .btn {
+  align-self: flex-end;
 }
 
 .requests-hub-notice {

@@ -636,45 +636,89 @@ async function loadCurrentUser() {
   }
 }
 
-function renderKickBotStatus(status) {
-  const meta = document.getElementById("kick-bot-status");
-  if (!meta) return;
+function renderKickChatStatus(status) {
+  const panel = document.getElementById("kick-chat-admin");
+  const chatStatus = document.getElementById("kick-chat-status");
+  const botMeta = document.getElementById("kick-bot-status");
+  const connectButton = document.getElementById("kick-bot-connect");
+  const subscribeButton = document.getElementById("kick-chat-subscribe");
 
-  if (!status?.connected) {
-    meta.textContent =
-      "Kick chat bot is not configured. Set KICK_CLIENT_ID, KICK_CLIENT_SECRET, and KICK_BROADCASTER_USER_ID in Vercel.";
+  if (!currentUser?.isAdmin) {
+    panel?.classList.add("is-hidden");
     return;
   }
 
-  const label =
-    status.source === "env"
-      ? "Kick chat bot ready (KICK_BOT_ACCESS_TOKEN)."
-      : status.source === "env-refresh"
-        ? "Kick chat bot ready (KICK_BOT_REFRESH_TOKEN)."
-        : status.source === "app"
-          ? "Kick chat bot ready."
-          : status.username
-            ? `Kick chat bot ready as ${status.username}.`
-            : "Kick chat bot ready.";
+  panel?.classList.remove("is-hidden");
 
-  meta.textContent = label;
+  if (!status) {
+    if (chatStatus) {
+      chatStatus.textContent = "Could not load Kick chat status.";
+      chatStatus.className = "requests-hub-kick-status is-error";
+    }
+    return;
+  }
+
+  const lines = [];
+  if (status.kickChatSubscribed) {
+    lines.push("Chat listener is active. !s commands should reach the queue.");
+  } else {
+    lines.push("Chat listener is not active. Click Enable !s in chat.");
+  }
+
+  if (status.chatRepliesReady) {
+    lines.push("Bot replies are configured.");
+  } else {
+    lines.push("Bot replies are not configured. Connect chat bot for confirmations in chat.");
+  }
+
+  if (status.subscriptionError) {
+    lines.push(status.subscriptionError);
+  }
+
+  if (chatStatus) {
+    chatStatus.textContent = lines.join(" ");
+    chatStatus.className = `requests-hub-kick-status ${
+      status.kickChatSubscribed ? "is-success" : "is-error"
+    }`;
+  }
+
+  if (botMeta) {
+    const webhook = status.webhookUrl
+      ? `Webhook URL for Kick Developer Portal: ${status.webhookUrl}`
+      : "";
+    botMeta.textContent = webhook;
+  }
+
+  if (connectButton) {
+    connectButton.classList.toggle("is-hidden", Boolean(status.chatRepliesReady));
+  }
+
+  if (subscribeButton) {
+    subscribeButton.classList.toggle("is-hidden", Boolean(status.kickChatSubscribed));
+  }
 }
 
-async function loadKickBotStatus() {
-  if (!currentUser?.isAdmin) return;
+async function loadKickChatStatus() {
+  if (!currentUser?.isAdmin) {
+    renderKickChatStatus(null);
+    return;
+  }
 
   try {
-    const response = await fetch("/api/kick/bot/status", {
+    const response = await fetch("/api/kick/chat-status", {
       credentials: "same-origin",
       cache: "no-store",
     });
 
-    if (!response.ok) return;
+    if (!response.ok) {
+      renderKickChatStatus(null);
+      return;
+    }
 
     const status = await response.json();
-    renderKickBotStatus(status);
+    renderKickChatStatus(status);
   } catch {
-    // Keep the last known state.
+    renderKickChatStatus(null);
   }
 }
 
@@ -691,6 +735,7 @@ function handleKickBotRedirectParams() {
         : "Kick chat bot ready.",
       "success"
     );
+    void loadKickChatStatus();
   } else if (kickBot === "error") {
     const message = params.get("message");
     const text =
@@ -775,7 +820,18 @@ async function setAcceptingRequests(nextAccepting) {
   updateRequestPanels();
   updateToggleLabel();
   renderSlotRequests(slotRequests);
-  return acceptingRequests;
+
+  if (currentUser?.isAdmin && data.kickChatError) {
+    setStatus(`Collecting is on, but Kick chat failed to connect: ${data.kickChatError}`, "error");
+  } else if (currentUser?.isAdmin && data.acceptingRequests && data.kickChatSubscribed === false) {
+    setStatus("Collecting is on, but chat is not subscribed. Click Enable !s in chat.", "error");
+  }
+
+  if (currentUser?.isAdmin) {
+    await loadKickChatStatus();
+  }
+
+  return data;
 }
 
 function updateRequestPanels() {
@@ -1083,9 +1139,18 @@ async function loadSlotRequests() {
 
     if (currentUser?.isAdmin && data.kickChatSubscribed === false) {
       setStatus(
-        "Kick chat is not subscribed yet. Toggle Collecting again to reconnect !s.",
+        "Kick chat is not subscribed yet. Use Enable !s in chat in the admin panel.",
         "error"
       );
+    }
+
+    if (currentUser?.isAdmin) {
+      renderKickChatStatus({
+        kickChatSubscribed: Boolean(data.kickChatSubscribed),
+        chatRepliesReady: false,
+        subscriptionError: data.kickChatSubscriptionError || null,
+        webhookUrl: null,
+      });
     }
 
     const select = document.getElementById("slot-request-select");
@@ -1414,6 +1479,7 @@ function initAdminForm() {
           ? `Kick chat !s enabled. ${refreshedCount} slots loaded.`
           : "Kick chat !s enabled. Finish Stake sync to load slots.";
       setStatus(slotMessage, refreshedCount > 0 ? "success" : "error");
+      await loadKickChatStatus();
     } catch {
       setStatus("Could not enable !s in chat. Try again.", "error");
     } finally {
@@ -1585,7 +1651,7 @@ function initSlotRequestForm() {
 window.addEventListener("auth:change", async (event) => {
   currentUser = event.detail?.user || null;
   updatePanels();
-  await Promise.all([loadBonusHunt(), loadSlotCatalog(), loadSlotRequests(), loadKickBotStatus()]);
+  await Promise.all([loadBonusHunt(), loadSlotCatalog(), loadSlotRequests(), loadKickChatStatus()]);
 });
 
 document.addEventListener("visibilitychange", () => {
@@ -1600,7 +1666,7 @@ async function bootstrapBonusHuntPage() {
   handleKickBotRedirectParams();
   await Promise.all([loadCurrentUser(), loadBonusHunt(), loadPastHunts(), loadSlotCatalog(), loadSlotRequests()]);
   updatePanels();
-  await loadKickBotStatus();
+  await loadKickChatStatus();
   schedulePolling();
 }
 

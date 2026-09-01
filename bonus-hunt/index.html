@@ -293,6 +293,21 @@
               </div>
 
               <div class="requests-hub-admin is-hidden" id="slot-requests-admin">
+                <div class="requests-hub-kick is-hidden" id="kick-chat-admin">
+                  <p class="requests-hub-kick-title">Kick chat setup</p>
+                  <p class="requests-hub-kick-status" id="kick-chat-status">
+                    Checking Kick chat connection...
+                  </p>
+                  <p class="requests-hub-kick-meta" id="kick-bot-status"></p>
+                  <div class="requests-hub-kick-actions">
+                    <a href="/api/kick/bot/login" class="btn btn-sm btn-kick" id="kick-bot-connect">
+                      Connect chat bot
+                    </a>
+                    <button type="button" class="btn btn-sm btn-primary" id="kick-chat-subscribe">
+                      Enable !s in chat
+                    </button>
+                  </div>
+                </div>
                 <button type="button" class="btn btn-sm btn-primary" id="slot-catalog-sync">
                   Sync slots from Stake
                 </button>
