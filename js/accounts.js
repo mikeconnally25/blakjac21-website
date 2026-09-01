@@ -1,4 +1,6 @@
 let currentUser = null;
+let allUsers = [];
+let searchQuery = "";
 
 function formatDate(iso) {
   if (!iso) {
@@ -30,16 +32,49 @@ function renderAccessState() {
   denied?.classList.toggle("is-hidden", isAdmin);
 }
 
-function updateAccountCounts(total) {
+function updateAccountCounts(total, visible = total) {
   const heroCount = document.getElementById("accounts-hero-count");
   const countBadge = document.getElementById("accounts-count-badge");
   const countPill = document.getElementById("accounts-count");
+  const searchResults = document.getElementById("accounts-search-results");
+  const trimmedQuery = searchQuery.trim();
 
   if (heroCount) heroCount.textContent = String(total);
   if (countBadge) countBadge.textContent = String(total);
+
   if (countPill) {
-    countPill.textContent = `${total} registered`;
+    countPill.textContent =
+      trimmedQuery && visible !== total
+        ? `${visible} of ${total} shown`
+        : `${total} registered`;
   }
+
+  if (searchResults) {
+    if (!trimmedQuery) {
+      searchResults.textContent = "";
+      searchResults.classList.add("is-hidden");
+      return;
+    }
+
+    searchResults.textContent =
+      visible === 0
+        ? `No players match "${trimmedQuery}".`
+        : `${visible} player${visible === 1 ? "" : "s"} match "${trimmedQuery}".`;
+    searchResults.classList.remove("is-hidden");
+  }
+}
+
+function filterUsers(users, query) {
+  const term = query.trim().toLowerCase();
+  if (!term) {
+    return users;
+  }
+
+  return users.filter((user) => {
+    const username = String(user.username || "").toLowerCase();
+    const kickUserId = String(user.kickUserId || "").toLowerCase();
+    return username.includes(term) || kickUserId.includes(term);
+  });
 }
 
 function createAvatar(user) {
@@ -76,23 +111,35 @@ function createMetaItem(label, value) {
   return item;
 }
 
-function renderAccounts(users, total) {
+function renderAccounts(users) {
   const list = document.getElementById("accounts-list");
   const empty = document.getElementById("accounts-empty");
 
   if (!list || !empty) return;
 
-  updateAccountCounts(total);
+  const total = allUsers.length;
+  const visible = users.length;
+  updateAccountCounts(total, visible);
   list.replaceChildren();
 
-  const hasUsers = users.length > 0;
-  empty.classList.toggle("is-hidden", hasUsers);
-  list.classList.toggle("is-hidden", !hasUsers);
-
-  if (!hasUsers) {
+  if (total === 0) {
     empty.textContent = "No registered users yet.";
+    empty.classList.remove("is-hidden");
+    list.classList.add("is-hidden");
     return;
   }
+
+  if (visible === 0) {
+    empty.textContent = searchQuery.trim()
+      ? `No players match "${searchQuery.trim()}".`
+      : "No registered users yet.";
+    empty.classList.remove("is-hidden");
+    list.classList.add("is-hidden");
+    return;
+  }
+
+  empty.classList.add("is-hidden");
+  list.classList.remove("is-hidden");
 
   users.forEach((user, index) => {
     const item = document.createElement("li");
@@ -136,6 +183,16 @@ function renderAccounts(users, total) {
   });
 }
 
+function renderFilteredAccounts() {
+  renderAccounts(filterUsers(allUsers, searchQuery));
+}
+
+function updateSearchControls() {
+  const clearBtn = document.getElementById("accounts-search-clear");
+  const hasQuery = Boolean(searchQuery.trim());
+  clearBtn?.classList.toggle("is-hidden", !hasQuery);
+}
+
 async function loadAccounts() {
   if (!currentUser?.isAdmin) {
     renderAccessState();
@@ -156,11 +213,34 @@ async function loadAccounts() {
       return;
     }
 
+    allUsers = data.users || [];
     setAccountsStatus("");
-    renderAccounts(data.users || [], data.total || 0);
+    renderFilteredAccounts();
+    updateSearchControls();
   } catch {
     setAccountsStatus("Could not load accounts.", "error");
   }
+}
+
+function initSearch() {
+  const searchInput = document.getElementById("accounts-search");
+  const clearBtn = document.getElementById("accounts-search-clear");
+
+  searchInput?.addEventListener("input", () => {
+    searchQuery = searchInput.value;
+    updateSearchControls();
+    renderFilteredAccounts();
+  });
+
+  clearBtn?.addEventListener("click", () => {
+    searchQuery = "";
+    if (searchInput) {
+      searchInput.value = "";
+      searchInput.focus();
+    }
+    updateSearchControls();
+    renderFilteredAccounts();
+  });
 }
 
 window.addEventListener("auth:change", async (event) => {
@@ -170,6 +250,8 @@ window.addEventListener("auth:change", async (event) => {
 });
 
 async function initAccounts() {
+  initSearch();
+
   try {
     const response = await fetch("/api/auth/me", {
       credentials: "same-origin",

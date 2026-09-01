@@ -98,6 +98,34 @@
 
           <p class="guess-status is-hidden" id="accounts-status" role="status" aria-live="polite"></p>
 
+          <div class="accounts-search-panel">
+            <div class="accounts-search-copy">
+              <label class="guess-label" for="accounts-search">Search players</label>
+              <p class="accounts-search-hint">Filter by username or Kick ID.</p>
+            </div>
+            <div class="accounts-search-row">
+              <div class="guess-input-row accounts-search-input-row">
+                <input
+                  class="guess-input"
+                  id="accounts-search"
+                  name="search"
+                  type="search"
+                  autocomplete="off"
+                  spellcheck="false"
+                  placeholder="Search usernames..."
+                />
+              </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline accounts-search-clear is-hidden"
+                id="accounts-search-clear"
+              >
+                Clear
+              </button>
+            </div>
+            <p class="accounts-search-results is-hidden" id="accounts-search-results"></p>
+          </div>
+
           <div class="accounts-viewport">
             <p class="accounts-empty" id="accounts-empty">No registered users yet.</p>
             <ol class="accounts-list is-hidden" id="accounts-list"></ol>
