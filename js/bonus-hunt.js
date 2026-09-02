@@ -1804,6 +1804,32 @@ async function removeBonusEntry(id, button) {
   }
 }
 
+function initOverlayPreview() {
+  const sourceUrl = new URL("/bonus-hunt/overlay/source.html", window.location.origin).href;
+  const urlInput = document.getElementById("hunt-overlay-url");
+  const copyBtn = document.getElementById("hunt-overlay-copy");
+  const copyStatus = document.getElementById("hunt-overlay-copy-status");
+
+  if (urlInput) {
+    urlInput.value = sourceUrl;
+  }
+
+  copyBtn?.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(sourceUrl);
+      if (copyStatus) {
+        copyStatus.textContent = "Copied OBS URL to clipboard.";
+      }
+    } catch {
+      urlInput?.select();
+      document.execCommand("copy");
+      if (copyStatus) {
+        copyStatus.textContent = "Copied OBS URL to clipboard.";
+      }
+    }
+  });
+}
+
 function initAdminForm() {
   const settingsForm = document.getElementById("hunt-settings-form");
   settingsForm?.addEventListener("submit", async (event) => {
@@ -2186,6 +2212,7 @@ async function bootstrapBonusHuntPage() {
 }
 
 initAdminForm();
+initOverlayPreview();
 initSlotRequestForm();
 initSlotRequestListActions();
 bootstrapBonusHuntPage();

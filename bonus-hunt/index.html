@@ -174,7 +174,6 @@
               </div>
             </form>
             <div class="bonus-admin-actions">
-              <a href="/bonus-hunt/overlay/" class="btn btn-sm btn-outline">OBS overlay preview</a>
               <button type="button" class="btn btn-sm btn-primary" id="bonus-end-hunt">
                 End hunt
               </button>
@@ -182,6 +181,43 @@
                 Clear hunt
               </button>
             </div>
+
+            <section class="hunt-overlay-admin" id="hunt-overlay-admin" aria-labelledby="hunt-overlay-heading">
+              <div class="hunt-overlay-admin-header">
+                <div>
+                  <p class="admin-panel-label" id="hunt-overlay-heading">OBS overlay</p>
+                  <p class="admin-panel-text">
+                    Live preview of your stream overlay. Copy the URL into an OBS Browser Source.
+                  </p>
+                </div>
+                <a href="/bonus-hunt/overlay/" class="btn btn-sm btn-outline">Open full preview</a>
+              </div>
+
+              <div class="hunt-overlay-admin-preview" aria-label="OBS overlay preview">
+                <iframe
+                  id="hunt-overlay-preview-frame"
+                  title="Bonus hunt overlay preview"
+                  src="/bonus-hunt/overlay/source.html"
+                  loading="lazy"
+                ></iframe>
+              </div>
+
+              <div class="hunt-overlay-admin-url">
+                <label class="guess-label" for="hunt-overlay-url">OBS browser source URL</label>
+                <div class="hunt-overlay-admin-url-row">
+                  <input
+                    class="guess-input"
+                    id="hunt-overlay-url"
+                    type="text"
+                    readonly
+                  />
+                  <button type="button" class="btn btn-sm btn-primary" id="hunt-overlay-copy">
+                    Copy URL
+                  </button>
+                </div>
+                <p class="hunt-overlay-admin-note" id="hunt-overlay-copy-status" role="status" aria-live="polite"></p>
+              </div>
+            </section>
 
             <div class="hunt-admin-queue is-hidden" id="hunt-admin-queue">
               <div class="hunt-admin-queue-header">

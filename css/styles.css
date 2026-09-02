@@ -2828,6 +2828,81 @@ ul {
   margin-top: 0.85rem;
 }
 
+.hunt-overlay-admin {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.hunt-overlay-admin-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin-bottom: 0.9rem;
+}
+
+.hunt-overlay-admin-preview {
+  display: grid;
+  place-items: start center;
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(88, 201, 243, 0.12);
+  background:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%);
+  background-size: 20px 20px;
+  background-position:
+    0 0,
+    0 10px,
+    10px -10px,
+    -10px 0;
+  background-color: rgba(4, 8, 12, 0.55);
+  overflow: hidden;
+}
+
+.hunt-overlay-admin-preview iframe {
+  width: 26rem;
+  height: 28rem;
+  border: 0;
+  background: transparent;
+  transform: scale(0.92);
+  transform-origin: top center;
+}
+
+.hunt-overlay-admin-url {
+  margin-top: 0.9rem;
+}
+
+.hunt-overlay-admin-url-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.hunt-overlay-admin-note {
+  min-height: 1.1rem;
+  margin: 0.45rem 0 0;
+  color: var(--accent-bright);
+  font-size: 0.82rem;
+}
+
+@media (max-width: 720px) {
+  .hunt-overlay-admin-header {
+    flex-direction: column;
+  }
+
+  .hunt-overlay-admin-preview iframe {
+    width: 100%;
+    max-width: 26rem;
+    height: 24rem;
+    transform: none;
+  }
+}
+
 .slot-requests-admin-section {
   margin-top: 1.25rem;
   padding-top: 1.25rem;
