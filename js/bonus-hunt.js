@@ -53,10 +53,16 @@ function formatMultiplier(value) {
   })}x`;
 }
 
-function buildStakeBookmarkletHref() {
+function buildStakeBookmarkletHref(token = "") {
   const origin = window.location.origin;
   const scriptUrl = `${origin}/js/stake-sync-bookmarklet.js?origin=${encodeURIComponent(origin)}`;
-  const code = `javascript:(function(){var s=document.createElement('script');s.src=${JSON.stringify(scriptUrl)};document.head.appendChild(s);})();`;
+  const tokenLiteral = token ? JSON.stringify(token) : "null";
+  const code =
+    "javascript:(function(){var token=" +
+    tokenLiteral +
+    ";var scriptUrl=" +
+    JSON.stringify(scriptUrl) +
+    ";function run(){var s=document.createElement('script');s.src=scriptUrl;document.head.appendChild(s);}if(location.hostname.indexOf('stake.com')!==-1){var m=location.hash.match(/bj21sync=([^&]+)/);if(!token)token=m&&m[1];if(!token){alert('Missing sync token. Start sync from bonus-hunt first.');return;}if(!m)location.hash='bj21sync='+encodeURIComponent(token);run();return;}if(!token){alert('Missing sync token. Start sync from bonus-hunt first.');return;}window.open('https://stake.com/casino/group/new-releases#bj21sync='+encodeURIComponent(token),'_blank');})();";
   return code;
 }
 
@@ -76,7 +82,7 @@ function updateStakeSyncHelp({ token, stakeUrl, message }) {
     helpText.textContent = message;
   }
   if (bookmarklet) {
-    bookmarklet.href = buildStakeBookmarkletHref();
+    bookmarklet.href = buildStakeBookmarkletHref(token);
   }
   if (openStake && stakeUrl) {
     openStake.href = stakeUrl;
