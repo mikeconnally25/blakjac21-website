@@ -5,6 +5,7 @@ let slotCatalog = [];
 let slotGroups = [];
 let slotCatalogUpdatedAt = null;
 let acceptingRequests = false;
+let huntBonuses = [];
 let slotRequests = [];
 let mySlotRequests = [];
 let slotRequestLimit = 3;
@@ -368,10 +369,15 @@ function renderBonusList(bonuses) {
     index.className = "hunt-bonus-index";
     index.textContent = `#${bonus.number}`;
 
-    const avatar = document.createElement("div");
-    avatar.className = "hunt-bonus-avatar";
-    avatar.textContent = slotInitials(bonus.slot);
-    avatar.style.background = avatarColor(bonus.slot);
+    const catalogSlot = findCatalogSlot({ slotName: bonus.slot });
+    const thumbnailUrl = getSlotRequestThumbnail(
+      { thumbnailUrl: null, slotName: bonus.slot },
+      catalogSlot
+    );
+    const avatar = createSlotThumb(bonus.slot, thumbnailUrl, {
+      rootClass: "hunt-bonus-avatar",
+      imageClass: "hunt-bonus-avatar-image",
+    });
 
     const main = document.createElement("div");
     main.className = "hunt-bonus-main";
@@ -626,9 +632,10 @@ async function loadBonusHunt() {
 
     const data = await response.json();
     huntMeta = data.hunt || huntMeta;
+    huntBonuses = data.bonuses || [];
     renderHuntHeader(huntMeta);
     renderSummary(data.summary, huntMeta);
-    renderBonusList(data.bonuses);
+    renderBonusList(huntBonuses);
   } catch {
     // Keep the last known state.
   }
@@ -1112,7 +1119,9 @@ function findCatalogSlot(request) {
   }
 
   const slug = String(request.slotSlug || "").trim().toLowerCase();
-  const name = String(request.slotName || "").trim().toLowerCase();
+  const name = String(request.slotName || request.slot || "")
+    .trim()
+    .toLowerCase();
 
   return (
     slotCatalog.find((slot) => slug && slot.slug === slug) ||
@@ -1152,13 +1161,17 @@ function getSlotRequestThumbnail(request, catalogSlot) {
   return normalizeSlotThumbnailUrl(request.thumbnailUrl || catalogSlot?.thumbnailUrl);
 }
 
-function createSlotRequestThumb(slotName, thumbnailUrl) {
+function createSlotThumb(
+  slotName,
+  thumbnailUrl,
+  { rootClass = "slot-request-thumb", imageClass = "slot-request-thumb-image" } = {}
+) {
   const thumb = document.createElement("div");
-  thumb.className = "slot-request-thumb";
+  thumb.className = rootClass;
 
   if (thumbnailUrl) {
     const image = document.createElement("img");
-    image.className = "slot-request-thumb-image";
+    image.className = imageClass;
     image.src = thumbnailUrl;
     image.alt = "";
     image.loading = "lazy";
@@ -1178,6 +1191,10 @@ function createSlotRequestThumb(slotName, thumbnailUrl) {
   }
 
   return thumb;
+}
+
+function createSlotRequestThumb(slotName, thumbnailUrl) {
+  return createSlotThumb(slotName, thumbnailUrl);
 }
 
 function renderSlotRequests(requests) {
@@ -1382,6 +1399,10 @@ async function loadSlotCatalog() {
 
     if (slotRequests.length && !isEditingSlotRequestBet()) {
       renderSlotRequests(slotRequests);
+    }
+
+    if (huntBonuses.length) {
+      renderBonusList(huntBonuses);
     }
   } catch (error) {
     const count = document.getElementById("slot-catalog-count");
