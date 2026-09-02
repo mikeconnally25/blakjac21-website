@@ -893,6 +893,59 @@ ul {
   font-size: 0.82rem;
 }
 
+.leaderboard-prizes-wrap {
+  padding: 0.95rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(240, 201, 142, 0.18);
+  background: linear-gradient(
+    135deg,
+    rgba(240, 201, 142, 0.08),
+    rgba(10, 15, 20, 0.35)
+  );
+}
+
+.leaderboard-prizes-label {
+  margin: 0 0 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.leaderboard-prizes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.leaderboard-prize-item {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(88, 201, 243, 0.12);
+  background: rgba(10, 15, 20, 0.5);
+  text-align: center;
+}
+
+.leaderboard-prize-place {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent-bright);
+  letter-spacing: 0.02em;
+}
+
+.leaderboard-prize-amount {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #f0c98e;
+}
+
 .leaderboard-card .podium-panel {
   margin-top: 0.25rem;
   margin-bottom: 0.35rem;
@@ -901,7 +954,7 @@ ul {
 .leaderboard-table-head,
 .leaderboard-entry {
   display: grid;
-  grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+  grid-template-columns: 4.5rem minmax(0, 1fr) auto auto;
   gap: 0.85rem;
   align-items: center;
 }
@@ -916,8 +969,10 @@ ul {
   text-transform: uppercase;
 }
 
+.leaderboard-table-head span:nth-child(3),
 .leaderboard-table-head span:last-child,
-.leaderboard-score {
+.leaderboard-score,
+.leaderboard-prize {
   text-align: right;
 }
 
@@ -937,7 +992,7 @@ ul {
 
 .leaderboard-entry {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: 4.5rem minmax(0, 1fr) auto auto;
   gap: 0.85rem;
   align-items: center;
   padding: 0.8rem 0.95rem;
@@ -964,6 +1019,37 @@ ul {
   font-weight: 700;
   color: #f0c98e;
   white-space: nowrap;
+}
+
+.leaderboard-prize {
+  font-weight: 700;
+  color: #7ee0a3;
+  white-space: nowrap;
+  min-width: 4.5rem;
+}
+
+.leaderboard-card .podium-prize {
+  margin-top: 0.2rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #7ee0a3;
+}
+
+@media (max-width: 720px) {
+  .leaderboard-prizes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .leaderboard-table-head,
+  .leaderboard-entry {
+    grid-template-columns: 3rem minmax(0, 1fr) auto auto;
+    gap: 0.55rem;
+  }
+
+  .leaderboard-prize,
+  .leaderboard-score {
+    font-size: 0.82rem;
+  }
 }
 
 .accounts-page .page-content {

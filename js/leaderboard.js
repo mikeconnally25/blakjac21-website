@@ -2,6 +2,58 @@ let pollTimer = null;
 let lastSignature = "";
 let hasLoadedOnce = false;
 
+const PRIZE_BY_RANK = {
+  1: 2000,
+  2: 1000,
+  3: 600,
+  4: 500,
+  5: 300,
+  6: 200,
+  7: 100,
+  8: 100,
+  9: 100,
+  10: 100,
+};
+
+function formatPlace(rank) {
+  if (rank === 1) return "1st";
+  if (rank === 2) return "2nd";
+  if (rank === 3) return "3rd";
+  return `${rank}th`;
+}
+
+function getPrizeForRank(rank) {
+  return PRIZE_BY_RANK[rank] ?? null;
+}
+
+function formatPrize(rank) {
+  const amount = getPrizeForRank(rank);
+  return amount ? formatCurrency(amount) : "—";
+}
+
+function renderPrizeStructure() {
+  const list = document.getElementById("leaderboard-prizes");
+  if (!list) return;
+
+  list.replaceChildren();
+
+  for (let rank = 1; rank <= 10; rank += 1) {
+    const item = document.createElement("li");
+    item.className = "leaderboard-prize-item";
+
+    const place = document.createElement("span");
+    place.className = "leaderboard-prize-place";
+    place.textContent = formatPlace(rank);
+
+    const amount = document.createElement("span");
+    amount.className = "leaderboard-prize-amount";
+    amount.textContent = formatPrize(rank);
+
+    item.append(place, amount);
+    list.append(item);
+  }
+}
+
 function formatCurrency(amount) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -62,6 +114,11 @@ function createLeaderboardPodiumSlot(place, entry) {
     wagered.className = "podium-guess";
     wagered.textContent = entry.wageredLabel || formatCurrency(entry.wagered);
     block.append(wagered);
+
+    const prize = document.createElement("span");
+    prize.className = "podium-prize";
+    prize.textContent = formatPrize(entry.rank ?? place);
+    block.append(prize);
   }
 
   slot.append(block);
@@ -118,7 +175,11 @@ function renderLeaderboardList(entries) {
     score.className = "leaderboard-score";
     score.textContent = entry.wageredLabel || formatCurrency(entry.wagered);
 
-    item.append(rank, user, score);
+    const prize = document.createElement("span");
+    prize.className = "leaderboard-prize";
+    prize.textContent = formatPrize(entry.rank);
+
+    item.append(rank, user, score, prize);
     list.append(item);
   });
 }
@@ -209,3 +270,4 @@ function scheduleLeaderboardPolling() {
 
 loadLeaderboard();
 scheduleLeaderboardPolling();
+renderPrizeStructure();
