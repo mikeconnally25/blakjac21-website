@@ -11,6 +11,7 @@ let mySlotRequests = [];
 let slotRequestLimit = 3;
 const pendingSlotRequestRemovals = new Set();
 let slotBetDrafts = new Map();
+let bonusPayoutDrafts = new Map();
 let stakeSyncPollTimer = null;
 let stakeSyncInProgress = false;
 let huntMeta = {
@@ -342,6 +343,47 @@ function renderSummary(summary, hunt) {
   }
 }
 
+function bonusesUnchanged(previous, next) {
+  if (previous.length !== next.length) {
+    return false;
+  }
+
+  for (let index = 0; index < previous.length; index += 1) {
+    const current = previous[index];
+    const incoming = next[index];
+
+    if (
+      current.id !== incoming.id ||
+      current.status !== incoming.status ||
+      current.payout !== incoming.payout ||
+      current.bet !== incoming.bet ||
+      current.slot !== incoming.slot ||
+      current.thumbnailUrl !== incoming.thumbnailUrl
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function isEditingBonusPayout() {
+  const active = document.activeElement;
+  return active?.classList?.contains("bonus-payout-input") ?? false;
+}
+
+function updateBonusList(bonuses, { force = false, previous = huntBonuses } = {}) {
+  if (!force && isEditingBonusPayout()) {
+    return;
+  }
+
+  if (!force && bonusesUnchanged(previous, bonuses)) {
+    return;
+  }
+
+  renderBonusList(bonuses);
+}
+
 function renderBonusList(bonuses) {
   const list = document.getElementById("bonus-list");
   const empty = document.getElementById("bonus-empty");
@@ -351,6 +393,9 @@ function renderBonusList(bonuses) {
   const total = bonuses.length;
   empty.classList.toggle("is-hidden", total > 0);
   list.classList.toggle("is-hidden", total === 0);
+  const existingIds = new Set(
+    [...list.querySelectorAll(".hunt-bonus-card")].map((element) => element.dataset.id)
+  );
   list.replaceChildren();
 
   const openingId = bonuses.find((bonus) => bonus.status === "pending")?.id;
@@ -359,7 +404,13 @@ function renderBonusList(bonuses) {
     const item = document.createElement("li");
     item.className = "hunt-bonus-card";
     item.dataset.id = bonus.id;
-    item.style.animationDelay = `${Math.min(bonus.number, 8) * 40}ms`;
+
+    const isNewBonus = !existingIds.has(bonus.id);
+    if (isNewBonus) {
+      item.style.animationDelay = `${Math.min(bonus.number, 8) * 40}ms`;
+    } else {
+      item.style.animation = "none";
+    }
 
     if (bonus.id === openingId) {
       item.classList.add("is-opening");
@@ -437,6 +488,9 @@ function renderBonusList(bonuses) {
         payoutInput.step = "0.01";
         payoutInput.placeholder = "Payout";
         payoutInput.setAttribute("aria-label", `Payout for ${bonus.slot}`);
+        payoutInput.value = bonusPayoutDrafts.has(bonus.id)
+          ? bonusPayoutDrafts.get(bonus.id)
+          : "";
 
         const openBtn = document.createElement("button");
         openBtn.type = "button";
@@ -445,6 +499,23 @@ function renderBonusList(bonuses) {
         openBtn.addEventListener("click", () =>
           saveBonusPayout(bonus.id, payoutInput.value, openBtn)
         );
+
+        payoutInput.addEventListener("input", () => {
+          bonusPayoutDrafts.set(bonus.id, payoutInput.value);
+        });
+
+        payoutInput.addEventListener("blur", () => {
+          if (!payoutInput.value.trim()) {
+            bonusPayoutDrafts.delete(bonus.id);
+          }
+        });
+
+        payoutInput.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            void saveBonusPayout(bonus.id, payoutInput.value, openBtn);
+          }
+        });
 
         actions.append(payoutInput, openBtn);
       }
@@ -635,11 +706,12 @@ async function loadBonusHunt() {
     if (!response.ok) return;
 
     const data = await response.json();
+    const previousBonuses = huntBonuses;
     huntMeta = data.hunt || huntMeta;
     huntBonuses = data.bonuses || [];
     renderHuntHeader(huntMeta);
     renderSummary(data.summary, huntMeta);
-    renderBonusList(huntBonuses);
+    updateBonusList(huntBonuses, { previous: previousBonuses });
   } catch {
     // Keep the last known state.
   }
@@ -1421,10 +1493,6 @@ async function loadSlotCatalog() {
     if (slotRequests.length && !isEditingSlotRequestBet()) {
       renderSlotRequests(slotRequests);
     }
-
-    if (huntBonuses.length) {
-      renderBonusList(huntBonuses);
-    }
   } catch (error) {
     const count = document.getElementById("slot-catalog-count");
     if (count && !slotCatalog.length) {
@@ -1683,6 +1751,7 @@ async function saveBonusPayout(id, rawPayout, button) {
     }
 
     setStatus("Payout saved.", "success");
+    bonusPayoutDrafts.delete(id);
     await loadBonusHunt();
   } catch {
     setStatus("Could not save payout. Try again.", "error");
