@@ -11,6 +11,7 @@ let mySlotRequests = [];
 let slotRequestLimit = 3;
 const pendingSlotRequestRemovals = new Set();
 let slotBetDrafts = new Map();
+let slotWinDrafts = new Map();
 let bonusPayoutDrafts = new Map();
 let stakeSyncPollTimer = null;
 let stakeSyncInProgress = false;
@@ -480,22 +481,31 @@ function renderBonusList(bonuses) {
       actions.className = "hunt-bonus-admin";
 
       if (bonus.status === "pending") {
+        const payoutField = document.createElement("label");
+        payoutField.className = "bonus-payout-field";
+
+        const payoutLabel = document.createElement("span");
+        payoutLabel.className = "bonus-payout-label";
+        payoutLabel.textContent = "Win";
+
         const payoutInput = document.createElement("input");
         payoutInput.className = "bonus-payout-input";
         payoutInput.type = "number";
         payoutInput.inputMode = "decimal";
         payoutInput.min = "0";
         payoutInput.step = "0.01";
-        payoutInput.placeholder = "Payout";
-        payoutInput.setAttribute("aria-label", `Payout for ${bonus.slot}`);
+        payoutInput.placeholder = "0.00";
+        payoutInput.setAttribute("aria-label", `Win amount for ${bonus.slot}`);
         payoutInput.value = bonusPayoutDrafts.has(bonus.id)
           ? bonusPayoutDrafts.get(bonus.id)
           : "";
 
+        payoutField.append(payoutLabel, payoutInput);
+
         const openBtn = document.createElement("button");
         openBtn.type = "button";
         openBtn.className = "btn btn-sm btn-primary";
-        openBtn.textContent = "Save payout";
+        openBtn.textContent = "Save win";
         openBtn.addEventListener("click", () =>
           saveBonusPayout(bonus.id, payoutInput.value, openBtn)
         );
@@ -517,7 +527,7 @@ function renderBonusList(bonuses) {
           }
         });
 
-        actions.append(payoutInput, openBtn);
+        actions.append(payoutField, openBtn);
       }
 
       const removeBtn = document.createElement("button");
@@ -772,6 +782,11 @@ function scrollToBonusCard(bonusId) {
     behavior: "smooth",
     block: "nearest",
   });
+}
+
+function resolveSlotRequestWin(request, winInput) {
+  const typedWin = winInput?.value?.trim() || slotWinDrafts.get(request.id)?.trim() || "";
+  return typedWin;
 }
 
 function resolveSlotRequestBet(request, betInput) {
@@ -1191,7 +1206,11 @@ function renderSlotCatalogSelect(selectedSlug = "") {
 
 function isEditingSlotRequestBet() {
   const active = document.activeElement;
-  return active?.classList?.contains("slot-request-bet-input") ?? false;
+  return (
+    active?.classList?.contains("slot-request-bet-input") ||
+    active?.classList?.contains("slot-request-win-input") ||
+    false
+  );
 }
 
 function formatSlotBetValue(bet) {
@@ -1356,6 +1375,13 @@ function renderSlotRequests(requests) {
       const controls = document.createElement("div");
       controls.className = "slot-request-controls";
 
+      const betField = document.createElement("div");
+      betField.className = "slot-request-field";
+
+      const betLabel = document.createElement("span");
+      betLabel.className = "slot-request-field-label";
+      betLabel.textContent = "Bet";
+
       const betRow = document.createElement("div");
       betRow.className = "guess-input-row";
 
@@ -1378,6 +1404,37 @@ function renderSlotRequests(requests) {
       betInput.setAttribute("aria-label", `Bet size for ${request.slotName}`);
 
       betRow.append(prefix, betInput);
+      betField.append(betLabel, betRow);
+
+      const winField = document.createElement("div");
+      winField.className = "slot-request-field";
+
+      const winLabel = document.createElement("span");
+      winLabel.className = "slot-request-field-label";
+      winLabel.textContent = "Win";
+
+      const winRow = document.createElement("div");
+      winRow.className = "guess-input-row";
+
+      const winPrefix = document.createElement("span");
+      winPrefix.className = "guess-prefix";
+      winPrefix.setAttribute("aria-hidden", "true");
+      winPrefix.textContent = "$";
+
+      const winInput = document.createElement("input");
+      winInput.type = "number";
+      winInput.className = "guess-input slot-request-win-input";
+      winInput.min = "0";
+      winInput.step = "0.01";
+      winInput.inputMode = "decimal";
+      winInput.placeholder = "0.00";
+      winInput.value = slotWinDrafts.has(request.id)
+        ? slotWinDrafts.get(request.id)
+        : "";
+      winInput.setAttribute("aria-label", `Win amount for ${request.slotName}`);
+
+      winRow.append(winPrefix, winInput);
+      winField.append(winLabel, winRow);
 
       betInput.addEventListener("input", () => {
         slotBetDrafts.set(request.id, betInput.value);
@@ -1404,17 +1461,38 @@ function renderSlotRequests(requests) {
         }
       });
 
+      winInput.addEventListener("input", () => {
+        slotWinDrafts.set(request.id, winInput.value);
+      });
+
+      winInput.addEventListener("blur", () => {
+        if (!winInput.value.trim()) {
+          slotWinDrafts.delete(request.id);
+        }
+      });
+
       const addBonusBtn = document.createElement("button");
       addBonusBtn.type = "button";
       addBonusBtn.className = "btn btn-sm btn-primary";
       addBonusBtn.textContent = "Add bonus";
       addBonusBtn.addEventListener("click", async () => {
         const betValue = resolveSlotRequestBet(request, betInput);
+        const winValue = resolveSlotRequestWin(request, winInput);
         const betAmount = Number(betValue);
+        const winAmount = winValue ? Number(winValue) : null;
 
         if (!betValue || !Number.isFinite(betAmount) || betAmount < 0.01) {
           setStatus("Enter a bet size before adding the bonus.", "error");
           betInput.focus();
+          return;
+        }
+
+        if (
+          winValue &&
+          (!Number.isFinite(winAmount) || winAmount < 0)
+        ) {
+          setStatus("Enter a valid win amount.", "error");
+          winInput.focus();
           return;
         }
 
@@ -1435,12 +1513,23 @@ function renderSlotRequests(requests) {
           bet: betValue,
         });
 
-        if (bonus) {
-          await removeSlotRequestEntry(request.id, addBonusBtn, {
-            successMessage: "Bonus added.",
-          });
+        if (!bonus) {
+          return;
         }
+
+        if (winValue) {
+          await saveBonusPayout(bonus.id, winValue, addBonusBtn);
+          slotWinDrafts.delete(request.id);
+        }
+
+        await removeSlotRequestEntry(request.id, addBonusBtn, {
+          successMessage: winValue ? "Bonus logged with win." : "Bonus added.",
+        });
       });
+
+      const actionRow = document.createElement("div");
+      actionRow.className = "slot-request-action-row";
+      actionRow.append(addBonusBtn);
 
       const removeBtn = document.createElement("button");
       removeBtn.type = "button";
@@ -1454,7 +1543,7 @@ function renderSlotRequests(requests) {
         void removeSlotRequestEntry(request.id, removeBtn);
       });
 
-      controls.append(betRow, addBonusBtn, removeBtn);
+      controls.append(betField, winField, actionRow, removeBtn);
       item.append(controls);
     }
 
@@ -1750,7 +1839,7 @@ async function saveBonusPayout(id, rawPayout, button) {
       return;
     }
 
-    setStatus("Payout saved.", "success");
+    setStatus("Win saved.", "success");
     bonusPayoutDrafts.delete(id);
     await loadBonusHunt();
   } catch {

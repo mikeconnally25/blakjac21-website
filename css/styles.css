@@ -2794,8 +2794,21 @@ ul {
   gap: 0.55rem;
 }
 
+.bonus-payout-field {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.bonus-payout-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
 .bonus-payout-input {
-  width: 7rem;
+  width: 7.5rem;
   padding: 0.55rem 0.7rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
@@ -3119,14 +3132,35 @@ ul {
 .slot-request-controls {
   display: flex;
   align-items: end;
+  flex-wrap: wrap;
   gap: 0.85rem;
   margin-left: auto;
   flex-shrink: 0;
   padding-top: 0.05rem;
 }
 
+.slot-request-field {
+  display: grid;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.slot-request-field-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.slot-request-action-row {
+  display: flex;
+  align-items: end;
+  gap: 0.55rem;
+}
+
 .slot-request-controls .guess-input-row {
-  width: 15.3125rem;
+  width: 7.5rem;
   flex-shrink: 0;
 }
 
