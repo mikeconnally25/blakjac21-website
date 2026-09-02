@@ -369,9 +369,13 @@ function renderBonusList(bonuses) {
     index.className = "hunt-bonus-index";
     index.textContent = `#${bonus.number}`;
 
-    const catalogSlot = findCatalogSlot({ slotName: bonus.slot });
+    const catalogSlot = findCatalogSlot({ slotName: bonus.slot, slotSlug: bonus.slotSlug });
     const thumbnailUrl = getSlotRequestThumbnail(
-      { thumbnailUrl: null, slotName: bonus.slot },
+      {
+        thumbnailUrl: bonus.thumbnailUrl,
+        slotName: bonus.slot,
+        slotSlug: bonus.slotSlug,
+      },
       catalogSlot
     );
     const avatar = createSlotThumb(bonus.slot, thumbnailUrl, {
@@ -641,7 +645,7 @@ async function loadBonusHunt() {
   }
 }
 
-async function addBonusToHunt(slot, bet) {
+async function addBonusToHunt({ slot, bet, slotSlug, thumbnailUrl, provider } = {}) {
   const slotName = slot?.trim();
   const betAmount = Number(bet);
 
@@ -662,7 +666,13 @@ async function addBonusToHunt(slot, bet) {
       method: "POST",
       credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slot: slotName, bet: betAmount }),
+      body: JSON.stringify({
+        slot: slotName,
+        bet: betAmount,
+        slotSlug: slotSlug || undefined,
+        thumbnailUrl: thumbnailUrl || undefined,
+        provider: provider || undefined,
+      }),
     });
 
     const data = await response.json();
@@ -705,12 +715,19 @@ function resolveSlotRequestBet(request, betInput) {
   return formatSlotBetValue(request.bet);
 }
 
-async function submitBonusAddForm({ button, slot, bet } = {}) {
+async function submitBonusAddForm({
+  button,
+  slot,
+  bet,
+  slotSlug,
+  thumbnailUrl,
+  provider,
+} = {}) {
   if (button) {
     button.disabled = true;
   }
 
-  const bonus = await addBonusToHunt(slot, bet);
+  const bonus = await addBonusToHunt({ slot, bet, slotSlug, thumbnailUrl, provider });
   if (bonus) {
     scrollToBonusCard(bonus.id);
   }
@@ -1336,9 +1353,13 @@ function renderSlotRequests(requests) {
           });
         }
 
+        const catalogSlot = findCatalogSlot(request);
         const bonus = await submitBonusAddForm({
           button: addBonusBtn,
           slot: request.slotName,
+          slotSlug: request.slotSlug,
+          thumbnailUrl: getSlotRequestThumbnail(request, catalogSlot),
+          provider: getSlotRequestProvider(request, catalogSlot),
           bet: betValue,
         });
 
