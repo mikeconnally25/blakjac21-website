@@ -1104,8 +1104,21 @@ function getSlotRequestProvider(request, catalogSlot) {
   return "";
 }
 
+function normalizeSlotThumbnailUrl(url) {
+  const value = String(url || "").trim();
+  if (!value) {
+    return null;
+  }
+
+  if (value.startsWith("//")) {
+    return `https:${value}`;
+  }
+
+  return value;
+}
+
 function getSlotRequestThumbnail(request, catalogSlot) {
-  return request.thumbnailUrl || catalogSlot?.thumbnailUrl || null;
+  return normalizeSlotThumbnailUrl(request.thumbnailUrl || catalogSlot?.thumbnailUrl);
 }
 
 function createSlotRequestThumb(slotName, thumbnailUrl) {
@@ -1119,6 +1132,7 @@ function createSlotRequestThumb(slotName, thumbnailUrl) {
     image.alt = "";
     image.loading = "lazy";
     image.decoding = "async";
+    image.referrerPolicy = "no-referrer";
     image.addEventListener("error", () => {
       image.remove();
       thumb.textContent = slotInitials(slotName);
@@ -1139,14 +1153,12 @@ function renderSlotRequests(requests) {
   const list = document.getElementById("slot-requests-list");
   const empty = document.getElementById("slot-requests-empty");
   const count = document.getElementById("slot-requests-count");
-  const tableHead = document.getElementById("slot-requests-table-head");
 
   if (!list || !empty) return;
 
   const total = requests.length;
   empty.classList.toggle("is-hidden", total > 0);
   list.classList.toggle("is-hidden", total === 0);
-  tableHead?.classList.add("is-hidden");
   list.replaceChildren();
 
   if (count) {
@@ -1303,18 +1315,6 @@ function renderSlotRequests(requests) {
 
       controls.append(betRow, addBonusBtn, removeBtn);
       item.append(controls);
-    } else {
-      const betCell = document.createElement("div");
-      betCell.className = "slot-request-bet-cell";
-
-      const bet = document.createElement("span");
-      bet.className = "slot-request-bet";
-      bet.textContent =
-        request.bet === null || request.bet === undefined
-          ? "—"
-          : formatCurrency(request.bet);
-      betCell.append(bet);
-      item.append(betCell);
     }
 
     list.append(item);
