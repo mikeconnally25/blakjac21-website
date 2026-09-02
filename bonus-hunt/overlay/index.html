@@ -3,93 +3,119 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bonus Hunt Overlay</title>
+    <title>Bonus Hunt Overlay Preview</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/css/bonus-hunt-overlay.css" />
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/bonus-hunt-overlay-preview.css" />
   </head>
-  <body>
-    <div class="bh-overlay" id="bh-overlay">
-      <header class="bh-overlay-header">
-        <h1 class="bh-overlay-title">Bonus Hunt</h1>
-        <span class="bh-overlay-hunt-id" id="bh-hunt-id">#1</span>
+  <body class="overlay-preview-page">
+    <div class="bg-glow" aria-hidden="true"></div>
+
+    <main class="overlay-preview-shell">
+      <a href="/bonus-hunt/" class="back-link">← Back to bonus hunt</a>
+
+      <header class="overlay-preview-header">
+        <div>
+          <p class="overlay-preview-eyebrow">OBS browser source</p>
+          <h1>Bonus Hunt Overlay</h1>
+          <p class="overlay-preview-subtitle">
+            Live preview of what viewers see on stream. Updates automatically from your hunt data.
+          </p>
+        </div>
       </header>
 
-      <section class="bh-overlay-stats" aria-label="Hunt stats">
-        <div class="bh-overlay-stat-col">
-          <div class="bh-overlay-stat">
-            <span class="bh-overlay-stat-label">Start</span>
-            <span class="bh-overlay-stat-value" id="bh-start">$0.00</span>
+      <div class="overlay-preview-layout">
+        <section class="overlay-preview-stage" aria-label="Overlay preview">
+          <div class="overlay-preview-stage-label">Live preview</div>
+          <div class="overlay-preview-frame">
+            <iframe
+              id="overlay-preview-frame"
+              title="Bonus hunt overlay preview"
+              src="./source.html"
+              loading="lazy"
+            ></iframe>
           </div>
-          <div class="bh-overlay-stat">
-            <span class="bh-overlay-stat-label">Total Bonuses</span>
-            <span class="bh-overlay-stat-value" id="bh-total">0</span>
-          </div>
-          <div class="bh-overlay-stat">
-            <span class="bh-overlay-stat-label">Run Average</span>
-            <span class="bh-overlay-stat-value" id="bh-run-avg">—</span>
-          </div>
-        </div>
-        <div class="bh-overlay-stat-col">
-          <div class="bh-overlay-stat">
-            <span class="bh-overlay-stat-label">Winnings</span>
-            <span class="bh-overlay-stat-value" id="bh-winnings">$0.00</span>
-          </div>
-          <div class="bh-overlay-stat">
-            <span class="bh-overlay-stat-label">Remaining Bonuses</span>
-            <span class="bh-overlay-stat-value" id="bh-remaining">0</span>
-          </div>
-          <div class="bh-overlay-stat">
-            <span class="bh-overlay-stat-label">Req Average</span>
-            <span class="bh-overlay-stat-value" id="bh-req-avg">—</span>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <section class="bh-overlay-highlights" aria-label="Highlights">
-        <article class="bh-overlay-highlight" id="bh-best-win">
-          <span class="bh-overlay-star" aria-hidden="true">★</span>
-          <div class="bh-overlay-highlight-thumb" id="bh-best-thumb"></div>
-          <div class="bh-overlay-highlight-body">
-            <p class="bh-overlay-highlight-label">Best Win</p>
-            <p class="bh-overlay-highlight-slot" id="bh-best-slot">—</p>
-            <p class="bh-overlay-highlight-meta" id="bh-best-meta">—</p>
-          </div>
-        </article>
-        <article class="bh-overlay-highlight" id="bh-lucky-win">
-          <span class="bh-overlay-star" aria-hidden="true">★</span>
-          <div class="bh-overlay-highlight-thumb" id="bh-lucky-thumb"></div>
-          <div class="bh-overlay-highlight-body">
-            <p class="bh-overlay-highlight-label">Lucky Win</p>
-            <p class="bh-overlay-highlight-slot" id="bh-lucky-slot">—</p>
-            <p class="bh-overlay-highlight-meta" id="bh-lucky-meta">—</p>
-          </div>
-        </article>
-      </section>
+        <aside class="overlay-preview-setup">
+          <h2>Add to OBS</h2>
+          <ol class="overlay-preview-steps">
+            <li>In OBS, add a <strong>Browser Source</strong>.</li>
+            <li>Paste the URL below.</li>
+            <li>Set width <strong>420</strong> and height <strong>600</strong> (adjust as needed).</li>
+            <li>Leave the background transparent outside the panel.</li>
+          </ol>
 
-      <section class="bh-overlay-table-wrap" aria-label="Bonus list">
-        <table class="bh-overlay-table">
-          <thead>
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Game</th>
-              <th scope="col">Bet Size</th>
-              <th scope="col">Payout</th>
-            </tr>
-          </thead>
-          <tbody id="bh-bonus-rows">
-            <tr class="bh-overlay-empty-row">
-              <td colspan="4">No bonuses yet</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-    </div>
+          <label class="overlay-preview-url-label" for="overlay-source-url">Browser source URL</label>
+          <div class="overlay-preview-url-row">
+            <input
+              class="overlay-preview-url-input"
+              id="overlay-source-url"
+              type="text"
+              readonly
+            />
+            <button type="button" class="btn btn-sm btn-primary" id="overlay-copy-url">
+              Copy
+            </button>
+          </div>
+          <p class="overlay-preview-url-note" id="overlay-copy-status" role="status" aria-live="polite"></p>
 
-    <script src="/js/bonus-hunt-overlay.js"></script>
+          <div class="overlay-preview-actions">
+            <a class="btn btn-outline" href="./source.html" target="_blank" rel="noopener noreferrer">
+              Open source only
+            </a>
+            <button type="button" class="btn btn-outline" id="overlay-refresh-preview">
+              Refresh preview
+            </button>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <script>
+      (function initOverlayPreviewPage() {
+        const sourceUrl = new URL("./source.html", window.location.href).href;
+        const urlInput = document.getElementById("overlay-source-url");
+        const copyBtn = document.getElementById("overlay-copy-url");
+        const copyStatus = document.getElementById("overlay-copy-status");
+        const frame = document.getElementById("overlay-preview-frame");
+        const refreshBtn = document.getElementById("overlay-refresh-preview");
+
+        if (urlInput) {
+          urlInput.value = sourceUrl;
+        }
+
+        copyBtn?.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(sourceUrl);
+            if (copyStatus) {
+              copyStatus.textContent = "Copied to clipboard.";
+            }
+          } catch {
+            urlInput?.select();
+            document.execCommand("copy");
+            if (copyStatus) {
+              copyStatus.textContent = "Copied to clipboard.";
+            }
+          }
+        });
+
+        refreshBtn?.addEventListener("click", () => {
+          if (!frame) {
+            return;
+          }
+
+          frame.src = sourceUrl;
+          if (copyStatus) {
+            copyStatus.textContent = "Preview refreshed.";
+          }
+        });
+      })();
+    </script>
   </body>
 </html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bonus Hunt Overlay Source</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/bonus-hunt-overlay.css" />
+  </head>
+  <body>
+    <div class="bh-overlay" id="bh-overlay">
+      <header class="bh-overlay-header">
+        <h1 class="bh-overlay-title">Bonus Hunt</h1>
+        <span class="bh-overlay-hunt-id" id="bh-hunt-id">#1</span>
+      </header>
+
+      <section class="bh-overlay-stats" aria-label="Hunt stats">
+        <div class="bh-overlay-stat-col">
+          <div class="bh-overlay-stat">
+            <span class="bh-overlay-stat-label">Start</span>
+            <span class="bh-overlay-stat-value" id="bh-start">$0.00</span>
+          </div>
+          <div class="bh-overlay-stat">
+            <span class="bh-overlay-stat-label">Total Bonuses</span>
+            <span class="bh-overlay-stat-value" id="bh-total">0</span>
+          </div>
+          <div class="bh-overlay-stat">
+            <span class="bh-overlay-stat-label">Run Average</span>
+            <span class="bh-overlay-stat-value" id="bh-run-avg">—</span>
+          </div>
+        </div>
+        <div class="bh-overlay-stat-col">
+          <div class="bh-overlay-stat">
+            <span class="bh-overlay-stat-label">Winnings</span>
+            <span class="bh-overlay-stat-value" id="bh-winnings">$0.00</span>
+          </div>
+          <div class="bh-overlay-stat">
+            <span class="bh-overlay-stat-label">Remaining Bonuses</span>
+            <span class="bh-overlay-stat-value" id="bh-remaining">0</span>
+          </div>
+          <div class="bh-overlay-stat">
+            <span class="bh-overlay-stat-label">Req Average</span>
+            <span class="bh-overlay-stat-value" id="bh-req-avg">—</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="bh-overlay-highlights" aria-label="Highlights">
+        <article class="bh-overlay-highlight" id="bh-best-win">
+          <span class="bh-overlay-star" aria-hidden="true">★</span>
+          <div class="bh-overlay-highlight-thumb" id="bh-best-thumb"></div>
+          <div class="bh-overlay-highlight-body">
+            <p class="bh-overlay-highlight-label">Best Win</p>
+            <p class="bh-overlay-highlight-slot" id="bh-best-slot">—</p>
+            <p class="bh-overlay-highlight-meta" id="bh-best-meta">—</p>
+          </div>
+        </article>
+        <article class="bh-overlay-highlight" id="bh-lucky-win">
+          <span class="bh-overlay-star" aria-hidden="true">★</span>
+          <div class="bh-overlay-highlight-thumb" id="bh-lucky-thumb"></div>
+          <div class="bh-overlay-highlight-body">
+            <p class="bh-overlay-highlight-label">Lucky Win</p>
+            <p class="bh-overlay-highlight-slot" id="bh-lucky-slot">—</p>
+            <p class="bh-overlay-highlight-meta" id="bh-lucky-meta">—</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="bh-overlay-table-wrap" aria-label="Bonus list">
+        <table class="bh-overlay-table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Game</th>
+              <th scope="col">Bet Size</th>
+              <th scope="col">Payout</th>
+            </tr>
+          </thead>
+          <tbody id="bh-bonus-rows">
+            <tr class="bh-overlay-empty-row">
+              <td colspan="4">No bonuses yet</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <script src="/js/bonus-hunt-overlay.js"></script>
+  </body>
+</html>
