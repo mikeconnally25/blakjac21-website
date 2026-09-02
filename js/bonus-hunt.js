@@ -114,7 +114,10 @@ function startStakeSyncPolling(token) {
       updateStakeSyncHelp({ token: null });
 
       if (status.count > 0) {
-        setStatus(`Loaded ${status.count} slots from New Releases and Only on Stake.`, "success");
+        const thumbNote = status.withThumbnails
+          ? ` ${status.withThumbnails} slot logos loaded.`
+          : " Slot names loaded, but logos are still missing. Run BJ21 Stake Sync on stake.com while logged in.";
+        setStatus(`Loaded ${status.count} slots from New Releases and Only on Stake.${thumbNote}`, status.withThumbnails ? "success" : "error");
         await loadSlotCatalog();
         return;
       }
@@ -141,10 +144,14 @@ async function tryServerSlotRefresh({ silent = false } = {}) {
     }
 
     if (!silent) {
-      setStatus(`Slot list refreshed (${data.count} slots).`, "success");
+      const thumbNote =
+        data.withThumbnails > 0
+          ? ` (${data.withThumbnails} with logos)`
+          : " (logos missing — run BJ21 Stake Sync on stake.com)";
+      setStatus(`Slot list refreshed (${data.count} slots)${thumbNote}.`, data.withThumbnails > 0 ? "success" : "error");
     }
     await loadSlotCatalog();
-    return data.count || 0;
+    return data.withThumbnails > 0 ? data.count || 0 : 0;
   } catch {
     if (!silent) {
       setStatus("Could not refresh slot list. Try again.", "error");
@@ -1110,11 +1117,9 @@ function normalizeSlotThumbnailUrl(url) {
     return null;
   }
 
-  if (value.startsWith("//")) {
-    return `https:${value}`;
-  }
-
-  return value;
+  const normalized = value.startsWith("//") ? `https:${value}` : value;
+  const base = normalized.split("?")[0];
+  return `${base}?w=150&h=200&fit=min&auto=format`;
 }
 
 function getSlotRequestThumbnail(request, catalogSlot) {
@@ -1341,6 +1346,13 @@ async function loadSlotCatalog() {
     const select = document.getElementById("slot-request-select");
     const selectedSlug = select?.value || "";
     renderSlotCatalogSelect(selectedSlug);
+
+    if (currentUser?.isAdmin && data.total > 0 && !data.withThumbnails) {
+      setStatus(
+        "Slot list is loaded, but logos are missing. Click Sync slots from Stake, then run BJ21 Stake Sync on stake.com.",
+        "error"
+      );
+    }
 
     if (slotRequests.length && !isEditingSlotRequestBet()) {
       renderSlotRequests(slotRequests);

@@ -85,7 +85,12 @@
       throw new Error(data.error || "Could not import slots.");
     }
 
-    window.alert(`Synced ${data.count} slots from New Releases and Only on Stake.`);
+    window.alert(
+      `Synced ${data.count} slots from New Releases and Only on Stake.` +
+        (data.withThumbnails
+          ? ` ${data.withThumbnails} slot logos loaded.`
+          : " Slot logos are still missing — try running the sync again on stake.com.")
+    );
   }
 
   run().catch((error) => {
