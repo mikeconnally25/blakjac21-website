@@ -1,4 +1,5 @@
 const POLL_MS = 2000;
+let slotCatalog = [];
 
 function formatMoney(value) {
   const amount = Number(value);
@@ -48,6 +49,27 @@ function avatarColor(name) {
   return `hsl(${hue} 58% 42%)`;
 }
 
+function findCatalogSlot(bonus) {
+  const slug = String(bonus?.slotSlug || "").trim().toLowerCase();
+  const name = String(bonus?.slot || "").trim().toLowerCase();
+
+  return (
+    slotCatalog.find((slot) => slug && slot.slug === slug) ||
+    slotCatalog.find((slot) => slot.name.toLowerCase() === name) ||
+    null
+  );
+}
+
+function getBonusThumbnailUrl(bonus) {
+  const fromBonus = String(bonus?.thumbnailUrl || "").trim();
+  if (fromBonus) {
+    return fromBonus;
+  }
+
+  const catalogSlot = findCatalogSlot(bonus);
+  return catalogSlot?.thumbnailUrl || null;
+}
+
 function renderThumb(container, { slotName, thumbnailUrl }) {
   container.replaceChildren();
 
@@ -55,6 +77,8 @@ function renderThumb(container, { slotName, thumbnailUrl }) {
     const image = document.createElement("img");
     image.src = thumbnailUrl;
     image.alt = "";
+    image.loading = "lazy";
+    image.decoding = "async";
     image.referrerPolicy = "no-referrer";
     image.addEventListener("error", () => {
       container.replaceChildren();
@@ -115,10 +139,29 @@ function renderHighlight({
 
   renderThumb(thumb, {
     slotName: bonus.slot,
-    thumbnailUrl: bonus.thumbnailUrl,
+    thumbnailUrl: getBonusThumbnailUrl(bonus),
   });
   slot.textContent = bonus.slot;
   meta.textContent = metaFormatter(bonus);
+}
+
+function createGameCell(bonus) {
+  const game = document.createElement("td");
+  game.className = "bh-overlay-game-cell";
+
+  const thumb = document.createElement("div");
+  thumb.className = "bh-overlay-row-thumb";
+  renderThumb(thumb, {
+    slotName: bonus.slot,
+    thumbnailUrl: getBonusThumbnailUrl(bonus),
+  });
+
+  const name = document.createElement("span");
+  name.className = "bh-overlay-game-name";
+  name.textContent = bonus.slot;
+
+  game.append(thumb, name);
+  return game;
 }
 
 function renderBonusRows(bonuses) {
@@ -151,8 +194,7 @@ function renderBonusRows(bonuses) {
     const index = document.createElement("td");
     index.textContent = String(bonus.number);
 
-    const game = document.createElement("td");
-    game.textContent = bonus.slot;
+    const game = createGameCell(bonus);
 
     const bet = document.createElement("td");
     bet.textContent = formatMoney(bonus.bet);
@@ -233,13 +275,19 @@ function renderOverlay({ hunt, summary, bonuses, huntNumber }) {
 
 async function loadOverlay() {
   try {
-    const [huntResponse, historyResponse] = await Promise.all([
+    const [huntResponse, historyResponse, slotsResponse] = await Promise.all([
       fetch("/api/bonus-hunt", { cache: "no-store" }),
       fetch("/api/bonus-hunt/history", { cache: "no-store" }),
+      fetch("/api/bonus-hunt/slots", { cache: "no-store" }),
     ]);
 
     if (!huntResponse.ok) {
       return;
+    }
+
+    if (slotsResponse.ok) {
+      const slotsData = await slotsResponse.json();
+      slotCatalog = slotsData.slots || [];
     }
 
     const huntData = await huntResponse.json();
