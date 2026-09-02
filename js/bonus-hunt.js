@@ -300,15 +300,21 @@ function renderSummary(summary, hunt) {
     if (summary.breakevenX === null || summary.breakevenX === undefined) {
       breakeven.textContent = "—";
       breakeven.classList.remove("is-positive", "is-negative", "is-target");
+      breakeven.title =
+        summary.pendingCount > 0
+          ? "Average multiplier remaining bonuses must return to break even"
+          : "Required average only applies while bonuses are still opening";
     } else if (summary.breakevenX <= 0) {
       breakeven.textContent = "0.00x";
       breakeven.classList.add("is-positive");
       breakeven.classList.remove("is-negative", "is-target");
+      breakeven.title = "Hunt is already at breakeven on remaining bonuses";
     } else {
       breakeven.textContent = formatMultiplier(summary.breakevenX);
       breakeven.classList.remove("is-positive", "is-negative");
       breakeven.classList.toggle("is-target", summary.breakevenX >= 1);
       breakeven.classList.toggle("is-negative", summary.breakevenX > 100);
+      breakeven.title = `Need ${formatMultiplier(summary.breakevenX)} average on $${summary.pendingBetTotal.toFixed(2)} in remaining bets to break even`;
     }
   }
 

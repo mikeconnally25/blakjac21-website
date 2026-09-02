@@ -230,7 +230,10 @@ function renderOverlay({ hunt, summary, bonuses, huntNumber }) {
   }
 
   if (runAvg) {
-    const avg = averageMultiplier(bonuses);
+    const avg =
+      summary.runAverageX !== null && summary.runAverageX !== undefined
+        ? summary.runAverageX
+        : averageMultiplier(bonuses);
     runAvg.textContent = avg === null ? "—" : formatMultiplier(avg);
   }
 
