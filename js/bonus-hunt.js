@@ -6,6 +6,8 @@ let slotGroups = [];
 let slotCatalogUpdatedAt = null;
 let acceptingRequests = false;
 let slotRequests = [];
+let mySlotRequests = [];
+let slotRequestLimit = 3;
 const pendingSlotRequestRemovals = new Set();
 let slotBetDrafts = new Map();
 let stakeSyncPollTimer = null;
@@ -970,6 +972,7 @@ function updateRequestPanels() {
   const isAdmin = Boolean(currentUser?.isAdmin);
   const isSignedIn = Boolean(currentUser);
   const open = acceptingRequests;
+  const atLimit = mySlotRequests.length >= slotRequestLimit;
 
   closedPanel?.classList.toggle("is-hidden", open || isAdmin);
   requestPanel?.classList.toggle("is-hidden", !open || isAdmin || !isSignedIn);
@@ -978,7 +981,8 @@ function updateRequestPanels() {
 
   const select = document.getElementById("slot-request-select");
   const submitBtn = document.getElementById("slot-request-submit");
-  const canSubmit = open && isSignedIn && !isAdmin;
+  const limitNote = document.getElementById("slot-request-limit-note");
+  const canSubmit = open && isSignedIn && !isAdmin && !atLimit;
 
   if (select) {
     select.disabled = !canSubmit;
@@ -986,6 +990,22 @@ function updateRequestPanels() {
 
   if (submitBtn) {
     submitBtn.disabled = !canSubmit;
+  }
+
+  if (limitNote) {
+    if (!open || isAdmin || !isSignedIn) {
+      limitNote.classList.add("is-hidden");
+    } else {
+      const remaining = Math.max(0, slotRequestLimit - mySlotRequests.length);
+      limitNote.classList.remove("is-hidden");
+      if (atLimit) {
+        limitNote.textContent = `You have ${slotRequestLimit} slot requests in the queue.`;
+      } else if (mySlotRequests.length) {
+        limitNote.textContent = `You can request up to ${slotRequestLimit} slots (${remaining} remaining).`;
+      } else {
+        limitNote.textContent = `You can request up to ${slotRequestLimit} slots.`;
+      }
+    }
   }
 }
 
@@ -1390,6 +1410,8 @@ async function loadSlotRequests({ forceRender = false } = {}) {
       );
     }
     slotRequests = incoming;
+    mySlotRequests = data.myRequests || (data.myRequest ? [data.myRequest] : []);
+    slotRequestLimit = Number(data.requestLimit) || 3;
 
     if (forceRender || !isEditingSlotRequestBet()) {
       renderSlotRequests(slotRequests);
@@ -1951,6 +1973,14 @@ function initSlotRequestForm() {
       return;
     }
 
+    if (mySlotRequests.length >= slotRequestLimit) {
+      setRequestStatus(
+        `You already have ${slotRequestLimit} slot requests in the queue.`,
+        "error"
+      );
+      return;
+    }
+
     const select = document.getElementById("slot-request-select");
     const submitBtn = document.getElementById("slot-request-submit");
     const slotSlug = select?.value;
@@ -1986,7 +2016,15 @@ function initSlotRequestForm() {
       }
 
       form.reset();
-      setRequestStatus(`Requested ${data.request.slotName}.`, "success");
+      mySlotRequests = data.myRequests || mySlotRequests;
+      slotRequestLimit = Number(data.requestLimit) || slotRequestLimit;
+      updateRequestPanels();
+      const remaining = Math.max(0, slotRequestLimit - mySlotRequests.length);
+      const remainingNote =
+        remaining > 0
+          ? ` ${remaining} request${remaining === 1 ? "" : "s"} remaining.`
+          : " Queue full.";
+      setRequestStatus(`Requested ${data.request.slotName}.${remainingNote}`, "success");
       await loadSlotRequests();
     } catch {
       setRequestStatus("Could not submit request. Try again.", "error");

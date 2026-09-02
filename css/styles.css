@@ -2993,6 +2993,13 @@ ul {
   font-size: 0.82rem;
 }
 
+.requests-hub-limit {
+  margin: 0.65rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
 .requests-hub-list-wrap {
   display: grid;
   gap: 0.75rem;
