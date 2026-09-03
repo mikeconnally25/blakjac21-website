@@ -77,37 +77,131 @@ function setLeaderboardStatus(message, tone = "") {
   status.classList.toggle("is-error", tone === "error");
 }
 
+const TROPHY_METALS = {
+  1: {
+    light: "#fff6c8",
+    mid: "#ffd24a",
+    deep: "#c79212",
+    dark: "#8a6408",
+    shine: "#fffef5",
+  },
+  2: {
+    light: "#ffffff",
+    mid: "#d5dde6",
+    deep: "#8e9aab",
+    dark: "#5d6a7a",
+    shine: "#ffffff",
+  },
+  3: {
+    light: "#f3c08a",
+    mid: "#cd7f32",
+    deep: "#935318",
+    dark: "#63340e",
+    shine: "#ffe0b8",
+  },
+};
+
 function createPodiumTrophy(place) {
+  const metal = TROPHY_METALS[place] || TROPHY_METALS[3];
+  const uid = `trophy-${place}-${Math.random().toString(36).slice(2, 8)}`;
   const trophy = document.createElement("span");
-  trophy.className = "podium-trophy";
+  trophy.className = `podium-trophy podium-trophy--${place}`;
   trophy.setAttribute("aria-label", formatPlace(place));
 
   trophy.innerHTML = `
-    <svg class="podium-trophy-icon" viewBox="0 0 80 96" aria-hidden="true" focusable="false">
+    <svg class="podium-trophy-icon" viewBox="0 0 88 108" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="${uid}-cup" x1="18" y1="8" x2="70" y2="70" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="${metal.shine}"/>
+          <stop offset="28%" stop-color="${metal.light}"/>
+          <stop offset="55%" stop-color="${metal.mid}"/>
+          <stop offset="82%" stop-color="${metal.deep}"/>
+          <stop offset="100%" stop-color="${metal.dark}"/>
+        </linearGradient>
+        <linearGradient id="${uid}-rim" x1="18" y1="8" x2="70" y2="20" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="${metal.shine}"/>
+          <stop offset="45%" stop-color="${metal.light}"/>
+          <stop offset="100%" stop-color="${metal.deep}"/>
+        </linearGradient>
+        <linearGradient id="${uid}-handle" x1="0" y1="20" x2="1" y2="55" gradientUnits="objectBoundingBox">
+          <stop offset="0%" stop-color="${metal.light}"/>
+          <stop offset="50%" stop-color="${metal.mid}"/>
+          <stop offset="100%" stop-color="${metal.dark}"/>
+        </linearGradient>
+        <linearGradient id="${uid}-stem" x1="40" y1="58" x2="48" y2="78" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="${metal.light}"/>
+          <stop offset="55%" stop-color="${metal.mid}"/>
+          <stop offset="100%" stop-color="${metal.dark}"/>
+        </linearGradient>
+        <linearGradient id="${uid}-base" x1="20" y1="78" x2="68" y2="100" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="${metal.light}"/>
+          <stop offset="40%" stop-color="${metal.mid}"/>
+          <stop offset="100%" stop-color="${metal.dark}"/>
+        </linearGradient>
+        <radialGradient id="${uid}-glow" cx="44" cy="30" r="24" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="${metal.shine}" stop-opacity="0.55"/>
+          <stop offset="70%" stop-color="${metal.shine}" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+
+      <ellipse cx="44" cy="100" rx="22" ry="3.5" fill="rgba(0,0,0,0.28)"/>
+
       <path
-        class="podium-trophy-handle"
-        d="M20 24c-9 1-15 8-15 17 0 10 7 17 16 18"
+        d="M22 26c-11 1-18 9-18 19 0 12 8 20 19 21"
         fill="none"
-        stroke="currentColor"
-        stroke-width="5"
+        stroke="url(#${uid}-handle)"
+        stroke-width="5.5"
         stroke-linecap="round"
       />
       <path
-        class="podium-trophy-handle"
-        d="M60 24c9 1 15 8 15 17 0 10-7 17-16 18"
+        d="M66 26c11 1 18 9 18 19 0 12-8 20-19 21"
         fill="none"
-        stroke="currentColor"
-        stroke-width="5"
+        stroke="url(#${uid}-handle)"
+        stroke-width="5.5"
         stroke-linecap="round"
       />
       <path
-        d="M24 16h32c1 0 2 1 2 2v8c0 15-8 27-18 32-10-5-18-17-18-32v-8c0-1 1-2 2-2Z"
-        fill="currentColor"
+        d="M22 26c-11 1-18 9-18 19 0 12 8 20 19 21"
+        fill="none"
+        stroke="${metal.shine}"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        opacity="0.45"
+        transform="translate(1.2 -0.8)"
       />
-      <rect x="20" y="10" width="40" height="9" rx="3" fill="currentColor" />
-      <rect x="37" y="56" width="6" height="16" rx="2" fill="currentColor" />
-      <path d="M30 70h20l5 8H25l5-8Z" fill="currentColor" />
-      <rect x="22" y="78" width="36" height="7" rx="2.5" fill="currentColor" />
+      <path
+        d="M66 26c11 1 18 9 18 19 0 12-8 20-19 21"
+        fill="none"
+        stroke="${metal.shine}"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        opacity="0.45"
+        transform="translate(-1.2 -0.8)"
+      />
+
+      <path
+        d="M26 18h36c1.4 0 2.5 1.1 2.5 2.5V30c0 16.5-9 29.5-20.5 34.5C32.5 59.5 23.5 46.5 23.5 30V20.5c0-1.4 1.1-2.5 2.5-2.5Z"
+        fill="url(#${uid}-cup)"
+      />
+      <path
+        d="M29 21h10c0.8 0 1.4 0.7 1.3 1.5-0.6 7.5-2.8 14.2-6.2 19.2-0.5 0.7-1.6 0.4-1.6-0.4V21.8c0-0.4 0.4-0.8 0.8-0.8Z"
+        fill="${metal.shine}"
+        opacity="0.38"
+      />
+      <ellipse cx="44" cy="30" rx="14" ry="10" fill="url(#${uid}-glow)"/>
+
+      <rect x="21" y="11" width="46" height="10" rx="3.5" fill="url(#${uid}-rim)"/>
+      <rect x="24" y="12.5" width="40" height="3" rx="1.5" fill="${metal.shine}" opacity="0.55"/>
+      <rect x="23" y="18.5" width="42" height="2" rx="1" fill="${metal.dark}" opacity="0.35"/>
+
+      <rect x="41" y="62" width="6" height="16" rx="2" fill="url(#${uid}-stem)"/>
+      <rect x="42.2" y="63" width="1.6" height="13" rx="0.8" fill="${metal.shine}" opacity="0.45"/>
+
+      <path d="M31 76h26l6 9H25l6-9Z" fill="url(#${uid}-base)"/>
+      <path d="M33 77.5h22l1.8 2.8H31.2l1.8-2.8Z" fill="${metal.shine}" opacity="0.28"/>
+      <rect x="20" y="85" width="48" height="8" rx="3" fill="url(#${uid}-base)"/>
+      <rect x="23" y="86.5" width="42" height="2.4" rx="1.2" fill="${metal.shine}" opacity="0.4"/>
+      <rect x="22" y="90.5" width="44" height="1.8" rx="0.9" fill="${metal.dark}" opacity="0.35"/>
     </svg>
     <span class="podium-trophy-place">${place}</span>
   `;
