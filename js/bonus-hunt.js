@@ -301,7 +301,7 @@ function renderSummary(summary, hunt) {
       : summary.profitLoss;
 
   totalBonuses.textContent = String(summary.totalBonuses);
-  startCost.textContent = formatCurrency(summary.totalCost || 0);
+  startCost.textContent = formatCurrency(hunt?.startBalance || 0);
 
   if (winnings) {
     winnings.textContent = formatCurrency(summary.totalWon || 0);
