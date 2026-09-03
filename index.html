@@ -59,24 +59,56 @@
         <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
 
         <section class="menu section" id="menu">
-          <div class="container">
-            <div class="section-header">
-              <h2>Menu</h2>
-              <p>Quick links to everything BLAKJAC21. Sign in with Kick to create your account.</p>
+          <div class="menu-atmosphere" aria-hidden="true"></div>
+          <div class="container menu-inner">
+            <div class="menu-header">
+              <p class="menu-eyebrow">BLAKJAC<span class="accent">21</span></p>
+              <h2 class="menu-heading">Menu</h2>
+              <p class="menu-lead">
+                Jump into live games, hunts, ranks, and giveaways.
+              </p>
             </div>
 
             <div class="menu-grid">
-              <a href="/guess-the-balance/" class="menu-card menu-card--center">
+              <a href="/guess-the-balance/" class="menu-card" style="--menu-delay: 0ms">
+                <span class="menu-card-glow" aria-hidden="true"></span>
+                <span class="menu-card-top">
+                  <span class="menu-card-index">01</span>
+                  <span class="menu-label">Game</span>
+                </span>
                 <span class="menu-title">Guess the Balance</span>
+                <span class="menu-blurb">Lock in your ending balance guess before the round closes.</span>
+                <span class="menu-card-cta">Enter <span aria-hidden="true">→</span></span>
               </a>
-              <a href="/bonus-hunt/" class="menu-card menu-card--center">
+              <a href="/bonus-hunt/" class="menu-card" style="--menu-delay: 70ms">
+                <span class="menu-card-glow" aria-hidden="true"></span>
+                <span class="menu-card-top">
+                  <span class="menu-card-index">02</span>
+                  <span class="menu-label">Live</span>
+                </span>
                 <span class="menu-title">Bonus Hunt</span>
+                <span class="menu-blurb">Track buys, wins, and request slots while the hunt is live.</span>
+                <span class="menu-card-cta">Open hunt <span aria-hidden="true">→</span></span>
               </a>
-              <a href="/leaderboard/" class="menu-card menu-card--center">
+              <a href="/leaderboard/" class="menu-card" style="--menu-delay: 140ms">
+                <span class="menu-card-glow" aria-hidden="true"></span>
+                <span class="menu-card-top">
+                  <span class="menu-card-index">03</span>
+                  <span class="menu-label">Ranks</span>
+                </span>
                 <span class="menu-title">Leaderboard</span>
+                <span class="menu-blurb">See who’s climbing the monthly standings and prize spots.</span>
+                <span class="menu-card-cta">View ranks <span aria-hidden="true">→</span></span>
               </a>
-              <a href="/giveaways/" class="menu-card menu-card--center">
+              <a href="/giveaways/" class="menu-card" style="--menu-delay: 210ms">
+                <span class="menu-card-glow" aria-hidden="true"></span>
+                <span class="menu-card-top">
+                  <span class="menu-card-index">04</span>
+                  <span class="menu-label">Drops</span>
+                </span>
                 <span class="menu-title">Giveaways</span>
+                <span class="menu-blurb">Enter keyword drops and watch the winners roll in live.</span>
+                <span class="menu-card-cta">Join in <span aria-hidden="true">→</span></span>
               </a>
             </div>
           </div>
