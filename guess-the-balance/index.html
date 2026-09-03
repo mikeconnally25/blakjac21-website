@@ -56,23 +56,27 @@
   <main>
     <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
 
-    <section class="section page-section">
+    <section class="section page-section guess-balance-page">
+      <div class="section-atmosphere" aria-hidden="true"></div>
       <div class="container page-content">
         <a href="/#menu" class="back-link">← Back to menu</a>
 
-        <div class="section-header left">
+        <div class="section-header left guess-balance-hero">
           <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
           <h2>Guess the Balance</h2>
           <p>How much is in the balance? Drop your guess and see how close you get.</p>
         </div>
 
-        <div class="round-timer is-hidden" id="round-timer" role="timer" aria-live="polite">
+        <div class="round-timer bj21-panel-inset is-hidden" id="round-timer" role="timer" aria-live="polite">
           <span class="round-timer-label">Time left to guess</span>
           <span class="round-timer-value" id="round-timer-value">5:00</span>
         </div>
 
-        <div class="admin-panel is-hidden" id="game-admin-panel">
+        <div class="admin-panel bj21-panel is-hidden" id="game-admin-panel">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
           <div class="admin-panel-section admin-duration-section">
+            <p class="section-eyebrow">Streamer controls</p>
+            <h3 class="guess-panel-title">Round tools</h3>
             <label class="guess-label" for="round-minutes">Round length</label>
             <p class="admin-panel-text">Set how long viewers have to submit guesses when you start a round.</p>
             <div class="digital-clock-picker" id="round-minutes-picker">
@@ -145,20 +149,29 @@
           </div>
         </div>
 
-        <div class="game-panel is-hidden" id="game-panel-closed">
+        <div class="game-panel bj21-panel is-hidden" id="game-panel-closed">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <p class="section-eyebrow">Status</p>
+          <h3 class="guess-panel-title">Guessing closed</h3>
           <p class="game-panel-text">
             Guessing is currently closed. Check back when the round goes live on stream.
           </p>
         </div>
 
-        <div class="game-panel" id="game-panel-guest">
+        <div class="game-panel bj21-panel" id="game-panel-guest">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <p class="section-eyebrow">Join in</p>
+          <h3 class="guess-panel-title">Sign in to play</h3>
           <p class="game-panel-text">
             Sign in with Kick to submit your guess when the round is live on stream.
           </p>
           <a href="/api/auth/login" class="btn btn-primary" id="game-sign-in">Sign in with Kick</a>
         </div>
 
-        <div class="game-panel is-hidden" id="game-panel-member">
+        <div class="game-panel bj21-panel is-hidden" id="game-panel-member">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <p class="section-eyebrow">Your entry</p>
+          <h3 class="guess-panel-title">Submit a guess</h3>
           <p class="game-panel-text">
             You're signed in as <strong id="game-username"></strong>. Enter your balance guess below.
           </p>
@@ -188,9 +201,13 @@
           </form>
         </div>
 
-        <div class="game-panel podium-panel is-hidden" id="podium-panel">
+        <div class="game-panel podium-panel bj21-panel is-hidden" id="podium-panel">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
           <div class="podium-header">
-            <h3 class="guesses-heading">Podium</h3>
+            <div>
+              <p class="section-eyebrow">Results</p>
+              <h3 class="guesses-heading">Podium</h3>
+            </div>
             <p class="podium-balance">
               Ending balance: <strong id="podium-ending-balance"></strong>
             </p>
@@ -198,9 +215,13 @@
           <div class="podium-stage" id="podium-stage" aria-label="Top three closest guesses"></div>
         </div>
 
-        <div class="game-panel guesses-panel" id="guesses-panel">
+        <div class="game-panel guesses-panel bj21-panel" id="guesses-panel">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
           <div class="guesses-panel-header">
-            <h3 class="guesses-heading">All guesses</h3>
+            <div>
+              <p class="section-eyebrow">Live board</p>
+              <h3 class="guesses-heading">All guesses</h3>
+            </div>
             <p class="guesses-count" id="guesses-count">0 guesses</p>
           </div>
           <p class="guesses-empty" id="guesses-empty">No guesses yet. Be the first to submit one.</p>
