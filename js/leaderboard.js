@@ -15,6 +15,8 @@ const PRIZE_BY_RANK = {
   10: 100,
 };
 
+let isInitialRender = true;
+
 function formatPlace(rank) {
   if (rank === 1) return "1st";
   if (rank === 2) return "2nd";
@@ -28,30 +30,13 @@ function getPrizeForRank(rank) {
 
 function formatPrize(rank) {
   const amount = getPrizeForRank(rank);
-  return amount ? formatCurrency(amount) : "—";
-}
+  if (!amount) return "—";
 
-function renderPrizeStructure() {
-  const list = document.getElementById("leaderboard-prizes");
-  if (!list) return;
-
-  list.replaceChildren();
-
-  for (let rank = 1; rank <= 10; rank += 1) {
-    const item = document.createElement("li");
-    item.className = "leaderboard-prize-item";
-
-    const place = document.createElement("span");
-    place.className = "leaderboard-prize-place";
-    place.textContent = formatPlace(rank);
-
-    const amount = document.createElement("span");
-    amount.className = "leaderboard-prize-amount";
-    amount.textContent = formatPrize(rank);
-
-    item.append(place, amount);
-    list.append(item);
-  }
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 
 function formatCurrency(amount) {
@@ -95,32 +80,35 @@ function setLeaderboardStatus(message, tone = "") {
 function createLeaderboardPodiumSlot(place, entry) {
   const slot = document.createElement("div");
   slot.className = `podium-slot place-${place}`;
+  if (!entry) {
+    slot.classList.add("is-vacant");
+  }
+  if (isInitialRender) {
+    slot.classList.add("is-entering");
+  }
 
   const block = document.createElement("div");
   block.className = "podium-block";
 
   const medal = document.createElement("span");
   medal.className = "podium-medal";
-  medal.textContent = place === 1 ? "1st" : place === 2 ? "2nd" : "3rd";
+  medal.textContent = formatPlace(place);
 
   const user = document.createElement("span");
   user.className = "podium-user";
-  user.textContent = maskUsername(entry?.username);
+  user.textContent = entry ? maskUsername(entry.username) : "—";
 
-  block.append(medal, user);
+  const wagered = document.createElement("span");
+  wagered.className = "podium-guess";
+  wagered.textContent = entry
+    ? entry.wageredLabel || formatCurrency(entry.wagered)
+    : "";
 
-  if (entry) {
-    const wagered = document.createElement("span");
-    wagered.className = "podium-guess";
-    wagered.textContent = entry.wageredLabel || formatCurrency(entry.wagered);
-    block.append(wagered);
+  const prize = document.createElement("span");
+  prize.className = "podium-prize";
+  prize.textContent = formatPrize(entry?.rank ?? place);
 
-    const prize = document.createElement("span");
-    prize.className = "podium-prize";
-    prize.textContent = formatPrize(entry.rank ?? place);
-    block.append(prize);
-  }
-
+  block.append(medal, user, wagered, prize);
   slot.append(block);
   return slot;
 }
@@ -159,13 +147,18 @@ function renderLeaderboardList(entries) {
   tableHead?.classList.toggle("is-hidden", entries.length === 0);
   list.classList.toggle("is-hidden", entries.length === 0);
 
-  entries.forEach((entry) => {
+  entries.forEach((entry, index) => {
     const item = document.createElement("li");
     item.className = "leaderboard-entry";
+    item.dataset.rank = String(entry.rank);
+    if (isInitialRender) {
+      item.classList.add("is-entering");
+      item.style.setProperty("--enter-delay", `${index * 60}ms`);
+    }
 
     const rank = document.createElement("span");
     rank.className = "leaderboard-rank";
-    rank.textContent = `#${entry.rank}`;
+    rank.textContent = String(entry.rank).padStart(2, "0");
 
     const user = document.createElement("span");
     user.className = "leaderboard-user";
@@ -198,21 +191,18 @@ function leaderboardSignature(data) {
 
 function renderLeaderboard({ entries, periodStart, periodEnd }) {
   const empty = document.getElementById("leaderboard-empty");
-  const count = document.getElementById("leaderboard-count");
   const period = document.getElementById("leaderboard-period");
+  const board = document.querySelector(".leaderboard-board");
 
   if (!empty) return;
 
   const total = entries.length;
   empty.classList.toggle("is-hidden", total > 0);
-
-  if (count) {
-    count.textContent = total ? "Top 10" : "0 players";
-  }
+  board?.classList.toggle("is-empty", total === 0);
 
   if (period) {
     if (periodStart && periodEnd) {
-      period.textContent = `${periodStart} to ${periodEnd}`;
+      period.textContent = `${periodStart} – ${periodEnd}`;
       period.classList.remove("is-hidden");
     } else {
       period.textContent = "";
@@ -222,6 +212,7 @@ function renderLeaderboard({ entries, periodStart, periodEnd }) {
 
   renderPodium(entries.slice(0, 3));
   renderLeaderboardList(entries.slice(3));
+  isInitialRender = false;
 }
 
 async function loadLeaderboard({ quiet = false } = {}) {
@@ -270,4 +261,3 @@ function scheduleLeaderboardPolling() {
 
 loadLeaderboard();
 scheduleLeaderboardPolling();
-renderPrizeStructure();

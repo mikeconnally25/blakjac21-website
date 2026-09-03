@@ -57,35 +57,44 @@
     <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
 
     <section class="section page-section leaderboard-page">
-      <div class="container page-content">
+      <div class="container leaderboard-shell">
         <a href="/#menu" class="back-link">← Back to menu</a>
 
-        <div class="section-header left">
-          <h2>Leaderboard</h2>
-          <p>Top wagered players on code <strong>BLAKJAC21</strong>.</p>
+        <header class="leaderboard-hero">
+          <p class="leaderboard-kicker">Blakjac<span class="accent">21</span></p>
+          <div class="leaderboard-hero-row">
+            <h1 class="leaderboard-heading">Leaderboard</h1>
+            <p class="leaderboard-period is-hidden" id="leaderboard-period"></p>
+          </div>
+          <p class="leaderboard-lede">Top 10 wagered on code <strong>BLAKJAC21</strong>.</p>
+        </header>
+
+        <div class="leaderboard-prizes-wrap">
+          <div class="leaderboard-prizes-head">
+            <span>Prize structure</span>
+            <span>$5,000 pool</span>
+          </div>
+          <ol class="leaderboard-prizes" aria-label="Prize structure by place">
+            <li class="leaderboard-prize-item place-1"><span>1st</span><strong>$2,000</strong></li>
+            <li class="leaderboard-prize-item place-2"><span>2nd</span><strong>$1,000</strong></li>
+            <li class="leaderboard-prize-item place-3"><span>3rd</span><strong>$600</strong></li>
+            <li class="leaderboard-prize-item"><span>4th</span><strong>$500</strong></li>
+            <li class="leaderboard-prize-item"><span>5th</span><strong>$300</strong></li>
+            <li class="leaderboard-prize-item"><span>6th</span><strong>$200</strong></li>
+            <li class="leaderboard-prize-item"><span>7th</span><strong>$100</strong></li>
+            <li class="leaderboard-prize-item"><span>8th</span><strong>$100</strong></li>
+            <li class="leaderboard-prize-item"><span>9th</span><strong>$100</strong></li>
+            <li class="leaderboard-prize-item"><span>10th</span><strong>$100</strong></li>
+          </ol>
         </div>
 
-        <div class="leaderboard-card hunt-side-card">
-          <div class="leaderboard-header">
-            <div>
-              <p class="leaderboard-eyebrow">Rankings</p>
-              <h3 class="leaderboard-title">Top 10 wagered</h3>
-              <p class="leaderboard-period is-hidden" id="leaderboard-period"></p>
-            </div>
-            <span class="leaderboard-count" id="leaderboard-count">Top 10</span>
-          </div>
+        <p class="guess-status is-hidden" id="leaderboard-status" role="status" aria-live="polite"></p>
 
-          <div class="leaderboard-prizes-wrap">
-            <p class="leaderboard-prizes-label">Prize structure</p>
-            <ul class="leaderboard-prizes" id="leaderboard-prizes" aria-label="Prize structure by place"></ul>
-          </div>
+        <div class="podium-panel is-hidden" id="leaderboard-podium-panel">
+          <div class="podium-stage" id="leaderboard-podium-stage" aria-label="Top 3 wagered players"></div>
+        </div>
 
-          <p class="guess-status is-hidden" id="leaderboard-status" role="status" aria-live="polite"></p>
-
-          <div class="podium-panel is-hidden" id="leaderboard-podium-panel">
-            <div class="podium-stage" id="leaderboard-podium-stage" aria-label="Top 3 wagered players"></div>
-          </div>
-
+        <div class="leaderboard-board">
           <div class="leaderboard-table-head is-hidden" id="leaderboard-table-head">
             <span>Rank</span>
             <span>Player</span>
