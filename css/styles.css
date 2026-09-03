@@ -917,84 +917,19 @@ ul {
   animation: giveaways-fade-up 0.7s ease-out;
 }
 
-.leaderboard-prizes-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.1rem;
-  color: var(--text-muted);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+.leaderboard-banner {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  line-height: 1;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.leaderboard-prizes-head span:last-child {
   color: #f0c98e;
 }
-
-.leaderboard-prizes {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 1.25rem 1.5rem;
-}
-
-.leaderboard-prize-item {
-  display: grid;
-  gap: 0.2rem;
-  padding-top: 0.7rem;
-  border-top: 2px solid rgba(88, 201, 243, 0.22);
-  animation: leaderboard-rise 0.55s ease both;
-}
-
-.leaderboard-prize-item:nth-child(1) { animation-delay: 0.04s; }
-.leaderboard-prize-item:nth-child(2) { animation-delay: 0.08s; }
-.leaderboard-prize-item:nth-child(3) { animation-delay: 0.12s; }
-.leaderboard-prize-item:nth-child(4) { animation-delay: 0.16s; }
-.leaderboard-prize-item:nth-child(5) { animation-delay: 0.2s; }
-.leaderboard-prize-item:nth-child(6) { animation-delay: 0.24s; }
-.leaderboard-prize-item:nth-child(7) { animation-delay: 0.28s; }
-.leaderboard-prize-item:nth-child(8) { animation-delay: 0.32s; }
-.leaderboard-prize-item:nth-child(9) { animation-delay: 0.36s; }
-.leaderboard-prize-item:nth-child(10) { animation-delay: 0.4s; }
 
 .leaderboard-page .podium-slot.is-vacant .podium-user,
 .leaderboard-page .podium-slot.is-vacant .podium-guess {
   opacity: 0.4;
-}
-
-.leaderboard-prize-item span {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-}
-
-.leaderboard-prize-item strong {
-  font-size: 1.05rem;
-  font-weight: 650;
-  color: var(--text);
-}
-
-.leaderboard-prize-item.place-1 {
-  border-top-color: #ffd666;
-}
-
-.leaderboard-prize-item.place-1 span,
-.leaderboard-prize-item.place-1 strong {
-  color: #ffd666;
-}
-
-.leaderboard-prize-item.place-2 {
-  border-top-color: #c0cad6;
-}
-
-.leaderboard-prize-item.place-3 {
-  border-top-color: #cd7f32;
 }
 
 .leaderboard-page #leaderboard-status {
@@ -1212,11 +1147,6 @@ ul {
     gap: 0.35rem;
   }
 
-  .leaderboard-prizes {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem 1.25rem;
-  }
-
   .leaderboard-page .podium-stage {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.55rem;
@@ -1249,7 +1179,6 @@ ul {
 @media (prefers-reduced-motion: reduce) {
   .leaderboard-hero,
   .leaderboard-prizes-wrap,
-  .leaderboard-prize-item,
   .leaderboard-page .podium-slot.is-entering,
   .leaderboard-entry.is-entering {
     animation: none;
