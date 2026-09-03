@@ -54,6 +54,11 @@ import {
   handleGiveawayStatus,
   handleGiveawayToggle,
 } from "./lib/giveaway-handlers.js";
+import {
+  handleChatList,
+  handleChatRemove,
+  handleChatSend,
+} from "./lib/chat-handlers.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 loadProjectEnv(__dirname);
@@ -147,6 +152,9 @@ app.post("/api/giveaways/entries/clear", (req, res) =>
   handleGiveawayEntriesClear(req, res)
 );
 app.post("/api/giveaways/reveal", (req, res) => handleGiveawayReveal(req, res));
+app.get("/api/chat", (req, res) => handleChatList(req, res));
+app.post("/api/chat", (req, res) => handleChatSend(req, res));
+app.post("/api/chat/remove", (req, res) => handleChatRemove(req, res));
 
 app.listen(PORT, () => {
   console.log(`BLAKJAC21 site running at http://localhost:${PORT}`);

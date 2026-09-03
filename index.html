@@ -57,34 +57,83 @@
     <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
 
     <section class="hero container" id="watch">
-      <div class="hero-player">
-        <div class="watch-header">
-          <h1 id="watch-title">Live Stream</h1>
-          <p id="watch-subtitle">Loading latest stream...</p>
-        </div>
+      <div class="watch-layout">
+        <div class="hero-player">
+          <div class="watch-header">
+            <h1 id="watch-title">Live Stream</h1>
+            <p id="watch-subtitle">Loading latest stream...</p>
+          </div>
 
-        <div class="player-wrap" id="player-container">
-          <iframe
-            id="kick-player"
-            class="player-frame is-hidden"
-            title="BLAKJAC21 Kick live stream"
-            allow="autoplay; fullscreen; picture-in-picture"
-            allowfullscreen
-          ></iframe>
-          <video
-            id="vod-player"
-            class="player-frame is-hidden"
-            controls
-            playsinline
-            preload="metadata"
-          ></video>
-          <div id="player-offline" class="player-offline is-hidden">
-            <p>No stream or VOD available right now.</p>
-            <a href="https://kick.com/blakjac21" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-              Visit Channel
-            </a>
+          <div class="player-wrap" id="player-container">
+            <iframe
+              id="kick-player"
+              class="player-frame is-hidden"
+              title="BLAKJAC21 Kick live stream"
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+            <video
+              id="vod-player"
+              class="player-frame is-hidden"
+              controls
+              playsinline
+              preload="metadata"
+            ></video>
+            <div id="player-offline" class="player-offline is-hidden">
+              <p>No stream or VOD available right now.</p>
+              <a href="https://kick.com/blakjac21" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                Visit Channel
+              </a>
+            </div>
           </div>
         </div>
+
+        <aside class="site-chat" id="site-chat" aria-label="Community chat">
+          <div class="site-chat-panel">
+            <div class="site-chat-header">
+              <div>
+                <p class="site-chat-eyebrow">Community</p>
+                <h2 class="site-chat-title">Chat</h2>
+              </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline site-chat-toggle"
+                id="site-chat-toggle"
+                aria-expanded="false"
+                aria-controls="site-chat-body"
+              >
+                Open chat
+              </button>
+            </div>
+
+            <div class="site-chat-body" id="site-chat-body">
+              <div class="site-chat-messages" id="site-chat-messages" role="log" aria-live="polite"></div>
+              <p class="site-chat-empty" id="site-chat-empty">No messages yet. Say hi.</p>
+
+              <form class="site-chat-composer is-hidden" id="site-chat-form">
+                <label class="sr-only" for="site-chat-input">Message</label>
+                <input
+                  class="site-chat-input"
+                  id="site-chat-input"
+                  type="text"
+                  maxlength="280"
+                  autocomplete="off"
+                  placeholder="Say something..."
+                />
+                <button type="submit" class="btn btn-sm btn-primary" id="site-chat-send">
+                  Send
+                </button>
+              </form>
+
+              <div class="site-chat-signin" id="site-chat-signin">
+                <p>Sign in with Kick to chat with the community.</p>
+                <a href="/api/auth/login" class="btn btn-sm btn-kick">Sign in with Kick</a>
+              </div>
+
+              <p class="site-chat-status is-hidden" id="site-chat-status" role="status" aria-live="polite"></p>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
 
@@ -195,5 +244,6 @@
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js"></script>
   <script src="js/main.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/site-chat.js"></script>
 </body>
 </html>
