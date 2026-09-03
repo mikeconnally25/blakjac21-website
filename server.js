@@ -11,7 +11,10 @@ import {
 import {
   handleBonusHuntAdd,
   handleBonusHuntClear,
+  handleBonusHuntEnd,
   handleBonusHuntGet,
+  handleBonusHuntHistory,
+  handleBonusHuntHistoryRemove,
   handleBonusHuntSettings,
   handleBonusHuntRemove,
   handleBonusHuntUpdate,
@@ -85,6 +88,11 @@ app.post("/api/bonus-hunt/add", (req, res) => handleBonusHuntAdd(req, res));
 app.post("/api/bonus-hunt/update", (req, res) => handleBonusHuntUpdate(req, res));
 app.post("/api/bonus-hunt/remove", (req, res) => handleBonusHuntRemove(req, res));
 app.post("/api/bonus-hunt/clear", (req, res) => handleBonusHuntClear(req, res));
+app.post("/api/bonus-hunt/end", (req, res) => handleBonusHuntEnd(req, res));
+app.get("/api/bonus-hunt/history", (req, res) => handleBonusHuntHistory(req, res));
+app.post("/api/bonus-hunt/history/remove", (req, res) =>
+  handleBonusHuntHistoryRemove(req, res)
+);
 app.get("/api/bonus-hunt/slots", (req, res) => handleBonusHuntSlots(req, res));
 app.post("/api/bonus-hunt/slots/refresh", (req, res) =>
   handleBonusHuntSlotsRefresh(req, res)

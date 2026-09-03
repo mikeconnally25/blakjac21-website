@@ -3773,8 +3773,16 @@ ul {
   border-color: rgba(88, 201, 243, 0.22);
 }
 
+.past-hunt-entry-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.15rem;
+}
+
 .past-hunt-entry-toggle {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
+  width: auto;
   padding: 1rem 1.05rem;
   border: 0;
   background: transparent;
@@ -3785,6 +3793,41 @@ ul {
 
 .past-hunt-entry-toggle:hover {
   background: rgba(88, 201, 243, 0.04);
+}
+
+.past-hunt-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  align-self: center;
+  width: 2.15rem;
+  min-width: 2.15rem;
+  height: 2.15rem;
+  margin-right: 0.65rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.72);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.past-hunt-remove svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.past-hunt-remove:hover,
+.past-hunt-remove:focus-visible {
+  color: #ffb8b8;
+  background: rgba(255, 120, 120, 0.12);
+}
+
+.past-hunt-remove:disabled {
+  opacity: 0.55;
+  cursor: wait;
 }
 
 .past-hunt-entry-top {

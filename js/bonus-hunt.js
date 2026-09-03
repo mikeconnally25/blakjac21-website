@@ -581,6 +581,7 @@ function renderPastHunts(hunts) {
   if (!list || !empty) return;
 
   const total = hunts.length;
+  const isAdmin = Boolean(currentUser?.isAdmin);
   empty.classList.toggle("is-hidden", total > 0);
   list.classList.toggle("is-hidden", total === 0);
   list.replaceChildren();
@@ -592,9 +593,13 @@ function renderPastHunts(hunts) {
   hunts.forEach((hunt) => {
     const item = document.createElement("li");
     item.className = "past-hunt-entry";
+    item.dataset.huntId = hunt.id;
 
     const summary = hunt.summary || {};
     const profit = Number(summary.profit || 0);
+
+    const row = document.createElement("div");
+    row.className = "past-hunt-entry-row";
 
     const toggle = document.createElement("button");
     toggle.type = "button";
@@ -633,6 +638,26 @@ function renderPastHunts(hunts) {
     stats.append(profitValue, status);
     top.append(main, stats);
     toggle.append(top);
+
+    row.append(toggle);
+
+    if (isAdmin) {
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "past-hunt-remove";
+      removeBtn.setAttribute(
+        "aria-label",
+        `Delete past hunt ${hunt.title || "Live Hunt"}`
+      );
+      removeBtn.innerHTML =
+        '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M9 3h6l1 2h5v2H3V5h5l1-2Zm1 6h2v9h-2V9Zm4 0h2v9h-2V9ZM6 9h2v9H6V9Z"/></svg>';
+      removeBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        void deletePastHuntEntry(hunt, removeBtn);
+      });
+      row.append(removeBtn);
+    }
 
     const details = document.createElement("div");
     details.className = "past-hunt-entry-details is-hidden";
@@ -689,9 +714,42 @@ function renderPastHunts(hunts) {
       item.classList.toggle("is-expanded", !expanded);
     });
 
-    item.append(toggle, details);
+    item.append(row, details);
     list.append(item);
   });
+}
+
+async function deletePastHuntEntry(hunt, button) {
+  const title = hunt.title || "this past hunt";
+  if (!window.confirm(`Delete "${title}" from past hunts? This cannot be undone.`)) {
+    return;
+  }
+
+  button.disabled = true;
+  setStatus("Deleting past hunt...");
+
+  try {
+    const response = await fetch("/api/bonus-hunt/history/remove", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: hunt.id }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      setStatus(data.error || "Could not delete past hunt.", "error");
+      return;
+    }
+
+    pastHunts = data.pastHunts || pastHunts.filter((entry) => entry.id !== hunt.id);
+    renderPastHunts(pastHunts);
+    setStatus("Past hunt deleted.", "success");
+  } catch {
+    setStatus("Could not delete past hunt. Try again.", "error");
+  } finally {
+    button.disabled = false;
+  }
 }
 
 async function loadPastHunts() {
@@ -2197,6 +2255,7 @@ function initSlotRequestForm() {
 window.addEventListener("auth:change", async (event) => {
   currentUser = event.detail?.user || null;
   updatePanels();
+  renderPastHunts(pastHunts);
   await Promise.all([loadBonusHunt(), loadSlotCatalog(), loadSlotRequests(), loadKickChatStatus()]);
 });
 
@@ -2212,6 +2271,7 @@ async function bootstrapBonusHuntPage() {
   handleKickBotRedirectParams();
   await Promise.all([loadCurrentUser(), loadBonusHunt(), loadPastHunts(), loadSlotCatalog(), loadSlotRequests()]);
   updatePanels();
+  renderPastHunts(pastHunts);
   renderSlotRequests(slotRequests);
   await loadKickChatStatus();
   schedulePolling();
