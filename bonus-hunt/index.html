@@ -83,30 +83,54 @@
                 </button>
               </div>
 
-              <div class="hunt-stats">
-                <div class="hunt-stat">
-                  <span class="hunt-stat-label">Bonuses</span>
-                  <strong class="hunt-stat-value" id="summary-total">0</strong>
+              <div class="hunt-stats" aria-label="Hunt statistics">
+                <div class="hunt-stats-row hunt-stats-row--primary">
+                  <div class="hunt-stat">
+                    <span class="hunt-stat-label">Bonuses</span>
+                    <strong class="hunt-stat-value" id="summary-total">0</strong>
+                  </div>
+                  <div class="hunt-stat">
+                    <span class="hunt-stat-label">Start Cost</span>
+                    <strong class="hunt-stat-value" id="summary-start-cost">$0.00</strong>
+                  </div>
+                  <div class="hunt-stat">
+                    <span class="hunt-stat-label">Winnings</span>
+                    <strong class="hunt-stat-value" id="summary-winnings">$0.00</strong>
+                  </div>
+                  <div class="hunt-stat hunt-stat--profit">
+                    <span class="hunt-stat-label">Profit/Loss</span>
+                    <strong
+                      class="hunt-stat-value"
+                      id="summary-profit"
+                      title="Winnings − bonus cost"
+                    >$0.00</strong>
+                  </div>
                 </div>
-                <div class="hunt-stat">
-                  <span class="hunt-stat-label">Start</span>
-                  <strong class="hunt-stat-value" id="summary-start">$0.00</strong>
-                </div>
-                <div class="hunt-stat hunt-stat--profit">
-                  <span class="hunt-stat-label">Profit</span>
-                  <strong
-                    class="hunt-stat-value"
-                    id="summary-profit"
-                    title="Winnings − bonus cost − start balance"
-                  >$0.00</strong>
-                </div>
-                <div class="hunt-stat hunt-stat--breakeven">
-                  <span class="hunt-stat-label">Req Average</span>
-                  <strong
-                    class="hunt-stat-value"
-                    id="summary-breakeven"
-                    title="(Total bonus cost − winnings) ÷ remaining bet total"
-                  >—</strong>
+                <div class="hunt-stats-row hunt-stats-row--secondary">
+                  <div class="hunt-stat">
+                    <span class="hunt-stat-label">Avg Bet</span>
+                    <strong class="hunt-stat-value" id="summary-avg-bet">—</strong>
+                  </div>
+                  <div class="hunt-stat">
+                    <span class="hunt-stat-label">Cur Avg</span>
+                    <strong class="hunt-stat-value" id="summary-cur-avg">—</strong>
+                  </div>
+                  <div class="hunt-stat">
+                    <span class="hunt-stat-label">Total X</span>
+                    <strong class="hunt-stat-value" id="summary-total-x">—</strong>
+                  </div>
+                  <div class="hunt-stat hunt-stat--breakeven">
+                    <span class="hunt-stat-label">Req X</span>
+                    <strong
+                      class="hunt-stat-value"
+                      id="summary-breakeven"
+                      title="(Total bonus cost − winnings) ÷ remaining bet total"
+                    >—</strong>
+                  </div>
+                  <div class="hunt-stat">
+                    <span class="hunt-stat-label">Cur Avg X</span>
+                    <strong class="hunt-stat-value" id="summary-run-avg">—</strong>
+                  </div>
                 </div>
               </div>
 

@@ -3005,35 +3005,53 @@ ul {
 .hunt-stats {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0;
+  gap: 0.55rem;
   margin-bottom: 0.85rem;
-  border: 1px solid rgba(88, 201, 243, 0.12);
-  border-radius: var(--radius-sm);
-  background: rgba(4, 8, 12, 0.35);
-  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.hunt-stats-row {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.hunt-stats-row--primary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.hunt-stats-row--secondary {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .hunt-stat {
   display: grid;
-  gap: 0.2rem;
-  padding: 0.7rem 0.85rem;
-  border: 0;
-  border-right: 1px solid rgba(88, 201, 243, 0.1);
-  border-radius: 0;
-  background: transparent;
+  gap: 0.35rem;
+  justify-items: center;
+  align-content: center;
+  min-height: 4.35rem;
+  padding: 0.75rem 0.65rem;
+  border: 1px solid rgba(88, 201, 243, 0.1);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(22, 30, 40, 0.92), rgba(10, 14, 20, 0.94));
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
   overflow: hidden;
-  transition: background-color 0.15s ease;
+  text-align: center;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .hunt-stat:last-child {
-  border-right: 0;
+  border-right: 1px solid rgba(88, 201, 243, 0.1);
 }
 
 .hunt-stat:hover {
   transform: none;
-  background: rgba(88, 201, 243, 0.04);
-  border-color: transparent;
+  border-color: rgba(88, 201, 243, 0.22);
+  background:
+    linear-gradient(180deg, rgba(26, 36, 48, 0.96), rgba(12, 16, 22, 0.96));
 }
 
 .hunt-stat--profit .hunt-stat-value.is-positive {
@@ -3041,7 +3059,7 @@ ul {
 }
 
 .hunt-stat--profit .hunt-stat-value.is-negative {
-  color: #ff8f98;
+  color: #ff5d6a;
 }
 
 .hunt-stat--breakeven .hunt-stat-value.is-positive {
@@ -3058,18 +3076,19 @@ ul {
 
 .hunt-stat-label {
   color: var(--text-muted);
-  font-size: 0.66rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none;
 }
 
 .hunt-stat-value {
-  font-family: var(--font-display);
-  font-size: clamp(1.25rem, 2.8vw, 1.55rem);
-  line-height: 1;
-  letter-spacing: 0.02em;
-  color: var(--accent-bright);
+  font-family: var(--font-body);
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0;
+  color: var(--text);
 }
 
 .hunt-progress-wrap {
@@ -4496,15 +4515,21 @@ ul {
   }
 
   .hunt-stats {
+    gap: 0.45rem;
+  }
+
+  .hunt-stats-row--primary,
+  .hunt-stats-row--secondary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .hunt-stat:nth-child(2n) {
-    border-right: 0;
+  .hunt-stats-row--secondary .hunt-stat:last-child {
+    grid-column: 1 / -1;
   }
 
-  .hunt-stat:nth-child(-n + 2) {
-    border-bottom: 1px solid rgba(88, 201, 243, 0.1);
+  .hunt-stat {
+    min-height: 4rem;
+    padding: 0.65rem 0.55rem;
   }
 
   .past-hunt-entry-detail-stats {

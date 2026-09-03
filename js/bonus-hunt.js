@@ -280,22 +280,64 @@ function renderHuntHeader(hunt) {
 
 function renderSummary(summary, hunt) {
   const totalBonuses = document.getElementById("summary-total");
-  const startBalance = document.getElementById("summary-start");
+  const startCost = document.getElementById("summary-start-cost");
+  const winnings = document.getElementById("summary-winnings");
   const profit = document.getElementById("summary-profit");
+  const avgBet = document.getElementById("summary-avg-bet");
+  const curAvg = document.getElementById("summary-cur-avg");
+  const totalX = document.getElementById("summary-total-x");
   const breakeven = document.getElementById("summary-breakeven");
+  const runAvg = document.getElementById("summary-run-avg");
   const progress = document.getElementById("hunt-progress");
   const progressCount = document.getElementById("hunt-progress-count");
   const progressFill = document.getElementById("hunt-progress-fill");
   const bonusCount = document.getElementById("hunt-bonus-count");
 
-  if (!totalBonuses || !startBalance || !profit) return;
+  if (!totalBonuses || !startCost || !profit) return;
+
+  const profitLoss =
+    summary.profitLoss === null || summary.profitLoss === undefined
+      ? Number(summary.totalWon || 0) - Number(summary.totalCost || 0)
+      : summary.profitLoss;
 
   totalBonuses.textContent = String(summary.totalBonuses);
-  startBalance.textContent = formatCurrency(hunt?.startBalance || 0);
+  startCost.textContent = formatCurrency(summary.totalCost || 0);
 
-  profit.textContent = formatCurrency(summary.profit);
-  profit.classList.toggle("is-positive", summary.profit > 0);
-  profit.classList.toggle("is-negative", summary.profit < 0);
+  if (winnings) {
+    winnings.textContent = formatCurrency(summary.totalWon || 0);
+  }
+
+  profit.textContent = formatCurrency(profitLoss);
+  profit.classList.toggle("is-positive", profitLoss > 0);
+  profit.classList.toggle("is-negative", profitLoss < 0);
+
+  if (avgBet) {
+    avgBet.textContent =
+      summary.avgBet === null || summary.avgBet === undefined
+        ? "—"
+        : formatCurrency(summary.avgBet);
+  }
+
+  if (curAvg) {
+    curAvg.textContent =
+      summary.curAvg === null || summary.curAvg === undefined
+        ? "—"
+        : formatCurrency(summary.curAvg);
+  }
+
+  if (totalX) {
+    totalX.textContent =
+      summary.totalX === null || summary.totalX === undefined
+        ? "—"
+        : formatMultiplier(summary.totalX);
+  }
+
+  if (runAvg) {
+    runAvg.textContent =
+      summary.runAverageX === null || summary.runAverageX === undefined
+        ? "—"
+        : formatMultiplier(summary.runAverageX);
+  }
 
   if (breakeven) {
     if (summary.breakevenX === null || summary.breakevenX === undefined) {
