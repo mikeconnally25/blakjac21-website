@@ -456,6 +456,9 @@ function renderBonusList(bonuses) {
     const result = document.createElement("div");
     result.className = "hunt-bonus-result";
 
+    let payoutInput = null;
+    let saveWinBtn = null;
+
     if (bonus.status === "opened") {
       const payout = document.createElement("div");
       payout.className = "hunt-bonus-payout";
@@ -472,6 +475,33 @@ function renderBonusList(bonuses) {
       multiplier.textContent = formatMultiplier(bonus.multiplier);
 
       result.append(payout, multiplier);
+    } else if (currentUser?.isAdmin) {
+      const pending = document.createElement("div");
+      pending.className = "hunt-bonus-pending";
+      pending.textContent = bonus.id === openingId ? "Opening" : "Pending";
+
+      const payoutField = document.createElement("label");
+      payoutField.className = "bonus-payout-field hunt-bonus-win-field";
+
+      const payoutPrefix = document.createElement("span");
+      payoutPrefix.className = "bonus-payout-prefix";
+      payoutPrefix.textContent = "$";
+      payoutPrefix.setAttribute("aria-hidden", "true");
+
+      payoutInput = document.createElement("input");
+      payoutInput.className = "bonus-payout-input";
+      payoutInput.type = "number";
+      payoutInput.inputMode = "decimal";
+      payoutInput.min = "0";
+      payoutInput.step = "0.01";
+      payoutInput.placeholder = "0.00";
+      payoutInput.setAttribute("aria-label", `Win amount for ${bonus.slot}`);
+      payoutInput.value = bonusPayoutDrafts.has(bonus.id)
+        ? bonusPayoutDrafts.get(bonus.id)
+        : "";
+
+      payoutField.append(payoutPrefix, payoutInput);
+      result.append(pending, payoutField);
     } else {
       const pending = document.createElement("div");
       pending.className = "hunt-bonus-pending";
@@ -485,34 +515,13 @@ function renderBonusList(bonuses) {
       const actions = document.createElement("div");
       actions.className = "hunt-bonus-admin";
 
-      if (bonus.status === "pending") {
-        const payoutField = document.createElement("label");
-        payoutField.className = "bonus-payout-field";
-
-        const payoutLabel = document.createElement("span");
-        payoutLabel.className = "bonus-payout-label";
-        payoutLabel.textContent = "Win";
-
-        const payoutInput = document.createElement("input");
-        payoutInput.className = "bonus-payout-input";
-        payoutInput.type = "number";
-        payoutInput.inputMode = "decimal";
-        payoutInput.min = "0";
-        payoutInput.step = "0.01";
-        payoutInput.placeholder = "0.00";
-        payoutInput.setAttribute("aria-label", `Win amount for ${bonus.slot}`);
-        payoutInput.value = bonusPayoutDrafts.has(bonus.id)
-          ? bonusPayoutDrafts.get(bonus.id)
-          : "";
-
-        payoutField.append(payoutLabel, payoutInput);
-
-        const openBtn = document.createElement("button");
-        openBtn.type = "button";
-        openBtn.className = "btn btn-sm btn-primary";
-        openBtn.textContent = "Save win";
-        openBtn.addEventListener("click", () =>
-          saveBonusPayout(bonus.id, payoutInput.value, openBtn)
+      if (bonus.status === "pending" && payoutInput) {
+        saveWinBtn = document.createElement("button");
+        saveWinBtn.type = "button";
+        saveWinBtn.className = "btn btn-sm btn-primary";
+        saveWinBtn.textContent = "Save";
+        saveWinBtn.addEventListener("click", () =>
+          saveBonusPayout(bonus.id, payoutInput.value, saveWinBtn)
         );
 
         payoutInput.addEventListener("input", () => {
@@ -528,11 +537,11 @@ function renderBonusList(bonuses) {
         payoutInput.addEventListener("keydown", (event) => {
           if (event.key === "Enter") {
             event.preventDefault();
-            void saveBonusPayout(bonus.id, payoutInput.value, openBtn);
+            void saveBonusPayout(bonus.id, payoutInput.value, saveWinBtn);
           }
         });
 
-        actions.append(payoutField, openBtn);
+        actions.append(saveWinBtn);
       }
 
       const removeBtn = document.createElement("button");
