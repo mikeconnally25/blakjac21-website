@@ -130,6 +130,60 @@
               </div>
             </div>
 
+            <div class="requests-hub hunt-side-card" id="slot-requests-panel">
+              <div class="requests-hub-header">
+                <div>
+                  <p class="requests-hub-eyebrow">Viewer requests</p>
+                  <h3 class="requests-hub-title">Slot queue</h3>
+                </div>
+                <div class="requests-hub-meta">
+                  <span class="requests-hub-count" id="slot-requests-count">0 requests</span>
+                  <span class="requests-hub-status requests-hub-status--closed" id="requests-panel-status">
+                    Check back later
+                  </span>
+                </div>
+              </div>
+
+              <div class="requests-hub-command">
+                <p class="requests-hub-command-label">Request in Kick chat</p>
+                <code class="requests-hub-command-code">!s &lt;slot name&gt;</code>
+                <p class="requests-hub-command-example">Example: <strong>!s Gates of Olympus</strong></p>
+                <p class="requests-hub-command-note">
+                  Request up to <strong>3 slots</strong> each. Slots must be from
+                  <a href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
+                  or
+                  <a href="https://stake.com/casino/group/only-on-stake" target="_blank" rel="noopener noreferrer">Only on Stake</a>.
+                </p>
+              </div>
+
+              <div class="requests-hub-notice is-hidden" id="slot-request-closed">
+                <p>Requests are closed right now. Check back when the stream turns on <strong>Collecting</strong>.</p>
+              </div>
+
+              <div class="requests-hub-notice is-hidden" id="slot-request-guest">
+                <p>Sign in with Kick to request here, or type <strong>!s &lt;slot&gt;</strong> in chat.</p>
+                <a href="/api/auth/login" class="btn btn-primary btn-sm">Sign in with Kick</a>
+              </div>
+
+              <div class="requests-hub-form is-hidden" id="slot-request-panel">
+                <p class="requests-hub-form-text">Or submit a request on the site:</p>
+                <form class="slot-request-form" id="slot-request-form">
+                  <label class="guess-label" for="slot-request-select">Slot</label>
+                  <select class="slot-request-select" id="slot-request-select" required>
+                    <option value="">Choose a slot...</option>
+                  </select>
+                  <button type="submit" class="btn btn-primary" id="slot-request-submit">
+                    Submit request
+                  </button>
+                  <p class="requests-hub-limit is-hidden" id="slot-request-limit-note"></p>
+                  <p class="guess-status is-hidden" id="slot-request-status" role="status" aria-live="polite"></p>
+                </form>
+                <p class="requests-hub-catalog" id="slot-catalog-count">Loading slots...</p>
+              </div>
+
+              <div id="slot-requests-viewer-mount"></div>
+            </div>
+
             <div class="admin-panel hunt-admin-card is-hidden" id="bonus-hunt-admin">
               <div class="admin-panel-section">
                 <div class="hunt-admin-header">
@@ -274,62 +328,6 @@
               <ul class="past-hunts-list is-hidden" id="past-hunts-list"></ul>
             </section>
           </div>
-
-          <aside class="hunt-layout-side">
-            <div class="requests-hub hunt-side-card" id="slot-requests-panel">
-              <div class="requests-hub-header">
-                <div>
-                  <p class="requests-hub-eyebrow">Viewer requests</p>
-                  <h3 class="requests-hub-title">Slot queue</h3>
-                </div>
-                <div class="requests-hub-meta">
-                  <span class="requests-hub-count" id="slot-requests-count">0 requests</span>
-                  <span class="requests-hub-status requests-hub-status--closed" id="requests-panel-status">
-                    Check back later
-                  </span>
-                </div>
-              </div>
-
-              <div class="requests-hub-command">
-                <p class="requests-hub-command-label">Request in Kick chat</p>
-                <code class="requests-hub-command-code">!s &lt;slot name&gt;</code>
-                <p class="requests-hub-command-example">Example: <strong>!s Gates of Olympus</strong></p>
-                <p class="requests-hub-command-note">
-                  Request up to <strong>3 slots</strong> each. Slots must be from
-                  <a href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
-                  or
-                  <a href="https://stake.com/casino/group/only-on-stake" target="_blank" rel="noopener noreferrer">Only on Stake</a>.
-                </p>
-              </div>
-
-              <div class="requests-hub-notice is-hidden" id="slot-request-closed">
-                <p>Requests are closed right now. Check back when the stream turns on <strong>Collecting</strong>.</p>
-              </div>
-
-              <div class="requests-hub-notice is-hidden" id="slot-request-guest">
-                <p>Sign in with Kick to request here, or type <strong>!s &lt;slot&gt;</strong> in chat.</p>
-                <a href="/api/auth/login" class="btn btn-primary btn-sm">Sign in with Kick</a>
-              </div>
-
-              <div class="requests-hub-form is-hidden" id="slot-request-panel">
-                <p class="requests-hub-form-text">Or submit a request on the site:</p>
-                <form class="slot-request-form" id="slot-request-form">
-                  <label class="guess-label" for="slot-request-select">Slot</label>
-                  <select class="slot-request-select" id="slot-request-select" required>
-                    <option value="">Choose a slot...</option>
-                  </select>
-                  <button type="submit" class="btn btn-primary" id="slot-request-submit">
-                    Submit request
-                  </button>
-                  <p class="requests-hub-limit is-hidden" id="slot-request-limit-note"></p>
-                  <p class="guess-status is-hidden" id="slot-request-status" role="status" aria-live="polite"></p>
-                </form>
-                <p class="requests-hub-catalog" id="slot-catalog-count">Loading slots...</p>
-              </div>
-
-              <div id="slot-requests-viewer-mount"></div>
-            </div>
-          </aside>
         </div>
       </div>
     </section>

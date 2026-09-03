@@ -2443,7 +2443,7 @@ ul {
 
 .hunt-layout-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(20rem, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
   align-items: start;
 }
@@ -2455,8 +2455,7 @@ ul {
 }
 
 .hunt-layout-side {
-  position: sticky;
-  top: calc(var(--header-height) + 0.85rem);
+  position: static;
 }
 
 .hunt-tracker {
