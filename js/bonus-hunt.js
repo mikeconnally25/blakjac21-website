@@ -1,4 +1,5 @@
 let currentUser = null;
+let bonusListRenderedAsAdmin = false;
 let pollTimer = null;
 let slotPollTimer = null;
 let slotCatalog = [];
@@ -379,15 +380,22 @@ function isEditingBonusPayout() {
 }
 
 function updateBonusList(bonuses, { force = false, previous = huntBonuses } = {}) {
+  const asAdmin = Boolean(currentUser?.isAdmin);
+
   if (!force && isEditingBonusPayout()) {
     return;
   }
 
-  if (!force && bonusesUnchanged(previous, bonuses)) {
+  if (
+    !force &&
+    bonusesUnchanged(previous, bonuses) &&
+    asAdmin === bonusListRenderedAsAdmin
+  ) {
     return;
   }
 
   renderBonusList(bonuses);
+  bonusListRenderedAsAdmin = asAdmin;
 }
 
 function renderBonusList(bonuses) {
@@ -475,33 +483,6 @@ function renderBonusList(bonuses) {
       multiplier.textContent = formatMultiplier(bonus.multiplier);
 
       result.append(payout, multiplier);
-    } else if (currentUser?.isAdmin) {
-      const pending = document.createElement("div");
-      pending.className = "hunt-bonus-pending";
-      pending.textContent = bonus.id === openingId ? "Opening" : "Pending";
-
-      const payoutField = document.createElement("label");
-      payoutField.className = "bonus-payout-field hunt-bonus-win-field";
-
-      const payoutPrefix = document.createElement("span");
-      payoutPrefix.className = "bonus-payout-prefix";
-      payoutPrefix.textContent = "$";
-      payoutPrefix.setAttribute("aria-hidden", "true");
-
-      payoutInput = document.createElement("input");
-      payoutInput.className = "bonus-payout-input";
-      payoutInput.type = "number";
-      payoutInput.inputMode = "decimal";
-      payoutInput.min = "0";
-      payoutInput.step = "0.01";
-      payoutInput.placeholder = "0.00";
-      payoutInput.setAttribute("aria-label", `Win amount for ${bonus.slot}`);
-      payoutInput.value = bonusPayoutDrafts.has(bonus.id)
-        ? bonusPayoutDrafts.get(bonus.id)
-        : "";
-
-      payoutField.append(payoutPrefix, payoutInput);
-      result.append(pending, payoutField);
     } else {
       const pending = document.createElement("div");
       pending.className = "hunt-bonus-pending";
@@ -515,11 +496,37 @@ function renderBonusList(bonuses) {
       const actions = document.createElement("div");
       actions.className = "hunt-bonus-admin";
 
-      if (bonus.status === "pending" && payoutInput) {
+      if (bonus.status === "pending") {
+        const payoutField = document.createElement("label");
+        payoutField.className = "bonus-payout-field hunt-bonus-win-field";
+
+        const payoutLabel = document.createElement("span");
+        payoutLabel.className = "bonus-payout-label";
+        payoutLabel.textContent = "Win";
+
+        const payoutPrefix = document.createElement("span");
+        payoutPrefix.className = "bonus-payout-prefix";
+        payoutPrefix.textContent = "$";
+        payoutPrefix.setAttribute("aria-hidden", "true");
+
+        payoutInput = document.createElement("input");
+        payoutInput.className = "bonus-payout-input";
+        payoutInput.type = "number";
+        payoutInput.inputMode = "decimal";
+        payoutInput.min = "0";
+        payoutInput.step = "0.01";
+        payoutInput.placeholder = "0.00";
+        payoutInput.setAttribute("aria-label", `Win amount for ${bonus.slot}`);
+        payoutInput.value = bonusPayoutDrafts.has(bonus.id)
+          ? bonusPayoutDrafts.get(bonus.id)
+          : "";
+
+        payoutField.append(payoutLabel, payoutPrefix, payoutInput);
+
         saveWinBtn = document.createElement("button");
         saveWinBtn.type = "button";
         saveWinBtn.className = "btn btn-sm btn-primary";
-        saveWinBtn.textContent = "Save";
+        saveWinBtn.textContent = "Save win";
         saveWinBtn.addEventListener("click", () =>
           saveBonusPayout(bonus.id, payoutInput.value, saveWinBtn)
         );
@@ -541,7 +548,7 @@ function renderBonusList(bonuses) {
           }
         });
 
-        actions.append(saveWinBtn);
+        actions.append(payoutField, saveWinBtn);
       }
 
       const removeBtn = document.createElement("button");
@@ -2252,6 +2259,7 @@ function initSlotRequestForm() {
 window.addEventListener("auth:change", async (event) => {
   currentUser = event.detail?.user || null;
   updatePanels();
+  updateBonusList(huntBonuses, { force: true });
   renderPastHunts(pastHunts);
   await Promise.all([loadBonusHunt(), loadSlotCatalog(), loadSlotRequests(), loadKickChatStatus()]);
 });
@@ -2266,8 +2274,10 @@ document.addEventListener("visibilitychange", () => {
 
 async function bootstrapBonusHuntPage() {
   handleKickBotRedirectParams();
-  await Promise.all([loadCurrentUser(), loadBonusHunt(), loadPastHunts(), loadSlotCatalog(), loadSlotRequests()]);
+  await loadCurrentUser();
+  await Promise.all([loadBonusHunt(), loadPastHunts(), loadSlotCatalog(), loadSlotRequests()]);
   updatePanels();
+  updateBonusList(huntBonuses, { force: true });
   renderPastHunts(pastHunts);
   renderSlotRequests(slotRequests);
   await loadKickChatStatus();

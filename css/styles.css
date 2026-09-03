@@ -2460,7 +2460,7 @@ ul {
 
 .hunt-tracker {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   margin-bottom: 0;
   padding: 1.1rem 1.25rem;
   border-radius: calc(var(--radius) + 2px);
@@ -2744,7 +2744,7 @@ ul {
 }
 
 .hunt-bonus-card:has(.hunt-bonus-admin) {
-  grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
 }
 
 @keyframes hunt-card-in {
@@ -2831,35 +2831,44 @@ ul {
 .hunt-bonus-result {
   display: grid;
   justify-items: end;
-  gap: 0.2rem;
+  gap: 0.08rem;
   text-align: right;
-  min-width: 5.5rem;
+  min-width: 4.5rem;
 }
 
 .hunt-bonus-win-field {
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
-  min-width: 6.25rem;
-  padding: 0.2rem 0.45rem;
-  border-radius: 0.4rem;
-  border: 1px solid rgba(88, 201, 243, 0.28);
-  background: rgba(4, 8, 12, 0.92);
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0.28rem 0.55rem;
+  border-radius: 0.45rem;
+  border: 1px solid rgba(88, 201, 243, 0.4);
+  background: rgba(4, 10, 16, 0.98);
+}
+
+.hunt-bonus-win-field .bonus-payout-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .hunt-bonus-win-field .bonus-payout-prefix {
   color: var(--text-muted);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 600;
 }
 
 .hunt-bonus-win-field .bonus-payout-input {
-  width: 4.75rem;
-  padding: 0.15rem 0;
+  width: 5.5rem;
+  min-height: 1.65rem;
+  padding: 0.15rem 0.2rem;
   border: 0;
   background: transparent;
   color: var(--text);
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -2869,8 +2878,8 @@ ul {
 }
 
 .hunt-bonus-win-field:focus-within {
-  border-color: rgba(88, 201, 243, 0.55);
-  box-shadow: 0 0 0 2px rgba(88, 201, 243, 0.12);
+  border-color: rgba(88, 201, 243, 0.7);
+  box-shadow: 0 0 0 2px rgba(88, 201, 243, 0.18);
 }
 
 .hunt-bonus-payout {
@@ -2913,17 +2922,19 @@ ul {
 }
 
 .hunt-bonus-admin {
+  grid-column: 1 / -1;
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
-  gap: 0.35rem;
+  justify-content: flex-start;
+  gap: 0.45rem;
+  padding-top: 0.15rem;
   flex-shrink: 0;
 }
 
 .hunt-bonus-admin .btn {
-  padding: 0.28rem 0.65rem;
-  font-size: 0.7rem;
+  padding: 0.32rem 0.75rem;
+  font-size: 0.72rem;
   white-space: nowrap;
 }
 
@@ -4076,13 +4087,15 @@ ul {
 
   .hunt-bonus-admin {
     grid-area: admin;
+    grid-column: 1 / -1;
     flex-wrap: wrap;
     justify-content: flex-start;
     padding-top: 0.2rem;
   }
 
   .hunt-bonus-win-field {
-    min-width: 5.75rem;
+    min-width: 0;
+    flex: 1 1 auto;
   }
 
   .hunt-bonus-slot {
