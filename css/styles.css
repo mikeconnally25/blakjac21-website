@@ -1663,6 +1663,90 @@ ul {
   flex-shrink: 0;
 }
 
+.accounts-alt-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.16rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 179, 71, 0.35);
+  background: rgba(255, 179, 71, 0.14);
+  color: #ffd27d;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.accounts-alts-panel {
+  margin: 0 0 1rem;
+  padding: 1rem 1.05rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(255, 179, 71, 0.22);
+  background: rgba(255, 179, 71, 0.06);
+}
+
+.accounts-alts-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+.accounts-alts-title {
+  margin: 0.15rem 0 0;
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1;
+}
+
+.accounts-alts-copy {
+  margin: 0.35rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  line-height: 1.4;
+  max-width: 36rem;
+}
+
+.accounts-alts-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.accounts-alts-entry {
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(4, 8, 12, 0.35);
+}
+
+.accounts-alts-names {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.accounts-alts-ips,
+.accounts-alt-note,
+.accounts-ip-note {
+  margin: 0.28rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.accounts-alt-note {
+  color: #ffd27d;
+}
+
 .accounts-username {
   overflow: hidden;
   text-overflow: ellipsis;

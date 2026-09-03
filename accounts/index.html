@@ -98,10 +98,24 @@
 
           <p class="guess-status is-hidden" id="accounts-status" role="status" aria-live="polite"></p>
 
+          <section class="accounts-alts-panel is-hidden" id="accounts-alts-panel" aria-labelledby="accounts-alts-title">
+            <div class="accounts-alts-header">
+              <div>
+                <p class="accounts-eyebrow">Signals</p>
+                <h3 class="accounts-alts-title" id="accounts-alts-title">Possible alts</h3>
+                <p class="accounts-alts-copy">
+                  Accounts that shared a login IP. Shared IP is a signal, not proof — VPNs, schools, and families can look the same.
+                </p>
+              </div>
+              <span class="accounts-count-pill" id="accounts-alts-count">0 clusters</span>
+            </div>
+            <ul class="accounts-alts-list" id="accounts-alts-list"></ul>
+          </section>
+
           <div class="accounts-search-panel">
             <div class="accounts-search-copy">
               <label class="guess-label" for="accounts-search">Search players</label>
-              <p class="accounts-search-hint">Filter by Kick username, Stake username, or Kick ID.</p>
+              <p class="accounts-search-hint">Filter by Kick username, Stake username, Kick ID, or login IP.</p>
             </div>
             <div class="accounts-search-row">
               <div class="guess-input-row accounts-search-input-row">

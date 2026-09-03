@@ -1,5 +1,6 @@
 let currentUser = null;
 let allUsers = [];
+let altClusters = [];
 let searchQuery = "";
 
 function formatDate(iso) {
@@ -11,6 +12,19 @@ function formatDate(iso) {
     month: "short",
     day: "numeric",
     year: "numeric",
+  }).format(new Date(iso));
+}
+
+function formatDateTime(iso) {
+  if (!iso) {
+    return "—";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
   }).format(new Date(iso));
 }
 
@@ -74,10 +88,21 @@ function filterUsers(users, query) {
     const username = String(user.username || "").toLowerCase();
     const kickUserId = String(user.kickUserId || "").toLowerCase();
     const stakeUsername = String(user.stakeUsername || "").toLowerCase();
+    const lastLoginIp = String(user.lastLoginIp || "").toLowerCase();
+    const historyIps = (user.loginHistory || [])
+      .map((entry) => String(entry.ip || "").toLowerCase())
+      .join(" ");
+    const altNames = (user.possibleAlts || [])
+      .map((alt) => String(alt.username || "").toLowerCase())
+      .join(" ");
+
     return (
       username.includes(term) ||
       kickUserId.includes(term) ||
-      stakeUsername.includes(term)
+      stakeUsername.includes(term) ||
+      lastLoginIp.includes(term) ||
+      historyIps.includes(term) ||
+      altNames.includes(term)
     );
   });
 }
@@ -114,6 +139,40 @@ function createMetaItem(label, value) {
 
   item.append(labelEl, valueEl);
   return item;
+}
+
+function renderAltClusters() {
+  const panel = document.getElementById("accounts-alts-panel");
+  const list = document.getElementById("accounts-alts-list");
+  const count = document.getElementById("accounts-alts-count");
+
+  if (!panel || !list || !count) return;
+
+  const clusters = altClusters || [];
+  count.textContent =
+    clusters.length === 1 ? "1 cluster" : `${clusters.length} clusters`;
+  panel.classList.toggle("is-hidden", clusters.length === 0);
+  list.replaceChildren();
+
+  clusters.forEach((cluster) => {
+    const item = document.createElement("li");
+    item.className = "accounts-alts-entry";
+
+    const names = document.createElement("p");
+    names.className = "accounts-alts-names";
+    names.textContent = (cluster.users || [])
+      .map((user) => user.username)
+      .join(" · ");
+
+    const ips = document.createElement("p");
+    ips.className = "accounts-alts-ips";
+    ips.textContent = `Shared IP${
+      (cluster.sharedIps || []).length === 1 ? "" : "s"
+    }: ${(cluster.sharedIps || []).join(", ")}`;
+
+    item.append(names, ips);
+    list.append(item);
+  });
 }
 
 function renderAccounts(users) {
@@ -188,6 +247,16 @@ function renderAccounts(users) {
       nameRow.append(subBadge);
     }
 
+    if ((user.possibleAlts || []).length > 0) {
+      const altBadge = document.createElement("span");
+      altBadge.className = "accounts-alt-badge";
+      altBadge.textContent = "ALT?";
+      altBadge.title = `Possible shared-IP alts: ${(user.possibleAlts || [])
+        .map((alt) => alt.username)
+        .join(", ")}`;
+      nameRow.append(altBadge);
+    }
+
     copy.append(nameRow);
 
     const kickId = document.createElement("span");
@@ -197,6 +266,28 @@ function renderAccounts(users) {
       : `Kick ID ${user.kickUserId}`;
 
     copy.append(kickId);
+
+    if ((user.possibleAlts || []).length > 0) {
+      const alts = document.createElement("p");
+      alts.className = "accounts-alt-note";
+      alts.textContent = `Possible alts: ${(user.possibleAlts || [])
+        .map((alt) => `${alt.username} (${alt.sharedIps.join(", ")})`)
+        .join(" · ")}`;
+      copy.append(alts);
+    }
+
+    if (user.lastLoginIp) {
+      const ipNote = document.createElement("p");
+      ipNote.className = "accounts-ip-note";
+      const recent = (user.loginHistory || []).slice(-3).reverse();
+      ipNote.textContent = recent.length
+        ? `Recent IPs: ${recent
+            .map((entry) => `${entry.ip} · ${formatDateTime(entry.at)}`)
+            .join(" · ")}`
+        : `Last IP: ${user.lastLoginIp}`;
+      copy.append(ipNote);
+    }
+
     player.append(copy);
 
     const meta = document.createElement("div");
@@ -217,6 +308,7 @@ function renderAccounts(users) {
 }
 
 function renderFilteredAccounts() {
+  renderAltClusters();
   renderAccounts(filterUsers(allUsers, searchQuery));
 }
 
@@ -247,6 +339,7 @@ async function loadAccounts() {
     }
 
     allUsers = data.users || [];
+    altClusters = data.altClusters || [];
     setAccountsStatus("");
     renderFilteredAccounts();
     updateSearchControls();
