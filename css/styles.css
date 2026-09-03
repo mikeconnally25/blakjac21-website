@@ -1735,12 +1735,17 @@ ul {
 
 .accounts-alts-ips,
 .accounts-alt-note,
-.accounts-ip-note {
+.accounts-ip-note,
+.accounts-location-note {
   margin: 0.28rem 0 0;
   color: var(--text-muted);
   font-size: 0.78rem;
   line-height: 1.35;
   overflow-wrap: anywhere;
+}
+
+.accounts-location-note {
+  color: var(--accent-bright);
 }
 
 .accounts-alt-note {

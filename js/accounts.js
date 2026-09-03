@@ -89,8 +89,17 @@ function filterUsers(users, query) {
     const kickUserId = String(user.kickUserId || "").toLowerCase();
     const stakeUsername = String(user.stakeUsername || "").toLowerCase();
     const lastLoginIp = String(user.lastLoginIp || "").toLowerCase();
+    const lastLoginLocation = String(user.lastLoginLocation || "").toLowerCase();
     const historyIps = (user.loginHistory || [])
       .map((entry) => String(entry.ip || "").toLowerCase())
+      .join(" ");
+    const historyPlaces = (user.loginHistory || [])
+      .map((entry) =>
+        [entry.city, entry.region, entry.country]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+      )
       .join(" ");
     const altNames = (user.possibleAlts || [])
       .map((alt) => String(alt.username || "").toLowerCase())
@@ -101,7 +110,9 @@ function filterUsers(users, query) {
       kickUserId.includes(term) ||
       stakeUsername.includes(term) ||
       lastLoginIp.includes(term) ||
+      lastLoginLocation.includes(term) ||
       historyIps.includes(term) ||
+      historyPlaces.includes(term) ||
       altNames.includes(term)
     );
   });
@@ -276,15 +287,30 @@ function renderAccounts(users) {
       copy.append(alts);
     }
 
-    if (user.lastLoginIp) {
+    const latest = (user.loginHistory || [])[user.loginHistory.length - 1];
+    if (user.lastLoginLocation || user.lastLoginIp || latest?.ip) {
+      const locationNote = document.createElement("p");
+      locationNote.className = "accounts-location-note";
+      locationNote.textContent = user.lastLoginLocation
+        ? `Last login from ${user.lastLoginLocation}${
+            user.lastLoginIp ? ` · ${user.lastLoginIp}` : ""
+          }`
+        : `Last login IP ${user.lastLoginIp || latest.ip}`;
+      copy.append(locationNote);
+    }
+
+    if ((user.loginHistory || []).length > 1) {
       const ipNote = document.createElement("p");
       ipNote.className = "accounts-ip-note";
       const recent = (user.loginHistory || []).slice(-3).reverse();
-      ipNote.textContent = recent.length
-        ? `Recent IPs: ${recent
-            .map((entry) => `${entry.ip} · ${formatDateTime(entry.at)}`)
-            .join(" · ")}`
-        : `Last IP: ${user.lastLoginIp}`;
+      ipNote.textContent = `Recent: ${recent
+        .map((entry) => {
+          const place = [entry.city, entry.region, entry.country]
+            .filter(Boolean)
+            .join(", ");
+          return `${place || entry.ip} · ${formatDateTime(entry.at)}`;
+        })
+        .join(" · ")}`;
       copy.append(ipNote);
     }
 
@@ -295,6 +321,10 @@ function renderAccounts(users) {
     meta.append(
       createMetaItem("Joined", formatDate(user.createdAt)),
       createMetaItem("Last login", formatDate(user.lastLoginAt)),
+      createMetaItem(
+        "Last from",
+        user.lastLoginLocation || user.lastLoginIp || "—"
+      ),
       createMetaItem(
         "Stake linked",
         user.stakeLinkedAt ? formatDate(user.stakeLinkedAt) : "Not linked"
