@@ -2731,15 +2731,19 @@ ul {
 .hunt-bonus-card {
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr) auto;
-  gap: 0.7rem;
+  gap: 0.35rem 0.55rem;
   align-items: center;
-  padding: 0.7rem 0.15rem;
+  padding: 0.4rem 0.1rem;
   border-radius: 0;
   border: 0;
   border-bottom: 1px solid rgba(88, 201, 243, 0.08);
   background: transparent;
   transition: background-color 0.15s ease;
   animation: hunt-card-in 0.3s ease both;
+}
+
+.hunt-bonus-card:has(.hunt-bonus-admin) {
+  grid-template-columns: auto auto minmax(0, 1fr) auto auto;
 }
 
 @keyframes hunt-card-in {
@@ -2768,9 +2772,9 @@ ul {
 }
 
 .hunt-bonus-index {
-  min-width: 1.35rem;
+  min-width: 1.2rem;
   color: var(--text-muted);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.06em;
 }
@@ -2778,10 +2782,10 @@ ul {
 .hunt-bonus-avatar {
   display: grid;
   place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 0.65rem;
-  font-size: 0.72rem;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 0.4rem;
+  font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: #fff;
@@ -2807,31 +2811,35 @@ ul {
 
 .hunt-bonus-slot {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--text);
-  line-height: 1.3;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hunt-bonus-provider {
-  margin: 0.18rem 0 0;
+  margin: 0.05rem 0 0;
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: 0.74rem;
+  line-height: 1.2;
 }
 
 .hunt-bonus-result {
   display: grid;
   justify-items: end;
-  gap: 0.18rem;
+  gap: 0.08rem;
   text-align: right;
+  min-width: 4.5rem;
 }
 
 .hunt-bonus-payout {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--text);
+  line-height: 1.2;
 }
 
 .hunt-bonus-payout.is-win {
@@ -2841,10 +2849,10 @@ ul {
 .hunt-bonus-multiplier {
   display: inline-flex;
   align-items: center;
-  padding: 0.12rem 0.45rem;
+  padding: 0.08rem 0.35rem;
   border-radius: 999px;
   color: var(--text-muted);
-  font-size: 0.76rem;
+  font-size: 0.68rem;
   font-weight: 700;
   background: rgba(88, 201, 243, 0.08);
 }
@@ -2856,7 +2864,7 @@ ul {
 
 .hunt-bonus-pending {
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -2867,12 +2875,37 @@ ul {
 }
 
 .hunt-bonus-admin {
-  grid-column: 1 / -1;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  padding-top: 0.55rem;
-  border-top: 1px solid rgba(88, 201, 243, 0.08);
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.hunt-bonus-admin .bonus-payout-field {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.hunt-bonus-admin .bonus-payout-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.hunt-bonus-admin .bonus-payout-input {
+  width: 5rem;
+  padding: 0.28rem 0.4rem;
+  font-size: 0.8rem;
+  border-radius: 0.35rem;
+}
+
+.hunt-bonus-admin .btn {
+  padding: 0.28rem 0.65rem;
+  font-size: 0.7rem;
+  white-space: nowrap;
 }
 
 .hunt-admin-card,
@@ -3996,13 +4029,12 @@ ul {
     grid-template-columns: 1fr;
   }
 
-  .hunt-bonus-card {
-    grid-template-columns: auto minmax(0, 1fr);
+  .hunt-bonus-card,
+  .hunt-bonus-card:has(.hunt-bonus-admin) {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
     grid-template-areas:
-      "index main"
-      "avatar main"
-      "result result"
-      "admin admin";
+      "index avatar main result"
+      "admin admin admin admin";
   }
 
   .hunt-bonus-index {
@@ -4020,12 +4052,19 @@ ul {
 
   .hunt-bonus-result {
     grid-area: result;
-    justify-items: start;
-    text-align: left;
   }
 
   .hunt-bonus-admin {
     grid-area: admin;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    padding-top: 0.2rem;
+  }
+
+  .hunt-bonus-slot {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .bonus-hunt-page .hunt-settings-row {
