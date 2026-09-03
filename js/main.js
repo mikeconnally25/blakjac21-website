@@ -110,18 +110,59 @@ function showOfflineState() {
 }
 
 async function fetchKickJson(path) {
-  const response = await fetch(`https://kick.com/api/v2/channels/${KICK_USERNAME}${path}`);
+  const url = new URL(`https://kick.com/api/v2/channels/${KICK_USERNAME}${path}`);
+  // Kick sends Cache-Control: max-age=14400; bypass so latest VOD stays fresh.
+  url.searchParams.set("_ts", String(Date.now()));
+
+  const response = await fetch(url.toString(), { cache: "no-store" });
   if (!response.ok) throw new Error(`Kick API failed: ${path}`);
   return response.json();
 }
 
-function getLatestPublicVod(videos) {
-  if (!Array.isArray(videos)) return null;
+function getVodTimestamp(item) {
+  const candidates = [
+    item?.start_time,
+    item?.created_at,
+    item?.video?.created_at,
+    item?.video?.updated_at,
+  ];
 
-  return videos.find((item) => {
-    const video = item?.video;
-    return item?.source && video && !video.is_private && video.status === "public";
-  }) || null;
+  for (const raw of candidates) {
+    if (!raw) continue;
+    const normalized = String(raw).trim().replace(" ", "T");
+    const withZone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalized)
+      ? normalized
+      : `${normalized}Z`;
+    const time = Date.parse(withZone);
+    if (Number.isFinite(time)) return time;
+  }
+
+  return 0;
+}
+
+function normalizeVideosPayload(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.videos)) return payload.videos;
+  return [];
+}
+
+function getLatestPublicVod(videos) {
+  const entries = normalizeVideosPayload(videos)
+    .filter((item) => {
+      const video = item?.video;
+      return (
+        Boolean(item?.source) &&
+        Boolean(video) &&
+        !video.is_private &&
+        !video.is_pruned &&
+        !video.deleted_at &&
+        video.status === "public"
+      );
+    })
+    .sort((a, b) => getVodTimestamp(b) - getVodTimestamp(a));
+
+  return entries[0] || null;
 }
 
 async function loadPlayer() {
