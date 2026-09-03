@@ -3283,6 +3283,16 @@ ul {
   line-height: 1.2;
 }
 
+.hunt-bonus-requester {
+  margin: 0.05rem 0 0;
+  color: var(--accent-bright);
+  font-size: 0.72rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .hunt-bonus-result {
   display: grid;
   justify-items: end;

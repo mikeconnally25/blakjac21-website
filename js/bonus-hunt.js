@@ -365,7 +365,8 @@ function bonusesUnchanged(previous, next) {
       current.payout !== incoming.payout ||
       current.bet !== incoming.bet ||
       current.slot !== incoming.slot ||
-      current.thumbnailUrl !== incoming.thumbnailUrl
+      current.thumbnailUrl !== incoming.thumbnailUrl ||
+      current.requestedBy !== incoming.requestedBy
     ) {
       return false;
     }
@@ -511,6 +512,13 @@ function renderBonusList(bonuses) {
     provider.textContent = `Bet ${formatCurrency(bonus.bet)}`;
 
     main.append(slot, provider);
+
+    if (bonus.requestedBy) {
+      const requester = document.createElement("p");
+      requester.className = "hunt-bonus-requester";
+      requester.textContent = `by ${bonus.requestedBy}`;
+      main.append(requester);
+    }
 
     const result = document.createElement("div");
     result.className = "hunt-bonus-result";
@@ -865,9 +873,17 @@ async function loadBonusHunt() {
   }
 }
 
-async function addBonusToHunt({ slot, bet, slotSlug, thumbnailUrl, provider } = {}) {
+async function addBonusToHunt({
+  slot,
+  bet,
+  slotSlug,
+  thumbnailUrl,
+  provider,
+  requestedBy,
+} = {}) {
   const slotName = slot?.trim();
   const betAmount = Number(bet);
+  const requester = String(requestedBy || "").trim();
 
   if (!slotName) {
     setStatus("Enter a slot name.", "error");
@@ -892,6 +908,7 @@ async function addBonusToHunt({ slot, bet, slotSlug, thumbnailUrl, provider } = 
         slotSlug: slotSlug || undefined,
         thumbnailUrl: thumbnailUrl || undefined,
         provider: provider || undefined,
+        requestedBy: requester || undefined,
       }),
     });
 
@@ -942,12 +959,20 @@ async function submitBonusAddForm({
   slotSlug,
   thumbnailUrl,
   provider,
+  requestedBy,
 } = {}) {
   if (button) {
     button.disabled = true;
   }
 
-  const bonus = await addBonusToHunt({ slot, bet, slotSlug, thumbnailUrl, provider });
+  const bonus = await addBonusToHunt({
+    slot,
+    bet,
+    slotSlug,
+    thumbnailUrl,
+    provider,
+    requestedBy,
+  });
   if (bonus) {
     scrollToBonusCard(bonus.id);
   }
@@ -1573,6 +1598,7 @@ function renderSlotRequests(requests) {
           thumbnailUrl: getSlotRequestThumbnail(request, catalogSlot),
           provider: getSlotRequestProvider(request, catalogSlot),
           bet: betValue,
+          requestedBy: request.username,
         });
 
         if (bonus) {
