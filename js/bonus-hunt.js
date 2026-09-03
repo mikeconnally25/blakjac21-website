@@ -2111,7 +2111,9 @@ function initAdminForm() {
     try {
       await setAcceptingRequests(nextAccepting);
       setStatus(
-        acceptingRequests ? "Now collecting slot requests." : "Slot requests closed for now.",
+        acceptingRequests
+          ? "Now collecting slot requests. Announced in Kick chat."
+          : "Slot requests closed for now.",
         "success"
       );
     } catch (error) {
@@ -2131,7 +2133,9 @@ function initAdminForm() {
     try {
       await setAcceptingRequests(nextAccepting);
       setStatus(
-        acceptingRequests ? "Slot requests are now open." : "Slot requests are now closed.",
+        acceptingRequests
+          ? "Slot requests are now open. Announced in Kick chat."
+          : "Slot requests are now closed.",
         "success"
       );
     } catch {
