@@ -398,6 +398,57 @@ function updateBonusList(bonuses, { force = false, previous = huntBonuses } = {}
   bonusListRenderedAsAdmin = asAdmin;
 }
 
+function syncBonusListViewport() {
+  const list = document.getElementById("bonus-list");
+  if (!list || list.classList.contains("is-hidden")) {
+    return;
+  }
+
+  const cards = [...list.querySelectorAll(".hunt-bonus-card")];
+  if (cards.length <= 5) {
+    list.style.maxHeight = "";
+    list.classList.remove("is-scrollable");
+    return;
+  }
+
+  const first = cards[0];
+  const fifth = cards[4];
+  const height = fifth.offsetTop + fifth.offsetHeight - first.offsetTop;
+  list.style.maxHeight = `${Math.ceil(height)}px`;
+  list.classList.add("is-scrollable");
+}
+
+function getNextPendingBonusId(currentId) {
+  const index = huntBonuses.findIndex((bonus) => bonus.id === currentId);
+  if (index < 0) {
+    return null;
+  }
+
+  for (let offset = index + 1; offset < huntBonuses.length; offset += 1) {
+    if (huntBonuses[offset].status === "pending") {
+      return huntBonuses[offset].id;
+    }
+  }
+
+  return null;
+}
+
+function focusBonusPayoutInput(bonusId) {
+  if (!bonusId) {
+    return;
+  }
+
+  const card = document.querySelector(`.hunt-bonus-card[data-id="${CSS.escape(bonusId)}"]`);
+  const input = card?.querySelector(".bonus-payout-input");
+  if (!input) {
+    return;
+  }
+
+  card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  input.focus({ preventScroll: true });
+  input.select();
+}
+
 function renderBonusList(bonuses) {
   const list = document.getElementById("bonus-list");
   const empty = document.getElementById("bonus-empty");
@@ -565,6 +616,10 @@ function renderBonusList(bonuses) {
     }
 
     list.append(item);
+  });
+
+  requestAnimationFrame(() => {
+    syncBonusListViewport();
   });
 }
 
@@ -1836,8 +1891,13 @@ async function saveBonusPayout(id, rawPayout, button) {
     }
 
     setStatus("Win saved.", "success");
+    const nextPendingId = getNextPendingBonusId(id);
     bonusPayoutDrafts.delete(id);
+    if (document.activeElement?.classList?.contains("bonus-payout-input")) {
+      document.activeElement.blur();
+    }
     await loadBonusHunt();
+    focusBonusPayoutInput(nextPendingId);
   } catch {
     setStatus("Could not save payout. Try again.", "error");
   } finally {
@@ -1995,7 +2055,8 @@ function initAdminForm() {
       huntMeta = data.hunt || huntMeta;
       renderHuntHeader(huntMeta);
       renderSummary(data.summary, huntMeta);
-      renderBonusList(data.bonuses || []);
+      huntBonuses = data.bonuses || [];
+      updateBonusList(huntBonuses, { force: true });
       setStatus("Hunt ended and saved to past hunts.", "success");
       await loadPastHunts();
     } catch {

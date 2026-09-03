@@ -2727,6 +2727,28 @@ ul {
   list-style: none;
   display: grid;
   gap: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding-right: 0.35rem;
+}
+
+.hunt-bonus-grid::-webkit-scrollbar {
+  width: 0.45rem;
+}
+
+.hunt-bonus-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hunt-bonus-grid::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(88, 201, 243, 0.28);
+}
+
+.hunt-bonus-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(88, 201, 243, 0.45);
 }
 
 .hunt-bonus-card {
