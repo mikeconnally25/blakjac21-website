@@ -4910,7 +4910,12 @@ ul {
 
 /* Menu */
 .menu {
-  padding-top: 1rem;
+  padding-top: 2.5rem;
+  padding-bottom: 2rem;
+}
+
+.home-page .hero {
+  padding-top: 1.5rem;
 }
 
 .menu-grid {
