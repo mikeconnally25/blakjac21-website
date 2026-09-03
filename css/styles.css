@@ -589,6 +589,72 @@ ul {
   pointer-events: none;
 }
 
+/* BJ21 Menu theme — reusable panel surface */
+.bj21-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: calc(var(--radius) + 2px);
+  border: 1px solid rgba(88, 201, 243, 0.16);
+  background:
+    linear-gradient(155deg, rgba(18, 31, 43, 0.92), rgba(6, 12, 18, 0.88));
+  box-shadow: var(--shadow-card);
+}
+
+.bj21-panel::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #7ed8ff, rgba(88, 201, 243, 0.15));
+  opacity: 0.75;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.bj21-panel-glow {
+  position: absolute;
+  right: -18%;
+  top: -35%;
+  width: 12rem;
+  height: 12rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(88, 201, 243, 0.18), transparent 68%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bj21-panel > *:not(.bj21-panel-glow) {
+  position: relative;
+  z-index: 1;
+}
+
+.bj21-panel-inset {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 1rem 1.05rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(88, 201, 243, 0.14);
+  background:
+    linear-gradient(155deg, rgba(14, 24, 34, 0.88), rgba(6, 12, 18, 0.84));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.bj21-panel-inset::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #7ed8ff, rgba(88, 201, 243, 0.15));
+  opacity: 0.65;
+  pointer-events: none;
+}
+
 .page-section {
   padding-top: 3rem;
   min-height: calc(100vh - var(--header-height) - 12rem);
@@ -2822,6 +2888,11 @@ ul {
   padding-top: 2rem;
 }
 
+.bonus-hunt-page > .container {
+  position: relative;
+  z-index: 1;
+}
+
 .bonus-hunt-page .page-content {
   width: min(100% - 2rem, 84rem);
   max-width: none;
@@ -2884,24 +2955,8 @@ ul {
   isolation: isolate;
   overflow: hidden;
   margin-bottom: 0;
-  padding: 1.1rem 1.25rem 1.1rem 1.4rem;
-  border-radius: calc(var(--radius) + 2px);
-  border: 1px solid rgba(88, 201, 243, 0.16);
-  background: var(--bg-card-rich);
-  box-shadow: var(--shadow-card);
+  padding: 1.2rem 1.3rem 1.2rem 1.45rem;
   backdrop-filter: blur(14px);
-}
-
-.hunt-tracker::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: linear-gradient(180deg, #7ed8ff, rgba(88, 201, 243, 0.15));
-  opacity: 0.75;
-  pointer-events: none;
 }
 
 .hunt-tracker-glow {
@@ -2920,10 +2975,15 @@ ul {
 .hunt-title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(1.55rem, 3.5vw, 2rem);
-  line-height: 1.05;
-  letter-spacing: 0.02em;
-  color: var(--text);
+  font-size: clamp(1.7rem, 3.5vw, 2.2rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--heading-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   overflow-wrap: anywhere;
 }
 
@@ -3033,25 +3093,28 @@ ul {
   align-content: center;
   min-height: 4.35rem;
   padding: 0.75rem 0.65rem;
-  border: 1px solid rgba(88, 201, 243, 0.1);
+  border: 1px solid rgba(88, 201, 243, 0.14);
   border-radius: 12px;
   background:
-    linear-gradient(180deg, rgba(22, 30, 40, 0.92), rgba(10, 14, 20, 0.94));
+    linear-gradient(155deg, rgba(18, 31, 43, 0.88), rgba(6, 12, 18, 0.84));
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
   overflow: hidden;
   text-align: center;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .hunt-stat:last-child {
-  border-right: 1px solid rgba(88, 201, 243, 0.1);
+  border-right: 1px solid rgba(88, 201, 243, 0.14);
 }
 
 .hunt-stat:hover {
   transform: none;
-  border-color: rgba(88, 201, 243, 0.22);
+  border-color: rgba(126, 216, 255, 0.35);
   background:
-    linear-gradient(180deg, rgba(26, 36, 48, 0.96), rgba(12, 16, 22, 0.96));
+    linear-gradient(155deg, rgba(22, 36, 48, 0.94), rgba(8, 14, 20, 0.9));
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.24),
+    0 0 0 1px rgba(88, 201, 243, 0.06);
 }
 
 .hunt-stat--profit .hunt-stat-value.is-positive {
@@ -3150,11 +3213,15 @@ ul {
 
 .hunt-bonus-section-header h4 {
   margin: 0;
-  font-size: 0.72rem;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  background: var(--heading-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .hunt-bonus-section-header span {
@@ -3430,20 +3497,50 @@ ul {
 
 .hunt-admin-card,
 .hunt-side-card {
-  border-radius: calc(var(--radius) + 2px);
-  border: 1px solid rgba(88, 201, 243, 0.12);
-  background:
-    linear-gradient(180deg, rgba(16, 24, 34, 0.82), rgba(8, 12, 18, 0.78));
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
   backdrop-filter: blur(14px);
 }
 
-.bonus-hunt-page .hunt-admin-card {
-  padding: 1.05rem 1.15rem;
+.bonus-hunt-page .hunt-admin-card,
+.bonus-hunt-page .hunt-side-card {
+  padding: 1.2rem 1.25rem 1.2rem 1.4rem;
 }
 
-.bonus-hunt-page .hunt-side-card {
-  padding: 1.05rem 1.15rem;
+.bonus-hunt-page .admin-panel.bj21-panel {
+  background:
+    linear-gradient(155deg, rgba(18, 31, 43, 0.92), rgba(6, 12, 18, 0.88));
+  border-color: rgba(88, 201, 243, 0.16);
+  box-shadow: var(--shadow-card);
+}
+
+.bonus-hunt-page .admin-panel.bj21-panel::before {
+  /* keep a single accent from bj21-panel */
+  opacity: 0.75;
+}
+
+.hunt-admin-title,
+.hunt-overlay-title,
+.requests-hub-title,
+.past-hunts-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 3vw, 1.95rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  background: var(--heading-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hunt-admin-header {
+  margin-bottom: 0.85rem;
+}
+
+.hunt-admin-header .admin-panel-text,
+.hunt-overlay-admin-header .admin-panel-text {
+  margin-top: 0.4rem;
 }
 
 .bonus-hunt-page .hunt-settings-row {
@@ -3663,8 +3760,10 @@ ul {
 
 .hunt-overlay-admin {
   margin-top: 0.95rem;
-  padding-top: 0.95rem;
-  border-top: 1px solid var(--border);
+}
+
+.hunt-overlay-admin.bj21-panel-inset {
+  margin-top: 1rem;
 }
 
 .hunt-overlay-admin-header {
@@ -3814,13 +3913,6 @@ ul {
   text-transform: uppercase;
 }
 
-.requests-hub-title {
-  margin: 0;
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
 .requests-hub-meta {
   display: grid;
   justify-items: end;
@@ -3860,10 +3952,26 @@ ul {
 }
 
 .requests-hub-command {
-  padding: 0.7rem 0.8rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(88, 201, 243, 0.12);
-  background: rgba(8, 12, 18, 0.45);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 0.85rem 0.95rem 0.85rem 1.05rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(88, 201, 243, 0.14);
+  background:
+    linear-gradient(155deg, rgba(14, 24, 34, 0.9), rgba(6, 12, 18, 0.86));
+}
+
+.requests-hub-command::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #7ed8ff, rgba(88, 201, 243, 0.15));
+  opacity: 0.55;
+  pointer-events: none;
 }
 
 .requests-hub-command-label {
@@ -3964,10 +4072,11 @@ ul {
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
-  padding: 0.85rem 0.95rem;
-  border-radius: var(--radius-sm);
+  padding: 0.85rem 0.95rem 0.85rem 1.05rem;
+  border-radius: calc(var(--radius-sm) + 2px);
   border: 1px solid rgba(88, 201, 243, 0.14);
-  background: rgba(8, 12, 18, 0.55);
+  background:
+    linear-gradient(155deg, rgba(14, 24, 34, 0.9), rgba(6, 12, 18, 0.86));
 }
 
 .requests-hub-kick-title {
@@ -4273,12 +4382,6 @@ ul {
   text-transform: uppercase;
 }
 
-.past-hunts-title {
-  margin: 0;
-  font-size: 1.15rem;
-  font-weight: 700;
-}
-
 .past-hunts-count {
   color: var(--text-muted);
   font-size: 0.8rem;
@@ -4306,9 +4409,10 @@ ul {
 }
 
 .past-hunt-entry {
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(88, 201, 243, 0.1);
-  background: rgba(8, 12, 18, 0.4);
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(88, 201, 243, 0.14);
+  background:
+    linear-gradient(155deg, rgba(14, 24, 34, 0.88), rgba(6, 12, 18, 0.84));
   overflow: hidden;
 }
 

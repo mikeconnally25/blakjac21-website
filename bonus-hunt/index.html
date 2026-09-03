@@ -57,6 +57,7 @@
     <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
 
     <section class="section page-section bonus-hunt-page">
+      <div class="section-atmosphere" aria-hidden="true"></div>
       <div class="container page-content bonus-hunt-layout">
         <a href="/#menu" class="back-link">← Back to menu</a>
 
@@ -68,9 +69,11 @@
 
         <div class="hunt-layout-grid">
           <div class="hunt-layout-main">
-            <div class="hunt-tracker" id="hunt-tracker">
+            <div class="hunt-tracker bj21-panel" id="hunt-tracker">
+              <span class="bj21-panel-glow" aria-hidden="true"></span>
               <div class="hunt-tracker-top">
                 <div class="hunt-tracker-heading">
+                  <p class="section-eyebrow">Live session</p>
                   <h3 class="hunt-title" id="hunt-title">Live Hunt</h3>
                 </div>
                 <button
@@ -155,10 +158,11 @@
               </div>
             </div>
 
-            <div class="requests-hub hunt-side-card" id="slot-requests-panel">
+            <div class="requests-hub hunt-side-card bj21-panel" id="slot-requests-panel">
+              <span class="bj21-panel-glow" aria-hidden="true"></span>
               <div class="requests-hub-header">
                 <div>
-                  <p class="requests-hub-eyebrow">Viewer requests</p>
+                  <p class="section-eyebrow">Viewer requests</p>
                   <h3 class="requests-hub-title">Slot queue</h3>
                 </div>
                 <div class="requests-hub-meta">
@@ -242,11 +246,13 @@
               </div>
             </div>
 
-            <div class="admin-panel hunt-admin-card is-hidden" id="bonus-hunt-admin">
+            <div class="admin-panel hunt-admin-card bj21-panel is-hidden" id="bonus-hunt-admin">
+              <span class="bj21-panel-glow" aria-hidden="true"></span>
               <div class="admin-panel-section">
                 <div class="hunt-admin-header">
                   <div>
-                    <p class="admin-panel-label">Streamer controls</p>
+                    <p class="section-eyebrow">Streamer controls</p>
+                    <h3 class="hunt-admin-title">Hunt tools</h3>
                     <p class="admin-panel-text">Log buys, save payouts, and manage the hunt.</p>
                   </div>
                 </div>
@@ -293,10 +299,11 @@
               </button>
             </div>
 
-            <section class="hunt-overlay-admin" id="hunt-overlay-admin" aria-labelledby="hunt-overlay-heading">
+            <section class="hunt-overlay-admin bj21-panel-inset" id="hunt-overlay-admin" aria-labelledby="hunt-overlay-heading">
               <div class="hunt-overlay-admin-header">
                 <div>
-                  <p class="admin-panel-label" id="hunt-overlay-heading">OBS overlay</p>
+                  <p class="section-eyebrow" id="hunt-overlay-heading">OBS overlay</p>
+                  <h3 class="hunt-overlay-title">Stream preview</h3>
                   <p class="admin-panel-text">
                     Live preview of your stream overlay. Copy the URL into an OBS Browser Source.
                   </p>
@@ -334,10 +341,11 @@
               </div>
             </div>
 
-            <section class="past-hunts-card hunt-side-card" id="past-hunts-section" aria-labelledby="past-hunts-heading">
+            <section class="past-hunts-card hunt-side-card bj21-panel" id="past-hunts-section" aria-labelledby="past-hunts-heading">
+              <span class="bj21-panel-glow" aria-hidden="true"></span>
               <div class="past-hunts-header">
                 <div>
-                  <p class="past-hunts-eyebrow">Archive</p>
+                  <p class="section-eyebrow">Archive</p>
                   <h3 class="past-hunts-title" id="past-hunts-heading">Past hunts</h3>
                 </div>
                 <span class="past-hunts-count" id="past-hunts-count">0 hunts</span>
