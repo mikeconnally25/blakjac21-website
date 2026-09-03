@@ -287,33 +287,6 @@ function renderAccounts(users) {
       copy.append(alts);
     }
 
-    const latest = (user.loginHistory || [])[user.loginHistory.length - 1];
-    if (user.lastLoginLocation || user.lastLoginIp || latest?.ip) {
-      const locationNote = document.createElement("p");
-      locationNote.className = "accounts-location-note";
-      locationNote.textContent = user.lastLoginLocation
-        ? `Last login from ${user.lastLoginLocation}${
-            user.lastLoginIp ? ` · ${user.lastLoginIp}` : ""
-          }`
-        : `Last login IP ${user.lastLoginIp || latest.ip}`;
-      copy.append(locationNote);
-    }
-
-    if ((user.loginHistory || []).length > 1) {
-      const ipNote = document.createElement("p");
-      ipNote.className = "accounts-ip-note";
-      const recent = (user.loginHistory || []).slice(-3).reverse();
-      ipNote.textContent = `Recent: ${recent
-        .map((entry) => {
-          const place = [entry.city, entry.region, entry.country]
-            .filter(Boolean)
-            .join(", ");
-          return `${place || entry.ip} · ${formatDateTime(entry.at)}`;
-        })
-        .join(" · ")}`;
-      copy.append(ipNote);
-    }
-
     player.append(copy);
 
     const meta = document.createElement("div");
@@ -331,7 +304,88 @@ function renderAccounts(users) {
       )
     );
 
-    main.append(player, meta);
+    const details = document.createElement("details");
+    details.className = "accounts-login-details";
+
+    const summary = document.createElement("summary");
+    summary.className = "accounts-login-summary";
+    summary.textContent = user.registrationIp
+      ? "Login IPs"
+      : "Login IPs (none recorded yet)";
+
+    const detailsBody = document.createElement("div");
+    detailsBody.className = "accounts-login-body";
+
+    const registerRow = document.createElement("div");
+    registerRow.className = "accounts-login-row";
+
+    const registerLabel = document.createElement("span");
+    registerLabel.className = "accounts-login-label";
+    registerLabel.textContent = "Registered with";
+
+    const registerValue = document.createElement("span");
+    registerValue.className = "accounts-login-value";
+    if (user.registrationIp) {
+      const place = user.registrationLocation
+        ? `${user.registrationLocation} · `
+        : "";
+      registerValue.textContent = `${place}${user.registrationIp}${
+        user.registrationAt ? ` · ${formatDateTime(user.registrationAt)}` : ""
+      }`;
+    } else {
+      registerValue.textContent =
+        "No registration IP yet. It is saved the next time this account signs in with Kick.";
+    }
+
+    registerRow.append(registerLabel, registerValue);
+    detailsBody.append(registerRow);
+
+    if (user.lastLoginIp) {
+      const lastRow = document.createElement("div");
+      lastRow.className = "accounts-login-row";
+
+      const lastLabel = document.createElement("span");
+      lastLabel.className = "accounts-login-label";
+      lastLabel.textContent = "Last login";
+
+      const lastValue = document.createElement("span");
+      lastValue.className = "accounts-login-value";
+      const place = user.lastLoginLocation ? `${user.lastLoginLocation} · ` : "";
+      lastValue.textContent = `${place}${user.lastLoginIp}${
+        user.lastLoginAt ? ` · ${formatDateTime(user.lastLoginAt)}` : ""
+      }`;
+
+      lastRow.append(lastLabel, lastValue);
+      detailsBody.append(lastRow);
+    }
+
+    const history = user.loginHistory || [];
+    if (history.length > 0) {
+      const historyLabel = document.createElement("p");
+      historyLabel.className = "accounts-login-history-label";
+      historyLabel.textContent = "Login history";
+      detailsBody.append(historyLabel);
+
+      const historyList = document.createElement("ul");
+      historyList.className = "accounts-login-history";
+
+      [...history].reverse().forEach((entry) => {
+        const historyItem = document.createElement("li");
+        const place = [entry.city, entry.region, entry.country]
+          .filter(Boolean)
+          .join(", ");
+        historyItem.textContent = `${entry.ip}${
+          place ? ` · ${place}` : ""
+        } · ${formatDateTime(entry.at)}`;
+        historyList.append(historyItem);
+      });
+
+      detailsBody.append(historyList);
+    }
+
+    details.append(summary, detailsBody);
+
+    main.append(player, meta, details);
     item.append(rank, main);
     list.append(item);
   });
