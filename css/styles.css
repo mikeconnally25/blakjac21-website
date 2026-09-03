@@ -993,9 +993,53 @@ ul {
   background: linear-gradient(180deg, rgba(205, 127, 50, 0.32), rgba(205, 127, 50, 0.06));
 }
 
-.leaderboard-page .podium-medal {
-  font-size: 2.1rem;
+.leaderboard-page .podium-trophy {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3.35rem;
+  height: 4rem;
+  margin: 0 auto 0.15rem;
+  color: #cd7f32;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.28));
+}
+
+.leaderboard-page .podium-slot.place-1 .podium-trophy {
+  width: 4rem;
+  height: 4.75rem;
+  color: #ffd666;
+  filter: drop-shadow(0 8px 18px rgba(255, 214, 102, 0.28));
+}
+
+.leaderboard-page .podium-slot.place-2 .podium-trophy {
+  width: 3.55rem;
+  height: 4.25rem;
+  color: #c8d0da;
+  filter: drop-shadow(0 6px 14px rgba(192, 202, 214, 0.22));
+}
+
+.leaderboard-page .podium-trophy-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.leaderboard-page .podium-trophy-place {
+  position: absolute;
+  top: 22%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
   line-height: 1;
+  letter-spacing: 0.02em;
+  color: #0a0f14;
+  pointer-events: none;
+}
+
+.leaderboard-page .podium-slot.place-1 .podium-trophy-place {
+  top: 24%;
+  font-size: 1.55rem;
 }
 
 .leaderboard-page .podium-user {
@@ -1153,8 +1197,27 @@ ul {
     gap: 0.55rem;
   }
 
-  .leaderboard-page .podium-medal {
-    font-size: 1.55rem;
+  .leaderboard-page .podium-trophy {
+    width: 2.7rem;
+    height: 3.25rem;
+  }
+
+  .leaderboard-page .podium-slot.place-1 .podium-trophy {
+    width: 3.2rem;
+    height: 3.8rem;
+  }
+
+  .leaderboard-page .podium-slot.place-2 .podium-trophy {
+    width: 2.9rem;
+    height: 3.45rem;
+  }
+
+  .leaderboard-page .podium-trophy-place {
+    font-size: 1.1rem;
+  }
+
+  .leaderboard-page .podium-slot.place-1 .podium-trophy-place {
+    font-size: 1.25rem;
   }
 
   .leaderboard-page .podium-prize {

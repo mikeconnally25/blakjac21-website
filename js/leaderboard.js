@@ -77,6 +77,44 @@ function setLeaderboardStatus(message, tone = "") {
   status.classList.toggle("is-error", tone === "error");
 }
 
+function createPodiumTrophy(place) {
+  const trophy = document.createElement("span");
+  trophy.className = "podium-trophy";
+  trophy.setAttribute("aria-label", formatPlace(place));
+
+  trophy.innerHTML = `
+    <svg class="podium-trophy-icon" viewBox="0 0 80 96" aria-hidden="true" focusable="false">
+      <path
+        class="podium-trophy-handle"
+        d="M20 24c-9 1-15 8-15 17 0 10 7 17 16 18"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="5"
+        stroke-linecap="round"
+      />
+      <path
+        class="podium-trophy-handle"
+        d="M60 24c9 1 15 8 15 17 0 10-7 17-16 18"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="5"
+        stroke-linecap="round"
+      />
+      <path
+        d="M24 16h32c1 0 2 1 2 2v8c0 15-8 27-18 32-10-5-18-17-18-32v-8c0-1 1-2 2-2Z"
+        fill="currentColor"
+      />
+      <rect x="20" y="10" width="40" height="9" rx="3" fill="currentColor" />
+      <rect x="37" y="56" width="6" height="16" rx="2" fill="currentColor" />
+      <path d="M30 70h20l5 8H25l5-8Z" fill="currentColor" />
+      <rect x="22" y="78" width="36" height="7" rx="2.5" fill="currentColor" />
+    </svg>
+    <span class="podium-trophy-place">${place}</span>
+  `;
+
+  return trophy;
+}
+
 function createLeaderboardPodiumSlot(place, entry) {
   const slot = document.createElement("div");
   slot.className = `podium-slot place-${place}`;
@@ -90,9 +128,7 @@ function createLeaderboardPodiumSlot(place, entry) {
   const block = document.createElement("div");
   block.className = "podium-block";
 
-  const medal = document.createElement("span");
-  medal.className = "podium-medal";
-  medal.textContent = formatPlace(place);
+  const trophy = createPodiumTrophy(place);
 
   const user = document.createElement("span");
   user.className = "podium-user";
@@ -108,7 +144,7 @@ function createLeaderboardPodiumSlot(place, entry) {
   prize.className = "podium-prize";
   prize.textContent = formatPrize(entry?.rank ?? place);
 
-  block.append(medal, user, wagered, prize);
+  block.append(trophy, user, wagered, prize);
   slot.append(block);
   return slot;
 }
