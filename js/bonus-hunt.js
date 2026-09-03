@@ -1179,32 +1179,16 @@ function updateRequestPanels() {
 }
 
 function mountSlotQueuePanel() {
-  const listWrap = document.querySelector(".hunt-admin-queue-list");
-  const adminQueue = document.getElementById("hunt-admin-queue");
   const adminTools = document.getElementById("slot-requests-admin");
-  const viewerMount = document.getElementById("slot-requests-viewer-mount");
-
-  if (!listWrap || !viewerMount || !adminQueue) {
-    return;
-  }
-
-  if (currentUser?.isAdmin) {
-    adminQueue.append(listWrap);
-    adminTools?.classList.remove("is-hidden");
-  } else {
-    viewerMount.append(listWrap);
-    adminTools?.classList.add("is-hidden");
-  }
+  adminTools?.classList.toggle("is-hidden", !currentUser?.isAdmin);
 }
 
 function updatePanels() {
   const adminPanel = document.getElementById("bonus-hunt-admin");
   const settingsForm = document.getElementById("hunt-settings-form");
-  const adminQueue = document.getElementById("hunt-admin-queue");
 
   adminPanel?.classList.toggle("is-hidden", !currentUser?.isAdmin);
   settingsForm?.classList.toggle("is-hidden", !currentUser?.isAdmin);
-  adminQueue?.classList.toggle("is-hidden", !currentUser?.isAdmin);
   mountSlotQueuePanel();
   updateRequestPanels();
   updateToggleLabel();
