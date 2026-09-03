@@ -10,236 +10,247 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body>
+<body class="home-page">
   <div class="bg-glow" aria-hidden="true"></div>
 
-  <header class="header" id="top">
-    <nav class="nav container">
-      <a href="#top" class="logo">
-        <img src="images/logo.png" alt="" class="logo-image" width="50" height="50" />
-        <span class="logo-text">Blakjac<span class="accent">21</span></span>
-      </a>
+  <div class="home-shell">
+    <div class="home-main">
+      <header class="header" id="top">
+        <nav class="nav container">
+          <a href="#top" class="logo">
+            <img src="images/logo.png" alt="" class="logo-image" width="50" height="50" />
+            <span class="logo-text">Blakjac<span class="accent">21</span></span>
+          </a>
 
-      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
+          <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
 
-      <ul class="nav-links">
-        <li><a href="#watch">Watch</a></li>
-        <li><a href="#menu">Menu</a></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#links">Links</a></li>
-        <li class="is-hidden" id="admin-nav-accounts">
-          <a href="/accounts/">Accounts</a>
-        </li>
-        <li>
-          <div class="auth-panel" id="auth-panel">
-            <div class="auth-guest" id="auth-guest">
-              <a href="/api/auth/login" class="btn btn-sm btn-kick">Sign in with Kick</a>
-            </div>
-            <div class="auth-member is-hidden" id="auth-member">
-              <div class="auth-user">
-                <img id="auth-avatar" class="auth-avatar is-hidden" alt="" width="32" height="32" />
-                <span id="auth-username" class="auth-username"></span>
-                <span id="auth-admin-badge" class="auth-admin-badge is-hidden">Admin</span>
+          <ul class="nav-links">
+            <li><a href="#watch">Watch</a></li>
+            <li><a href="#menu">Menu</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#links">Links</a></li>
+            <li class="is-hidden" id="admin-nav-accounts">
+              <a href="/accounts/">Accounts</a>
+            </li>
+            <li>
+              <div class="auth-panel" id="auth-panel">
+                <div class="auth-guest" id="auth-guest">
+                  <a href="/api/auth/login" class="btn btn-sm btn-kick">Sign in with Kick</a>
+                </div>
+                <div class="auth-member is-hidden" id="auth-member">
+                  <div class="auth-user">
+                    <img id="auth-avatar" class="auth-avatar is-hidden" alt="" width="32" height="32" />
+                    <span id="auth-username" class="auth-username"></span>
+                    <span id="auth-admin-badge" class="auth-admin-badge is-hidden">Admin</span>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline" id="auth-logout">Sign out</button>
+                </div>
               </div>
-              <button type="button" class="btn btn-sm btn-outline" id="auth-logout">Sign out</button>
+            </li>
+          </ul>
+        </nav>
+      </header>
+
+      <main>
+        <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
+
+        <section class="hero container" id="watch">
+          <div class="hero-player">
+            <div class="watch-header">
+              <h1 id="watch-title">Live Stream</h1>
+              <p id="watch-subtitle">Loading latest stream...</p>
+            </div>
+
+            <div class="player-wrap" id="player-container">
+              <iframe
+                id="kick-player"
+                class="player-frame is-hidden"
+                title="BLAKJAC21 Kick live stream"
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowfullscreen
+              ></iframe>
+              <video
+                id="vod-player"
+                class="player-frame is-hidden"
+                controls
+                playsinline
+                preload="metadata"
+              ></video>
+              <div id="player-offline" class="player-offline is-hidden">
+                <p>No stream or VOD available right now.</p>
+                <a href="https://kick.com/blakjac21" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                  Visit Channel
+                </a>
+              </div>
             </div>
           </div>
-        </li>
-      </ul>
-    </nav>
-  </header>
+        </section>
 
-  <main>
-    <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
+        <section class="menu section" id="menu">
+          <div class="container">
+            <div class="section-header">
+              <h2>Menu</h2>
+              <p>Quick links to everything BLAKJAC21. Sign in with Kick to create your account.</p>
+            </div>
 
-    <section class="hero container" id="watch">
-      <div class="watch-layout">
-        <div class="hero-player">
-          <div class="watch-header">
-            <h1 id="watch-title">Live Stream</h1>
-            <p id="watch-subtitle">Loading latest stream...</p>
-          </div>
-
-          <div class="player-wrap" id="player-container">
-            <iframe
-              id="kick-player"
-              class="player-frame is-hidden"
-              title="BLAKJAC21 Kick live stream"
-              allow="autoplay; fullscreen; picture-in-picture"
-              allowfullscreen
-            ></iframe>
-            <video
-              id="vod-player"
-              class="player-frame is-hidden"
-              controls
-              playsinline
-              preload="metadata"
-            ></video>
-            <div id="player-offline" class="player-offline is-hidden">
-              <p>No stream or VOD available right now.</p>
-              <a href="https://kick.com/blakjac21" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                Visit Channel
+            <div class="menu-grid">
+              <a href="/guess-the-balance/" class="menu-card menu-card--center">
+                <span class="menu-title">Guess the Balance</span>
+              </a>
+              <a href="/bonus-hunt/" class="menu-card menu-card--center">
+                <span class="menu-title">Bonus Hunt</span>
+              </a>
+              <a href="/leaderboard/" class="menu-card menu-card--center">
+                <span class="menu-title">Leaderboard</span>
+              </a>
+              <a href="/giveaways/" class="menu-card menu-card--center">
+                <span class="menu-title">Giveaways</span>
               </a>
             </div>
           </div>
-        </div>
+        </section>
 
-        <aside class="site-chat" id="site-chat" aria-label="Community chat">
-          <div class="site-chat-panel">
-            <div class="site-chat-header">
-              <div>
-                <p class="site-chat-eyebrow">Community</p>
-                <h2 class="site-chat-title">Chat</h2>
+        <section class="about section" id="about">
+          <div class="container about-grid">
+            <div class="about-text">
+              <div class="section-header left">
+                <h2>About BLAKJAC21</h2>
+                <p>Built for viewers who love the rush of a bonus round and the tension of a high-stakes hand.</p>
               </div>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline site-chat-toggle"
-                id="site-chat-toggle"
-                aria-expanded="false"
-                aria-controls="site-chat-body"
-              >
-                Open chat
-              </button>
+              <p>
+                BLAKJAC21 is a verified Kick gambling channel focused on STAKE sessions, entertainment, and those moments that make you jump out of your chair. Whether it's a max win, a brutal bonus buy, or a blackjack heater — you're here for the ride.
+              </p>
+              <p>
+                Follow on Kick to get notified when we go live. Drop a follow, say what's up in chat, and let's run it up together.
+              </p>
             </div>
 
-            <div class="site-chat-body" id="site-chat-body">
-              <div class="site-chat-messages" id="site-chat-messages" role="log" aria-live="polite"></div>
-              <p class="site-chat-empty" id="site-chat-empty">No messages yet. Say hi.</p>
-
-              <form class="site-chat-composer is-hidden" id="site-chat-form">
-                <label class="sr-only" for="site-chat-input">Message</label>
-                <input
-                  class="site-chat-input"
-                  id="site-chat-input"
-                  type="text"
-                  maxlength="280"
-                  autocomplete="off"
-                  placeholder="Say something..."
-                />
-                <button type="submit" class="btn btn-sm btn-primary" id="site-chat-send">
-                  Send
-                </button>
-              </form>
-
-              <div class="site-chat-signin" id="site-chat-signin">
-                <p>Sign in with Kick to chat with the community.</p>
-                <a href="/api/auth/login" class="btn btn-sm btn-kick">Sign in with Kick</a>
-              </div>
-
-              <p class="site-chat-status is-hidden" id="site-chat-status" role="status" aria-live="polite"></p>
+            <div class="feature-grid">
+              <article class="feature-card">
+                <div class="feature-icon">🎰</div>
+                <h3>Slots &amp; Bonus Buys</h3>
+                <p>High-volatility spins, bonus hunts, and the kind of sessions that keep chat on edge.</p>
+              </article>
+              <article class="feature-card">
+                <div class="feature-icon">🃏</div>
+                <h3>Blackjack</h3>
+                <p>Table game action with real tension — hits, stands, doubles, and the occasional heater.</p>
+              </article>
+              <article class="feature-card">
+                <div class="feature-icon">🔥</div>
+                <h3>Community Vibes</h3>
+                <p>Interactive chat, reactions, and a community that shows up for every session.</p>
+              </article>
+              <article class="feature-card">
+                <div class="feature-icon">💚</div>
+                <h3>Live on Kick</h3>
+                <p>Low-latency streams and a platform built for creators who go all in.</p>
+              </article>
             </div>
           </div>
-        </aside>
-      </div>
-    </section>
+        </section>
 
-    <section class="menu section" id="menu">
-      <div class="container">
-        <div class="section-header">
-          <h2>Menu</h2>
-          <p>Quick links to everything BLAKJAC21. Sign in with Kick to create your account.</p>
-        </div>
+        <section class="links section" id="links">
+          <div class="container">
+            <div class="section-header">
+              <h2>Connect</h2>
+              <p>Follow along everywhere BLAKJAC21 shows up online.</p>
+            </div>
 
-        <div class="menu-grid">
-          <a href="/guess-the-balance/" class="menu-card menu-card--center">
-            <span class="menu-title">Guess the Balance</span>
-          </a>
-          <a href="/bonus-hunt/" class="menu-card menu-card--center">
-            <span class="menu-title">Bonus Hunt</span>
-          </a>
-          <a href="/leaderboard/" class="menu-card menu-card--center">
-            <span class="menu-title">Leaderboard</span>
-          </a>
-          <a href="/giveaways/" class="menu-card menu-card--center">
-            <span class="menu-title">Giveaways</span>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <section class="about section" id="about">
-      <div class="container about-grid">
-        <div class="about-text">
-          <div class="section-header left">
-            <h2>About BLAKJAC21</h2>
-            <p>Built for viewers who love the rush of a bonus round and the tension of a high-stakes hand.</p>
+            <div class="link-grid">
+              <a href="https://kick.com/blakjac21" class="link-card kick" target="_blank" rel="noopener noreferrer">
+                <span class="link-platform">Kick</span>
+                <span class="link-handle">@blakjac21</span>
+              </a>
+              <a href="https://discord.gg/YZhPQKwV6" class="link-card discord" target="_blank" rel="noopener noreferrer">
+                <span class="link-platform">Discord</span>
+                <span class="link-handle">Join the server</span>
+              </a>
+              <a href="https://x.com/21Blakjac" class="link-card twitter" target="_blank" rel="noopener noreferrer">
+                <span class="link-platform">X / Twitter</span>
+                <span class="link-handle">@21Blakjac</span>
+              </a>
+            </div>
           </div>
-          <p>
-            BLAKJAC21 is a verified Kick gambling channel focused on STAKE sessions, entertainment, and those moments that make you jump out of your chair. Whether it's a max win, a brutal bonus buy, or a blackjack heater — you're here for the ride.
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div class="container footer-inner">
+          <div class="footer-brand">
+            <span class="logo-text">BLAKJAC<span class="accent">21</span></span>
+            <p>Gambling entertainment stream. 18+ only.</p>
+          </div>
+          <p class="disclaimer">
+            Gambling can be addictive. Please play responsibly. This channel is for entertainment purposes only.
+            If you or someone you know has a gambling problem, call <strong>1-800-GAMBLER</strong> or visit
+            <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer">BeGambleAware.org</a>.
           </p>
-          <p>
-            Follow on Kick to get notified when we go live. Drop a follow, say what's up in chat, and let's run it up together.
-          </p>
+          <p class="copyright">&copy; <span id="year"></span> BLAKJAC21. All rights reserved.</p>
         </div>
-
-        <div class="feature-grid">
-          <article class="feature-card">
-            <div class="feature-icon">🎰</div>
-            <h3>Slots &amp; Bonus Buys</h3>
-            <p>High-volatility spins, bonus hunts, and the kind of sessions that keep chat on edge.</p>
-          </article>
-          <article class="feature-card">
-            <div class="feature-icon">🃏</div>
-            <h3>Blackjack</h3>
-            <p>Table game action with real tension — hits, stands, doubles, and the occasional heater.</p>
-          </article>
-          <article class="feature-card">
-            <div class="feature-icon">🔥</div>
-            <h3>Community Vibes</h3>
-            <p>Interactive chat, reactions, and a community that shows up for every session.</p>
-          </article>
-          <article class="feature-card">
-            <div class="feature-icon">💚</div>
-            <h3>Live on Kick</h3>
-            <p>Low-latency streams and a platform built for creators who go all in.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="links section" id="links">
-      <div class="container">
-        <div class="section-header">
-          <h2>Connect</h2>
-          <p>Follow along everywhere BLAKJAC21 shows up online.</p>
-        </div>
-
-        <div class="link-grid">
-          <a href="https://kick.com/blakjac21" class="link-card kick" target="_blank" rel="noopener noreferrer">
-            <span class="link-platform">Kick</span>
-            <span class="link-handle">@blakjac21</span>
-          </a>
-          <a href="https://discord.gg/YZhPQKwV6" class="link-card discord" target="_blank" rel="noopener noreferrer">
-            <span class="link-platform">Discord</span>
-            <span class="link-handle">Join the server</span>
-          </a>
-          <a href="https://x.com/21Blakjac" class="link-card twitter" target="_blank" rel="noopener noreferrer">
-            <span class="link-platform">X / Twitter</span>
-            <span class="link-handle">@21Blakjac</span>
-          </a>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <div class="container footer-inner">
-      <div class="footer-brand">
-        <span class="logo-text">BLAKJAC<span class="accent">21</span></span>
-        <p>Gambling entertainment stream. 18+ only.</p>
-      </div>
-      <p class="disclaimer">
-        Gambling can be addictive. Please play responsibly. This channel is for entertainment purposes only.
-        If you or someone you know has a gambling problem, call <strong>1-800-GAMBLER</strong> or visit
-        <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer">BeGambleAware.org</a>.
-      </p>
-      <p class="copyright">&copy; <span id="year"></span> BLAKJAC21. All rights reserved.</p>
+      </footer>
     </div>
-  </footer>
+
+    <button
+      type="button"
+      class="btn btn-sm btn-primary site-chat-toggle"
+      id="site-chat-toggle"
+      aria-expanded="false"
+      aria-controls="site-chat"
+    >
+      Open chat
+    </button>
+
+    <aside class="site-chat" id="site-chat" aria-label="Community chat">
+      <div class="site-chat-panel">
+        <div class="site-chat-header">
+          <div>
+            <p class="site-chat-eyebrow">Community</p>
+            <h2 class="site-chat-title">Chat</h2>
+          </div>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline site-chat-close"
+            id="site-chat-close"
+            aria-label="Close chat"
+          >
+            Close
+          </button>
+        </div>
+
+        <div class="site-chat-body" id="site-chat-body">
+          <div class="site-chat-messages" id="site-chat-messages" role="log" aria-live="polite"></div>
+          <p class="site-chat-empty" id="site-chat-empty">No messages yet. Say hi.</p>
+
+          <form class="site-chat-composer is-hidden" id="site-chat-form">
+            <label class="sr-only" for="site-chat-input">Message</label>
+            <input
+              class="site-chat-input"
+              id="site-chat-input"
+              type="text"
+              maxlength="280"
+              autocomplete="off"
+              placeholder="Say something..."
+            />
+            <button type="submit" class="btn btn-sm btn-primary" id="site-chat-send">
+              Send
+            </button>
+          </form>
+
+          <div class="site-chat-signin" id="site-chat-signin">
+            <p>Sign in with Kick to chat with the community.</p>
+            <a href="/api/auth/login" class="btn btn-sm btn-kick">Sign in with Kick</a>
+          </div>
+
+          <p class="site-chat-status is-hidden" id="site-chat-status" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+    </aside>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js"></script>
   <script src="js/main.js"></script>

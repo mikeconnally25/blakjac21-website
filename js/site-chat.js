@@ -66,6 +66,13 @@
     toggle.setAttribute("aria-expanded", open ? "true" : "false");
   }
 
+  function setChatOpen(open) {
+    const root = $("site-chat");
+    if (!root) return;
+    root.classList.toggle("is-open", open);
+    updateToggleLabel();
+  }
+
   function renderMessages() {
     const list = $("site-chat-messages");
     const empty = $("site-chat-empty");
@@ -291,11 +298,15 @@
   function initToggle() {
     const root = $("site-chat");
     const toggle = $("site-chat-toggle");
-    if (!root || !toggle) return;
+    const closeBtn = $("site-chat-close");
+    if (!root) return;
 
-    toggle.addEventListener("click", () => {
-      root.classList.toggle("is-open");
-      updateToggleLabel();
+    toggle?.addEventListener("click", () => {
+      setChatOpen(!root.classList.contains("is-open"));
+    });
+
+    closeBtn?.addEventListener("click", () => {
+      setChatOpen(false);
     });
 
     updateToggleLabel();
