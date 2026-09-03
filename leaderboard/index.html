@@ -57,11 +57,12 @@
     <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
 
     <section class="section page-section leaderboard-page">
+      <div class="section-atmosphere" aria-hidden="true"></div>
       <div class="container leaderboard-shell">
         <a href="/#menu" class="back-link">← Back to menu</a>
 
         <header class="leaderboard-hero">
-          <p class="leaderboard-kicker">Blakjac<span class="accent">21</span></p>
+          <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
           <div class="leaderboard-hero-row">
             <h1 class="leaderboard-heading">Leaderboard</h1>
             <p class="leaderboard-period is-hidden" id="leaderboard-period"></p>
@@ -69,17 +70,30 @@
           <p class="leaderboard-lede">Top 10 wagered on code <strong>BLAKJAC21</strong>.</p>
         </header>
 
-        <div class="leaderboard-prizes-wrap">
+        <div class="leaderboard-prizes-wrap bj21-panel-inset">
           <p class="leaderboard-banner">$5,000 MONTHLY LEADERBOARD</p>
         </div>
 
         <p class="guess-status is-hidden" id="leaderboard-status" role="status" aria-live="polite"></p>
 
-        <div class="podium-panel is-hidden" id="leaderboard-podium-panel">
+        <div class="podium-panel bj21-panel is-hidden" id="leaderboard-podium-panel">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <div class="leaderboard-panel-header">
+            <p class="section-eyebrow">Top three</p>
+            <h2 class="leaderboard-panel-title">Podium</h2>
+          </div>
           <div class="podium-stage" id="leaderboard-podium-stage" aria-label="Top 3 wagered players"></div>
         </div>
 
-        <div class="leaderboard-board">
+        <div class="leaderboard-board bj21-panel">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <div class="leaderboard-panel-header">
+            <div>
+              <p class="section-eyebrow">Rankings</p>
+              <h2 class="leaderboard-panel-title">Full board</h2>
+            </div>
+          </div>
+
           <div class="leaderboard-table-head is-hidden" id="leaderboard-table-head">
             <span>Rank</span>
             <span>Player</span>
