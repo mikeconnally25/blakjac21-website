@@ -57,44 +57,32 @@
     <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
 
     <section class="hero container" id="watch">
-      <div class="hero-layout">
-        <div class="hero-content">
-          <h1>High Stakes.<br />Big Energy.<br /><span class="accent">Live on </span><span class="kick-brand">Kick</span><span class="accent">.</span></h1>
-          <p class="hero-sub">
-            Welcome to BLAKJAC21 — STAKE sessions, slots, blackjack, bonus hunts, and the wildest gambling moments on Kick.
-          </p>
-          <div class="hero-actions">
-            <a href="#watch" class="btn btn-primary">Watch Live</a>
-          </div>
+      <div class="hero-player">
+        <div class="watch-header">
+          <h1 id="watch-title">Live Stream</h1>
+          <p id="watch-subtitle">Loading latest stream...</p>
         </div>
 
-        <div class="hero-player">
-          <div class="watch-header">
-            <h2 id="watch-title">Live Stream</h2>
-            <p id="watch-subtitle">Loading latest stream...</p>
-          </div>
-
-          <div class="player-wrap" id="player-container">
-            <iframe
-              id="kick-player"
-              class="player-frame is-hidden"
-              title="BLAKJAC21 Kick live stream"
-              allow="autoplay; fullscreen; picture-in-picture"
-              allowfullscreen
-            ></iframe>
-            <video
-              id="vod-player"
-              class="player-frame is-hidden"
-              controls
-              playsinline
-              preload="metadata"
-            ></video>
-            <div id="player-offline" class="player-offline is-hidden">
-              <p>No stream or VOD available right now.</p>
-              <a href="https://kick.com/blakjac21" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                Visit Channel
-              </a>
-            </div>
+        <div class="player-wrap" id="player-container">
+          <iframe
+            id="kick-player"
+            class="player-frame is-hidden"
+            title="BLAKJAC21 Kick live stream"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+          <video
+            id="vod-player"
+            class="player-frame is-hidden"
+            controls
+            playsinline
+            preload="metadata"
+          ></video>
+          <div id="player-offline" class="player-offline is-hidden">
+            <p>No stream or VOD available right now.</p>
+            <a href="https://kick.com/blakjac21" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+              Visit Channel
+            </a>
           </div>
         </div>
       </div>
