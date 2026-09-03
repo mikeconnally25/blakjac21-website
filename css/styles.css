@@ -2456,6 +2456,23 @@ ul {
   gap: 1rem;
 }
 
+.giveaways-admin-aff {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(88, 201, 243, 0.14);
+}
+
+.giveaways-aff-note {
+  margin: 0.65rem 0 0;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(88, 201, 243, 0.28);
+  background: rgba(88, 201, 243, 0.1);
+  color: var(--accent-bright);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
 .giveaways-admin-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(12rem, 0.8fr);

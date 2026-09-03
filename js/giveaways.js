@@ -1,6 +1,7 @@
 let currentUser = null;
 let giveawaysOpen = false;
 let giveawayKeyword = "";
+let giveawayAffiliatesOnly = false;
 let giveawayEntries = [];
 let giveawayWinner = null;
 let pollTimer = null;
@@ -41,6 +42,21 @@ function updateToggleLabel() {
   }
 }
 
+function updateAffiliatesOnlyLabel() {
+  const label = document.getElementById("giveaways-aff-toggle-status");
+  const toggle = document.getElementById("giveaways-aff-toggle");
+
+  if (label) {
+    label.textContent = giveawayAffiliatesOnly
+      ? "Only AFF users (verified on code BLAKJAC21) can enter"
+      : "Open to everyone who types the keyword";
+  }
+
+  if (toggle && currentUser?.isAdmin) {
+    toggle.checked = giveawayAffiliatesOnly;
+  }
+}
+
 function updateHeroStatus() {
   const status = document.getElementById("giveaways-hero-status");
   const value = document.getElementById("giveaways-status-value");
@@ -51,10 +67,10 @@ function updateHeroStatus() {
     value.textContent = `Winner · ${giveawayWinner.username}`;
   } else if (giveawaysOpen) {
     status.dataset.state = "open";
-    value.textContent = "Open";
+    value.textContent = giveawayAffiliatesOnly ? "Open · AFF only" : "Open";
   } else {
     status.dataset.state = "closed";
-    value.textContent = "Closed";
+    value.textContent = giveawayAffiliatesOnly ? "Closed · AFF only" : "Closed";
   }
 }
 
@@ -116,6 +132,15 @@ function renderEntries() {
 
   empty?.classList.toggle("is-hidden", giveawaysOpen || giveawayEntries.length > 0);
   openPanel?.classList.toggle("is-hidden", !giveawaysOpen);
+
+  const affNote = document.getElementById("giveaways-aff-note");
+  const openCopy = document.getElementById("giveaways-open-copy");
+  affNote?.classList.toggle("is-hidden", !giveawaysOpen || !giveawayAffiliatesOnly);
+  if (openCopy) {
+    openCopy.textContent = giveawayAffiliatesOnly
+      ? "One entry per AFF viewer. Exact match only."
+      : "One entry per viewer. Exact match only.";
+  }
 
   const hasEntries = giveawayEntries.length > 0;
   entrantsEmpty?.classList.toggle("is-hidden", hasEntries);
@@ -327,6 +352,7 @@ function updatePanels() {
   }
 
   updateToggleLabel();
+  updateAffiliatesOnlyLabel();
   updateHeroStatus();
   renderEntries();
   updateRevealPanel();
@@ -337,6 +363,7 @@ function applyStatusData(data) {
 
   giveawaysOpen = Boolean(data.open);
   giveawayKeyword = String(data.keyword || "");
+  giveawayAffiliatesOnly = Boolean(data.affiliatesOnly);
   giveawayEntries = Array.isArray(data.entries) ? data.entries : [];
   giveawayWinner = data.winner || null;
 
@@ -428,6 +455,30 @@ async function setGiveawaysOpen(open) {
   schedulePolling();
 }
 
+async function setAffiliatesOnly(affiliatesOnly) {
+  const response = await fetch("/api/giveaways/affiliates-only", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ affiliatesOnly }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Could not update AFF-only setting.");
+  }
+
+  applyStatusData(data);
+  setAdminStatus(
+    affiliatesOnly
+      ? "AFF-only mode on. Only verified BLAKJAC21 affiliates can enter."
+      : "AFF-only mode off. Anyone can enter with the keyword.",
+    "success"
+  );
+  updatePanels();
+}
+
 async function saveKeyword(keyword) {
   const response = await fetch("/api/giveaways/keyword", {
     method: "POST",
@@ -444,6 +495,9 @@ async function saveKeyword(keyword) {
 
   giveawaysOpen = Boolean(data.open);
   giveawayKeyword = String(data.keyword || "");
+  if ("affiliatesOnly" in data) {
+    giveawayAffiliatesOnly = Boolean(data.affiliatesOnly);
+  }
   if ("winner" in data) {
     giveawayWinner = data.winner || null;
   }
@@ -522,6 +576,25 @@ function initAdminToggle() {
       await setGiveawaysOpen(nextOpen);
     } catch (error) {
       toggle.checked = !nextOpen;
+      setAdminStatus(error.message, "error");
+    } finally {
+      toggle.disabled = false;
+    }
+  });
+}
+
+function initAffiliatesOnlyToggle() {
+  const toggle = document.getElementById("giveaways-aff-toggle");
+  if (!toggle) return;
+
+  toggle.addEventListener("change", async () => {
+    const nextValue = toggle.checked;
+    toggle.disabled = true;
+
+    try {
+      await setAffiliatesOnly(nextValue);
+    } catch (error) {
+      toggle.checked = !nextValue;
       setAdminStatus(error.message, "error");
     } finally {
       toggle.disabled = false;
@@ -613,6 +686,7 @@ document.addEventListener("visibilitychange", () => {
 });
 
 initAdminToggle();
+initAffiliatesOnlyToggle();
 initKeywordForm();
 initClearEntries();
 initRevealWinner();

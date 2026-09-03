@@ -89,6 +89,23 @@
             </label>
           </div>
 
+          <div class="giveaways-admin-top giveaways-admin-aff">
+            <div>
+              <p class="admin-panel-label">AFF only</p>
+              <p class="admin-panel-text" id="giveaways-aff-toggle-status">
+                Open to everyone who types the keyword
+              </p>
+            </div>
+            <label class="toggle">
+              <input
+                type="checkbox"
+                id="giveaways-aff-toggle"
+                aria-labelledby="giveaways-aff-toggle-status"
+              />
+              <span class="toggle-slider" aria-hidden="true"></span>
+            </label>
+          </div>
+
           <div class="giveaways-admin-grid">
             <div class="giveaways-admin-block">
               <label class="guess-label" for="giveaways-keyword">Chat keyword</label>
@@ -165,7 +182,12 @@
               <div class="giveaways-open is-hidden" id="giveaways-open">
                 <p class="giveaways-open-label">Type this in Kick chat</p>
                 <p class="giveaways-keyword-chip" id="giveaways-keyword-display">keyword</p>
-                <p class="giveaways-open-copy">One entry per viewer. Exact match only.</p>
+                <p class="giveaways-open-copy" id="giveaways-open-copy">
+                  One entry per viewer. Exact match only.
+                </p>
+                <p class="giveaways-aff-note is-hidden" id="giveaways-aff-note">
+                  AFF only — entrants must be verified on code BLAKJAC21.
+                </p>
               </div>
             </div>
 
