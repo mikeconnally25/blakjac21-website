@@ -497,20 +497,23 @@ function renderBonusList(bonuses) {
       actions.className = "hunt-bonus-admin";
 
       if (bonus.status === "pending") {
-        const payoutField = document.createElement("label");
-        payoutField.className = "bonus-payout-field hunt-bonus-win-field";
+        const payoutField = document.createElement("div");
+        payoutField.className = "hunt-bonus-win-field";
 
         const payoutLabel = document.createElement("span");
-        payoutLabel.className = "bonus-payout-label";
+        payoutLabel.className = "hunt-bonus-win-label";
         payoutLabel.textContent = "Win";
 
+        const payoutRow = document.createElement("label");
+        payoutRow.className = "guess-input-row hunt-bonus-win-row";
+
         const payoutPrefix = document.createElement("span");
-        payoutPrefix.className = "bonus-payout-prefix";
+        payoutPrefix.className = "guess-prefix";
         payoutPrefix.textContent = "$";
         payoutPrefix.setAttribute("aria-hidden", "true");
 
         payoutInput = document.createElement("input");
-        payoutInput.className = "bonus-payout-input";
+        payoutInput.className = "guess-input bonus-payout-input";
         payoutInput.type = "number";
         payoutInput.inputMode = "decimal";
         payoutInput.min = "0";
@@ -521,7 +524,8 @@ function renderBonusList(bonuses) {
           ? bonusPayoutDrafts.get(bonus.id)
           : "";
 
-        payoutField.append(payoutLabel, payoutPrefix, payoutInput);
+        payoutRow.append(payoutPrefix, payoutInput);
+        payoutField.append(payoutLabel, payoutRow);
 
         saveWinBtn = document.createElement("button");
         saveWinBtn.type = "button";

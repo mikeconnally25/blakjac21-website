@@ -2837,49 +2837,55 @@ ul {
 }
 
 .hunt-bonus-win-field {
-  display: inline-flex;
-  align-items: center;
+  display: grid;
   gap: 0.25rem;
+  flex-shrink: 0;
   min-width: 0;
-  padding: 0.15rem 0.4rem;
-  border-radius: 0.35rem;
-  border: 1px solid rgba(88, 201, 243, 0.4);
-  background: rgba(4, 10, 16, 0.98);
 }
 
-.hunt-bonus-win-field .bonus-payout-label {
-  font-size: 0.58rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-.hunt-bonus-win-field .bonus-payout-prefix {
-  color: var(--text-muted);
+.hunt-bonus-win-label {
   font-size: 0.72rem;
   font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
-.hunt-bonus-win-field .bonus-payout-input {
-  width: 3.6rem;
-  min-height: 1.25rem;
-  padding: 0.05rem 0;
+.hunt-bonus-win-row {
+  width: 6.5rem;
+  min-height: 2.15rem;
+  padding: 0.35rem 0.7rem;
+  gap: 0.35rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(10, 15, 20, 0.55);
+}
+
+.hunt-bonus-win-row .guess-prefix {
+  font-size: 0.95rem;
+}
+
+.hunt-bonus-win-row .guess-input,
+.hunt-bonus-win-row .bonus-payout-input {
+  width: 100%;
+  min-height: 0;
+  padding: 0;
   border: 0;
   background: transparent;
   color: var(--text);
-  font-size: 0.78rem;
+  font-size: 0.95rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
-.hunt-bonus-win-field .bonus-payout-input:focus {
+.hunt-bonus-win-row .guess-input:focus,
+.hunt-bonus-win-row .bonus-payout-input:focus {
   outline: none;
 }
 
-.hunt-bonus-win-field:focus-within {
-  border-color: rgba(88, 201, 243, 0.7);
-  box-shadow: 0 0 0 2px rgba(88, 201, 243, 0.18);
+.hunt-bonus-win-row:focus-within {
+  border-color: rgba(88, 201, 243, 0.55);
+  box-shadow: 0 0 0 2px rgba(88, 201, 243, 0.12);
 }
 
 .hunt-bonus-payout {
@@ -2925,7 +2931,7 @@ ul {
   grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: end;
   justify-content: flex-start;
   gap: 0.45rem;
   padding-top: 0.15rem;
@@ -2971,6 +2977,20 @@ ul {
 .bonus-hunt-page .guess-input-row {
   min-height: 2.55rem;
   padding: 0.4rem 0.85rem;
+}
+
+.bonus-hunt-page .hunt-bonus-win-row {
+  width: 6.5rem;
+  min-height: 2.15rem;
+  padding: 0.35rem 0.7rem;
+  gap: 0.35rem;
+}
+
+.bonus-hunt-page .hunt-bonus-win-row .guess-input,
+.bonus-hunt-page .hunt-bonus-win-row .bonus-payout-input {
+  min-height: 0;
+  padding: 0;
+  font-size: 0.95rem;
 }
 
 .bonus-hunt-page .slot-request-slot,
@@ -4095,7 +4115,10 @@ ul {
 
   .hunt-bonus-win-field {
     min-width: 0;
-    flex: 1 1 auto;
+  }
+
+  .hunt-bonus-win-row {
+    width: 6.25rem;
   }
 
   .hunt-bonus-slot {
