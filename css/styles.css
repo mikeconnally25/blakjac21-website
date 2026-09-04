@@ -6030,13 +6030,20 @@ ul {
   min-width: 0;
 }
 
+.level-up-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
 .level-up-icon {
   flex-shrink: 0;
-  width: 3.75rem;
-  height: 3.75rem;
+  width: 3.85rem;
+  height: 3.85rem;
   display: grid;
   place-items: center;
-  filter: drop-shadow(0 0 16px rgba(88, 201, 243, 0.35));
+  filter: drop-shadow(0 0 12px rgba(88, 201, 243, 0.28));
 }
 
 .level-up-icon svg {
@@ -6047,33 +6054,27 @@ ul {
 }
 
 .level-up-card[data-tier="bronze"] .level-up-icon {
-  filter: drop-shadow(0 0 14px rgba(232, 168, 90, 0.55));
+  filter: drop-shadow(0 0 12px rgba(201, 154, 90, 0.55));
 }
 
 .level-up-card[data-tier="silver"] .level-up-icon {
-  filter: drop-shadow(0 0 14px rgba(220, 230, 242, 0.45));
+  filter: drop-shadow(0 0 12px rgba(200, 212, 220, 0.5));
 }
 
 .level-up-card[data-tier="gold"] .level-up-icon {
-  filter: drop-shadow(0 0 16px rgba(255, 210, 74, 0.6));
+  filter: drop-shadow(0 0 14px rgba(240, 192, 32, 0.6));
 }
 
 .level-up-card[data-tier="platinum"] .level-up-icon {
-  filter: drop-shadow(0 0 16px rgba(94, 200, 255, 0.55));
+  filter: drop-shadow(0 0 16px rgba(90, 212, 232, 0.55));
 }
 
 .level-up-card[data-tier="diamond"] .level-up-icon {
-  filter: drop-shadow(0 0 18px rgba(154, 232, 255, 0.6));
+  filter: drop-shadow(0 0 16px rgba(110, 200, 255, 0.6));
 }
 
 .level-up-card[data-tier="obsidian"] .level-up-icon {
-  filter: drop-shadow(0 0 16px rgba(155, 138, 212, 0.45));
-}
-
-.level-up-card-meta {
-  min-width: 0;
-  display: grid;
-  gap: 0.35rem;
+  filter: drop-shadow(0 0 14px rgba(139, 106, 212, 0.45));
 }
 
 .level-up-badge {
@@ -6081,51 +6082,52 @@ ul {
   align-items: center;
   width: fit-content;
   padding: 0.28rem 0.55rem;
-  border-radius: 0.28rem;
+  border-radius: 0.22rem;
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   line-height: 1;
-  color: #e8edf4;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #041018;
+  background: #58c9f3;
+  border: none;
 }
 
 .level-up-card[data-tier="bronze"] .level-up-badge {
-  color: #f0c48a;
-  border-color: rgba(196, 146, 74, 0.35);
-  background: rgba(154, 99, 48, 0.22);
+  color: #1a1006;
+  background: linear-gradient(180deg, #e0b06a, #b07838);
 }
 
 .level-up-card[data-tier="silver"] .level-up-badge {
-  color: #dce4ee;
-  border-color: rgba(184, 196, 212, 0.3);
-  background: rgba(140, 150, 165, 0.18);
+  color: #121820;
+  background: linear-gradient(180deg, #e8eef4, #9aa8b4);
 }
 
 .level-up-card[data-tier="gold"] .level-up-badge {
-  color: #ffe08a;
-  border-color: rgba(240, 196, 90, 0.35);
-  background: rgba(196, 134, 24, 0.2);
+  color: #1a1204;
+  background: linear-gradient(180deg, #ffe066, #d4a018);
 }
 
 .level-up-card[data-tier="platinum"] .level-up-badge {
-  color: #9ae2ff;
-  border-color: rgba(94, 200, 255, 0.35);
-  background: rgba(47, 143, 196, 0.22);
+  color: #041018;
+  background: linear-gradient(180deg, #7ed8f0, #3aa0c0);
 }
 
 .level-up-card[data-tier="diamond"] .level-up-badge {
-  color: #d8f4ff;
-  border-color: rgba(126, 216, 255, 0.4);
-  background: rgba(62, 160, 216, 0.22);
+  color: #041018;
+  background: linear-gradient(180deg, #9ad8ff, #3a88d0);
 }
 
 .level-up-card[data-tier="obsidian"] .level-up-badge {
-  color: #c8cdd8;
-  border-color: rgba(255, 255, 255, 0.14);
-  background: rgba(26, 30, 40, 0.85);
+  color: #e8edf4;
+  background: linear-gradient(180deg, #3a4050, #12151c);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.level-up-card-meta {
+  min-width: 0;
+  display: grid;
+  gap: 0.35rem;
 }
 
 .level-up-wager {
