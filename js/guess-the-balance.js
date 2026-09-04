@@ -259,7 +259,7 @@ function scheduleGuessesPolling() {
     clearInterval(guessesPollTimer);
   }
 
-  guessesPollTimer = setInterval(loadGuesses, 1000);
+  guessesPollTimer = setInterval(loadGuesses, 5000);
 }
 
 function renderGuessesList(guesses) {
@@ -448,7 +448,7 @@ function schedulePolling() {
     clearInterval(pollTimer);
   }
 
-  const interval = currentUser && !gameEnabled ? 2000 : 5000;
+  const interval = 5000;
   pollTimer = setInterval(loadGameStatus, interval);
 }
 

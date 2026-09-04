@@ -382,7 +382,7 @@ function schedulePolling() {
     clearInterval(pollTimer);
   }
 
-  const interval = giveawaysOpen || isRolling ? 2000 : 5000;
+  const interval = 5000;
   pollTimer = setInterval(loadGiveawayStatus, interval);
 }
 

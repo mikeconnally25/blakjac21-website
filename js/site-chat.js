@@ -1,5 +1,5 @@
 (() => {
-  const POLL_MS = 2000;
+  const POLL_MS = 5000;
   let currentUser = null;
   let messages = [];
   let pollTimer = null;

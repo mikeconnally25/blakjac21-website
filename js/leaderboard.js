@@ -386,7 +386,7 @@ function scheduleLeaderboardPolling() {
 
   pollTimer = setInterval(() => {
     void loadLeaderboard({ quiet: true });
-  }, 1000);
+  }, 5000);
 }
 
 loadLeaderboard();

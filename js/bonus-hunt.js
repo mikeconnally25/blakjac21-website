@@ -137,7 +137,7 @@ function startStakeSyncPolling(token) {
     } catch {
       // Keep polling until token expires.
     }
-  }, 2000);
+  }, 5000);
 }
 
 async function tryServerSlotRefresh({ silent = false } = {}) {
@@ -1928,11 +1928,11 @@ function schedulePolling() {
     clearInterval(slotPollTimer);
   }
 
-  pollTimer = setInterval(loadBonusHunt, 2000);
+  pollTimer = setInterval(loadBonusHunt, 5000);
   slotPollTimer = setInterval(() => {
     loadSlotCatalog();
     loadSlotRequests();
-  }, 1000);
+  }, 5000);
 }
 
 async function saveBonusPayout(id, rawPayout, button) {

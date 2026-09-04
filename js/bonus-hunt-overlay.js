@@ -1,4 +1,4 @@
-const POLL_MS = 2000;
+const POLL_MS = 5000;
 const VISIBLE_BONUS_ROWS = 2;
 const SCROLL_SECONDS_PER_ROW = 2.75;
 let slotCatalog = [];
