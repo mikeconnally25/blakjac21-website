@@ -6070,7 +6070,7 @@ ul {
 }
 
 .level-up-card[data-tier="diamond"] .level-up-icon {
-  filter: drop-shadow(0 0 16px rgba(110, 200, 255, 0.6));
+  filter: drop-shadow(0 0 12px rgba(158, 204, 232, 0.45));
 }
 
 .level-up-card[data-tier="obsidian"] .level-up-icon {
