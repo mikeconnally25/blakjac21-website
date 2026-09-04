@@ -12,6 +12,7 @@
     "refresh:slots": "node scripts/refresh-stake-catalog.mjs"
   },
   "dependencies": {
+    "@vercel/speed-insights": "^2.0.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jose": "^5.10.0"
