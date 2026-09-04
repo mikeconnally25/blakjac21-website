@@ -108,15 +108,25 @@ function hideStakeLinkModal() {
   setStakeLinkError("");
 }
 
-function showStakeLinkModal() {
+function showStakeLinkModal({ forceReset = false } = {}) {
   ensureStakeLinkModal();
   const modal = document.getElementById("stake-link-modal");
   const input = document.getElementById("stake-link-input");
+  const alreadyOpen = Boolean(
+    modal && !modal.classList.contains("is-hidden")
+  );
   modal?.classList.remove("is-hidden");
-  setStakeLinkError("");
+  if (!alreadyOpen) {
+    setStakeLinkError("");
+  }
   if (input) {
-    input.value = "";
-    input.focus();
+    if (!alreadyOpen || forceReset) {
+      input.value = "";
+    }
+    // Defer focus so mobile keyboards and overlays settle first.
+    requestAnimationFrame(() => {
+      input.focus({ preventScroll: true });
+    });
   }
 }
 
@@ -139,7 +149,12 @@ function maybeShowStakeLinkPrompt(user) {
     return;
   }
 
-  showStakeLinkModal();
+  const modal = document.getElementById("stake-link-modal");
+  if (modal && !modal.classList.contains("is-hidden")) {
+    return;
+  }
+
+  showStakeLinkModal({ forceReset: justAuthed });
 }
 
 async function submitStakeLink() {
@@ -277,7 +292,7 @@ function initStakeBadge() {
     if (currentAuthUser?.stakeUsername) {
       return;
     }
-    showStakeLinkModal();
+    showStakeLinkModal({ forceReset: false });
   });
 
   authUser.append(badge);

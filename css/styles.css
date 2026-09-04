@@ -367,7 +367,7 @@ ul {
 .stake-link-modal {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: 400;
   display: grid;
   place-items: center;
   padding: 1rem;
@@ -397,6 +397,14 @@ ul {
     linear-gradient(165deg, rgba(18, 28, 40, 0.98), rgba(8, 13, 20, 0.96));
   box-shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
   animation: giveaways-fade-up 0.45s ease-out;
+  pointer-events: auto;
+}
+
+.stake-link-dialog .guess-input-row,
+.stake-link-dialog .guess-input {
+  pointer-events: auto;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .stake-link-eyebrow {
