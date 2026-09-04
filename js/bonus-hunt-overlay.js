@@ -159,11 +159,23 @@ function createGameCell(bonus) {
     thumbnailUrl: getBonusThumbnailUrl(bonus),
   });
 
+  const copy = document.createElement("div");
+  copy.className = "bh-overlay-game-copy";
+
   const name = document.createElement("span");
   name.className = "bh-overlay-game-name";
   name.textContent = bonus.slot;
+  copy.append(name);
 
-  game.append(thumb, name);
+  const requester = String(bonus.requestedBy || "").trim();
+  if (requester) {
+    const byline = document.createElement("span");
+    byline.className = "bh-overlay-game-requester";
+    byline.textContent = `by ${requester}`;
+    copy.append(byline);
+  }
+
+  game.append(thumb, copy);
   return game;
 }
 
@@ -175,6 +187,7 @@ function bonusListKey(bonuses) {
           bonus.id,
           bonus.number,
           bonus.slot,
+          bonus.requestedBy || "",
           bonus.bet,
           bonus.status,
           bonus.payout ?? "",

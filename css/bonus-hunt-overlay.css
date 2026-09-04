@@ -257,7 +257,7 @@ body {
 }
 
 .bh-overlay-table-wrap {
-  --bh-row-height: 2.45rem;
+  --bh-row-height: 2.85rem;
   --bh-visible-rows: 2;
   overflow: hidden;
   padding: 0.55rem 0.55rem 0.45rem;
@@ -359,6 +359,12 @@ body {
   min-width: 0;
 }
 
+.bh-overlay-game-copy {
+  min-width: 0;
+  display: grid;
+  gap: 0.05rem;
+}
+
 .bh-overlay-row-thumb {
   flex-shrink: 0;
   width: 1.55rem;
@@ -387,6 +393,18 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
+  line-height: 1.15;
+}
+
+.bh-overlay-game-requester {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  font-size: 0.66rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--accent-bright);
 }
 
 .bh-overlay-table tbody td:nth-child(3),
