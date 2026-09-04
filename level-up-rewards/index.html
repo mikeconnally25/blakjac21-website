@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Level Up Rewards — unlock perks and stream rewards on BLAKJAC21." />
+  <meta name="description" content="Level Up Rewards — Stake VIP tiers and ReachAces bonus rewards on BLAKJAC21." />
   <title>Level Up Rewards | BLAKJAC21</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -56,26 +56,259 @@
   <main>
     <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
 
-    <section class="section page-section">
+    <section class="section page-section level-up-page">
       <div class="section-atmosphere" aria-hidden="true"></div>
-      <div class="container page-content">
+      <div class="container level-up-shell">
         <a href="/#menu" class="back-link">← Back to menu</a>
 
-        <div class="section-header left">
+        <header class="level-up-hero">
           <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
-          <h1>Level Up Rewards</h1>
-          <p>
-            Climb tiers, unlock perks, and claim stream rewards as you level up with the community.
+          <h1 class="level-up-heading">Level Up Rewards</h1>
+          <p class="level-up-lede">
+            Hit each wager tier on Stake and claim the Stake reward plus an extra ReachAces bonus on top.
           </p>
-        </div>
+        </header>
 
-        <div class="bj21-panel">
-          <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <p class="section-eyebrow">Coming soon</p>
-          <h2 class="hunt-admin-title">Rewards are on the way</h2>
-          <p class="admin-panel-text">
-            Sign in with Kick and check back soon — levels, perks, and stream rewards will land here.
-          </p>
+        <div class="level-up-grid" aria-label="Level up reward tiers">
+          <article class="level-up-card" data-tier="bronze">
+            <div class="level-up-card-top">
+              <span class="level-up-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none"><path d="M32 6l7.2 14.6L56 23.2l-12 11.7L47.2 52 32 44.2 16.8 52l3.2-17.1L8 23.2l16.8-2.6L32 6z" fill="url(#g-bronze)" stroke="#c4924a" stroke-width="1.5"/><defs><linearGradient id="g-bronze" x1="12" y1="8" x2="52" y2="56"><stop stop-color="#e8b46a"/><stop offset="1" stop-color="#8a5a28"/></linearGradient></defs></svg>
+              </span>
+              <div class="level-up-card-meta">
+                <span class="level-up-badge">Bronze</span>
+                <p class="level-up-wager">$10,000 Wagered</p>
+              </div>
+            </div>
+            <p class="level-up-copy">
+              <strong>Stake</strong> Gives <strong>$15</strong> + recent gameplay bonus &amp;
+              <strong>ReachAces</strong> gives <strong>$15</strong> extra on top.
+            </p>
+          </article>
+
+          <article class="level-up-card" data-tier="silver">
+            <div class="level-up-card-top">
+              <span class="level-up-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none"><path d="M32 6l7.2 14.6L56 23.2l-12 11.7L47.2 52 32 44.2 16.8 52l3.2-17.1L8 23.2l16.8-2.6L32 6z" fill="url(#g-silver)" stroke="#b8c4d4" stroke-width="1.5"/><defs><linearGradient id="g-silver" x1="12" y1="8" x2="52" y2="56"><stop stop-color="#f2f5f8"/><stop offset="1" stop-color="#7d8b9c"/></linearGradient></defs></svg>
+              </span>
+              <div class="level-up-card-meta">
+                <span class="level-up-badge">Silver</span>
+                <p class="level-up-wager">$50,000 Wagered</p>
+              </div>
+            </div>
+            <p class="level-up-copy">
+              <strong>Stake</strong> Gives <strong>$50</strong> + recent gameplay bonus &amp;
+              <strong>ReachAces</strong> gives <strong>$50</strong> extra on top.
+            </p>
+          </article>
+
+          <article class="level-up-card" data-tier="gold">
+            <div class="level-up-card-top">
+              <span class="level-up-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none"><path d="M32 6l7.2 14.6L56 23.2l-12 11.7L47.2 52 32 44.2 16.8 52l3.2-17.1L8 23.2l16.8-2.6L32 6z" fill="url(#g-gold)" stroke="#f0c45a" stroke-width="1.5"/><defs><linearGradient id="g-gold" x1="12" y1="8" x2="52" y2="56"><stop stop-color="#ffe08a"/><stop offset="1" stop-color="#c48618"/></linearGradient></defs></svg>
+              </span>
+              <div class="level-up-card-meta">
+                <span class="level-up-badge">Gold</span>
+                <p class="level-up-wager">$100,000 Wagered</p>
+              </div>
+            </div>
+            <p class="level-up-copy">
+              <strong>Stake</strong> Gives <strong>$100</strong> + recent gameplay bonus &amp;
+              <strong>ReachAces</strong> gives <strong>$75</strong> extra on top.
+            </p>
+          </article>
+
+          <article class="level-up-card" data-tier="platinum">
+            <div class="level-up-card-top">
+              <span class="level-up-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none"><path d="M32 6l7.2 14.6L56 23.2l-12 11.7L47.2 52 32 44.2 16.8 52l3.2-17.1L8 23.2l16.8-2.6L32 6z" fill="url(#g-plat)" stroke="#5ec8ff" stroke-width="1.5"/><text x="32" y="38" text-anchor="middle" fill="#041018" font-size="18" font-weight="700" font-family="Inter,sans-serif">1</text><defs><linearGradient id="g-plat" x1="12" y1="8" x2="52" y2="56"><stop stop-color="#9ae2ff"/><stop offset="1" stop-color="#2a7fb8"/></linearGradient></defs></svg>
+              </span>
+              <div class="level-up-card-meta">
+                <span class="level-up-badge">Platinum 1</span>
+                <p class="level-up-wager">$250,000 Wagered</p>
+              </div>
+            </div>
+            <p class="level-up-copy">
+              <strong>Stake</strong> Gives <strong>$200</strong> + recent gameplay bonus &amp;
+              <strong>ReachAces</strong> gives <strong>$100</strong> extra on top.
+            </p>
+          </article>
+
+          <article class="level-up-card" data-tier="platinum">
+            <div class="level-up-card-top">
+              <span class="level-up-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none"><path d="M32 6l7.2 14.6L56 23.2l-12 11.7L47.2 52 32 44.2 16.8 52l3.2-17.1L8 23.2l16.8-2.6L32 6z" fill="url(#g-plat2)" stroke="#5ec8ff" stroke-width="1.5"/><text x="32" y="38" text-anchor="middle" fill="#041018" font-size="18" font-weight="700" font-family="Inter,sans-serif">2</text><defs><linearGradient id="g-plat2" x1="12" y1="8" x2="52" y2="56"><stop stop-color="#9ae2ff"/><stop offset="1" stop-color="#2a7fb8"/></linearGradient></defs></svg>
+              </span>
+              <div class="level-up-card-meta">
+                <span class="level-up-badge">Platinum 2</span>
+                <p class="level-up-wager">$500,000 Wagered</p>
+              </div>
+            </div>
+            <p class="level-up-copy">
+              <strong>Stake</strong> Gives <strong>$400</strong> + recent gameplay bonus &amp;
+              <strong>ReachAces</strong> gives <strong>$200</strong> extra on top.
+            </p>
+          </article>
+
+          <article class="level-up-card" data-tier="platinum">
+            <div class="level-up-card-top">
+              <span class="level-up-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none"><path d="M32 6l7.2 14.6L56 23.2l-12 11.7L47.2 52 32 44.2 16.8 52l3.2-17.1L8 23.2l16.8-2.6L32 6z" fill="url(#g-plat3)" stroke="#5ec8ff" stroke-width="1.5"/><text x="32" y="38" text-anchor="middle" fill="#041018" font-size="18" font-weight="700" font-family="Inter,sans-serif">3</text><defs><linearGradient id="g-plat3" x1="12" y1="8" x2="52" y2="56"><stop stop-color="#9ae2ff"/><stop offset="1" stop-color="#2a7fb8"/></linearGradient></defs></svg>
+              </span>
+              <div class="level-up-card-meta">
+                <span class="level-up-badge">Platinum 3</span>
+                <p class="level-up-wager">$1,000,000 Wagered</p>
+              </div>
+            </div>
+            <p class="level-up-copy">
+              <strong>Stake</strong> Gives <strong>$800</strong> + recent gameplay bonus &amp;
+              <strong>ReachAces</strong> gives <strong>$400</strong> extra on top.
+            </p>
+          </article>
+
+          <article class="level-up-card" data-tier="platinum">
+            <div class="level-up-card-top">
+              <span class="level-up-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none"><path d="M32 6l7.2 14.6L56 23.2l-12 11.7L47.2 52 32 44.2 16.8 52l3.2-17.1L8 23.2l16.8-2.6L32 6z" fill="url(#g-plat4)" stroke="#5ec8ff" stroke-width="1.5"/><text x="32" y="38" text-anchor="middle" fill="#041018" font-size="18" font-weight="700" font-family="Inter,sans-serif">4</text><defs><linearGradient id="g-plat4" x1="12" y1="8" x2="52" y2="56"><stop stop-color="#9ae2ff"/><stop offset="1" stop-color="#2a7fb8"/></linearGradient></defs></svg>
+              </span>
+              <div class="level-up-card-meta">
+                <span class="level-up-badge">Platinum 4</span>
+                <p class="level-up-wager">$2,500,000 Wagered</p>
+              </div>
+            </div>
+            <p class="level-up-copy">
+              <strong>Stake</strong> Gives <strong>$1,600</strong> + recent gameplay bonus + daily reload bonus &amp;
+              <strong>ReachAces</strong> gives <strong>$800</strong> extra on top.
+            </p>
+          </article>
+
+          <article class="level-up-card" data-tier="platinum">
+            <div class="level-up-card-top">
+              <span class="level-up-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none"><path d="M32 6l7.2 14.6L56 23.2l-12 11.7L47.2 52 32 44.2 16.8 52l3.2-17.1L8 23.2l16.8-2.6L32 6z" fill="url(#g-plat5)" stroke="#5ec8ff" stroke-width="1.5"/><text x="32" y="38" text-anchor="middle" fill="#041018" font-size="18" font-weight="700" font-family="Inter,sans-serif">5</text><defs><linearGradient id="g-plat5" x1="12" y1="8" x2="52" y2="56"><stop stop-color="#9ae2ff"/><stop offset="1" stop-color="#2a7fb8"/></linearGradient></defs></svg>
+              </span>
+              <div class="level-up-card-meta">
+                <span class="level-up-badge">Platinum 5</span>
+                <p class="level-up-wager">$5,000,000 Wagered</p>
+              </div>
+            </div>
+            <p class="level-up-copy">
+              <strong>Stake</strong> Gives <strong>$3,200</strong> + recent gameplay bonus + daily reload bonus &amp;
+              <strong>ReachAces</strong> gives <strong>$1,600</strong> extra on top.
+            </p>
+          </article>
+
+          <article class="level-up-card" data-tier="platinum">
+            <div class="level-up-card-top">
+              <span class="level-up-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none"><path d="M32 6l7.2 14.6L56 23.2l-12 11.7L47.2 52 32 44.2 16.8 52l3.2-17.1L8 23.2l16.8-2.6L32 6z" fill="url(#g-plat6)" stroke="#5ec8ff" stroke-width="1.5"/><text x="32" y="38" text-anchor="middle" fill="#041018" font-size="18" font-weight="700" font-family="Inter,sans-serif">6</text><defs><linearGradient id="g-plat6" x1="12" y1="8" x2="52" y2="56"><stop stop-color="#9ae2ff"/><stop offset="1" stop-color="#2a7fb8"/></linearGradient></defs></svg>
+              </span>
+              <div class="level-up-card-meta">
+                <span class="level-up-badge">Platinum 6</span>
+                <p class="level-up-wager">$10,000,000 Wagered</p>
+              </div>
+            </div>
+            <p class="level-up-copy">
+              <strong>Stake</strong> Gives <strong>$6,400</strong> + recent gameplay bonus + daily reload bonus &amp;
+              <strong>ReachAces</strong> gives <strong>$3,200</strong> extra on top.
+            </p>
+          </article>
+
+          <article class="level-up-card" data-tier="diamond">
+            <div class="level-up-card-top">
+              <span class="level-up-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none"><path d="M32 8l18 14-18 34L14 22 32 8z" fill="url(#g-dia)" stroke="#7ed8ff" stroke-width="1.5"/><path d="M14 22h36M23 22l9 34 9-34" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><text x="32" y="34" text-anchor="middle" fill="#041018" font-size="16" font-weight="700" font-family="Inter,sans-serif">1</text><defs><linearGradient id="g-dia" x1="16" y1="10" x2="48" y2="54"><stop stop-color="#d8f4ff"/><stop offset="1" stop-color="#3aa0d8"/></linearGradient></defs></svg>
+              </span>
+              <div class="level-up-card-meta">
+                <span class="level-up-badge">Diamond 1</span>
+                <p class="level-up-wager">$25,000,000 Wagered</p>
+              </div>
+            </div>
+            <p class="level-up-copy">
+              <strong>Stake</strong> Gives <strong>$12,800</strong> + recent gameplay bonus + daily reload bonus &amp;
+              <strong>ReachAces</strong> gives <strong>$6,400</strong> extra on top.
+            </p>
+          </article>
+
+          <article class="level-up-card" data-tier="diamond">
+            <div class="level-up-card-top">
+              <span class="level-up-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none"><path d="M32 8l18 14-18 34L14 22 32 8z" fill="url(#g-dia2)" stroke="#7ed8ff" stroke-width="1.5"/><path d="M14 22h36M23 22l9 34 9-34" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><text x="32" y="34" text-anchor="middle" fill="#041018" font-size="16" font-weight="700" font-family="Inter,sans-serif">2</text><defs><linearGradient id="g-dia2" x1="16" y1="10" x2="48" y2="54"><stop stop-color="#d8f4ff"/><stop offset="1" stop-color="#3aa0d8"/></linearGradient></defs></svg>
+              </span>
+              <div class="level-up-card-meta">
+                <span class="level-up-badge">Diamond 2</span>
+                <p class="level-up-wager">$50,000,000 Wagered</p>
+              </div>
+            </div>
+            <p class="level-up-copy">
+              <strong>Stake</strong> Gives <strong>$25,600</strong> + recent gameplay bonus + daily reload bonus &amp;
+              <strong>ReachAces</strong> gives <strong>$12,800</strong> extra on top.
+            </p>
+          </article>
+
+          <article class="level-up-card" data-tier="diamond">
+            <div class="level-up-card-top">
+              <span class="level-up-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none"><path d="M32 8l18 14-18 34L14 22 32 8z" fill="url(#g-dia3)" stroke="#7ed8ff" stroke-width="1.5"/><path d="M14 22h36M23 22l9 34 9-34" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><text x="32" y="34" text-anchor="middle" fill="#041018" font-size="16" font-weight="700" font-family="Inter,sans-serif">3</text><defs><linearGradient id="g-dia3" x1="16" y1="10" x2="48" y2="54"><stop stop-color="#d8f4ff"/><stop offset="1" stop-color="#3aa0d8"/></linearGradient></defs></svg>
+              </span>
+              <div class="level-up-card-meta">
+                <span class="level-up-badge">Diamond 3</span>
+                <p class="level-up-wager">$75,000,000 Wagered</p>
+              </div>
+            </div>
+            <p class="level-up-copy">
+              <strong>Stake</strong> Gives <strong>$51,200</strong> + recent gameplay bonus + daily reload bonus &amp;
+              <strong>ReachAces</strong> gives <strong>$20,000</strong> extra on top.
+            </p>
+          </article>
+
+          <article class="level-up-card" data-tier="diamond">
+            <div class="level-up-card-top">
+              <span class="level-up-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none"><path d="M32 8l18 14-18 34L14 22 32 8z" fill="url(#g-dia4)" stroke="#7ed8ff" stroke-width="1.5"/><path d="M14 22h36M23 22l9 34 9-34" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><text x="32" y="34" text-anchor="middle" fill="#041018" font-size="16" font-weight="700" font-family="Inter,sans-serif">4</text><defs><linearGradient id="g-dia4" x1="16" y1="10" x2="48" y2="54"><stop stop-color="#d8f4ff"/><stop offset="1" stop-color="#3aa0d8"/></linearGradient></defs></svg>
+              </span>
+              <div class="level-up-card-meta">
+                <span class="level-up-badge">Diamond 4</span>
+                <p class="level-up-wager">$100,000,000 Wagered</p>
+              </div>
+            </div>
+            <p class="level-up-copy">
+              <strong>Stake</strong> Gives <strong>$102,400</strong> + recent gameplay bonus + daily reload bonus &amp;
+              <strong>ReachAces</strong> gives <strong>$30,000</strong> extra on top.
+            </p>
+          </article>
+
+          <article class="level-up-card" data-tier="diamond">
+            <div class="level-up-card-top">
+              <span class="level-up-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none"><path d="M32 8l18 14-18 34L14 22 32 8z" fill="url(#g-dia5)" stroke="#7ed8ff" stroke-width="1.5"/><path d="M14 22h36M23 22l9 34 9-34" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><text x="32" y="34" text-anchor="middle" fill="#041018" font-size="16" font-weight="700" font-family="Inter,sans-serif">5</text><defs><linearGradient id="g-dia5" x1="16" y1="10" x2="48" y2="54"><stop stop-color="#d8f4ff"/><stop offset="1" stop-color="#3aa0d8"/></linearGradient></defs></svg>
+              </span>
+              <div class="level-up-card-meta">
+                <span class="level-up-badge">Diamond 5</span>
+                <p class="level-up-wager">$125,000,000 Wagered</p>
+              </div>
+            </div>
+            <p class="level-up-copy">
+              <strong>Stake</strong> Gives <strong>$204,800</strong> + recent gameplay bonus + daily reload bonus &amp;
+              <strong>ReachAces</strong> gives <strong>$40,000</strong> extra on top.
+            </p>
+          </article>
+
+          <article class="level-up-card" data-tier="obsidian">
+            <div class="level-up-card-top">
+              <span class="level-up-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none"><path d="M32 8l16 12v16L32 56 16 36V20L32 8z" fill="url(#g-obs)" stroke="#8b93a3" stroke-width="1.5"/><path d="M16 20h32M24 20l8 36 8-36" stroke="rgba(255,255,255,0.18)" stroke-width="1"/><defs><linearGradient id="g-obs" x1="18" y1="10" x2="46" y2="54"><stop stop-color="#4a5160"/><stop offset="1" stop-color="#12151c"/></linearGradient></defs></svg>
+              </span>
+              <div class="level-up-card-meta">
+                <span class="level-up-badge">Obsidian</span>
+                <p class="level-up-wager">$200,000,000 Wagered</p>
+              </div>
+            </div>
+            <p class="level-up-copy">
+              <strong>Stake</strong> Gives <strong>$409,600</strong> + recent gameplay bonus + daily reload bonus &amp;
+              <strong>ReachAces</strong> gives <strong>$80,000</strong> extra on top.
+            </p>
+          </article>
         </div>
       </div>
     </section>
