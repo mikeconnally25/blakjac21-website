@@ -257,9 +257,10 @@ body {
 }
 
 .bh-overlay-table-wrap {
-  max-height: 14rem;
+  --bh-row-height: 2.45rem;
+  --bh-visible-rows: 2;
   overflow: hidden;
-  padding: 0.55rem 0.55rem 0.35rem;
+  padding: 0.55rem 0.55rem 0.45rem;
   border-radius: 0.7rem;
   border: 1px solid rgba(88, 201, 243, 0.12);
   background:
@@ -270,6 +271,10 @@ body {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+}
+
+.bh-overlay-table-header {
+  margin-bottom: 0.15rem;
 }
 
 .bh-overlay-table thead th {
@@ -283,18 +288,52 @@ body {
   border-bottom: 1px solid rgba(88, 201, 243, 0.12);
 }
 
-.bh-overlay-table thead th:nth-child(1) {
+.bh-overlay-table thead th:nth-child(1),
+.bh-overlay-table tbody td:nth-child(1) {
   width: 1.6rem;
 }
 
 .bh-overlay-table thead th:nth-child(3),
-.bh-overlay-table thead th:nth-child(4) {
+.bh-overlay-table thead th:nth-child(4),
+.bh-overlay-table tbody td:nth-child(3),
+.bh-overlay-table tbody td:nth-child(4) {
   width: 4.4rem;
   text-align: right;
 }
 
+.bh-overlay-table-viewport {
+  height: calc(var(--bh-row-height) * var(--bh-visible-rows));
+  overflow: hidden;
+  position: relative;
+}
+
+.bh-overlay-table-track {
+  will-change: transform;
+}
+
+.bh-overlay-table-track.is-scrolling {
+  animation: bh-overlay-row-scroll var(--bh-scroll-duration, 12s) linear infinite;
+}
+
+@keyframes bh-overlay-row-scroll {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bh-overlay-table-track.is-scrolling {
+    animation: none;
+  }
+}
+
 .bh-overlay-table tbody td {
-  padding: 0.42rem 0.35rem;
+  height: var(--bh-row-height);
+  padding: 0.3rem 0.35rem;
   font-size: 0.8rem;
   border-bottom: 1px solid rgba(88, 201, 243, 0.08);
   vertical-align: middle;
@@ -357,7 +396,7 @@ body {
   color: var(--text);
 }
 
-.bh-overlay-table tbody tr:last-child td {
+.bh-overlay-table-track:not(.is-scrolling) tbody tr:last-child td {
   border-bottom: none;
 }
 

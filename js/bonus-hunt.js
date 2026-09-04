@@ -297,7 +297,7 @@ function renderSummary(summary, hunt) {
 
   const profitLoss =
     summary.profitLoss === null || summary.profitLoss === undefined
-      ? Number(summary.totalWon || 0) - Number(summary.totalCost || 0)
+      ? Number(hunt?.startBalance || 0) - Number(summary.totalWon || 0)
       : summary.profitLoss;
 
   totalBonuses.textContent = String(summary.totalBonuses);
@@ -308,8 +308,9 @@ function renderSummary(summary, hunt) {
   }
 
   profit.textContent = formatCurrency(profitLoss);
-  profit.classList.toggle("is-positive", profitLoss > 0);
-  profit.classList.toggle("is-negative", profitLoss < 0);
+  // Positive = still behind start cost; negative = ahead of start.
+  profit.classList.toggle("is-positive", profitLoss < 0);
+  profit.classList.toggle("is-negative", profitLoss > 0);
 
   if (avgBet) {
     avgBet.textContent =

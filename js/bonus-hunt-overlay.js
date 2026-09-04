@@ -1,5 +1,8 @@
 const POLL_MS = 2000;
+const VISIBLE_BONUS_ROWS = 2;
+const SCROLL_SECONDS_PER_ROW = 2.75;
 let slotCatalog = [];
+let lastBonusListKey = "";
 
 function formatMoney(value) {
   const amount = Number(value);
@@ -164,13 +167,61 @@ function createGameCell(bonus) {
   return game;
 }
 
+function bonusListKey(bonuses) {
+  return bonuses
+    .map(
+      (bonus) =>
+        [
+          bonus.id,
+          bonus.number,
+          bonus.slot,
+          bonus.bet,
+          bonus.status,
+          bonus.payout ?? "",
+          getBonusThumbnailUrl(bonus) || "",
+        ].join(":")
+    )
+    .join("|");
+}
+
+function createBonusRow(bonus) {
+  const row = document.createElement("tr");
+  if (bonus.status === "pending") {
+    row.classList.add("is-pending");
+  }
+
+  const index = document.createElement("td");
+  index.textContent = String(bonus.number);
+
+  const game = createGameCell(bonus);
+
+  const bet = document.createElement("td");
+  bet.textContent = formatMoney(bonus.bet);
+
+  const payout = document.createElement("td");
+  payout.textContent =
+    bonus.status === "opened" ? formatMoney(bonus.payout ?? 0) : "—";
+
+  row.append(index, game, bet, payout);
+  return row;
+}
+
 function renderBonusRows(bonuses) {
   const tbody = document.getElementById("bh-bonus-rows");
-  if (!tbody) {
+  const track = document.getElementById("bh-bonus-track");
+  if (!tbody || !track) {
     return;
   }
 
+  const nextKey = bonusListKey(bonuses);
+  if (nextKey === lastBonusListKey) {
+    return;
+  }
+  lastBonusListKey = nextKey;
+
   tbody.replaceChildren();
+  track.classList.remove("is-scrolling");
+  track.style.removeProperty("--bh-scroll-duration");
 
   if (!bonuses.length) {
     const row = document.createElement("tr");
@@ -183,29 +234,24 @@ function renderBonusRows(bonuses) {
     return;
   }
 
-  const visible = bonuses.slice(-8);
-
-  for (const bonus of visible) {
-    const row = document.createElement("tr");
-    if (bonus.status === "pending") {
-      row.classList.add("is-pending");
-    }
-
-    const index = document.createElement("td");
-    index.textContent = String(bonus.number);
-
-    const game = createGameCell(bonus);
-
-    const bet = document.createElement("td");
-    bet.textContent = formatMoney(bonus.bet);
-
-    const payout = document.createElement("td");
-    payout.textContent =
-      bonus.status === "opened" ? formatMoney(bonus.payout ?? 0) : "—";
-
-    row.append(index, game, bet, payout);
-    tbody.append(row);
+  for (const bonus of bonuses) {
+    tbody.append(createBonusRow(bonus));
   }
+
+  if (bonuses.length <= VISIBLE_BONUS_ROWS) {
+    return;
+  }
+
+  // Duplicate rows for a seamless loop while only 2 stay visible.
+  for (const bonus of bonuses) {
+    tbody.append(createBonusRow(bonus));
+  }
+
+  track.style.setProperty(
+    "--bh-scroll-duration",
+    `${Math.max(bonuses.length * SCROLL_SECONDS_PER_ROW, 8)}s`
+  );
+  track.classList.add("is-scrolling");
 }
 
 function renderOverlay({ hunt, summary, bonuses, huntNumber }) {

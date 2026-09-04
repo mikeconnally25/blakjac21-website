@@ -75,7 +75,7 @@
       </section>
 
       <section class="bh-overlay-table-wrap" aria-label="Bonus list">
-        <table class="bh-overlay-table">
+        <table class="bh-overlay-table bh-overlay-table-header">
           <thead>
             <tr>
               <th scope="col">#</th>
@@ -84,12 +84,18 @@
               <th scope="col">Payout</th>
             </tr>
           </thead>
-          <tbody id="bh-bonus-rows">
-            <tr class="bh-overlay-empty-row">
-              <td colspan="4">No bonuses yet</td>
-            </tr>
-          </tbody>
         </table>
+        <div class="bh-overlay-table-viewport">
+          <div class="bh-overlay-table-track" id="bh-bonus-track">
+            <table class="bh-overlay-table">
+              <tbody id="bh-bonus-rows">
+                <tr class="bh-overlay-empty-row">
+                  <td colspan="4">No bonuses yet</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
     </div>
 
