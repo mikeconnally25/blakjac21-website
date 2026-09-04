@@ -33,8 +33,7 @@ body {
   padding: 1.05rem 1.15rem 1.15rem 1.25rem;
   border-radius: 1rem;
   border: 1px solid rgba(88, 201, 243, 0.18);
-  background:
-    linear-gradient(155deg, rgba(18, 31, 43, 0.96), rgba(6, 12, 18, 0.94));
+  background: linear-gradient(155deg, #121f2b, #060c12);
   box-shadow:
     0 16px 44px rgba(0, 0, 0, 0.45),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
