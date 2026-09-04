@@ -14,55 +14,124 @@ body {
 
 body {
   font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
-  color: #f4f7fb;
+  color: #eef6fb;
   -webkit-font-smoothing: antialiased;
 }
 
 .bh-overlay {
+  --accent: #58c9f3;
+  --accent-bright: #7ed8ff;
+  --text: #eef6fb;
+  --text-muted: #8ba4b6;
+  --heading-gradient: linear-gradient(115deg, #eef6fb 10%, #7ed8ff 55%, #58c9f3 100%);
+  --font-display: "Teko", sans-serif;
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   width: 26rem;
-  padding: 1rem 1.1rem 1.15rem;
-  border-radius: 0.65rem;
-  background: linear-gradient(
-    180deg,
-    rgba(14, 22, 32, 0.96) 0%,
-    rgba(10, 16, 24, 0.98) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  padding: 1.05rem 1.15rem 1.15rem 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(88, 201, 243, 0.18);
+  background:
+    linear-gradient(155deg, rgba(18, 31, 43, 0.96), rgba(6, 12, 18, 0.94));
+  box-shadow:
+    0 16px 44px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.bh-overlay::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #7ed8ff, rgba(88, 201, 243, 0.15));
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.bh-overlay::after {
+  content: "";
+  position: absolute;
+  right: -20%;
+  top: -30%;
+  width: 12rem;
+  height: 12rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(88, 201, 243, 0.18), transparent 68%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bh-overlay > * {
+  position: relative;
+  z-index: 1;
 }
 
 .bh-overlay-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.85rem;
 }
 
+.bh-overlay-header-copy {
+  min-width: 0;
+}
+
+.bh-overlay-eyebrow {
+  margin: 0 0 0.15rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
 .bh-overlay-title {
   margin: 0;
-  font-size: 1.35rem;
+  font-family: var(--font-display);
+  font-size: 2rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.04em;
+  line-height: 0.92;
+  text-transform: uppercase;
+  background: var(--heading-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .bh-overlay-hunt-id {
-  font-size: 0.95rem;
+  flex-shrink: 0;
+  margin-top: 0.35rem;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(88, 201, 243, 0.28);
+  background: rgba(88, 201, 243, 0.1);
+  font-family: var(--font-display);
+  font-size: 1.05rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.72);
+  letter-spacing: 0.04em;
+  color: var(--accent-bright);
 }
 
 .bh-overlay-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.65rem 1.25rem;
-  padding-bottom: 0.9rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 0.45rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(88, 201, 243, 0.12);
 }
 
 .bh-overlay-stat-col {
   display: grid;
-  gap: 0.55rem;
+  gap: 0.4rem;
 }
 
 .bh-overlay-stat {
@@ -70,26 +139,33 @@ body {
   align-items: baseline;
   justify-content: space-between;
   gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 0.55rem;
+  border: 1px solid rgba(88, 201, 243, 0.12);
+  background:
+    linear-gradient(155deg, rgba(14, 24, 34, 0.9), rgba(6, 12, 18, 0.86));
 }
 
 .bh-overlay-stat-label {
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
 }
 
 .bh-overlay-stat-value {
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .bh-overlay-highlights {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.55rem;
-  margin: 0.9rem 0;
+  gap: 0.5rem;
+  margin: 0.85rem 0;
 }
 
 .bh-overlay-highlight {
@@ -98,31 +174,46 @@ body {
   grid-template-columns: 2.35rem minmax(0, 1fr);
   gap: 0.55rem;
   align-items: center;
-  min-height: 3.4rem;
-  padding: 0.55rem 0.6rem;
-  border-radius: 0.45rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  min-height: 3.5rem;
+  padding: 0.55rem 0.6rem 0.55rem 0.7rem;
+  border-radius: 0.7rem;
+  background:
+    linear-gradient(155deg, rgba(18, 31, 43, 0.92), rgba(6, 12, 18, 0.88));
+  border: 1px solid rgba(88, 201, 243, 0.14);
+  overflow: hidden;
+}
+
+.bh-overlay-highlight::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, #7ed8ff, rgba(88, 201, 243, 0.15));
+  opacity: 0.75;
 }
 
 .bh-overlay-star {
   position: absolute;
   top: 0.35rem;
-  left: 0.4rem;
+  left: 0.45rem;
   font-size: 0.62rem;
-  color: #f5c842;
+  color: #f0c98e;
   line-height: 1;
+  z-index: 1;
 }
 
 .bh-overlay-highlight-thumb {
   width: 2.35rem;
   height: 2.35rem;
-  border-radius: 0.35rem;
+  border-radius: 0.4rem;
   overflow: hidden;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background: rgba(88, 201, 243, 0.1);
+  border: 1px solid rgba(88, 201, 243, 0.16);
+  color: var(--accent-bright);
   font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -141,31 +232,39 @@ body {
 
 .bh-overlay-highlight-label {
   margin: 0 0 0.12rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .bh-overlay-highlight-slot {
   margin: 0;
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 700;
   line-height: 1.25;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--text);
 }
 
 .bh-overlay-highlight-meta {
   margin: 0.1rem 0 0;
   font-size: 0.74rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.72);
+  font-weight: 600;
+  color: var(--accent-bright);
 }
 
 .bh-overlay-table-wrap {
   max-height: 14rem;
   overflow: hidden;
+  padding: 0.55rem 0.55rem 0.35rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgba(88, 201, 243, 0.12);
+  background:
+    linear-gradient(155deg, rgba(14, 24, 34, 0.88), rgba(6, 12, 18, 0.84));
 }
 
 .bh-overlay-table {
@@ -175,12 +274,14 @@ body {
 }
 
 .bh-overlay-table thead th {
-  padding: 0 0.35rem 0.45rem;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.45);
+  padding: 0.15rem 0.35rem 0.45rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
   text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(88, 201, 243, 0.12);
 }
 
 .bh-overlay-table thead th:nth-child(1) {
@@ -196,17 +297,21 @@ body {
 .bh-overlay-table tbody td {
   padding: 0.42rem 0.35rem;
   font-size: 0.8rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(88, 201, 243, 0.08);
   vertical-align: middle;
 }
 
 .bh-overlay-table tbody td:nth-child(1) {
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(126, 216, 255, 0.65);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
   font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 .bh-overlay-table tbody td:nth-child(2) {
   font-weight: 600;
+  color: var(--text);
 }
 
 .bh-overlay-game-cell {
@@ -220,12 +325,13 @@ body {
   flex-shrink: 0;
   width: 1.55rem;
   height: 1.55rem;
-  border-radius: 0.3rem;
+  border-radius: 0.35rem;
   overflow: hidden;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background: rgba(88, 201, 243, 0.1);
+  border: 1px solid rgba(88, 201, 243, 0.14);
+  color: var(--accent-bright);
   font-size: 0.52rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -249,6 +355,7 @@ body {
 .bh-overlay-table tbody td:nth-child(4) {
   text-align: right;
   font-variant-numeric: tabular-nums;
+  color: var(--text);
 }
 
 .bh-overlay-table tbody tr:last-child td {
@@ -256,12 +363,12 @@ body {
 }
 
 .bh-overlay-table tbody tr.is-pending td:nth-child(4) {
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--text-muted);
 }
 
 .bh-overlay-empty-row td {
   padding: 0.75rem 0.35rem;
   text-align: center;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   font-size: 0.78rem;
 }
