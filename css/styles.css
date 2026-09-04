@@ -6032,15 +6032,11 @@ ul {
 
 .level-up-icon {
   flex-shrink: 0;
-  width: 3.4rem;
-  height: 3.4rem;
+  width: 3.75rem;
+  height: 3.75rem;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.1), transparent 52%),
-    radial-gradient(circle at 50% 55%, rgba(0, 0, 0, 0.28), transparent 70%);
-  filter: drop-shadow(0 0 14px rgba(88, 201, 243, 0.28));
+  filter: drop-shadow(0 0 16px rgba(88, 201, 243, 0.35));
 }
 
 .level-up-icon svg {
@@ -6051,27 +6047,27 @@ ul {
 }
 
 .level-up-card[data-tier="bronze"] .level-up-icon {
-  filter: drop-shadow(0 0 10px rgba(196, 146, 74, 0.4));
+  filter: drop-shadow(0 0 14px rgba(232, 168, 90, 0.55));
 }
 
 .level-up-card[data-tier="silver"] .level-up-icon {
-  filter: drop-shadow(0 0 10px rgba(184, 196, 212, 0.35));
+  filter: drop-shadow(0 0 14px rgba(220, 230, 242, 0.45));
 }
 
 .level-up-card[data-tier="gold"] .level-up-icon {
-  filter: drop-shadow(0 0 14px rgba(240, 196, 90, 0.55));
+  filter: drop-shadow(0 0 16px rgba(255, 210, 74, 0.6));
 }
 
 .level-up-card[data-tier="platinum"] .level-up-icon {
-  filter: drop-shadow(0 0 14px rgba(94, 200, 255, 0.48));
+  filter: drop-shadow(0 0 16px rgba(94, 200, 255, 0.55));
 }
 
 .level-up-card[data-tier="diamond"] .level-up-icon {
-  filter: drop-shadow(0 0 14px rgba(126, 216, 255, 0.55));
+  filter: drop-shadow(0 0 18px rgba(154, 232, 255, 0.6));
 }
 
 .level-up-card[data-tier="obsidian"] .level-up-icon {
-  filter: drop-shadow(0 0 12px rgba(140, 120, 180, 0.35));
+  filter: drop-shadow(0 0 16px rgba(155, 138, 212, 0.45));
 }
 
 .level-up-card-meta {
