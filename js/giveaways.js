@@ -5,6 +5,7 @@ let giveawayAffiliatesOnly = false;
 let giveawaySubscribersOnly = false;
 let giveawayEntries = [];
 let giveawayWinner = null;
+let viewerIsWinner = false;
 let pollTimer = null;
 let isRolling = false;
 let lastAnimatedWinnerId = null;
@@ -385,7 +386,7 @@ function updateWinnerChat(winner, { celebrate = false } = {}) {
   const openLink = document.getElementById("giveaways-kick-chat-open");
   if (!panel) return;
 
-  const show = Boolean(winner);
+  const show = Boolean(winner) && viewerIsWinner;
   const wasHidden = panel.classList.contains("is-hidden");
   panel.classList.toggle("is-hidden", !show);
 
@@ -399,7 +400,7 @@ function updateWinnerChat(winner, { celebrate = false } = {}) {
   }
 
   if (nameEl) {
-    nameEl.textContent = winner.username || "the winner";
+    nameEl.textContent = winner.username || "you";
   }
 
   if (openLink) {
@@ -558,9 +559,11 @@ function applyStatusData(data) {
   giveawaySubscribersOnly = Boolean(data.subscribersOnly);
   giveawayEntries = Array.isArray(data.entries) ? data.entries : [];
   giveawayWinner = data.winner || null;
+  viewerIsWinner = Boolean(data.viewerIsWinner);
 
   if (!giveawayWinner) {
     lastAnimatedWinnerId = null;
+    viewerIsWinner = false;
   }
 
   return {
@@ -751,8 +754,7 @@ async function clearEntries() {
     throw new Error(data.error || "Could not clear entries.");
   }
 
-  giveawayEntries = [];
-  giveawayWinner = null;
+  applyStatusData(data);
   lastAnimatedWinnerId = null;
   clearWinnerResult();
   updatePanels();
