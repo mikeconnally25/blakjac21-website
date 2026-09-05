@@ -245,7 +245,7 @@ function renderAccounts(users) {
     const badges = document.createElement("span");
     badges.className = "accounts-badges";
 
-    if (user.stakeCodeVerified) {
+    if (Boolean(user.stakeCodeVerified)) {
       const affBadge = document.createElement("span");
       affBadge.className = "accounts-aff-badge";
       affBadge.textContent = "AFF";
@@ -253,7 +253,7 @@ function renderAccounts(users) {
       badges.append(affBadge);
     }
 
-    if (user.kickSubActive) {
+    if (Boolean(user.kickSubActive)) {
       const subBadge = document.createElement("span");
       subBadge.className = "accounts-sub-badge";
       subBadge.textContent = "SUB";
