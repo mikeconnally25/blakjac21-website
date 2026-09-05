@@ -4298,6 +4298,39 @@ ul {
   text-align: center;
 }
 
+.requests-hub-aff-note {
+  margin: 0.65rem 0 0;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(83, 252, 24, 0.28);
+  background: rgba(83, 252, 24, 0.08);
+  color: #9dff73;
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.requests-hub-aff-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(88, 201, 243, 0.14);
+  background:
+    linear-gradient(155deg, rgba(14, 24, 34, 0.9), rgba(6, 12, 18, 0.86));
+}
+
+.requests-hub-aff-toggle .admin-panel-label {
+  margin: 0 0 0.2rem;
+}
+
+.requests-hub-aff-toggle .admin-panel-text {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
 .requests-hub-admin {
   display: flex;
   flex-direction: column;

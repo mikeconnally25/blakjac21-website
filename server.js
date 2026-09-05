@@ -24,6 +24,7 @@ import {
   handleBonusHuntRequestsClear,
   handleBonusHuntRequestsList,
   handleBonusHuntRequestsToggle,
+  handleBonusHuntRequestsAffSubOnly,
   handleBonusHuntSlots,
   handleBonusHuntSlotsRefresh,
   handleBonusHuntSlotsImport,
@@ -135,6 +136,9 @@ app.post("/api/bonus-hunt/requests/clear", (req, res) =>
 );
 app.post("/api/bonus-hunt/requests/toggle", (req, res) =>
   handleBonusHuntRequestsToggle(req, res)
+);
+app.post("/api/bonus-hunt/requests/aff-sub-only", (req, res) =>
+  handleBonusHuntRequestsAffSubOnly(req, res)
 );
 app.post("/api/kick/subscribe", (req, res) => handleKickChatSubscribe(req, res));
 app.get("/api/kick/chat-status", (req, res) => handleKickChatStatus(req, res));

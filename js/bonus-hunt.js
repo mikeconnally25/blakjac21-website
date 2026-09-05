@@ -6,6 +6,7 @@ let slotCatalog = [];
 let slotGroups = [];
 let slotCatalogUpdatedAt = null;
 let acceptingRequests = false;
+let affiliatesAndSubsOnly = false;
 let huntBonuses = [];
 let slotRequests = [];
 let mySlotRequests = [];
@@ -1261,7 +1262,9 @@ function updateCollectingStatus() {
   const isAdmin = Boolean(currentUser?.isAdmin);
 
   const label = acceptingRequests
-    ? REQUEST_STATUS_LABELS.open
+    ? affiliatesAndSubsOnly
+      ? "Collecting · AFF/SUB"
+      : REQUEST_STATUS_LABELS.open
     : REQUEST_STATUS_LABELS.closed;
   const statusClass = acceptingRequests
     ? "hunt-status hunt-status--collecting hunt-status-toggle"
@@ -1278,7 +1281,9 @@ function updateCollectingStatus() {
     status.title = isAdmin
       ? "Click to toggle slot request collection"
       : acceptingRequests
-        ? "Collecting slot requests"
+        ? affiliatesAndSubsOnly
+          ? "Collecting slot requests from AFF and Kick subs"
+          : "Collecting slot requests"
         : "Check back later for slot requests";
   }
 
@@ -1303,6 +1308,46 @@ function updateToggleLabel() {
   }
 
   updateCollectingStatus();
+  updateAffSubOnlyLabel();
+}
+
+function updateAffSubOnlyLabel() {
+  const label = document.getElementById("slot-requests-aff-sub-status");
+  const toggle = document.getElementById("slot-requests-aff-sub-toggle");
+  const note = document.getElementById("slot-request-aff-sub-note");
+
+  if (label) {
+    label.textContent = affiliatesAndSubsOnly
+      ? "Only AFF users and Kick subscribers can request"
+      : "Anyone can request slots while collecting is on";
+  }
+
+  if (toggle && currentUser?.isAdmin) {
+    toggle.checked = affiliatesAndSubsOnly;
+  }
+
+  note?.classList.toggle("is-hidden", !affiliatesAndSubsOnly || !acceptingRequests);
+}
+
+async function setAffiliatesAndSubsOnly(nextValue) {
+  const response = await fetch("/api/bonus-hunt/requests/aff-sub-only", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ affiliatesAndSubsOnly: nextValue }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || "Could not update AFF/SUB-only setting.");
+  }
+
+  affiliatesAndSubsOnly = Boolean(data.affiliatesAndSubsOnly);
+  acceptingRequests = Boolean(data.acceptingRequests);
+  updateAffSubOnlyLabel();
+  updateRequestPanels();
+  updateToggleLabel();
+  return data;
 }
 
 async function setAcceptingRequests(nextAccepting) {
@@ -1319,6 +1364,9 @@ async function setAcceptingRequests(nextAccepting) {
   }
 
   acceptingRequests = Boolean(data.acceptingRequests);
+  if ("affiliatesAndSubsOnly" in data) {
+    affiliatesAndSubsOnly = Boolean(data.affiliatesAndSubsOnly);
+  }
   updateRequestPanels();
   updateToggleLabel();
   renderSlotRequests(slotRequests);
@@ -1782,6 +1830,7 @@ async function loadSlotRequests({ forceRender = false } = {}) {
 
     const data = await response.json();
     acceptingRequests = Boolean(data.acceptingRequests);
+    affiliatesAndSubsOnly = Boolean(data.affiliatesAndSubsOnly);
     let incoming = data.requests || [];
     if (pendingSlotRequestRemovals.size) {
       incoming = incoming.filter(
@@ -2293,6 +2342,9 @@ function initAdminForm() {
       }
 
       acceptingRequests = Boolean(data.acceptingRequests);
+      if ("affiliatesAndSubsOnly" in data) {
+        affiliatesAndSubsOnly = Boolean(data.affiliatesAndSubsOnly);
+      }
       updateRequestPanels();
       updateToggleLabel();
       await Promise.all([loadSlotCatalog(), loadSlotRequests()]);
@@ -2415,6 +2467,33 @@ function initAdminForm() {
     } catch {
       toggle.checked = !nextAccepting;
       setStatus("Could not update slot request setting. Try again.", "error");
+    } finally {
+      toggle.disabled = false;
+    }
+  });
+
+  document.getElementById("slot-requests-aff-sub-toggle")?.addEventListener("change", async (event) => {
+    const toggle = event.currentTarget;
+    const nextValue = toggle.checked;
+
+    toggle.disabled = true;
+    setStatus(
+      nextValue
+        ? "Turning on AFF/SUB-only requests..."
+        : "Opening slot requests to everyone..."
+    );
+
+    try {
+      await setAffiliatesAndSubsOnly(nextValue);
+      setStatus(
+        affiliatesAndSubsOnly
+          ? "AFF/SUB-only mode on. Only verified affiliates and Kick subs can request."
+          : "AFF/SUB-only mode off. Anyone can request while collecting is on.",
+        "success"
+      );
+    } catch (error) {
+      toggle.checked = !nextValue;
+      setStatus(error.message || "Could not update AFF/SUB-only setting.", "error");
     } finally {
       toggle.disabled = false;
     }
