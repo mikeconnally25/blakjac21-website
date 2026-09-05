@@ -167,6 +167,10 @@ body {
   margin: 0.85rem 0;
 }
 
+.bh-overlay-highlights.is-single {
+  grid-template-columns: 1fr;
+}
+
 .bh-overlay-highlight {
   position: relative;
   display: grid;
@@ -180,6 +184,10 @@ body {
     linear-gradient(155deg, rgba(18, 31, 43, 0.92), rgba(6, 12, 18, 0.88));
   border: 1px solid rgba(88, 201, 243, 0.14);
   overflow: hidden;
+}
+
+.bh-overlay-highlight.is-hidden {
+  display: none;
 }
 
 .bh-overlay-highlight::before {

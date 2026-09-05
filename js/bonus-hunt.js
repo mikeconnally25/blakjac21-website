@@ -20,9 +20,11 @@ let stakeSyncInProgress = false;
 let huntMeta = {
   title: "Live Hunt",
   startBalance: 0,
+  showHighestMulti: false,
   status: "collecting",
 };
 let pastHunts = [];
+let lastSummary = null;
 
 const REQUEST_STATUS_LABELS = {
   open: "Collecting",
@@ -278,9 +280,58 @@ function renderHuntHeader(hunt) {
   if (startInput && document.activeElement !== startInput) {
     startInput.value = Number(hunt?.startBalance || 0).toFixed(2);
   }
+
+  updateHighestMultiToggle(hunt);
+}
+
+function updateHighestMultiToggle(hunt) {
+  const toggle = document.getElementById("hunt-highest-multi-toggle");
+  const status = document.getElementById("hunt-highest-multi-status");
+  const enabled = Boolean(hunt?.showHighestMulti);
+
+  if (toggle && currentUser?.isAdmin && document.activeElement !== toggle) {
+    toggle.checked = enabled;
+  }
+
+  if (status) {
+    status.textContent = enabled
+      ? "Shown on tracker and OBS Lucky Win"
+      : "Hidden on tracker and OBS Lucky Win";
+  }
+}
+
+function renderHighestMulti(summary, hunt) {
+  const callout = document.getElementById("hunt-highest-multi");
+  const value = document.getElementById("hunt-highest-multi-value");
+  const byline = document.getElementById("hunt-highest-multi-byline");
+  if (!callout || !value || !byline) return;
+
+  const show = Boolean(hunt?.showHighestMulti);
+  const highest = summary?.highestMulti || null;
+  const visible = show && highest && Number.isFinite(Number(highest.multiplier));
+
+  callout.classList.toggle("is-hidden", !visible);
+
+  if (!visible) {
+    value.textContent = "—";
+    byline.textContent = "";
+    byline.classList.add("is-hidden");
+    return;
+  }
+
+  value.textContent = `${formatMultiplier(highest.multiplier)} · ${highest.slot}`;
+  const requester = String(highest.requestedBy || "").trim();
+  if (requester) {
+    byline.textContent = `by ${requester}`;
+    byline.classList.remove("is-hidden");
+  } else {
+    byline.textContent = "";
+    byline.classList.add("is-hidden");
+  }
 }
 
 function renderSummary(summary, hunt) {
+  lastSummary = summary || null;
   const totalBonuses = document.getElementById("summary-total");
   const startCost = document.getElementById("summary-start-cost");
   const winnings = document.getElementById("summary-winnings");
@@ -393,6 +444,8 @@ function renderSummary(summary, hunt) {
       progress.textContent = `Hunt complete · ${formatCurrency(summary.totalWon)} won`;
     }
   }
+
+  renderHighestMulti(summary, hunt);
 }
 
 function bonusesUnchanged(previous, next) {
@@ -1488,9 +1541,13 @@ function mountSlotQueuePanel() {
 function updatePanels() {
   const adminPanel = document.getElementById("bonus-hunt-admin");
   const settingsForm = document.getElementById("hunt-settings-form");
+  const highestMultiToggle = document.getElementById("hunt-highest-multi-toggle");
 
   adminPanel?.classList.toggle("is-hidden", !currentUser?.isAdmin);
   settingsForm?.classList.toggle("is-hidden", !currentUser?.isAdmin);
+  if (highestMultiToggle) {
+    highestMultiToggle.disabled = !currentUser?.isAdmin;
+  }
   mountSlotQueuePanel();
   updateRequestPanels();
   updateToggleLabel();
@@ -2268,6 +2325,63 @@ function initOverlayPreview() {
   });
 }
 
+async function setShowHighestMulti(nextValue) {
+  const response = await fetch("/api/bonus-hunt/settings", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      title: huntMeta.title,
+      startBalance: huntMeta.startBalance,
+      showHighestMulti: nextValue,
+    }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || "Could not update highest multi setting.");
+  }
+
+  huntMeta = data.hunt || {
+    ...huntMeta,
+    showHighestMulti: nextValue,
+  };
+  renderHuntHeader(huntMeta);
+  renderSummary(data.summary || lastSummary || {}, huntMeta);
+  return data;
+}
+
+function initHighestMultiToggle() {
+  const toggle = document.getElementById("hunt-highest-multi-toggle");
+  if (!toggle) return;
+
+  toggle.addEventListener("change", async () => {
+    const nextValue = toggle.checked;
+    toggle.disabled = true;
+    setStatus(
+      nextValue ? "Showing highest multi..." : "Hiding highest multi..."
+    );
+
+    try {
+      await setShowHighestMulti(nextValue);
+      setStatus(
+        nextValue
+          ? "Highest multi is on for the tracker and OBS Lucky Win."
+          : "Highest multi is hidden.",
+        "success"
+      );
+    } catch (error) {
+      toggle.checked = !nextValue;
+      setStatus(
+        error.message || "Could not update highest multi setting.",
+        "error"
+      );
+    } finally {
+      toggle.disabled = !currentUser?.isAdmin;
+    }
+  });
+}
+
 function initAdminForm() {
   const settingsForm = document.getElementById("hunt-settings-form");
   settingsForm?.addEventListener("submit", async (event) => {
@@ -2285,7 +2399,11 @@ function initAdminForm() {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, startBalance }),
+        body: JSON.stringify({
+          title,
+          startBalance,
+          showHighestMulti: Boolean(huntMeta.showHighestMulti),
+        }),
       });
 
       const data = await response.json();
@@ -2736,6 +2854,7 @@ async function bootstrapBonusHuntPage() {
 }
 
 initAdminForm();
+initHighestMultiToggle();
 initOverlayPreview();
 initSlotRequestForm();
 initSlotRequestListActions();

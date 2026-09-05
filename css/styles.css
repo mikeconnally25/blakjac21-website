@@ -3235,6 +3235,44 @@ ul {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+.hunt-highest-multi {
+  position: relative;
+  display: grid;
+  gap: 0.2rem;
+  margin: 0 0 0.85rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(255, 210, 125, 0.28);
+  border-radius: 12px;
+  background:
+    linear-gradient(155deg, rgba(48, 34, 12, 0.72), rgba(12, 16, 22, 0.9));
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.hunt-highest-multi-label {
+  margin: 0;
+  color: #ffd27d;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hunt-highest-multi-value {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.hunt-highest-multi-byline {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
 .hunt-stat {
   display: grid;
   gap: 0.35rem;

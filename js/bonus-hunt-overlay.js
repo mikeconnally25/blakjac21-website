@@ -334,7 +334,13 @@ function renderOverlay({ hunt, summary, bonuses, huntNumber }) {
   }
 
   const best = findBestWin(bonuses);
-  const lucky = findLuckyWin(bonuses);
+  const showLucky = Boolean(hunt?.showHighestMulti);
+  const lucky = showLucky ? findLuckyWin(bonuses) : null;
+  const luckyCard = document.getElementById("bh-lucky-win");
+  luckyCard?.classList.toggle("is-hidden", !showLucky);
+  document
+    .querySelector(".bh-overlay-highlights")
+    ?.classList.toggle("is-single", !showLucky);
 
   renderHighlight({
     bonus: best,
@@ -345,14 +351,19 @@ function renderOverlay({ hunt, summary, bonuses, huntNumber }) {
       `${formatMoney(bonus.payout ?? 0)} (${formatMoney(bonus.bet)})`,
   });
 
-  renderHighlight({
-    bonus: lucky,
-    thumbId: "bh-lucky-thumb",
-    slotId: "bh-lucky-slot",
-    metaId: "bh-lucky-meta",
-    metaFormatter: (bonus) =>
-      `${formatMultiplier(bonus.multiplier)} (${formatMoney(bonus.bet)})`,
-  });
+  if (showLucky) {
+    renderHighlight({
+      bonus: lucky,
+      thumbId: "bh-lucky-thumb",
+      slotId: "bh-lucky-slot",
+      metaId: "bh-lucky-meta",
+      metaFormatter: (bonus) => {
+        const multi = `${formatMultiplier(bonus.multiplier)} (${formatMoney(bonus.bet)})`;
+        const requester = String(bonus.requestedBy || "").trim();
+        return requester ? `${multi} · by ${requester}` : multi;
+      },
+    });
+  }
 
   renderBonusRows(bonuses);
 }

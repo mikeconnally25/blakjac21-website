@@ -137,6 +137,12 @@
                 </div>
               </div>
 
+              <div class="hunt-highest-multi is-hidden" id="hunt-highest-multi" aria-live="polite">
+                <p class="hunt-highest-multi-label">Highest Multi</p>
+                <p class="hunt-highest-multi-value" id="hunt-highest-multi-value">—</p>
+                <p class="hunt-highest-multi-byline is-hidden" id="hunt-highest-multi-byline"></p>
+              </div>
+
               <div class="hunt-progress-wrap">
                 <div class="hunt-progress-meta">
                   <p class="hunt-progress" id="hunt-progress">No bonuses yet.</p>
@@ -344,6 +350,23 @@
                   </p>
                 </div>
                 <a href="/bonus-hunt/overlay/" class="btn btn-sm btn-outline">Open full preview</a>
+              </div>
+
+              <div class="admin-panel-row giveaways-admin-aff" id="hunt-highest-multi-row">
+                <div>
+                  <p class="admin-panel-label">Show highest multi</p>
+                  <p class="admin-panel-text" id="hunt-highest-multi-status">
+                    Hidden on tracker and OBS Lucky Win
+                  </p>
+                </div>
+                <label class="toggle">
+                  <input
+                    type="checkbox"
+                    id="hunt-highest-multi-toggle"
+                    aria-labelledby="hunt-highest-multi-status"
+                  />
+                  <span class="toggle-slider" aria-hidden="true"></span>
+                </label>
               </div>
 
               <div class="hunt-overlay-admin-preview" aria-label="OBS overlay preview">
