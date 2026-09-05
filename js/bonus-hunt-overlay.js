@@ -167,6 +167,13 @@ function createGameCell(bonus) {
   name.textContent = bonus.slot;
   copy.append(name);
 
+  if (bonus.superBonus) {
+    const superBadge = document.createElement("span");
+    superBadge.className = "bh-overlay-super-badge";
+    superBadge.textContent = "SUPER";
+    copy.append(superBadge);
+  }
+
   const requester = String(bonus.requestedBy || "").trim();
   if (requester) {
     const byline = document.createElement("span");
@@ -191,6 +198,7 @@ function bonusListKey(bonuses) {
           bonus.bet,
           bonus.status,
           bonus.payout ?? "",
+          bonus.superBonus ? "1" : "0",
           getBonusThumbnailUrl(bonus) || "",
         ].join(":")
     )
@@ -201,6 +209,9 @@ function createBonusRow(bonus) {
   const row = document.createElement("tr");
   if (bonus.status === "pending") {
     row.classList.add("is-pending");
+  }
+  if (bonus.superBonus) {
+    row.classList.add("is-super");
   }
 
   const index = document.createElement("td");

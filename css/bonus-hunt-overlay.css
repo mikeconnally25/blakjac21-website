@@ -396,6 +396,24 @@ body {
   line-height: 1.15;
 }
 
+.bh-overlay-super-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.2rem;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  color: #1a1204;
+  background: linear-gradient(135deg, #ffd27d, #f0a020);
+}
+
+.bh-overlay-table tbody tr.is-super td {
+  background: rgba(240, 160, 32, 0.08);
+}
+
 .bh-overlay-game-requester {
   overflow: hidden;
   text-overflow: ellipsis;

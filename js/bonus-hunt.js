@@ -409,7 +409,8 @@ function bonusesUnchanged(previous, next) {
       current.bet !== incoming.bet ||
       current.slot !== incoming.slot ||
       current.thumbnailUrl !== incoming.thumbnailUrl ||
-      current.requestedBy !== incoming.requestedBy
+      current.requestedBy !== incoming.requestedBy ||
+      Boolean(current.superBonus) !== Boolean(incoming.superBonus)
     ) {
       return false;
     }
@@ -525,6 +526,10 @@ function renderBonusList(bonuses) {
       item.classList.add("is-opening");
     }
 
+    if (bonus.superBonus) {
+      item.classList.add("is-super");
+    }
+
     const index = document.createElement("span");
     index.className = "hunt-bonus-index";
     index.textContent = `#${bonus.number}`;
@@ -555,6 +560,13 @@ function renderBonusList(bonuses) {
     provider.textContent = `Bet ${formatCurrency(bonus.bet)}`;
 
     main.append(slot, provider);
+
+    if (bonus.superBonus) {
+      const superBadge = document.createElement("span");
+      superBadge.className = "hunt-bonus-super-badge";
+      superBadge.textContent = "Super";
+      main.append(superBadge);
+    }
 
     if (bonus.requestedBy) {
       const requester = document.createElement("p");
@@ -597,6 +609,34 @@ function renderBonusList(bonuses) {
     if (currentUser?.isAdmin) {
       const actions = document.createElement("div");
       actions.className = "hunt-bonus-admin";
+
+      const superToggle = document.createElement("label");
+      superToggle.className = "hunt-bonus-super-toggle";
+
+      const superLabel = document.createElement("span");
+      superLabel.className = "hunt-bonus-win-label";
+      superLabel.textContent = "Super";
+
+      const toggle = document.createElement("span");
+      toggle.className = "toggle";
+
+      const toggleInput = document.createElement("input");
+      toggleInput.type = "checkbox";
+      toggleInput.checked = Boolean(bonus.superBonus);
+      toggleInput.setAttribute("aria-label", `Mark ${bonus.slot} as super bonus`);
+
+      const toggleSlider = document.createElement("span");
+      toggleSlider.className = "toggle-slider";
+      toggleSlider.setAttribute("aria-hidden", "true");
+
+      toggle.append(toggleInput, toggleSlider);
+      superToggle.append(superLabel, toggle);
+
+      toggleInput.addEventListener("change", () => {
+        void setBonusSuper(bonus.id, toggleInput.checked, toggleInput);
+      });
+
+      actions.append(superToggle);
 
       if (bonus.status === "pending") {
         const payoutField = document.createElement("div");
@@ -814,7 +854,7 @@ function renderPastHunts(hunts) {
 
       const slot = document.createElement("span");
       slot.className = "past-hunt-bonus-slot";
-      slot.textContent = bonus.slot;
+      slot.textContent = bonus.superBonus ? `${bonus.slot} · Super` : bonus.slot;
 
       const result = document.createElement("span");
       result.className = "past-hunt-bonus-result";
@@ -1971,6 +2011,44 @@ async function saveBonusPayout(id, rawPayout, button) {
     setStatus("Could not save payout. Try again.", "error");
   } finally {
     button.disabled = false;
+  }
+}
+
+async function setBonusSuper(id, superBonus, input) {
+  if (input) {
+    input.disabled = true;
+  }
+
+  setStatus(superBonus ? "Marking super bonus..." : "Clearing super bonus...");
+
+  try {
+    const response = await fetch("/api/bonus-hunt/update", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, superBonus: Boolean(superBonus) }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      setStatus(data.error || "Could not update super bonus.", "error");
+      if (input) {
+        input.checked = !superBonus;
+      }
+      return;
+    }
+
+    setStatus(superBonus ? "Marked as super bonus." : "Super bonus cleared.", "success");
+    await loadBonusHunt();
+  } catch {
+    setStatus("Could not update super bonus. Try again.", "error");
+    if (input) {
+      input.checked = !superBonus;
+    }
+  } finally {
+    if (input) {
+      input.disabled = false;
+    }
   }
 }
 

@@ -3450,6 +3450,55 @@ ul {
   box-shadow: none;
 }
 
+.hunt-bonus-card.is-super {
+  border-color: rgba(255, 176, 64, 0.42);
+  background:
+    linear-gradient(155deg, rgba(48, 34, 12, 0.55), rgba(12, 16, 22, 0.92));
+}
+
+.hunt-bonus-card.is-super.is-opening {
+  border-color: rgba(255, 190, 80, 0.5);
+  background:
+    linear-gradient(155deg, rgba(56, 38, 12, 0.62), rgba(18, 16, 12, 0.92));
+}
+
+.hunt-bonus-super-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-top: 0.15rem;
+  padding: 0.18rem 0.45rem;
+  border-radius: 0.25rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1a1204;
+  background: linear-gradient(135deg, #ffd27d, #f0a020);
+}
+
+.hunt-bonus-super-toggle {
+  display: grid;
+  gap: 0.28rem;
+  align-content: end;
+}
+
+.hunt-bonus-super-toggle .toggle {
+  width: 46px;
+  height: 26px;
+}
+
+.hunt-bonus-super-toggle .toggle-slider::before {
+  width: 18px;
+  height: 18px;
+  top: 3px;
+  left: 3px;
+}
+
+.hunt-bonus-super-toggle .toggle input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+}
+
 .hunt-bonus-index {
   min-width: 1.2rem;
   color: var(--text-muted);
