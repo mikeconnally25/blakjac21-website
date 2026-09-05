@@ -45,6 +45,8 @@ import {
   handleGuessSetEndingBalance,
   handleGuessSubmit,
   handleGuessToggle,
+  handleGuessAffiliatesOnly,
+  handleGuessSubscribersOnly,
 } from "./lib/guess-handlers.js";
 import { handleLeaderboardGet } from "./lib/leaderboard-handlers.js";
 import { handleUsersList, handleStakeLink } from "./lib/user-handlers.js";
@@ -84,6 +86,12 @@ app.post("/api/auth/logout", (req, res) => handleLogout(req, res));
 app.post("/api/guess-the-balance/submit", (req, res) => handleGuessSubmit(req, res));
 app.get("/api/guess-the-balance/status", (req, res) => handleGuessStatus(req, res));
 app.post("/api/guess-the-balance/toggle", (req, res) => handleGuessToggle(req, res));
+app.post("/api/guess-the-balance/affiliates-only", (req, res) =>
+  handleGuessAffiliatesOnly(req, res)
+);
+app.post("/api/guess-the-balance/subscribers-only", (req, res) =>
+  handleGuessSubscribersOnly(req, res)
+);
 app.get("/api/guess-the-balance/guesses", (req, res) => handleGuessList(req, res));
 app.post("/api/guess-the-balance/ending-balance", (req, res) =>
   handleGuessSetEndingBalance(req, res)

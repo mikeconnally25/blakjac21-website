@@ -1,4 +1,6 @@
 let gameEnabled = false;
+let affiliatesOnly = false;
+let subscribersOnly = false;
 let endingBalance = null;
 let roundEndsAt = null;
 let roundMinutes = 5;
@@ -79,6 +81,13 @@ function applyStatusData(data) {
 
   applyRoundMinutesFromStatus(data);
 
+  if ("affiliatesOnly" in data) {
+    affiliatesOnly = Boolean(data.affiliatesOnly);
+  }
+  if ("subscribersOnly" in data) {
+    subscribersOnly = Boolean(data.subscribersOnly);
+  }
+
   if (Object.prototype.hasOwnProperty.call(data, "endingBalance")) {
     endingBalance = data.endingBalance;
     updateEndingBalanceInput();
@@ -86,6 +95,67 @@ function applyStatusData(data) {
 
   updateRoundMinutesInput();
   updateRoundTimer();
+  updateAccessModeLabels();
+}
+
+function accessModeLabel() {
+  if (affiliatesOnly && subscribersOnly) {
+    return "AFF/SUB";
+  }
+  if (affiliatesOnly) {
+    return "AFF";
+  }
+  if (subscribersOnly) {
+    return "SUB";
+  }
+  return "";
+}
+
+function accessModeNoteText() {
+  if (affiliatesOnly && subscribersOnly) {
+    return "AFF/SUB only — verified BLAKJAC21 affiliates and active Kick subscribers can guess.";
+  }
+  if (affiliatesOnly) {
+    return "AFF only — verified BLAKJAC21 affiliates can guess.";
+  }
+  if (subscribersOnly) {
+    return "SUB only — active Kick subscribers can guess.";
+  }
+  return "";
+}
+
+function updateAccessModeLabels() {
+  const affLabel = document.getElementById("game-aff-toggle-status");
+  const subLabel = document.getElementById("game-sub-toggle-status");
+  const affToggle = document.getElementById("game-aff-toggle");
+  const subToggle = document.getElementById("game-sub-toggle");
+  const note = document.getElementById("game-access-note");
+  const modeNote = accessModeNoteText();
+
+  if (affLabel) {
+    affLabel.textContent = affiliatesOnly
+      ? "Only AFF users can submit guesses"
+      : "Affiliate restriction off";
+  }
+
+  if (subLabel) {
+    subLabel.textContent = subscribersOnly
+      ? "Only Kick subscribers can submit guesses"
+      : "Subscriber restriction off";
+  }
+
+  if (affToggle && currentUser?.isAdmin) {
+    affToggle.checked = affiliatesOnly;
+  }
+
+  if (subToggle && currentUser?.isAdmin) {
+    subToggle.checked = subscribersOnly;
+  }
+
+  if (note) {
+    note.textContent = modeNote;
+    note.classList.toggle("is-hidden", !modeNote || !isRoundActive());
+  }
 }
 
 function formatClockMinutes(value) {
@@ -441,6 +511,8 @@ function updateGamePanels() {
   if (guessSubmit) {
     guessSubmit.disabled = !canGuess;
   }
+
+  updateAccessModeLabels();
 }
 
 function schedulePolling() {
@@ -635,6 +707,95 @@ function initAdminToggle() {
   });
 }
 
+async function setAffiliatesOnly(nextValue) {
+  const response = await fetch("/api/guess-the-balance/affiliates-only", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ affiliatesOnly: nextValue }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || "Could not update AFF-only setting.");
+  }
+
+  applyStatusData(data);
+  updateToggleLabel();
+  updateGamePanels();
+}
+
+async function setSubscribersOnly(nextValue) {
+  const response = await fetch("/api/guess-the-balance/subscribers-only", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ subscribersOnly: nextValue }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || "Could not update SUB-only setting.");
+  }
+
+  applyStatusData(data);
+  updateToggleLabel();
+  updateGamePanels();
+}
+
+function initAccessToggles() {
+  const affToggle = document.getElementById("game-aff-toggle");
+  const subToggle = document.getElementById("game-sub-toggle");
+
+  affToggle?.addEventListener("change", async () => {
+    const nextValue = affToggle.checked;
+    affToggle.disabled = true;
+
+    try {
+      await setAffiliatesOnly(nextValue);
+      setGuessStatus(
+        affiliatesOnly
+          ? subscribersOnly
+            ? "AFF and SUB modes on. Affiliates or Kick subs can guess."
+            : "AFF-only mode on. Only verified affiliates can guess."
+          : subscribersOnly
+            ? "AFF-only off. SUB-only still active."
+            : "AFF-only off. Anyone signed in can guess.",
+        "success"
+      );
+    } catch (error) {
+      affToggle.checked = !nextValue;
+      setGuessStatus(error.message, "error");
+    } finally {
+      affToggle.disabled = false;
+    }
+  });
+
+  subToggle?.addEventListener("change", async () => {
+    const nextValue = subToggle.checked;
+    subToggle.disabled = true;
+
+    try {
+      await setSubscribersOnly(nextValue);
+      setGuessStatus(
+        subscribersOnly
+          ? affiliatesOnly
+            ? "AFF and SUB modes on. Affiliates or Kick subs can guess."
+            : "SUB-only mode on. Only Kick subscribers can guess."
+          : affiliatesOnly
+            ? "SUB-only off. AFF-only still active."
+            : "SUB-only off. Anyone signed in can guess.",
+        "success"
+      );
+    } catch (error) {
+      subToggle.checked = !nextValue;
+      setGuessStatus(error.message, "error");
+    } finally {
+      subToggle.disabled = false;
+    }
+  });
+}
+
 function initGuessForm() {
   const form = document.getElementById("guess-form");
   if (!form) return;
@@ -678,7 +839,10 @@ function initGuessForm() {
 
       if (!response.ok) {
         setGuessStatus(data.error || "Could not submit your guess.", "error");
-        if (response.status === 403) {
+        if (
+          response.status === 403 &&
+          /closed/i.test(String(data.error || ""))
+        ) {
           gameEnabled = false;
           updateGamePanels();
           schedulePolling();
@@ -742,6 +906,7 @@ async function bootstrapGuessPage() {
 }
 
 initAdminToggle();
+initAccessToggles();
 initRoundMinutesClock();
 initEndingBalanceForm();
 initGuessForm();

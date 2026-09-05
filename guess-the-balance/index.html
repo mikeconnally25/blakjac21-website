@@ -124,6 +124,40 @@
             </label>
           </div>
 
+          <div class="admin-panel-row giveaways-admin-aff">
+            <div>
+              <p class="admin-panel-label">AFF only</p>
+              <p class="admin-panel-text" id="game-aff-toggle-status">
+                Affiliate restriction off
+              </p>
+            </div>
+            <label class="toggle">
+              <input
+                type="checkbox"
+                id="game-aff-toggle"
+                aria-labelledby="game-aff-toggle-status"
+              />
+              <span class="toggle-slider" aria-hidden="true"></span>
+            </label>
+          </div>
+
+          <div class="admin-panel-row giveaways-admin-aff">
+            <div>
+              <p class="admin-panel-label">SUB only</p>
+              <p class="admin-panel-text" id="game-sub-toggle-status">
+                Subscriber restriction off
+              </p>
+            </div>
+            <label class="toggle">
+              <input
+                type="checkbox"
+                id="game-sub-toggle"
+                aria-labelledby="game-sub-toggle-status"
+              />
+              <span class="toggle-slider" aria-hidden="true"></span>
+            </label>
+          </div>
+
           <div class="admin-panel-section">
             <label class="guess-label" for="ending-balance">Ending balance</label>
             <p class="admin-panel-text">Enter the actual balance after the round ends.</p>
@@ -175,6 +209,7 @@
           <p class="game-panel-text">
             You're signed in as <strong id="game-username"></strong>. Enter your balance guess below.
           </p>
+          <p class="giveaways-aff-note is-hidden" id="game-access-note"></p>
 
           <p class="game-panel-note is-hidden" id="game-panel-waiting">
             Guessing is closed right now. It will unlock when the round goes live on stream.
