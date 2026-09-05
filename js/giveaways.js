@@ -6,6 +6,7 @@ let giveawaySubscribersOnly = false;
 let giveawayEntries = [];
 let giveawayWinner = null;
 let viewerIsWinner = false;
+let canSeeWinnerChat = false;
 let winnerMessages = [];
 let pollTimer = null;
 let isRolling = false;
@@ -422,7 +423,7 @@ function updateWinnerChat(winner, { celebrate = false } = {}) {
   const openLink = document.getElementById("giveaways-kick-chat-open");
   if (!panel) return;
 
-  const show = Boolean(winner) && viewerIsWinner;
+  const show = Boolean(winner) && canSeeWinnerChat;
   const wasHidden = panel.classList.contains("is-hidden");
   panel.classList.toggle("is-hidden", !show);
 
@@ -591,11 +592,15 @@ function applyStatusData(data) {
   giveawayEntries = Array.isArray(data.entries) ? data.entries : [];
   giveawayWinner = data.winner || null;
   viewerIsWinner = Boolean(data.viewerIsWinner);
+  canSeeWinnerChat = Boolean(
+    data.canSeeWinnerChat ?? data.viewerIsWinner
+  );
   winnerMessages = Array.isArray(data.winnerMessages) ? data.winnerMessages : [];
 
   if (!giveawayWinner) {
     lastAnimatedWinnerId = null;
     viewerIsWinner = false;
+    canSeeWinnerChat = false;
     winnerMessages = [];
   }
 
@@ -610,7 +615,7 @@ function schedulePolling() {
     clearInterval(pollTimer);
   }
 
-  const interval = 5000;
+  const interval = canSeeWinnerChat ? 2000 : 5000;
   pollTimer = setInterval(loadGiveawayStatus, interval);
 }
 
