@@ -2,6 +2,7 @@ let currentUser = null;
 let giveawaysOpen = false;
 let giveawayKeyword = "";
 let giveawayAffiliatesOnly = false;
+let giveawaySubscribersOnly = false;
 let giveawayEntries = [];
 let giveawayWinner = null;
 let pollTimer = null;
@@ -42,6 +43,32 @@ function updateToggleLabel() {
   }
 }
 
+function accessModeLabel() {
+  if (giveawayAffiliatesOnly && giveawaySubscribersOnly) {
+    return "AFF/SUB";
+  }
+  if (giveawayAffiliatesOnly) {
+    return "AFF";
+  }
+  if (giveawaySubscribersOnly) {
+    return "SUB";
+  }
+  return "";
+}
+
+function accessModeNoteText() {
+  if (giveawayAffiliatesOnly && giveawaySubscribersOnly) {
+    return "AFF/SUB only — verified BLAKJAC21 affiliates and active Kick subscribers can enter.";
+  }
+  if (giveawayAffiliatesOnly) {
+    return "AFF only — entrants must be verified on code BLAKJAC21.";
+  }
+  if (giveawaySubscribersOnly) {
+    return "SUB only — entrants must be active Kick subscribers.";
+  }
+  return "";
+}
+
 function updateAffiliatesOnlyLabel() {
   const label = document.getElementById("giveaways-aff-toggle-status");
   const toggle = document.getElementById("giveaways-aff-toggle");
@@ -49,11 +76,26 @@ function updateAffiliatesOnlyLabel() {
   if (label) {
     label.textContent = giveawayAffiliatesOnly
       ? "Only AFF users (verified on code BLAKJAC21) can enter"
-      : "Open to everyone who types the keyword";
+      : "Affiliate restriction off";
   }
 
   if (toggle && currentUser?.isAdmin) {
     toggle.checked = giveawayAffiliatesOnly;
+  }
+}
+
+function updateSubscribersOnlyLabel() {
+  const label = document.getElementById("giveaways-sub-toggle-status");
+  const toggle = document.getElementById("giveaways-sub-toggle");
+
+  if (label) {
+    label.textContent = giveawaySubscribersOnly
+      ? "Only Kick subscribers can enter"
+      : "Subscriber restriction off";
+  }
+
+  if (toggle && currentUser?.isAdmin) {
+    toggle.checked = giveawaySubscribersOnly;
   }
 }
 
@@ -62,15 +104,17 @@ function updateHeroStatus() {
   const value = document.getElementById("giveaways-status-value");
   if (!status || !value) return;
 
+  const mode = accessModeLabel();
+
   if (giveawayWinner) {
     status.dataset.state = "winner";
     value.textContent = `Winner · ${giveawayWinner.username}`;
   } else if (giveawaysOpen) {
     status.dataset.state = "open";
-    value.textContent = giveawayAffiliatesOnly ? "Open · AFF only" : "Open";
+    value.textContent = mode ? `Open · ${mode} only` : "Open";
   } else {
     status.dataset.state = "closed";
-    value.textContent = giveawayAffiliatesOnly ? "Closed · AFF only" : "Closed";
+    value.textContent = mode ? `Closed · ${mode} only` : "Closed";
   }
 }
 
@@ -133,12 +177,16 @@ function renderEntries() {
   empty?.classList.toggle("is-hidden", giveawaysOpen || giveawayEntries.length > 0);
   openPanel?.classList.toggle("is-hidden", !giveawaysOpen);
 
-  const affNote = document.getElementById("giveaways-aff-note");
+  const accessNote = document.getElementById("giveaways-access-note");
   const openCopy = document.getElementById("giveaways-open-copy");
-  affNote?.classList.toggle("is-hidden", !giveawaysOpen || !giveawayAffiliatesOnly);
+  const modeNote = accessModeNoteText();
+  if (accessNote) {
+    accessNote.textContent = modeNote;
+    accessNote.classList.toggle("is-hidden", !giveawaysOpen || !modeNote);
+  }
   if (openCopy) {
-    openCopy.textContent = giveawayAffiliatesOnly
-      ? "One entry per AFF viewer. Exact match only."
+    openCopy.textContent = modeNote
+      ? `One entry per ${accessModeLabel()} viewer. Exact match only.`
       : "One entry per viewer. Exact match only.";
   }
 
@@ -353,6 +401,7 @@ function updatePanels() {
 
   updateToggleLabel();
   updateAffiliatesOnlyLabel();
+  updateSubscribersOnlyLabel();
   updateHeroStatus();
   renderEntries();
   updateRevealPanel();
@@ -364,6 +413,7 @@ function applyStatusData(data) {
   giveawaysOpen = Boolean(data.open);
   giveawayKeyword = String(data.keyword || "");
   giveawayAffiliatesOnly = Boolean(data.affiliatesOnly);
+  giveawaySubscribersOnly = Boolean(data.subscribersOnly);
   giveawayEntries = Array.isArray(data.entries) ? data.entries : [];
   giveawayWinner = data.winner || null;
 
@@ -471,9 +521,41 @@ async function setAffiliatesOnly(affiliatesOnly) {
 
   applyStatusData(data);
   setAdminStatus(
-    affiliatesOnly
-      ? "AFF-only mode on. Only verified BLAKJAC21 affiliates can enter."
-      : "AFF-only mode off. Anyone can enter with the keyword.",
+    giveawayAffiliatesOnly
+      ? giveawaySubscribersOnly
+        ? "AFF and SUB modes on. Affiliates or Kick subs can enter."
+        : "AFF-only mode on. Only verified BLAKJAC21 affiliates can enter."
+      : giveawaySubscribersOnly
+        ? "AFF-only off. SUB-only still active."
+        : "AFF-only mode off. Anyone can enter with the keyword.",
+    "success"
+  );
+  updatePanels();
+}
+
+async function setSubscribersOnly(subscribersOnly) {
+  const response = await fetch("/api/giveaways/subscribers-only", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ subscribersOnly }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Could not update SUB-only setting.");
+  }
+
+  applyStatusData(data);
+  setAdminStatus(
+    giveawaySubscribersOnly
+      ? giveawayAffiliatesOnly
+        ? "AFF and SUB modes on. Affiliates or Kick subs can enter."
+        : "SUB-only mode on. Only Kick subscribers can enter."
+      : giveawayAffiliatesOnly
+        ? "SUB-only off. AFF-only still active."
+        : "SUB-only mode off. Anyone can enter with the keyword.",
     "success"
   );
   updatePanels();
@@ -497,6 +579,9 @@ async function saveKeyword(keyword) {
   giveawayKeyword = String(data.keyword || "");
   if ("affiliatesOnly" in data) {
     giveawayAffiliatesOnly = Boolean(data.affiliatesOnly);
+  }
+  if ("subscribersOnly" in data) {
+    giveawaySubscribersOnly = Boolean(data.subscribersOnly);
   }
   if ("winner" in data) {
     giveawayWinner = data.winner || null;
@@ -602,6 +687,25 @@ function initAffiliatesOnlyToggle() {
   });
 }
 
+function initSubscribersOnlyToggle() {
+  const toggle = document.getElementById("giveaways-sub-toggle");
+  if (!toggle) return;
+
+  toggle.addEventListener("change", async () => {
+    const nextValue = toggle.checked;
+    toggle.disabled = true;
+
+    try {
+      await setSubscribersOnly(nextValue);
+    } catch (error) {
+      toggle.checked = !nextValue;
+      setAdminStatus(error.message, "error");
+    } finally {
+      toggle.disabled = false;
+    }
+  });
+}
+
 function initKeywordForm() {
   const form = document.getElementById("giveaways-keyword-form");
   if (!form) return;
@@ -687,6 +791,7 @@ document.addEventListener("visibilitychange", () => {
 
 initAdminToggle();
 initAffiliatesOnlyToggle();
+initSubscribersOnlyToggle();
 initKeywordForm();
 initClearEntries();
 initRevealWinner();

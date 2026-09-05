@@ -93,7 +93,7 @@
             <div>
               <p class="admin-panel-label">AFF only</p>
               <p class="admin-panel-text" id="giveaways-aff-toggle-status">
-                Open to everyone who types the keyword
+                Affiliate restriction off
               </p>
             </div>
             <label class="toggle">
@@ -101,6 +101,23 @@
                 type="checkbox"
                 id="giveaways-aff-toggle"
                 aria-labelledby="giveaways-aff-toggle-status"
+              />
+              <span class="toggle-slider" aria-hidden="true"></span>
+            </label>
+          </div>
+
+          <div class="giveaways-admin-top giveaways-admin-aff">
+            <div>
+              <p class="admin-panel-label">SUB only</p>
+              <p class="admin-panel-text" id="giveaways-sub-toggle-status">
+                Subscriber restriction off
+              </p>
+            </div>
+            <label class="toggle">
+              <input
+                type="checkbox"
+                id="giveaways-sub-toggle"
+                aria-labelledby="giveaways-sub-toggle-status"
               />
               <span class="toggle-slider" aria-hidden="true"></span>
             </label>
@@ -185,9 +202,7 @@
                 <p class="giveaways-open-copy" id="giveaways-open-copy">
                   One entry per viewer. Exact match only.
                 </p>
-                <p class="giveaways-aff-note is-hidden" id="giveaways-aff-note">
-                  AFF only — entrants must be verified on code BLAKJAC21.
-                </p>
+                <p class="giveaways-aff-note is-hidden" id="giveaways-access-note"></p>
               </div>
             </div>
 

@@ -50,6 +50,7 @@ import { handleLeaderboardGet } from "./lib/leaderboard-handlers.js";
 import { handleUsersList, handleStakeLink } from "./lib/user-handlers.js";
 import {
   handleGiveawayAffiliatesOnly,
+  handleGiveawaySubscribersOnly,
   handleGiveawayEntriesClear,
   handleGiveawayKeyword,
   handleGiveawayReveal,
@@ -154,6 +155,9 @@ app.get("/api/giveaways/status", (req, res) => handleGiveawayStatus(req, res));
 app.post("/api/giveaways/toggle", (req, res) => handleGiveawayToggle(req, res));
 app.post("/api/giveaways/affiliates-only", (req, res) =>
   handleGiveawayAffiliatesOnly(req, res)
+);
+app.post("/api/giveaways/subscribers-only", (req, res) =>
+  handleGiveawaySubscribersOnly(req, res)
 );
 app.post("/api/giveaways/keyword", (req, res) => handleGiveawayKeyword(req, res));
 app.post("/api/giveaways/entries/clear", (req, res) =>
