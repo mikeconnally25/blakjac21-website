@@ -4310,6 +4310,11 @@ ul {
   line-height: 1.4;
 }
 
+.requests-hub-access-toggles {
+  display: grid;
+  gap: 0.55rem;
+}
+
 .requests-hub-aff-toggle {
   display: flex;
   align-items: center;
