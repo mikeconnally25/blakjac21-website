@@ -6,6 +6,7 @@ let giveawaySubscribersOnly = false;
 let giveawayEntries = [];
 let giveawayWinner = null;
 let viewerIsWinner = false;
+let winnerMessages = [];
 let pollTimer = null;
 let isRolling = false;
 let lastAnimatedWinnerId = null;
@@ -379,9 +380,44 @@ function clearWinnerResult() {
   updateWinnerChat(null);
 }
 
+function renderWinnerMessages(messages = []) {
+  const list = document.getElementById("giveaways-winner-messages");
+  const empty = document.getElementById("giveaways-winner-messages-empty");
+  if (!list) return;
+
+  const items = Array.isArray(messages) ? messages : [];
+  list.replaceChildren();
+
+  for (const message of items) {
+    const row = document.createElement("article");
+    row.className = "giveaways-winner-message";
+
+    const meta = document.createElement("div");
+    meta.className = "giveaways-winner-message-meta";
+
+    const user = document.createElement("span");
+    user.className = "giveaways-winner-message-user";
+    user.textContent = message.username || "you";
+
+    meta.append(user);
+
+    const text = document.createElement("p");
+    text.className = "giveaways-winner-message-text";
+    text.textContent = message.text || "";
+
+    row.append(meta, text);
+    list.append(row);
+  }
+
+  empty?.classList.toggle("is-hidden", items.length > 0);
+
+  if (items.length) {
+    list.scrollTop = list.scrollHeight;
+  }
+}
+
 function updateWinnerChat(winner, { celebrate = false } = {}) {
   const panel = document.getElementById("giveaways-winner-chat");
-  const iframe = document.getElementById("giveaways-kick-chat");
   const nameEl = document.getElementById("giveaways-chat-winner-name");
   const openLink = document.getElementById("giveaways-kick-chat-open");
   if (!panel) return;
@@ -392,10 +428,8 @@ function updateWinnerChat(winner, { celebrate = false } = {}) {
 
   if (!show) {
     panel.classList.remove("is-pop");
-    if (iframe) {
-      iframe.removeAttribute("src");
-      delete iframe.dataset.loaded;
-    }
+    winnerMessages = [];
+    renderWinnerMessages([]);
     return;
   }
 
@@ -407,10 +441,7 @@ function updateWinnerChat(winner, { celebrate = false } = {}) {
     openLink.href = KICK_CHAT_POPOUT_URL;
   }
 
-  if (iframe && iframe.dataset.loaded !== "1") {
-    iframe.src = KICK_CHAT_POPOUT_URL;
-    iframe.dataset.loaded = "1";
-  }
+  renderWinnerMessages(winnerMessages);
 
   if (celebrate || wasHidden) {
     panel.classList.remove("is-pop");
@@ -560,10 +591,12 @@ function applyStatusData(data) {
   giveawayEntries = Array.isArray(data.entries) ? data.entries : [];
   giveawayWinner = data.winner || null;
   viewerIsWinner = Boolean(data.viewerIsWinner);
+  winnerMessages = Array.isArray(data.winnerMessages) ? data.winnerMessages : [];
 
   if (!giveawayWinner) {
     lastAnimatedWinnerId = null;
     viewerIsWinner = false;
+    winnerMessages = [];
   }
 
   return {

@@ -246,7 +246,7 @@
               <p class="giveaways-eyebrow">You won</p>
               <h2 class="giveaways-title">Jump in Kick chat</h2>
               <p class="giveaways-winner-chat-copy">
-                Congrats <strong id="giveaways-chat-winner-name">you</strong> — type a GG and celebrate live.
+                Congrats <strong id="giveaways-chat-winner-name">you</strong> — open Kick chat and type. Only your messages appear here.
               </p>
             </div>
             <a
@@ -261,14 +261,16 @@
           </div>
 
           <div class="giveaways-kick-chat-shell">
-            <iframe
-              id="giveaways-kick-chat"
-              class="giveaways-kick-chat-frame"
-              title="BLAKJAC21 Kick chat"
-              loading="lazy"
-              allow="clipboard-write"
-              referrerpolicy="strict-origin-when-cross-origin"
-            ></iframe>
+            <div
+              class="giveaways-winner-messages"
+              id="giveaways-winner-messages"
+              role="log"
+              aria-live="polite"
+              aria-label="Your Kick chat messages"
+            ></div>
+            <p class="giveaways-winner-messages-empty" id="giveaways-winner-messages-empty">
+              Type in Kick chat — only your messages show up here.
+            </p>
           </div>
         </div>
       </div>
