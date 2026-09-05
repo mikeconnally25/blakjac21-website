@@ -1989,9 +1989,19 @@ ul {
 
 .accounts-name-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.35rem 0.45rem;
   min-width: 0;
+}
+
+.accounts-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  max-width: 100%;
 }
 
 .accounts-aff-badge {
@@ -2202,6 +2212,8 @@ ul {
 }
 
 .accounts-username {
+  min-width: 0;
+  flex: 1 1 auto;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

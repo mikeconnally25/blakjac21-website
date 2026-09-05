@@ -242,12 +242,15 @@ function renderAccounts(users) {
     name.textContent = user.username;
     nameRow.append(name);
 
+    const badges = document.createElement("span");
+    badges.className = "accounts-badges";
+
     if (user.stakeCodeVerified) {
       const affBadge = document.createElement("span");
       affBadge.className = "accounts-aff-badge";
       affBadge.textContent = "AFF";
       affBadge.title = "Verified on code BLAKJAC21";
-      nameRow.append(affBadge);
+      badges.append(affBadge);
     }
 
     if (user.kickSubActive) {
@@ -255,7 +258,7 @@ function renderAccounts(users) {
       subBadge.className = "accounts-sub-badge";
       subBadge.textContent = "SUB";
       subBadge.title = "Active Kick subscriber";
-      nameRow.append(subBadge);
+      badges.append(subBadge);
     }
 
     if ((user.possibleAlts || []).length > 0) {
@@ -265,7 +268,11 @@ function renderAccounts(users) {
       altBadge.title = `Possible shared-IP alts: ${(user.possibleAlts || [])
         .map((alt) => alt.username)
         .join(", ")}`;
-      nameRow.append(altBadge);
+      badges.append(altBadge);
+    }
+
+    if (badges.childElementCount > 0) {
+      nameRow.append(badges);
     }
 
     copy.append(nameRow);
