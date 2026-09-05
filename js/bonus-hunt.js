@@ -410,7 +410,8 @@ function bonusesUnchanged(previous, next) {
       current.slot !== incoming.slot ||
       current.thumbnailUrl !== incoming.thumbnailUrl ||
       current.requestedBy !== incoming.requestedBy ||
-      Boolean(current.superBonus) !== Boolean(incoming.superBonus)
+      Boolean(current.superBonus) !== Boolean(incoming.superBonus) ||
+      Boolean(current.epicBonus) !== Boolean(incoming.epicBonus)
     ) {
       return false;
     }
@@ -530,6 +531,10 @@ function renderBonusList(bonuses) {
       item.classList.add("is-super");
     }
 
+    if (bonus.epicBonus) {
+      item.classList.add("is-epic");
+    }
+
     const index = document.createElement("span");
     index.className = "hunt-bonus-index";
     index.textContent = `#${bonus.number}`;
@@ -561,11 +566,25 @@ function renderBonusList(bonuses) {
 
     main.append(slot, provider);
 
-    if (bonus.superBonus) {
-      const superBadge = document.createElement("span");
-      superBadge.className = "hunt-bonus-super-badge";
-      superBadge.textContent = "Super";
-      main.append(superBadge);
+    if (bonus.superBonus || bonus.epicBonus) {
+      const badges = document.createElement("div");
+      badges.className = "hunt-bonus-badges";
+
+      if (bonus.superBonus) {
+        const superBadge = document.createElement("span");
+        superBadge.className = "hunt-bonus-super-badge";
+        superBadge.textContent = "Super";
+        badges.append(superBadge);
+      }
+
+      if (bonus.epicBonus) {
+        const epicBadge = document.createElement("span");
+        epicBadge.className = "hunt-bonus-epic-badge";
+        epicBadge.textContent = "Epic";
+        badges.append(epicBadge);
+      }
+
+      main.append(badges);
     }
 
     if (bonus.requestedBy) {
@@ -609,34 +628,6 @@ function renderBonusList(bonuses) {
     if (currentUser?.isAdmin) {
       const actions = document.createElement("div");
       actions.className = "hunt-bonus-admin";
-
-      const superToggle = document.createElement("label");
-      superToggle.className = "hunt-bonus-super-toggle";
-
-      const superLabel = document.createElement("span");
-      superLabel.className = "hunt-bonus-win-label";
-      superLabel.textContent = "Super";
-
-      const toggle = document.createElement("span");
-      toggle.className = "toggle";
-
-      const toggleInput = document.createElement("input");
-      toggleInput.type = "checkbox";
-      toggleInput.checked = Boolean(bonus.superBonus);
-      toggleInput.setAttribute("aria-label", `Mark ${bonus.slot} as super bonus`);
-
-      const toggleSlider = document.createElement("span");
-      toggleSlider.className = "toggle-slider";
-      toggleSlider.setAttribute("aria-hidden", "true");
-
-      toggle.append(toggleInput, toggleSlider);
-      superToggle.append(superLabel, toggle);
-
-      toggleInput.addEventListener("change", () => {
-        void setBonusSuper(bonus.id, toggleInput.checked, toggleInput);
-      });
-
-      actions.append(superToggle);
 
       if (bonus.status === "pending") {
         const payoutField = document.createElement("div");
@@ -703,6 +694,30 @@ function renderBonusList(bonuses) {
       removeBtn.textContent = "Remove";
       removeBtn.addEventListener("click", () => removeBonusEntry(bonus.id, removeBtn));
       actions.append(removeBtn);
+
+      const flagToggles = document.createElement("div");
+      flagToggles.className = "hunt-bonus-flag-toggles";
+
+      const superToggle = createBonusFlagToggle({
+        label: "Super",
+        checked: Boolean(bonus.superBonus),
+        ariaLabel: `Mark ${bonus.slot} as super bonus`,
+        onChange: (checked, input) => {
+          void setBonusFlag(bonus.id, "superBonus", checked, input);
+        },
+      });
+
+      const epicToggle = createBonusFlagToggle({
+        label: "Epic",
+        checked: Boolean(bonus.epicBonus),
+        ariaLabel: `Mark ${bonus.slot} as epic bonus`,
+        onChange: (checked, input) => {
+          void setBonusFlag(bonus.id, "epicBonus", checked, input);
+        },
+      });
+
+      flagToggles.append(superToggle, epicToggle);
+      actions.append(flagToggles);
       item.append(actions);
     }
 
@@ -854,7 +869,12 @@ function renderPastHunts(hunts) {
 
       const slot = document.createElement("span");
       slot.className = "past-hunt-bonus-slot";
-      slot.textContent = bonus.superBonus ? `${bonus.slot} · Super` : bonus.slot;
+      const tags = [];
+      if (bonus.superBonus) tags.push("Super");
+      if (bonus.epicBonus) tags.push("Epic");
+      slot.textContent = tags.length
+        ? `${bonus.slot} · ${tags.join(" · ")}`
+        : bonus.slot;
 
       const result = document.createElement("span");
       result.className = "past-hunt-bonus-result";
@@ -2014,42 +2034,84 @@ async function saveBonusPayout(id, rawPayout, button) {
   }
 }
 
-async function setBonusSuper(id, superBonus, input) {
+async function setBonusFlag(id, field, value, input) {
+  const labels = {
+    superBonus: { on: "Marking super bonus...", off: "Clearing super bonus...", doneOn: "Marked as super bonus.", doneOff: "Super bonus cleared.", fail: "Could not update super bonus." },
+    epicBonus: { on: "Marking epic bonus...", off: "Clearing epic bonus...", doneOn: "Marked as epic bonus.", doneOff: "Epic bonus cleared.", fail: "Could not update epic bonus." },
+  };
+  const copy = labels[field] || {
+    on: "Updating...",
+    off: "Updating...",
+    doneOn: "Updated.",
+    doneOff: "Updated.",
+    fail: "Could not update bonus.",
+  };
+
   if (input) {
     input.disabled = true;
   }
 
-  setStatus(superBonus ? "Marking super bonus..." : "Clearing super bonus...");
+  setStatus(value ? copy.on : copy.off);
 
   try {
     const response = await fetch("/api/bonus-hunt/update", {
       method: "POST",
       credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, superBonus: Boolean(superBonus) }),
+      body: JSON.stringify({ id, [field]: Boolean(value) }),
     });
 
     const data = await response.json();
     if (!response.ok) {
-      setStatus(data.error || "Could not update super bonus.", "error");
+      setStatus(data.error || copy.fail, "error");
       if (input) {
-        input.checked = !superBonus;
+        input.checked = !value;
       }
       return;
     }
 
-    setStatus(superBonus ? "Marked as super bonus." : "Super bonus cleared.", "success");
+    setStatus(value ? copy.doneOn : copy.doneOff, "success");
     await loadBonusHunt();
   } catch {
-    setStatus("Could not update super bonus. Try again.", "error");
+    setStatus(`${copy.fail} Try again.`, "error");
     if (input) {
-      input.checked = !superBonus;
+      input.checked = !value;
     }
   } finally {
     if (input) {
       input.disabled = false;
     }
   }
+}
+
+function createBonusFlagToggle({ label, checked, ariaLabel, onChange }) {
+  const wrap = document.createElement("label");
+  wrap.className = "hunt-bonus-flag-toggle";
+
+  const text = document.createElement("span");
+  text.className = "hunt-bonus-win-label";
+  text.textContent = label;
+
+  const toggle = document.createElement("span");
+  toggle.className = "toggle";
+
+  const toggleInput = document.createElement("input");
+  toggleInput.type = "checkbox";
+  toggleInput.checked = Boolean(checked);
+  toggleInput.setAttribute("aria-label", ariaLabel);
+
+  const toggleSlider = document.createElement("span");
+  toggleSlider.className = "toggle-slider";
+  toggleSlider.setAttribute("aria-hidden", "true");
+
+  toggle.append(toggleInput, toggleSlider);
+  wrap.append(text, toggle);
+
+  toggleInput.addEventListener("change", () => {
+    onChange(toggleInput.checked, toggleInput);
+  });
+
+  return wrap;
 }
 
 async function removeBonusEntry(id, button) {

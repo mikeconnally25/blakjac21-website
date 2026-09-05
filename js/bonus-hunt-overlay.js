@@ -174,6 +174,13 @@ function createGameCell(bonus) {
     copy.append(superBadge);
   }
 
+  if (bonus.epicBonus) {
+    const epicBadge = document.createElement("span");
+    epicBadge.className = "bh-overlay-epic-badge";
+    epicBadge.textContent = "EPIC";
+    copy.append(epicBadge);
+  }
+
   const requester = String(bonus.requestedBy || "").trim();
   if (requester) {
     const byline = document.createElement("span");
@@ -199,6 +206,7 @@ function bonusListKey(bonuses) {
           bonus.status,
           bonus.payout ?? "",
           bonus.superBonus ? "1" : "0",
+          bonus.epicBonus ? "1" : "0",
           getBonusThumbnailUrl(bonus) || "",
         ].join(":")
     )
@@ -212,6 +220,9 @@ function createBonusRow(bonus) {
   }
   if (bonus.superBonus) {
     row.classList.add("is-super");
+  }
+  if (bonus.epicBonus) {
+    row.classList.add("is-epic");
   }
 
   const index = document.createElement("td");

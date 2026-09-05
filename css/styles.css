@@ -3462,40 +3462,81 @@ ul {
     linear-gradient(155deg, rgba(56, 38, 12, 0.62), rgba(18, 16, 12, 0.92));
 }
 
-.hunt-bonus-super-badge {
+.hunt-bonus-card.is-epic {
+  border-color: rgba(186, 120, 255, 0.45);
+  background:
+    linear-gradient(155deg, rgba(42, 22, 58, 0.62), rgba(12, 16, 22, 0.92));
+}
+
+.hunt-bonus-card.is-epic.is-opening {
+  border-color: rgba(200, 140, 255, 0.55);
+  background:
+    linear-gradient(155deg, rgba(52, 26, 70, 0.68), rgba(16, 14, 22, 0.92));
+}
+
+.hunt-bonus-card.is-super.is-epic {
+  border-color: rgba(220, 150, 255, 0.5);
+  background:
+    linear-gradient(135deg, rgba(48, 34, 12, 0.45), rgba(42, 22, 58, 0.55), rgba(12, 16, 22, 0.92));
+}
+
+.hunt-bonus-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.15rem;
+}
+
+.hunt-bonus-super-badge,
+.hunt-bonus-epic-badge {
   display: inline-flex;
   align-items: center;
   width: fit-content;
-  margin-top: 0.15rem;
   padding: 0.18rem 0.45rem;
   border-radius: 0.25rem;
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.hunt-bonus-super-badge {
   color: #1a1204;
   background: linear-gradient(135deg, #ffd27d, #f0a020);
 }
 
-.hunt-bonus-super-toggle {
+.hunt-bonus-epic-badge {
+  color: #120818;
+  background: linear-gradient(135deg, #e0b8ff, #a85cff);
+}
+
+.hunt-bonus-flag-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.55rem;
+  margin-left: auto;
+}
+
+.hunt-bonus-flag-toggle {
   display: grid;
   gap: 0.28rem;
   align-content: end;
 }
 
-.hunt-bonus-super-toggle .toggle {
+.hunt-bonus-flag-toggle .toggle {
   width: 46px;
   height: 26px;
 }
 
-.hunt-bonus-super-toggle .toggle-slider::before {
+.hunt-bonus-flag-toggle .toggle-slider::before {
   width: 18px;
   height: 18px;
   top: 3px;
   left: 3px;
 }
 
-.hunt-bonus-super-toggle .toggle input:checked + .toggle-slider::before {
+.hunt-bonus-flag-toggle .toggle input:checked + .toggle-slider::before {
   transform: translateX(20px);
 }
 
