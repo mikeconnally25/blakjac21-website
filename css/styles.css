@@ -2806,6 +2806,59 @@ ul {
     linear-gradient(180deg, rgba(10, 16, 24, 0.98), rgba(5, 9, 14, 0.98));
   overflow: hidden;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  transition:
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    background 0.35s ease;
+}
+
+.case-reel.is-spinning {
+  border-color: rgba(126, 216, 255, 0.45);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 28px rgba(88, 201, 243, 0.16);
+}
+
+.case-reel.is-spinning .case-reel-marker {
+  animation: case-marker-pulse 0.7s ease-in-out infinite;
+}
+
+.case-reel.is-landed {
+  border-color: rgba(240, 201, 142, 0.72);
+  background:
+    radial-gradient(circle at 50% 45%, rgba(240, 201, 142, 0.2), transparent 58%),
+    linear-gradient(180deg, rgba(18, 24, 18, 0.98), rgba(5, 9, 14, 0.98));
+  box-shadow:
+    inset 0 0 0 1px rgba(240, 201, 142, 0.18),
+    0 0 36px rgba(240, 201, 142, 0.22);
+  animation: case-reel-land-flash 0.85s ease-out;
+}
+
+.case-reel-burst {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.case-reel-burst:not(.is-active) {
+  display: none;
+}
+
+.case-reel-speck {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--speck-size, 6px);
+  height: var(--speck-size, 6px);
+  margin: calc(var(--speck-size, 6px) / -2) 0 0 calc(var(--speck-size, 6px) / -2);
+  border-radius: 2px;
+  background: var(--speck-color, #f0c98e);
+  opacity: 0;
+  animation: case-speck-burst 1.05s ease-out forwards;
+  animation-delay: var(--speck-delay, 0ms);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--speck-color, #f0c98e) 55%, transparent);
 }
 
 .case-reel-window {
@@ -2821,6 +2874,7 @@ ul {
   padding: 14px 0;
   width: max-content;
   will-change: transform;
+  transform: translateZ(0);
 }
 
 .case-reel-item {
@@ -2837,6 +2891,11 @@ ul {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     0 8px 18px rgba(0, 0, 0, 0.18);
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease,
+    background 0.3s ease;
 }
 
 .case-reel-item.is-winner {
@@ -2846,6 +2905,10 @@ ul {
   box-shadow:
     0 0 24px rgba(240, 201, 142, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.case-reel-item.is-winner.is-celebrate {
+  animation: case-winner-card 0.9s cubic-bezier(0.2, 0.9, 0.25, 1.15);
 }
 
 .case-reel-item-label {
@@ -2886,6 +2949,11 @@ ul {
   );
   box-shadow: 0 0 18px rgba(126, 216, 255, 0.5);
   pointer-events: none;
+}
+
+.case-reel.is-landed .case-reel-marker {
+  animation: case-marker-celebrate 0.75s ease-out;
+  box-shadow: 0 0 22px rgba(240, 201, 142, 0.7);
 }
 
 .case-reel-marker::before,
@@ -2946,21 +3014,96 @@ ul {
 }
 
 .case-reel-result.is-pop {
-  animation: case-winner-pop 0.55s ease-out;
+  animation: case-winner-pop 0.85s cubic-bezier(0.2, 0.9, 0.25, 1.12);
 }
 
 @keyframes case-winner-pop {
   0% {
     opacity: 0;
-    transform: scale(0.88);
+    transform: translateY(10px) scale(0.86);
+    filter: blur(4px);
   }
-  60% {
+  55% {
     opacity: 1;
-    transform: scale(1.06);
+    transform: translateY(-2px) scale(1.08);
+    filter: blur(0);
   }
   100% {
     opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes case-winner-card {
+  0% {
+    transform: scale(0.94);
+  }
+  40% {
+    transform: scale(1.08);
+  }
+  100% {
     transform: scale(1);
+  }
+}
+
+@keyframes case-reel-land-flash {
+  0% {
+    filter: brightness(1.35);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+@keyframes case-marker-pulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    box-shadow: 0 0 12px rgba(126, 216, 255, 0.35);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 22px rgba(126, 216, 255, 0.75);
+  }
+}
+
+@keyframes case-marker-celebrate {
+  0% {
+    transform: translateX(-50%) scaleY(0.7);
+    opacity: 0.5;
+  }
+  45% {
+    transform: translateX(-50%) scaleY(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-50%) scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes case-speck-burst {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4) rotate(0deg);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(0.2) rotate(160deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-reel.is-spinning .case-reel-marker,
+  .case-reel.is-landed,
+  .case-reel-item.is-winner.is-celebrate,
+  .case-reel-result.is-pop,
+  .case-reel-speck {
+    animation: none;
   }
 }
 

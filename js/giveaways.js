@@ -10,7 +10,92 @@ let isRolling = false;
 let lastAnimatedWinnerId = null;
 
 const CASE_ITEM_GAP = 10;
-const CASE_ROLL_DURATION_MS = 6500;
+const CASE_ROLL_DURATION_MS = 8200;
+const CASE_SETTLE_DURATION_MS = 520;
+
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function easeOutQuint(t) {
+  return 1 - (1 - t) ** 5;
+}
+
+function easeOutBack(t) {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  return 1 + c3 * (t - 1) ** 3 + c1 * (t - 1) ** 2;
+}
+
+function animateTransform(el, fromX, toX, duration, ease) {
+  return new Promise((resolve) => {
+    if (duration <= 0 || prefersReducedMotion()) {
+      el.style.transform = `translateX(${toX}px)`;
+      resolve();
+      return;
+    }
+
+    const start = performance.now();
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      const x = fromX + (toX - fromX) * ease(t);
+      el.style.transform = `translateX(${x}px)`;
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        resolve();
+      }
+    };
+
+    requestAnimationFrame(tick);
+  });
+}
+
+function clearReelBurst() {
+  const burst = document.getElementById("case-reel-burst");
+  if (!burst) return;
+  burst.replaceChildren();
+  burst.classList.remove("is-active");
+}
+
+function spawnReelBurst() {
+  const burst = document.getElementById("case-reel-burst");
+  if (!burst || prefersReducedMotion()) return;
+
+  burst.replaceChildren();
+  burst.classList.add("is-active");
+
+  const colors = ["#f0c98e", "#7ed8ff", "#58c9f3", "#ffe7b5", "#ffffff"];
+  for (let i = 0; i < 28; i += 1) {
+    const speck = document.createElement("span");
+    speck.className = "case-reel-speck";
+    const angle = (Math.PI * 2 * i) / 28 + (Math.random() - 0.5) * 0.35;
+    const distance = 56 + Math.random() * 110;
+    speck.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
+    speck.style.setProperty("--dy", `${Math.sin(angle) * distance}px`);
+    speck.style.setProperty("--speck-color", colors[i % colors.length]);
+    speck.style.setProperty("--speck-delay", `${Math.random() * 80}ms`);
+    speck.style.setProperty("--speck-size", `${4 + Math.random() * 5}px`);
+    burst.append(speck);
+  }
+
+  window.setTimeout(() => {
+    clearReelBurst();
+  }, 1400);
+}
+
+function celebrateWinnerLand(reel, track) {
+  reel?.classList.remove("is-spinning");
+  reel?.classList.add("is-landed");
+  track
+    ?.querySelector(".case-reel-item.is-winner")
+    ?.classList.add("is-celebrate");
+  spawnReelBurst();
+
+  window.setTimeout(() => {
+    reel?.classList.remove("is-landed");
+  }, 1600);
+}
 
 function setAdminStatus(message, type = "") {
   const status = document.getElementById("giveaways-admin-status");
@@ -258,8 +343,11 @@ function buildReelSequence(entries, winner) {
 
 function setReelIdle(entries) {
   const track = document.getElementById("case-reel-track");
+  const reel = document.getElementById("case-reel");
   if (!track) return;
 
+  clearReelBurst();
+  reel?.classList.remove("is-spinning", "is-landed");
   track.style.transition = "none";
   track.style.transform = "translateX(0px)";
 
@@ -350,32 +438,37 @@ function playCaseReveal(winner, entries) {
   const stride = itemWidth + CASE_ITEM_GAP;
   const windowWidth = windowEl.clientWidth || 320;
   const centerOffset = windowWidth / 2 - itemWidth / 2;
-  const jitter = (Math.random() - 0.5) * (itemWidth * 0.35);
-  const targetX = -(winnerIndex * stride) + centerOffset + jitter;
+  const settleX = -(winnerIndex * stride) + centerOffset;
+  const jitter = (Math.random() - 0.5) * (itemWidth * 0.28);
+  const spinX = settleX + jitter;
 
   isRolling = true;
+  clearReelBurst();
+  reel.classList.remove("is-landed");
+  reel.classList.add("is-spinning");
   updateRevealPanel();
   clearWinnerResult();
 
   track.style.transition = "none";
   track.style.transform = "translateX(0px)";
-  // Force layout so the transition starts from 0.
   void track.offsetWidth;
 
-  return new Promise((resolve) => {
-    requestAnimationFrame(() => {
-      track.style.transition = `transform ${CASE_ROLL_DURATION_MS}ms cubic-bezier(0.12, 0.75, 0.12, 1)`;
-      track.style.transform = `translateX(${targetX}px)`;
+  return (async () => {
+    await animateTransform(track, 0, spinX, CASE_ROLL_DURATION_MS, easeOutQuint);
+    await animateTransform(
+      track,
+      spinX,
+      settleX,
+      CASE_SETTLE_DURATION_MS,
+      easeOutBack
+    );
 
-      window.setTimeout(() => {
-        isRolling = false;
-        lastAnimatedWinnerId = winner.id;
-        showWinnerResult(winner, true);
-        updateRevealPanel();
-        resolve();
-      }, CASE_ROLL_DURATION_MS + 80);
-    });
-  });
+    celebrateWinnerLand(reel, track);
+    isRolling = false;
+    lastAnimatedWinnerId = winner.id;
+    showWinnerResult(winner, true);
+    updateRevealPanel();
+  })();
 }
 
 async function maybeAnimateWinner(winner, entries, { force = false } = {}) {
