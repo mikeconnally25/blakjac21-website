@@ -362,12 +362,19 @@ function setReelIdle(entries) {
   });
 }
 
+let lastWinnerChatId = null;
+
 function showWinnerResult(winner, animated = false) {
   const result = document.getElementById("case-reel-result");
   if (!result || !winner) return;
 
   result.classList.remove("is-hidden");
   result.classList.toggle("is-pop", animated);
+  if (animated) {
+    result.classList.remove("is-pop");
+    void result.offsetWidth;
+    result.classList.add("is-pop");
+  }
   result.innerHTML = `Winner: <strong>${winner.username}</strong>`;
   updateWinnerChat(winner, { celebrate: animated });
 }
@@ -417,6 +424,20 @@ function renderWinnerMessages(messages = []) {
   }
 }
 
+function restartWinnerChatPop(panel) {
+  if (!panel) return;
+
+  panel.classList.remove("is-hidden");
+  panel.classList.remove("is-pop");
+  // Force a style flush so the pop animation can replay.
+  void panel.offsetWidth;
+  panel.classList.add("is-pop");
+
+  window.requestAnimationFrame(() => {
+    panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+}
+
 function updateWinnerChat(winner, { celebrate = false } = {}) {
   const panel = document.getElementById("giveaways-winner-chat");
   const nameEl = document.getElementById("giveaways-chat-winner-name");
@@ -424,11 +445,13 @@ function updateWinnerChat(winner, { celebrate = false } = {}) {
   if (!panel) return;
 
   const show = Boolean(winner) && canSeeWinnerChat;
-  const wasHidden = panel.classList.contains("is-hidden");
-  panel.classList.toggle("is-hidden", !show);
+  const winnerId = winner?.id ? String(winner.id) : "";
+  const isNewWinner = Boolean(winnerId) && winnerId !== lastWinnerChatId;
 
   if (!show) {
+    panel.classList.add("is-hidden");
     panel.classList.remove("is-pop");
+    lastWinnerChatId = null;
     winnerMessages = [];
     renderWinnerMessages([]);
     return;
@@ -442,19 +465,21 @@ function updateWinnerChat(winner, { celebrate = false } = {}) {
     openLink.href = KICK_CHAT_POPOUT_URL;
   }
 
+  if (celebrate || isNewWinner) {
+    // Fresh reveal: wipe prior lines. First paint for a new winner keeps
+    // whatever the status payload already returned (usually empty).
+    if (celebrate) {
+      winnerMessages = [];
+    }
+    renderWinnerMessages(winnerMessages);
+    lastWinnerChatId = winnerId;
+    restartWinnerChatPop(panel);
+    return;
+  }
+
+  panel.classList.remove("is-hidden");
   renderWinnerMessages(winnerMessages);
-
-  if (celebrate || wasHidden) {
-    panel.classList.remove("is-pop");
-    void panel.offsetWidth;
-    panel.classList.add("is-pop");
-  }
-
-  if (celebrate) {
-    window.requestAnimationFrame(() => {
-      panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    });
-  }
+  lastWinnerChatId = winnerId;
 }
 
 function updateRevealPanel() {
@@ -632,10 +657,16 @@ async function loadGiveawayStatus() {
 
     const data = await response.json();
     const { winnerChanged } = applyStatusData(data);
+
+    if (winnerChanged) {
+      lastWinnerChatId = null;
+      winnerMessages = [];
+    }
+
     updatePanels();
 
     if (winnerChanged) {
-      await maybeAnimateWinner(giveawayWinner, giveawayEntries);
+      await maybeAnimateWinner(giveawayWinner, giveawayEntries, { force: true });
     } else if (giveawayWinner && lastAnimatedWinnerId !== giveawayWinner.id) {
       // Page load with an already-revealed winner: show result, skip long roll.
       lastAnimatedWinnerId = giveawayWinner.id;
@@ -814,6 +845,8 @@ async function revealWinner() {
   }
 
   applyStatusData(data);
+  lastWinnerChatId = null;
+  winnerMessages = [];
   updatePanels();
   await maybeAnimateWinner(giveawayWinner, giveawayEntries, { force: true });
   setAdminStatus(
