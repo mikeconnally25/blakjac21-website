@@ -12,6 +12,7 @@ let lastAnimatedWinnerId = null;
 const CASE_ITEM_GAP = 10;
 const CASE_ROLL_DURATION_MS = 8200;
 const CASE_SETTLE_DURATION_MS = 520;
+const KICK_CHAT_POPOUT_URL = "https://kick.com/popout/blakjac21/chat";
 
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -365,6 +366,7 @@ function showWinnerResult(winner, animated = false) {
   result.classList.remove("is-hidden");
   result.classList.toggle("is-pop", animated);
   result.innerHTML = `Winner: <strong>${winner.username}</strong>`;
+  updateWinnerChat(winner, { celebrate: animated });
 }
 
 function clearWinnerResult() {
@@ -373,6 +375,53 @@ function clearWinnerResult() {
   result.classList.add("is-hidden");
   result.classList.remove("is-pop");
   result.textContent = "";
+  updateWinnerChat(null);
+}
+
+function updateWinnerChat(winner, { celebrate = false } = {}) {
+  const panel = document.getElementById("giveaways-winner-chat");
+  const iframe = document.getElementById("giveaways-kick-chat");
+  const nameEl = document.getElementById("giveaways-chat-winner-name");
+  const openLink = document.getElementById("giveaways-kick-chat-open");
+  if (!panel) return;
+
+  const show = Boolean(winner);
+  const wasHidden = panel.classList.contains("is-hidden");
+  panel.classList.toggle("is-hidden", !show);
+
+  if (!show) {
+    panel.classList.remove("is-pop");
+    if (iframe) {
+      iframe.removeAttribute("src");
+      delete iframe.dataset.loaded;
+    }
+    return;
+  }
+
+  if (nameEl) {
+    nameEl.textContent = winner.username || "the winner";
+  }
+
+  if (openLink) {
+    openLink.href = KICK_CHAT_POPOUT_URL;
+  }
+
+  if (iframe && iframe.dataset.loaded !== "1") {
+    iframe.src = KICK_CHAT_POPOUT_URL;
+    iframe.dataset.loaded = "1";
+  }
+
+  if (celebrate || wasHidden) {
+    panel.classList.remove("is-pop");
+    void panel.offsetWidth;
+    panel.classList.add("is-pop");
+  }
+
+  if (celebrate) {
+    window.requestAnimationFrame(() => {
+      panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  }
 }
 
 function updateRevealPanel() {
