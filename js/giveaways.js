@@ -152,7 +152,7 @@ function updateRollingAnimation() {
   }
 
   const halfHeight = track.scrollHeight / 2;
-  const duration = Math.max(12, uniqueCount * 1.8);
+  const duration = Math.max(10, uniqueCount * 1.25);
   track.style.setProperty("--roll-distance", `${halfHeight}px`);
   track.style.setProperty("--roll-duration", `${duration}s`);
 }

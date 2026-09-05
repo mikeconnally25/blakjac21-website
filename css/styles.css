@@ -2618,7 +2618,7 @@ ul {
 }
 
 .giveaways-rolling-track.is-rolling {
-  animation: giveaways-roll var(--roll-duration, 18s) linear infinite;
+  animation: giveaways-roll var(--roll-duration, 14s) linear infinite;
   will-change: transform;
 }
 
