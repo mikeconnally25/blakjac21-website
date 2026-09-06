@@ -4594,6 +4594,30 @@ ul {
 .requests-hub-list-wrap {
   display: grid;
   gap: 0.75rem;
+  max-height: calc(10 * 4.35rem);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding-right: 0.2rem;
+}
+
+.requests-hub-list-wrap::-webkit-scrollbar {
+  width: 8px;
+}
+
+.requests-hub-list-wrap::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
+}
+
+.requests-hub-list-wrap::-webkit-scrollbar-thumb {
+  background: rgba(88, 201, 243, 0.35);
+  border-radius: 999px;
+}
+
+.requests-hub-list-wrap::-webkit-scrollbar-thumb:hover {
+  background: rgba(126, 216, 255, 0.5);
 }
 
 .requests-hub-empty {
