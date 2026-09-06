@@ -209,7 +209,7 @@ function renderAuthState(user) {
     if (stakeBadge) {
       stakeBadge.textContent = user.stakeUsername
         ? user.stakeCodeVerified
-          ? `Stake: ${user.stakeUsername}`
+          ? `Stake: ${user.stakeUsername} (verified)`
           : `Stake: ${user.stakeUsername} (unverified)`
         : "Link Stake";
       stakeBadge.classList.toggle("is-linked", Boolean(user.stakeUsername));

@@ -300,9 +300,13 @@ function renderAccounts(users) {
 
     const stakeLabel = document.createElement("span");
     stakeLabel.className = "accounts-kick-id";
-    stakeLabel.textContent = user.stakeUsername
-      ? `Stake: ${user.stakeUsername}`
-      : `Kick ID ${user.kickUserId}`;
+    if (user.stakeUsername) {
+      stakeLabel.textContent = user.stakeCodeVerified
+        ? `Stake: ${user.stakeUsername} (verified)`
+        : `Stake: ${user.stakeUsername} (unverified)`;
+    } else {
+      stakeLabel.textContent = `Kick ID ${user.kickUserId}`;
+    }
 
     const editStakeBtn = document.createElement("button");
     editStakeBtn.type = "button";
