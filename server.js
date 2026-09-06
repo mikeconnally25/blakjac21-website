@@ -49,7 +49,7 @@ import {
   handleGuessSubscribersOnly,
 } from "./lib/guess-handlers.js";
 import { handleLeaderboardGet } from "./lib/leaderboard-handlers.js";
-import { handleUsersList, handleStakeLink } from "./lib/user-handlers.js";
+import { handleUsersList, handleStakeLink, handleUserAffGrant } from "./lib/user-handlers.js";
 import {
   handleGiveawayAffiliatesOnly,
   handleGiveawaySubscribersOnly,
@@ -159,6 +159,7 @@ app.get("/api/kick/setup-status", (req, res) => handleKickSetupStatus(req, res))
 app.get("/api/leaderboard", (req, res) => handleLeaderboardGet(req, res));
 app.get("/api/users", (req, res) => handleUsersList(req, res));
 app.post("/api/users/link-stake", (req, res) => handleStakeLink(req, res));
+app.post("/api/users/aff-grant", (req, res) => handleUserAffGrant(req, res));
 app.get("/api/giveaways/status", (req, res) => handleGiveawayStatus(req, res));
 app.post("/api/giveaways/toggle", (req, res) => handleGiveawayToggle(req, res));
 app.post("/api/giveaways/affiliates-only", (req, res) =>

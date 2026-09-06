@@ -249,7 +249,9 @@ function renderAccounts(users) {
       const affBadge = document.createElement("span");
       affBadge.className = "accounts-aff-badge";
       affBadge.textContent = "AFF";
-      affBadge.title = "Verified on code BLAKJAC21";
+      affBadge.title = user.affOnRoster
+        ? "Verified on code BLAKJAC21"
+        : "Manually granted AFF";
       badges.append(affBadge);
     }
 
@@ -273,6 +275,22 @@ function renderAccounts(users) {
 
     if (badges.childElementCount > 0) {
       nameRow.append(badges);
+    }
+
+    if (!user.affOnRoster) {
+      const affToggle = document.createElement("button");
+      affToggle.type = "button";
+      affToggle.className = user.affGranted
+        ? "btn btn-sm btn-outline accounts-aff-toggle"
+        : "btn btn-sm btn-primary accounts-aff-toggle";
+      affToggle.textContent = user.affGranted ? "Revoke AFF" : "Grant AFF";
+      affToggle.title = user.affGranted
+        ? "Remove manually granted AFF"
+        : "Manually give this user the AFF pill";
+      affToggle.addEventListener("click", () => {
+        void setAccountAffGranted(user.kickUserId, !user.affGranted, affToggle);
+      });
+      nameRow.append(affToggle);
     }
 
     copy.append(nameRow);
@@ -407,6 +425,38 @@ function updateSearchControls() {
   const clearBtn = document.getElementById("accounts-search-clear");
   const hasQuery = Boolean(searchQuery.trim());
   clearBtn?.classList.toggle("is-hidden", !hasQuery);
+}
+
+async function setAccountAffGranted(kickUserId, granted, button) {
+  if (button) button.disabled = true;
+  setAccountsStatus(granted ? "Granting AFF..." : "Revoking AFF...");
+
+  try {
+    const response = await fetch("/api/users/aff-grant", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kickUserId, granted }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      setAccountsStatus(data.error || "Could not update AFF status.", "error");
+      return;
+    }
+
+    allUsers = data.users || [];
+    altClusters = data.altClusters || [];
+    setAccountsStatus(
+      granted ? "AFF granted." : "AFF revoked.",
+      "success"
+    );
+    renderFilteredAccounts();
+  } catch {
+    setAccountsStatus("Could not update AFF status.", "error");
+  } finally {
+    if (button) button.disabled = false;
+  }
 }
 
 async function loadAccounts() {
