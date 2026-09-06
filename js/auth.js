@@ -169,9 +169,10 @@ async function submitStakeLink() {
 
     const toast = document.getElementById("auth-toast");
     if (toast) {
-      toast.textContent = data.user.stakeCodeVerified
-        ? `Stake account linked and verified on code BLAKJAC21.`
-        : `Stake account linked. We could not find that username on the BLAKJAC21 leaderboard yet.`;
+      toast.textContent =
+        data.user.stakeCodeVerified || data.user.affGranted
+          ? `Stake account linked and verified on code BLAKJAC21.`
+          : `Stake account linked. We could not find that username on the BLAKJAC21 leaderboard yet.`;
       toast.classList.remove("is-hidden", "is-error");
     }
   } catch {
@@ -207,15 +208,18 @@ function renderAuthState(user) {
       adminAccountsNav.classList.toggle("is-hidden", !user.isAdmin);
     }
     if (stakeBadge) {
+      const isVerified = Boolean(
+        user.stakeCodeVerified || user.affGranted
+      );
       stakeBadge.textContent = user.stakeUsername
-        ? user.stakeCodeVerified
+        ? isVerified
           ? `Stake: ${user.stakeUsername} (verified)`
           : `Stake: ${user.stakeUsername} (unverified)`
         : "Link Stake";
       stakeBadge.classList.toggle("is-linked", Boolean(user.stakeUsername));
       stakeBadge.classList.toggle(
         "is-verified",
-        Boolean(user.stakeUsername && user.stakeCodeVerified)
+        Boolean(user.stakeUsername && isVerified)
       );
       stakeBadge.classList.remove("is-hidden");
     }
