@@ -438,7 +438,19 @@ async function setAccountAffGranted(kickUserId, granted, button) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ kickUserId, granted }),
     });
-    const data = await response.json();
+
+    let data = {};
+    try {
+      data = await response.json();
+    } catch {
+      setAccountsStatus(
+        response.ok
+          ? "Could not update AFF status."
+          : `Could not update AFF status (${response.status}).`,
+        "error"
+      );
+      return;
+    }
 
     if (!response.ok) {
       setAccountsStatus(data.error || "Could not update AFF status.", "error");
