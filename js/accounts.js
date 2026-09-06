@@ -295,13 +295,83 @@ function renderAccounts(users) {
 
     copy.append(nameRow);
 
-    const kickId = document.createElement("span");
-    kickId.className = "accounts-kick-id";
-    kickId.textContent = user.stakeUsername
+    const stakeRow = document.createElement("div");
+    stakeRow.className = "accounts-stake-row";
+
+    const stakeLabel = document.createElement("span");
+    stakeLabel.className = "accounts-kick-id";
+    stakeLabel.textContent = user.stakeUsername
       ? `Stake: ${user.stakeUsername}`
       : `Kick ID ${user.kickUserId}`;
 
-    copy.append(kickId);
+    const editStakeBtn = document.createElement("button");
+    editStakeBtn.type = "button";
+    editStakeBtn.className = "btn btn-sm btn-outline accounts-stake-edit";
+    editStakeBtn.textContent = user.stakeUsername ? "Edit" : "Link";
+    editStakeBtn.title = user.stakeUsername
+      ? "Edit linked Stake username"
+      : "Link a Stake username";
+
+    const showStakeEditor = () => {
+      stakeRow.replaceChildren();
+
+      const prefix = document.createElement("span");
+      prefix.className = "accounts-kick-id";
+      prefix.textContent = "Stake:";
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "accounts-stake-input";
+      input.value = user.stakeUsername || "";
+      input.placeholder = "Stake username";
+      input.autocomplete = "off";
+      input.spellcheck = false;
+      input.maxLength = 24;
+
+      const saveBtn = document.createElement("button");
+      saveBtn.type = "button";
+      saveBtn.className = "btn btn-sm btn-primary accounts-stake-save";
+      saveBtn.textContent = "Save";
+
+      const cancelBtn = document.createElement("button");
+      cancelBtn.type = "button";
+      cancelBtn.className = "btn btn-sm btn-outline accounts-stake-cancel";
+      cancelBtn.textContent = "Cancel";
+
+      const restoreRow = () => {
+        stakeRow.replaceChildren(stakeLabel, editStakeBtn);
+      };
+
+      const submit = () => {
+        void setAccountStakeUsername(
+          user.kickUserId,
+          input.value,
+          saveBtn,
+          cancelBtn
+        );
+      };
+
+      saveBtn.addEventListener("click", submit);
+      cancelBtn.addEventListener("click", restoreRow);
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          submit();
+        }
+        if (event.key === "Escape") {
+          event.preventDefault();
+          restoreRow();
+        }
+      });
+
+      stakeRow.append(prefix, input, saveBtn, cancelBtn);
+      input.focus();
+      input.select();
+    };
+
+    editStakeBtn.addEventListener("click", showStakeEditor);
+    stakeRow.append(stakeLabel, editStakeBtn);
+    copy.append(stakeRow);
 
     if ((user.possibleAlts || []).length > 0) {
       const alts = document.createElement("p");
@@ -468,6 +538,52 @@ async function setAccountAffGranted(kickUserId, granted, button) {
     setAccountsStatus("Could not update AFF status.", "error");
   } finally {
     if (button) button.disabled = false;
+  }
+}
+
+async function setAccountStakeUsername(kickUserId, stakeUsername, saveButton, cancelButton) {
+  if (saveButton) saveButton.disabled = true;
+  if (cancelButton) cancelButton.disabled = true;
+  setAccountsStatus("Updating Stake username...");
+
+  try {
+    const response = await fetch("/api/users/set-stake", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kickUserId, stakeUsername }),
+    });
+
+    let data = {};
+    try {
+      data = await response.json();
+    } catch {
+      setAccountsStatus(
+        response.ok
+          ? "Could not update Stake username."
+          : `Could not update Stake username (${response.status}).`,
+        "error"
+      );
+      return;
+    }
+
+    if (!response.ok) {
+      setAccountsStatus(
+        data.error || "Could not update Stake username.",
+        "error"
+      );
+      return;
+    }
+
+    allUsers = data.users || [];
+    altClusters = data.altClusters || [];
+    setAccountsStatus("Stake username updated.", "success");
+    renderFilteredAccounts();
+  } catch {
+    setAccountsStatus("Could not update Stake username.", "error");
+  } finally {
+    if (saveButton) saveButton.disabled = false;
+    if (cancelButton) cancelButton.disabled = false;
   }
 }
 

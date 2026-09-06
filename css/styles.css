@@ -2263,6 +2263,41 @@ ul {
   overflow-wrap: anywhere;
 }
 
+.accounts-stake-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.45rem;
+  min-width: 0;
+}
+
+.accounts-stake-edit,
+.accounts-stake-save,
+.accounts-stake-cancel {
+  min-height: 1.4rem;
+  padding: 0.12rem 0.45rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.accounts-stake-input {
+  width: min(11rem, 100%);
+  min-height: 1.55rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.72);
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+.accounts-stake-input:focus {
+  outline: none;
+  border-color: rgba(83, 252, 24, 0.45);
+}
+
 .accounts-entry-meta {
   display: flex;
   align-items: center;
