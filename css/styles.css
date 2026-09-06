@@ -447,6 +447,11 @@ ul {
   margin-top: 0.15rem;
 }
 
+.stake-link-actions .btn {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
 /* Hero */
 .hero {
   padding: 3.5rem 0 4rem;

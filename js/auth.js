@@ -37,12 +37,12 @@ function ensureStakeLinkModal() {
   modal.id = "stake-link-modal";
   modal.className = "stake-link-modal is-hidden";
   modal.innerHTML = `
-    <div class="stake-link-backdrop" data-stake-link-dismiss></div>
+    <div class="stake-link-backdrop" aria-hidden="true"></div>
     <div class="stake-link-dialog" role="dialog" aria-modal="true" aria-labelledby="stake-link-title">
-      <p class="stake-link-eyebrow">One more step</p>
+      <p class="stake-link-eyebrow">Required</p>
       <h2 class="stake-link-title" id="stake-link-title">Link your Stake account</h2>
       <p class="stake-link-copy">
-        Enter your Stake username so we can match you on leaderboards, giveaways, and stream games.
+        Enter your Stake username to finish signing in. We use it for leaderboards, giveaways, and stream games.
         Use code <strong>BLAKJAC21</strong> when you sign up.
       </p>
       <form class="stake-link-form" id="stake-link-form">
@@ -65,9 +65,6 @@ function ensureStakeLinkModal() {
           <button type="submit" class="btn btn-sm btn-primary" id="stake-link-submit">
             Link account
           </button>
-          <button type="button" class="btn btn-sm btn-outline" id="stake-link-skip">
-            Skip for now
-          </button>
         </div>
       </form>
     </div>
@@ -76,22 +73,10 @@ function ensureStakeLinkModal() {
   document.body.appendChild(modal);
 
   const form = modal.querySelector("#stake-link-form");
-  const skipBtn = modal.querySelector("#stake-link-skip");
-  const backdrop = modal.querySelector("[data-stake-link-dismiss]");
 
   form?.addEventListener("submit", async (event) => {
     event.preventDefault();
     await submitStakeLink();
-  });
-
-  skipBtn?.addEventListener("click", () => {
-    sessionStorage.setItem("bj21-stake-prompt-dismissed", "1");
-    hideStakeLinkModal();
-  });
-
-  backdrop?.addEventListener("click", () => {
-    sessionStorage.setItem("bj21-stake-prompt-dismissed", "1");
-    hideStakeLinkModal();
   });
 }
 
@@ -135,16 +120,10 @@ function maybeShowStakeLinkPrompt(user) {
   const justAuthed =
     params.get("auth") === "created" || params.get("auth") === "signed-in";
 
-  if (justAuthed) {
-    sessionStorage.removeItem("bj21-stake-prompt-dismissed");
-  }
+  // Clear any legacy skip flag from older builds.
+  sessionStorage.removeItem("bj21-stake-prompt-dismissed");
 
   if (!user?.kickUserId || user.stakeUsername) {
-    hideStakeLinkModal();
-    return;
-  }
-
-  if (sessionStorage.getItem("bj21-stake-prompt-dismissed") === "1") {
     hideStakeLinkModal();
     return;
   }
