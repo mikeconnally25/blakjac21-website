@@ -379,6 +379,13 @@ function createPodiumSlot(place, winner) {
 
   block.append(medal, user);
 
+  if (winner?.stakeUsername) {
+    const stake = document.createElement("span");
+    stake.className = "podium-stake";
+    stake.textContent = winner.stakeUsername;
+    block.append(stake);
+  }
+
   if (winner) {
     const guess = document.createElement("span");
     guess.className = "podium-guess";

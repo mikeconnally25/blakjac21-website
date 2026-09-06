@@ -5477,6 +5477,15 @@ ul {
   word-break: break-word;
 }
 
+.podium-stake {
+  margin-top: -0.15rem;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  word-break: break-word;
+}
+
 .podium-guess {
   font-weight: 700;
   color: var(--accent-bright);
