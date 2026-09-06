@@ -684,64 +684,70 @@ function renderBonusList(bonuses) {
       const actions = document.createElement("div");
       actions.className = "hunt-bonus-admin";
 
-      if (bonus.status === "pending") {
-        const payoutField = document.createElement("div");
-        payoutField.className = "hunt-bonus-win-field";
+      const payoutField = document.createElement("div");
+      payoutField.className = "hunt-bonus-win-field";
 
-        const payoutLabel = document.createElement("span");
-        payoutLabel.className = "hunt-bonus-win-label";
-        payoutLabel.textContent = "Win";
+      const payoutLabel = document.createElement("span");
+      payoutLabel.className = "hunt-bonus-win-label";
+      payoutLabel.textContent = "Win";
 
-        const payoutRow = document.createElement("label");
-        payoutRow.className = "guess-input-row hunt-bonus-win-row";
+      const payoutRow = document.createElement("label");
+      payoutRow.className = "guess-input-row hunt-bonus-win-row";
 
-        const payoutPrefix = document.createElement("span");
-        payoutPrefix.className = "guess-prefix";
-        payoutPrefix.textContent = "$";
-        payoutPrefix.setAttribute("aria-hidden", "true");
+      const payoutPrefix = document.createElement("span");
+      payoutPrefix.className = "guess-prefix";
+      payoutPrefix.textContent = "$";
+      payoutPrefix.setAttribute("aria-hidden", "true");
 
-        payoutInput = document.createElement("input");
-        payoutInput.className = "guess-input bonus-payout-input";
-        payoutInput.type = "number";
-        payoutInput.inputMode = "decimal";
-        payoutInput.min = "0";
-        payoutInput.step = "0.01";
-        payoutInput.placeholder = "0.00";
-        payoutInput.setAttribute("aria-label", `Win amount for ${bonus.slot}`);
-        payoutInput.value = bonusPayoutDrafts.has(bonus.id)
-          ? bonusPayoutDrafts.get(bonus.id)
+      payoutInput = document.createElement("input");
+      payoutInput.className = "guess-input bonus-payout-input";
+      payoutInput.type = "number";
+      payoutInput.inputMode = "decimal";
+      payoutInput.min = "0";
+      payoutInput.step = "0.01";
+      payoutInput.placeholder = "0.00";
+      payoutInput.setAttribute(
+        "aria-label",
+        bonus.status === "opened"
+          ? `Edit win amount for ${bonus.slot}`
+          : `Win amount for ${bonus.slot}`
+      );
+      payoutInput.value = bonusPayoutDrafts.has(bonus.id)
+        ? bonusPayoutDrafts.get(bonus.id)
+        : bonus.status === "opened" && bonus.payout !== null && bonus.payout !== undefined
+          ? Number(bonus.payout).toFixed(2)
           : "";
 
-        payoutRow.append(payoutPrefix, payoutInput);
-        payoutField.append(payoutLabel, payoutRow);
+      payoutRow.append(payoutPrefix, payoutInput);
+      payoutField.append(payoutLabel, payoutRow);
 
-        saveWinBtn = document.createElement("button");
-        saveWinBtn.type = "button";
-        saveWinBtn.className = "btn btn-sm btn-primary";
-        saveWinBtn.textContent = "Save win";
-        saveWinBtn.addEventListener("click", () =>
-          saveBonusPayout(bonus.id, payoutInput.value, saveWinBtn)
-        );
+      saveWinBtn = document.createElement("button");
+      saveWinBtn.type = "button";
+      saveWinBtn.className = "btn btn-sm btn-primary";
+      saveWinBtn.textContent =
+        bonus.status === "opened" ? "Update win" : "Save win";
+      saveWinBtn.addEventListener("click", () =>
+        saveBonusPayout(bonus.id, payoutInput.value, saveWinBtn)
+      );
 
-        payoutInput.addEventListener("input", () => {
-          bonusPayoutDrafts.set(bonus.id, payoutInput.value);
-        });
+      payoutInput.addEventListener("input", () => {
+        bonusPayoutDrafts.set(bonus.id, payoutInput.value);
+      });
 
-        payoutInput.addEventListener("blur", () => {
-          if (!payoutInput.value.trim()) {
-            bonusPayoutDrafts.delete(bonus.id);
-          }
-        });
+      payoutInput.addEventListener("blur", () => {
+        if (!payoutInput.value.trim()) {
+          bonusPayoutDrafts.delete(bonus.id);
+        }
+      });
 
-        payoutInput.addEventListener("keydown", (event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            void saveBonusPayout(bonus.id, payoutInput.value, saveWinBtn);
-          }
-        });
+      payoutInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          void saveBonusPayout(bonus.id, payoutInput.value, saveWinBtn);
+        }
+      });
 
-        actions.append(payoutField, saveWinBtn);
-      }
+      actions.append(payoutField, saveWinBtn);
 
       const removeBtn = document.createElement("button");
       removeBtn.type = "button";
@@ -2177,14 +2183,22 @@ async function saveBonusPayout(id, rawPayout, button) {
       return;
     }
 
-    setStatus("Win saved.", "success");
+    setStatus(
+      huntBonuses.find((entry) => entry.id === id)?.status === "opened"
+        ? "Win updated."
+        : "Win saved.",
+      "success"
+    );
     const nextPendingId = getNextPendingBonusId(id);
     bonusPayoutDrafts.delete(id);
     if (document.activeElement?.classList?.contains("bonus-payout-input")) {
       document.activeElement.blur();
     }
     await loadBonusHunt();
-    focusBonusPayoutInput(nextPendingId);
+    // Only auto-advance to the next pending when logging a first win.
+    if (nextPendingId) {
+      focusBonusPayoutInput(nextPendingId);
+    }
   } catch {
     setStatus("Could not save payout. Try again.", "error");
   } finally {
