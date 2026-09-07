@@ -33,6 +33,37 @@ function renderBalance() {
   copy.textContent = `Signed in as ${currentUser.username}.`;
 }
 
+function statusLabel(status) {
+  if (status === "fulfilled") return "Fulfilled";
+  if (status === "cancelled") return "Cancelled";
+  return "Pending";
+}
+
+function createRowMeta(parts) {
+  const meta = document.createElement("div");
+  meta.className = "store-row-meta";
+  parts.filter(Boolean).forEach((part, index) => {
+    if (index > 0) {
+      const sep = document.createElement("span");
+      sep.className = "store-row-sep";
+      sep.setAttribute("aria-hidden", "true");
+      sep.textContent = "·";
+      meta.append(sep);
+    }
+    const bit = document.createElement("span");
+    bit.textContent = part;
+    meta.append(bit);
+  });
+  return meta;
+}
+
+function createStatusPill(status) {
+  const pill = document.createElement("span");
+  pill.className = `store-status-pill is-${status || "pending"}`;
+  pill.textContent = statusLabel(status);
+  return pill;
+}
+
 function renderCatalog() {
   const list = document.getElementById("store-catalog-list");
   const empty = document.getElementById("store-catalog-empty");
@@ -43,14 +74,16 @@ function renderCatalog() {
 
   if (!activeItems.length) {
     empty.classList.remove("is-hidden");
+    list.classList.add("is-hidden");
     return;
   }
 
   empty.classList.add("is-hidden");
+  list.classList.remove("is-hidden");
 
   activeItems.forEach((item) => {
     const row = document.createElement("li");
-    row.className = "store-catalog-item bj21-panel theme-surface";
+    row.className = "store-catalog-item";
 
     const copy = document.createElement("div");
     copy.className = "store-catalog-copy";
@@ -97,12 +130,6 @@ function formatWhen(value) {
   });
 }
 
-function statusLabel(status) {
-  if (status === "fulfilled") return "Fulfilled";
-  if (status === "cancelled") return "Cancelled";
-  return "Pending";
-}
-
 function renderMyRedemptions() {
   const list = document.getElementById("store-redemptions-list");
   const empty = document.getElementById("store-redemptions-empty");
@@ -124,32 +151,57 @@ function renderMyRedemptions() {
 
   myRedemptions.forEach((entry) => {
     const row = document.createElement("li");
-    row.className = `store-redemption-item is-${entry.status || "pending"}`;
+    row.className = `store-row store-redemption-item is-${entry.status || "pending"}`;
 
-    const copy = document.createElement("span");
-    const when = formatWhen(entry.updatedAt || entry.createdAt);
-    copy.textContent = `${entry.itemTitle} · ${formatPoints(entry.cost)} · ${statusLabel(
-      entry.status
-    )}${when ? ` · ${when}` : ""}`;
+    const copy = document.createElement("div");
+    copy.className = "store-row-copy";
 
-    row.append(copy);
+    const title = document.createElement("p");
+    title.className = "store-row-title";
+    title.textContent = entry.itemTitle;
+
+    copy.append(
+      title,
+      createRowMeta([formatPoints(entry.cost), formatWhen(entry.updatedAt || entry.createdAt)])
+    );
+    row.append(copy, createStatusPill(entry.status));
     list.append(row);
   });
 }
 
 function renderAdminCatalog() {
   const list = document.getElementById("store-admin-catalog");
+  const empty = document.getElementById("store-admin-catalog-empty");
   if (!list) return;
   list.replaceChildren();
 
+  if (!catalog.length) {
+    empty?.classList.remove("is-hidden");
+    list.classList.add("is-hidden");
+    return;
+  }
+
+  empty?.classList.add("is-hidden");
+  list.classList.remove("is-hidden");
+
   catalog.forEach((item) => {
     const row = document.createElement("li");
-    row.className = "store-admin-item";
+    row.className = `store-row store-admin-item${item.active ? "" : " is-inactive"}`;
 
-    const label = document.createElement("span");
-    label.textContent = `${item.title} · ${formatPoints(item.cost)}${
-      item.active ? "" : " (inactive)"
-    }`;
+    const copy = document.createElement("div");
+    copy.className = "store-row-copy";
+
+    const title = document.createElement("p");
+    title.className = "store-row-title";
+    title.textContent = item.title;
+
+    copy.append(
+      title,
+      createRowMeta([
+        formatPoints(item.cost),
+        item.active ? "Active" : "Inactive",
+      ])
+    );
 
     const toggle = document.createElement("button");
     toggle.type = "button";
@@ -159,7 +211,7 @@ function renderAdminCatalog() {
       void toggleCatalogItem(item.id, !item.active, toggle);
     });
 
-    row.append(label, toggle);
+    row.append(copy, toggle);
     list.append(row);
   });
 }
@@ -174,19 +226,28 @@ function renderQueue() {
 
   if (!pending.length) {
     empty.classList.remove("is-hidden");
+    list.classList.add("is-hidden");
     return;
   }
 
   empty.classList.add("is-hidden");
+  list.classList.remove("is-hidden");
 
   pending.forEach((entry) => {
     const row = document.createElement("li");
-    row.className = "store-queue-item";
+    row.className = "store-row store-queue-item";
 
-    const copy = document.createElement("span");
-    copy.textContent = `${entry.username} · ${entry.itemTitle} · ${formatPoints(
-      entry.cost
-    )}`;
+    const copy = document.createElement("div");
+    copy.className = "store-row-copy";
+
+    const title = document.createElement("p");
+    title.className = "store-row-title";
+    title.textContent = entry.itemTitle;
+
+    copy.append(
+      title,
+      createRowMeta([entry.username, formatPoints(entry.cost)])
+    );
 
     const actions = document.createElement("div");
     actions.className = "store-queue-actions";
@@ -239,15 +300,25 @@ function renderHistory() {
 
   history.forEach((entry) => {
     const row = document.createElement("li");
-    row.className = `store-queue-item store-history-item is-${entry.status}`;
+    row.className = `store-row store-queue-item store-history-item is-${entry.status}`;
 
-    const copy = document.createElement("span");
-    const when = formatWhen(entry.updatedAt || entry.createdAt);
-    copy.textContent = `${entry.username} · ${entry.itemTitle} · ${formatPoints(
-      entry.cost
-    )} · ${statusLabel(entry.status)}${when ? ` · ${when}` : ""}`;
+    const copy = document.createElement("div");
+    copy.className = "store-row-copy";
 
-    row.append(copy);
+    const title = document.createElement("p");
+    title.className = "store-row-title";
+    title.textContent = entry.itemTitle;
+
+    copy.append(
+      title,
+      createRowMeta([
+        entry.username,
+        formatPoints(entry.cost),
+        formatWhen(entry.updatedAt || entry.createdAt),
+      ])
+    );
+
+    row.append(copy, createStatusPill(entry.status));
     list.append(row);
   });
 }

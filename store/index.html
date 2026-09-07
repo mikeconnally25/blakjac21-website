@@ -62,95 +62,114 @@
       <div class="container page-content store-shell">
         <a href="/#menu" class="back-link">← Back to menu</a>
 
-        <header class="store-hero">
-          <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
-          <h1 class="store-heading">Store</h1>
-          <p class="store-lede">
-            Spend channel points on rewards. Admins award points from Accounts,
-            <code>!points @user 100</code>, or <code>!pointsall 100</code> for recent chatters.
-          </p>
+        <header class="store-top">
+          <div class="store-hero">
+            <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
+            <h1 class="store-heading">Store</h1>
+            <p class="store-lede">Spend channel points on rewards.</p>
+          </div>
+
+          <div class="store-balance-panel bj21-panel theme-surface" id="store-balance-panel">
+            <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <p class="store-panel-label">Your points</p>
+            <p class="store-balance-value" id="store-balance-value">—</p>
+            <p class="store-balance-copy" id="store-balance-copy">Sign in with Kick to redeem.</p>
+          </div>
         </header>
 
         <p class="store-status is-hidden" id="store-status" role="status"></p>
 
-        <div class="store-balance-panel bj21-panel theme-surface" id="store-balance-panel">
+        <section class="store-panel bj21-panel theme-surface" aria-labelledby="store-catalog-title">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <p class="store-panel-label">Your points</p>
-          <p class="store-balance-value" id="store-balance-value">—</p>
-          <p class="store-balance-copy" id="store-balance-copy">Sign in with Kick to see your balance and redeem rewards.</p>
-        </div>
-
-        <section class="store-section" aria-labelledby="store-catalog-title">
           <div class="store-section-header">
             <h2 class="store-section-title" id="store-catalog-title">Rewards</h2>
-            <p class="store-section-copy">Redeem with points. Pending rewards are fulfilled manually.</p>
+            <p class="store-section-copy">Redeem anytime. Admins fulfill pending rewards.</p>
           </div>
           <p class="store-empty is-hidden" id="store-catalog-empty">No rewards listed yet.</p>
           <ul class="store-catalog-list" id="store-catalog-list"></ul>
         </section>
 
-        <section class="store-section" aria-labelledby="store-redemptions-title">
+        <section class="store-panel bj21-panel theme-surface" aria-labelledby="store-redemptions-title">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
           <div class="store-section-header">
             <h2 class="store-section-title" id="store-redemptions-title">Your redemptions</h2>
           </div>
           <p class="store-empty" id="store-redemptions-empty">No redemptions yet.</p>
-          <ul class="store-redemptions-list is-hidden" id="store-redemptions-list"></ul>
+          <div class="store-list-scroll">
+            <ul class="store-redemptions-list is-hidden" id="store-redemptions-list"></ul>
+          </div>
         </section>
 
-        <section class="store-section store-admin is-hidden" id="store-admin" aria-labelledby="store-admin-title">
+        <section class="store-admin is-hidden" id="store-admin" aria-labelledby="store-admin-title">
           <div class="store-section-header">
             <h2 class="store-section-title" id="store-admin-title">Admin</h2>
-            <p class="store-section-copy">Manage catalog items and fulfill pending redemptions.</p>
-          </div>
-
-          <form class="store-admin-form bj21-panel theme-surface" id="store-award-chat-form">
-            <span class="bj21-panel-glow" aria-hidden="true"></span>
-            <p class="store-panel-label">Award recent chat</p>
             <p class="store-section-copy">
-              Gives points to everyone who typed in Kick chat within the window (default 15 minutes).
+              Award points, manage rewards, and fulfill the queue.
+              Chat: <code>!points @user 100</code> or <code>!pointsall 100</code>.
             </p>
-            <div class="store-admin-grid store-award-chat-grid">
-              <label class="guess-label" for="store-award-chat-amount">Points</label>
-              <input class="guess-input" id="store-award-chat-amount" name="amount" type="number" step="1" required value="100" />
-              <label class="guess-label" for="store-award-chat-minutes">Active within (minutes)</label>
-              <input class="guess-input" id="store-award-chat-minutes" name="minutes" type="number" min="1" max="120" step="1" value="15" />
-            </div>
-            <button type="submit" class="btn btn-sm btn-primary" id="store-award-chat-submit">
-              Award chatters
-            </button>
-            <p class="store-award-chat-status is-hidden" id="store-award-chat-status" role="status"></p>
-          </form>
-
-          <form class="store-admin-form bj21-panel theme-surface" id="store-catalog-form">
-            <span class="bj21-panel-glow" aria-hidden="true"></span>
-            <p class="store-panel-label">Add reward</p>
-            <div class="store-admin-grid">
-              <label class="guess-label" for="store-item-title">Title</label>
-              <input class="guess-input" id="store-item-title" name="title" required maxlength="80" />
-              <label class="guess-label" for="store-item-cost">Cost</label>
-              <input class="guess-input" id="store-item-cost" name="cost" type="number" min="1" step="1" required />
-              <label class="guess-label" for="store-item-description">Description</label>
-              <input class="guess-input" id="store-item-description" name="description" maxlength="200" />
-            </div>
-            <button type="submit" class="btn btn-sm btn-primary">Add to catalog</button>
-          </form>
-
-          <ul class="store-admin-catalog" id="store-admin-catalog"></ul>
-
-          <div class="store-section-header store-admin-queue-header">
-            <h3 class="store-section-subtitle">Pending queue</h3>
           </div>
-          <p class="store-empty is-hidden" id="store-queue-empty">No pending redemptions.</p>
-          <ul class="store-queue-list" id="store-queue-list"></ul>
 
-          <div class="store-history-panel bj21-panel theme-surface" id="store-history-panel">
+          <div class="store-admin-tools">
+            <form class="store-admin-form bj21-panel theme-surface" id="store-award-chat-form">
+              <span class="bj21-panel-glow" aria-hidden="true"></span>
+              <p class="store-panel-label">Award chat</p>
+              <p class="store-section-copy">Points for Kick chatters active in the last N minutes.</p>
+              <div class="store-admin-grid store-award-chat-grid">
+                <div class="store-field">
+                  <label class="guess-label" for="store-award-chat-amount">Points</label>
+                  <input class="guess-input" id="store-award-chat-amount" name="amount" type="number" step="1" required value="100" />
+                </div>
+                <div class="store-field">
+                  <label class="guess-label" for="store-award-chat-minutes">Minutes</label>
+                  <input class="guess-input" id="store-award-chat-minutes" name="minutes" type="number" min="1" max="120" step="1" value="15" />
+                </div>
+              </div>
+              <button type="submit" class="btn btn-sm btn-primary" id="store-award-chat-submit">
+                Award chatters
+              </button>
+              <p class="store-award-chat-status is-hidden" id="store-award-chat-status" role="status"></p>
+            </form>
+
+            <form class="store-admin-form bj21-panel theme-surface" id="store-catalog-form">
+              <span class="bj21-panel-glow" aria-hidden="true"></span>
+              <p class="store-panel-label">Add reward</p>
+              <div class="store-admin-grid">
+                <label class="guess-label" for="store-item-title">Title</label>
+                <input class="guess-input" id="store-item-title" name="title" required maxlength="80" />
+                <label class="guess-label" for="store-item-cost">Cost</label>
+                <input class="guess-input" id="store-item-cost" name="cost" type="number" min="1" step="1" required />
+                <label class="guess-label" for="store-item-description">Description</label>
+                <input class="guess-input" id="store-item-description" name="description" maxlength="200" />
+              </div>
+              <button type="submit" class="btn btn-sm btn-primary">Add to catalog</button>
+            </form>
+          </div>
+
+          <div class="store-panel bj21-panel theme-surface" id="store-catalog-manage">
+            <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <p class="store-panel-label">Catalog</p>
+            <p class="store-empty is-hidden" id="store-admin-catalog-empty">No catalog items yet.</p>
+            <ul class="store-admin-catalog" id="store-admin-catalog"></ul>
+          </div>
+
+          <div class="store-panel bj21-panel theme-surface" id="store-queue-panel">
+            <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <div class="store-section-header store-admin-queue-header">
+              <h3 class="store-section-subtitle">Pending queue</h3>
+            </div>
+            <p class="store-empty is-hidden" id="store-queue-empty">No pending redemptions.</p>
+            <div class="store-list-scroll store-queue-scroll">
+              <ul class="store-queue-list" id="store-queue-list"></ul>
+            </div>
+          </div>
+
+          <div class="store-panel bj21-panel theme-surface" id="store-history-panel">
             <span class="bj21-panel-glow" aria-hidden="true"></span>
             <div class="store-section-header store-admin-queue-header" id="store-history-header">
               <h3 class="store-section-subtitle">Previous redemptions</h3>
-              <p class="store-section-copy">Fulfilled and cancelled rewards.</p>
             </div>
             <p class="store-empty is-hidden" id="store-history-empty">No previous redemptions yet.</p>
-            <div class="store-history-scroll">
+            <div class="store-list-scroll store-history-scroll">
               <ul class="store-queue-list store-history-list" id="store-history-list"></ul>
             </div>
           </div>
