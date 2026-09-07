@@ -13,6 +13,7 @@ data/slot-request-state.json
 data/stake-slot-catalog.json
 data/giveaway-state.json
 data/giveaway-entries.json
-data/site-chat.json
+data/giveaway-winner-chat.json
+data/kick-chat-archive/
 .vercel
 .env*

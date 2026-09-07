@@ -539,23 +539,20 @@ function updateWinnerChat(winner, { celebrate = false } = {}) {
     nameEl.textContent = winner.username || "you";
   }
 
+  panel.classList.remove("is-hidden");
+
   if (openLink) {
     openLink.href = KICK_CHAT_POPOUT_URL;
   }
 
   if (celebrate || isNewWinner) {
-    // Fresh reveal: wipe prior lines. First paint for a new winner keeps
-    // whatever the status payload already returned (usually empty).
-    if (celebrate) {
-      winnerMessages = [];
-    }
+    // Keep any history already loaded from the status payload (7-day archive).
     renderWinnerMessages(winnerMessages);
     lastWinnerChatId = winnerId;
     restartWinnerChatPop(panel);
     return;
   }
 
-  panel.classList.remove("is-hidden");
   renderWinnerMessages(winnerMessages);
   lastWinnerChatId = winnerId;
 }
@@ -738,7 +735,6 @@ async function loadGiveawayStatus() {
 
     if (winnerChanged) {
       lastWinnerChatId = null;
-      winnerMessages = [];
     }
 
     updatePanels();
@@ -924,7 +920,6 @@ async function revealWinner() {
 
   applyStatusData(data);
   lastWinnerChatId = null;
-  winnerMessages = [];
   updatePanels();
   await maybeAnimateWinner(giveawayWinner, giveawayEntries, { force: true });
   setAdminStatus(
