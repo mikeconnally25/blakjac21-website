@@ -2086,6 +2086,26 @@ ul {
   flex-shrink: 0;
 }
 
+.accounts-alt-badge.is-primary {
+  border-color: rgba(83, 252, 24, 0.28);
+  background: rgba(83, 252, 24, 0.12);
+  color: #9dff73;
+}
+
+.accounts-alt-badge.is-soft-blocked {
+  border-color: rgba(255, 120, 120, 0.35);
+  background: rgba(255, 120, 120, 0.14);
+  color: #ffb0b0;
+}
+
+.accounts-alts-name.is-primary {
+  color: #9dff73;
+}
+
+.accounts-alts-name.is-blocked {
+  color: #ffb0b0;
+}
+
 .accounts-alts-panel {
   margin: 0 0 1rem;
   padding: 1rem 1.05rem;

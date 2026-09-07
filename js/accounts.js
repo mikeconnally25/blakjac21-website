@@ -171,9 +171,21 @@ function renderAltClusters() {
 
     const names = document.createElement("p");
     names.className = "accounts-alts-names";
-    names.textContent = (cluster.users || [])
-      .map((user) => user.username)
-      .join(" · ");
+
+    (cluster.users || []).forEach((user, index) => {
+      if (index > 0) {
+        names.append(document.createTextNode(" · "));
+      }
+
+      const name = document.createElement("span");
+      name.className = user.isPrimary
+        ? "accounts-alts-name is-primary"
+        : "accounts-alts-name is-blocked";
+      name.textContent = user.isPrimary
+        ? `${user.username} (primary)`
+        : `${user.username} (blocked)`;
+      names.append(name);
+    });
 
     const ips = document.createElement("p");
     ips.className = "accounts-alts-ips";
@@ -265,11 +277,20 @@ function renderAccounts(users) {
 
     if ((user.possibleAlts || []).length > 0) {
       const altBadge = document.createElement("span");
-      altBadge.className = "accounts-alt-badge";
-      altBadge.textContent = "ALT?";
-      altBadge.title = `Possible shared-IP alts: ${(user.possibleAlts || [])
-        .map((alt) => alt.username)
-        .join(", ")}`;
+      altBadge.className = user.altSoftBlocked
+        ? "accounts-alt-badge is-soft-blocked"
+        : "accounts-alt-badge is-primary";
+      altBadge.textContent = user.altSoftBlocked ? "ALT" : "ALT?";
+      const primaryName =
+        allUsers.find((entry) => entry.kickUserId === user.altPrimaryKickUserId)
+          ?.username || "oldest account";
+      altBadge.title = user.altSoftBlocked
+        ? `Soft-blocked shared-IP alt. Oldest eligible: ${primaryName}`
+        : `Primary in shared-IP cluster (eligible). Possible alts: ${(
+            user.possibleAlts || []
+          )
+            .map((alt) => alt.username)
+            .join(", ")}`;
       badges.append(altBadge);
     }
 
@@ -380,7 +401,13 @@ function renderAccounts(users) {
     if ((user.possibleAlts || []).length > 0) {
       const alts = document.createElement("p");
       alts.className = "accounts-alt-note";
-      alts.textContent = `Possible alts: ${(user.possibleAlts || [])
+      const primaryName =
+        allUsers.find((entry) => entry.kickUserId === user.altPrimaryKickUserId)
+          ?.username || "oldest account";
+      const status = user.altSoftBlocked
+        ? `Soft-blocked — oldest eligible: ${primaryName}.`
+        : "Primary account — eligible to win giveaways and podium.";
+      alts.textContent = `${status} Possible alts: ${(user.possibleAlts || [])
         .map((alt) => `${alt.username} (${alt.sharedIps.join(", ")})`)
         .join(" · ")}`;
       copy.append(alts);
