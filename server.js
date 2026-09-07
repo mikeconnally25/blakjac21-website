@@ -69,6 +69,16 @@ import {
   handleChatRemove,
   handleChatSend,
 } from "./lib/chat-handlers.js";
+import {
+  handlePointsAward,
+  handlePointsCatalogGet,
+  handlePointsCatalogUpsert,
+  handlePointsMe,
+  handlePointsRedeem,
+  handlePointsRedemptionCancel,
+  handlePointsRedemptionFulfill,
+  handlePointsRedemptionsList,
+} from "./lib/points-handlers.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 loadProjectEnv(__dirname);
@@ -166,6 +176,20 @@ app.get("/api/users", (req, res) => handleUsersList(req, res));
 app.post("/api/users/link-stake", (req, res) => handleStakeLink(req, res));
 app.post("/api/users/aff-grant", (req, res) => handleUserAffGrant(req, res));
 app.post("/api/users/set-stake", (req, res) => handleUserSetStake(req, res));
+app.get("/api/points/me", (req, res) => handlePointsMe(req, res));
+app.get("/api/points/catalog", (req, res) => handlePointsCatalogGet(req, res));
+app.post("/api/points/catalog", (req, res) => handlePointsCatalogUpsert(req, res));
+app.post("/api/points/award", (req, res) => handlePointsAward(req, res));
+app.post("/api/points/redeem", (req, res) => handlePointsRedeem(req, res));
+app.get("/api/points/redemptions", (req, res) =>
+  handlePointsRedemptionsList(req, res)
+);
+app.post("/api/points/redemptions/fulfill", (req, res) =>
+  handlePointsRedemptionFulfill(req, res)
+);
+app.post("/api/points/redemptions/cancel", (req, res) =>
+  handlePointsRedemptionCancel(req, res)
+);
 app.get("/api/giveaways/status", (req, res) => handleGiveawayStatus(req, res));
 app.post("/api/giveaways/toggle", (req, res) => handleGiveawayToggle(req, res));
 app.post("/api/giveaways/affiliates-only", (req, res) =>

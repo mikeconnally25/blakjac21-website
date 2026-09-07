@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="BLAKJAC21 Store — merch and gear from the channel." />
+  <meta name="description" content="BLAKJAC21 Store — spend channel points on rewards." />
   <title>Store | BLAKJAC21</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -44,6 +44,7 @@
                 <img id="auth-avatar" class="auth-avatar is-hidden" alt="" width="32" height="32" />
                 <span id="auth-username" class="auth-username"></span>
                 <span id="auth-admin-badge" class="auth-admin-badge is-hidden">Admin</span>
+                <button type="button" id="auth-stake-badge" class="auth-stake-badge is-hidden"></button>
               </div>
               <button type="button" class="btn btn-sm btn-outline" id="auth-logout">Sign out</button>
             </div>
@@ -65,21 +66,65 @@
           <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
           <h1 class="store-heading">Store</h1>
           <p class="store-lede">
-            Official BLAKJAC21 merch and drops — shop the brand when new gear lands.
+            Spend channel points on rewards. Admins award points from Accounts or with
+            <code>!points @user 100</code> in Kick chat.
           </p>
         </header>
 
-        <div class="store-panel bj21-panel theme-surface">
+        <p class="store-status is-hidden" id="store-status" role="status"></p>
+
+        <div class="store-balance-panel bj21-panel theme-surface" id="store-balance-panel">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <p class="store-panel-label">Opening soon</p>
-          <p class="store-panel-text">
-            The store panel is live in the menu. Drop your shop link or products here and we can wire checkout next.
-          </p>
-          <div class="store-actions">
-            <a href="/#watch" class="btn btn-primary">Watch live</a>
-            <a href="/#menu" class="btn btn-outline">Back to menu</a>
-          </div>
+          <p class="store-panel-label">Your points</p>
+          <p class="store-balance-value" id="store-balance-value">—</p>
+          <p class="store-balance-copy" id="store-balance-copy">Sign in with Kick to see your balance and redeem rewards.</p>
         </div>
+
+        <section class="store-section" aria-labelledby="store-catalog-title">
+          <div class="store-section-header">
+            <h2 class="store-section-title" id="store-catalog-title">Rewards</h2>
+            <p class="store-section-copy">Redeem with points. Pending rewards are fulfilled manually.</p>
+          </div>
+          <p class="store-empty is-hidden" id="store-catalog-empty">No rewards listed yet.</p>
+          <ul class="store-catalog-list" id="store-catalog-list"></ul>
+        </section>
+
+        <section class="store-section" aria-labelledby="store-redemptions-title">
+          <div class="store-section-header">
+            <h2 class="store-section-title" id="store-redemptions-title">Your redemptions</h2>
+          </div>
+          <p class="store-empty" id="store-redemptions-empty">No redemptions yet.</p>
+          <ul class="store-redemptions-list is-hidden" id="store-redemptions-list"></ul>
+        </section>
+
+        <section class="store-section store-admin is-hidden" id="store-admin" aria-labelledby="store-admin-title">
+          <div class="store-section-header">
+            <h2 class="store-section-title" id="store-admin-title">Admin</h2>
+            <p class="store-section-copy">Manage catalog items and fulfill pending redemptions.</p>
+          </div>
+
+          <form class="store-admin-form bj21-panel theme-surface" id="store-catalog-form">
+            <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <p class="store-panel-label">Add reward</p>
+            <div class="store-admin-grid">
+              <label class="guess-label" for="store-item-title">Title</label>
+              <input class="guess-input" id="store-item-title" name="title" required maxlength="80" />
+              <label class="guess-label" for="store-item-cost">Cost</label>
+              <input class="guess-input" id="store-item-cost" name="cost" type="number" min="1" step="1" required />
+              <label class="guess-label" for="store-item-description">Description</label>
+              <input class="guess-input" id="store-item-description" name="description" maxlength="200" />
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary">Add to catalog</button>
+          </form>
+
+          <ul class="store-admin-catalog" id="store-admin-catalog"></ul>
+
+          <div class="store-section-header store-admin-queue-header">
+            <h3 class="store-section-subtitle">Pending queue</h3>
+          </div>
+          <p class="store-empty is-hidden" id="store-queue-empty">No pending redemptions.</p>
+          <ul class="store-queue-list" id="store-queue-list"></ul>
+        </section>
       </div>
     </section>
   </main>
@@ -101,5 +146,6 @@
 
   <script src="/js/main.js"></script>
   <script src="/js/auth.js"></script>
+  <script src="/js/store.js"></script>
 </body>
 </html>

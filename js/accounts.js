@@ -398,6 +398,31 @@ function renderAccounts(users) {
     stakeRow.append(stakeLabel, editStakeBtn);
     copy.append(stakeRow);
 
+    const pointsRow = document.createElement("div");
+    pointsRow.className = "accounts-points-row";
+
+    const pointsLabel = document.createElement("span");
+    pointsLabel.className = "accounts-kick-id";
+    pointsLabel.textContent = `Points: ${Number(user.points) || 0}`;
+
+    const pointsInput = document.createElement("input");
+    pointsInput.type = "number";
+    pointsInput.className = "accounts-points-input";
+    pointsInput.placeholder = "+100";
+    pointsInput.step = "1";
+
+    const pointsBtn = document.createElement("button");
+    pointsBtn.type = "button";
+    pointsBtn.className = "btn btn-sm btn-primary accounts-points-award";
+    pointsBtn.textContent = "Award";
+    pointsBtn.title = "Award (or subtract with a negative amount) points";
+    pointsBtn.addEventListener("click", () => {
+      void awardAccountPoints(user.kickUserId, pointsInput.value, pointsBtn);
+    });
+
+    pointsRow.append(pointsLabel, pointsInput, pointsBtn);
+    copy.append(pointsRow);
+
     if ((user.possibleAlts || []).length > 0) {
       const alts = document.createElement("p");
       alts.className = "accounts-alt-note";
@@ -615,6 +640,56 @@ async function setAccountStakeUsername(kickUserId, stakeUsername, saveButton, ca
   } finally {
     if (saveButton) saveButton.disabled = false;
     if (cancelButton) cancelButton.disabled = false;
+  }
+}
+
+async function awardAccountPoints(kickUserId, amountValue, button) {
+  const amount = Number(amountValue);
+  if (!Number.isFinite(amount) || amount === 0) {
+    setAccountsStatus("Enter a non-zero points amount.", "error");
+    return;
+  }
+
+  if (button) button.disabled = true;
+  setAccountsStatus(amount > 0 ? "Awarding points..." : "Adjusting points...");
+
+  try {
+    const response = await fetch("/api/points/award", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kickUserId, amount }),
+    });
+
+    let data = {};
+    try {
+      data = await response.json();
+    } catch {
+      setAccountsStatus(
+        response.ok
+          ? "Could not update points."
+          : `Could not update points (${response.status}).`,
+        "error"
+      );
+      return;
+    }
+
+    if (!response.ok) {
+      setAccountsStatus(data.error || "Could not update points.", "error");
+      return;
+    }
+
+    allUsers = data.users || [];
+    altClusters = data.altClusters || [];
+    setAccountsStatus(
+      `Points updated. Balance: ${data.balance?.points ?? 0}.`,
+      "success"
+    );
+    renderFilteredAccounts();
+  } catch {
+    setAccountsStatus("Could not update points.", "error");
+  } finally {
+    if (button) button.disabled = false;
   }
 }
 

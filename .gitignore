@@ -15,5 +15,6 @@ data/giveaway-state.json
 data/giveaway-entries.json
 data/giveaway-winner-chat.json
 data/kick-chat-archive/
+data/points.json
 .vercel
 .env*
