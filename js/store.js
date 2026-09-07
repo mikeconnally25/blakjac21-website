@@ -200,8 +200,20 @@ function renderAdminCatalog() {
       createRowMeta([
         formatPoints(item.cost),
         item.active ? "Active" : "Inactive",
+        item.description || "",
       ])
     );
+
+    const actions = document.createElement("div");
+    actions.className = "store-queue-actions";
+
+    const edit = document.createElement("button");
+    edit.type = "button";
+    edit.className = "btn btn-sm btn-primary";
+    edit.textContent = "Edit";
+    edit.addEventListener("click", () => {
+      beginCatalogEdit(item);
+    });
 
     const toggle = document.createElement("button");
     toggle.type = "button";
@@ -211,7 +223,8 @@ function renderAdminCatalog() {
       void toggleCatalogItem(item.id, !item.active, toggle);
     });
 
-    row.append(copy, toggle);
+    actions.append(edit, toggle);
+    row.append(copy, actions);
     list.append(row);
   });
 }
@@ -546,28 +559,75 @@ async function deletePastRedemption(id, button) {
   }
 }
 
+function setCatalogFormMode({ editing = false } = {}) {
+  const label = document.getElementById("store-catalog-form-label");
+  const submit = document.getElementById("store-catalog-submit");
+  const cancel = document.getElementById("store-catalog-cancel-edit");
+  if (label) label.textContent = editing ? "Edit reward" : "Add reward";
+  if (submit) submit.textContent = editing ? "Save changes" : "Add to catalog";
+  cancel?.classList.toggle("is-hidden", !editing);
+}
+
+function clearCatalogForm() {
+  const form = document.getElementById("store-catalog-form");
+  const idInput = document.getElementById("store-item-id");
+  form?.reset();
+  if (idInput) idInput.value = "";
+  setCatalogFormMode({ editing: false });
+}
+
+function beginCatalogEdit(item) {
+  const idInput = document.getElementById("store-item-id");
+  const title = document.getElementById("store-item-title");
+  const cost = document.getElementById("store-item-cost");
+  const description = document.getElementById("store-item-description");
+  if (!idInput || !title || !cost || !description) return;
+
+  idInput.value = item.id || "";
+  title.value = item.title || "";
+  cost.value = String(item.cost ?? "");
+  description.value = item.description || "";
+  setCatalogFormMode({ editing: true });
+
+  document
+    .getElementById("store-catalog-form")
+    ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  title.focus();
+}
+
 function initCatalogForm() {
   const form = document.getElementById("store-catalog-form");
   if (!form) return;
 
+  document
+    .getElementById("store-catalog-cancel-edit")
+    ?.addEventListener("click", () => {
+      clearCatalogForm();
+      setStoreStatus("");
+    });
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    const id = document.getElementById("store-item-id")?.value || "";
     const title = document.getElementById("store-item-title")?.value || "";
     const cost = document.getElementById("store-item-cost")?.value || "";
     const description =
       document.getElementById("store-item-description")?.value || "";
+    const existing = id ? catalog.find((entry) => entry.id === id) : null;
+    const editing = Boolean(id);
 
-    setStoreStatus("Saving catalog item...");
+    setStoreStatus(editing ? "Saving changes..." : "Saving catalog item...");
     try {
       const response = await fetch("/api/points/catalog", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          id: id || undefined,
           title,
           cost: Number(cost),
           description,
-          active: true,
+          active: existing ? existing.active !== false : true,
         }),
       });
       const data = await response.json();
@@ -575,9 +635,12 @@ function initCatalogForm() {
         throw new Error(data.error || "Could not save item.");
       }
       catalog = Array.isArray(data.catalog) ? data.catalog : catalog;
-      form.reset();
+      clearCatalogForm();
       renderAll();
-      setStoreStatus("Catalog item added.", "success");
+      setStoreStatus(
+        editing ? "Catalog item updated." : "Catalog item added.",
+        "success"
+      );
     } catch (error) {
       setStoreStatus(error.message || "Could not save item.", "error");
     }

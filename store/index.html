@@ -132,7 +132,8 @@
 
             <form class="store-admin-form bj21-panel theme-surface" id="store-catalog-form">
               <span class="bj21-panel-glow" aria-hidden="true"></span>
-              <p class="store-panel-label">Add reward</p>
+              <p class="store-panel-label" id="store-catalog-form-label">Add reward</p>
+              <input type="hidden" id="store-item-id" name="id" value="" />
               <div class="store-admin-grid">
                 <label class="guess-label" for="store-item-title">Title</label>
                 <input class="guess-input" id="store-item-title" name="title" required maxlength="80" />
@@ -141,7 +142,14 @@
                 <label class="guess-label" for="store-item-description">Description</label>
                 <input class="guess-input" id="store-item-description" name="description" maxlength="200" />
               </div>
-              <button type="submit" class="btn btn-sm btn-primary">Add to catalog</button>
+              <div class="store-queue-actions">
+                <button type="submit" class="btn btn-sm btn-primary" id="store-catalog-submit">
+                  Add to catalog
+                </button>
+                <button type="button" class="btn btn-sm btn-outline is-hidden" id="store-catalog-cancel-edit">
+                  Cancel edit
+                </button>
+              </div>
             </form>
           </div>
 
