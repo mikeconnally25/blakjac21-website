@@ -71,6 +71,7 @@ import {
 } from "./lib/chat-handlers.js";
 import {
   handlePointsAward,
+  handlePointsAwardChat,
   handlePointsCatalogGet,
   handlePointsCatalogUpsert,
   handlePointsMe,
@@ -180,6 +181,7 @@ app.get("/api/points/me", (req, res) => handlePointsMe(req, res));
 app.get("/api/points/catalog", (req, res) => handlePointsCatalogGet(req, res));
 app.post("/api/points/catalog", (req, res) => handlePointsCatalogUpsert(req, res));
 app.post("/api/points/award", (req, res) => handlePointsAward(req, res));
+app.post("/api/points/award-chat", (req, res) => handlePointsAwardChat(req, res));
 app.post("/api/points/redeem", (req, res) => handlePointsRedeem(req, res));
 app.get("/api/points/redemptions", (req, res) =>
   handlePointsRedemptionsList(req, res)

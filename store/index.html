@@ -66,8 +66,8 @@
           <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
           <h1 class="store-heading">Store</h1>
           <p class="store-lede">
-            Spend channel points on rewards. Admins award points from Accounts or with
-            <code>!points @user 100</code> in Kick chat.
+            Spend channel points on rewards. Admins award points from Accounts,
+            <code>!points @user 100</code>, or <code>!pointsall 100</code> for recent chatters.
           </p>
         </header>
 
@@ -102,6 +102,21 @@
             <h2 class="store-section-title" id="store-admin-title">Admin</h2>
             <p class="store-section-copy">Manage catalog items and fulfill pending redemptions.</p>
           </div>
+
+          <form class="store-admin-form bj21-panel theme-surface" id="store-award-chat-form">
+            <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <p class="store-panel-label">Award recent chat</p>
+            <p class="store-section-copy">
+              Gives points to everyone who typed in Kick chat within the window (default 15 minutes).
+            </p>
+            <div class="store-admin-grid store-award-chat-grid">
+              <label class="guess-label" for="store-award-chat-amount">Points</label>
+              <input class="guess-input" id="store-award-chat-amount" name="amount" type="number" step="1" required value="100" />
+              <label class="guess-label" for="store-award-chat-minutes">Active within (minutes)</label>
+              <input class="guess-input" id="store-award-chat-minutes" name="minutes" type="number" min="1" max="120" step="1" value="15" />
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary">Award chatters</button>
+          </form>
 
           <form class="store-admin-form bj21-panel theme-surface" id="store-catalog-form">
             <span class="bj21-panel-glow" aria-hidden="true"></span>

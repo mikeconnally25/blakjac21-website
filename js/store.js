@@ -407,10 +407,48 @@ function initCatalogForm() {
   });
 }
 
+function initAwardChatForm() {
+  const form = document.getElementById("store-award-chat-form");
+  if (!form) return;
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const amount = Number(
+      document.getElementById("store-award-chat-amount")?.value || 0
+    );
+    const withinMinutes = Number(
+      document.getElementById("store-award-chat-minutes")?.value || 15
+    );
+
+    setStoreStatus("Awarding recent chatters...");
+    try {
+      const response = await fetch("/api/points/award-chat", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount, withinMinutes }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Could not award chatters.");
+      }
+      await loadMe();
+      renderAll();
+      setStoreStatus(
+        `Awarded ${data.amount > 0 ? "+" : ""}${data.amount} points to ${data.awarded} chatters (last ${data.withinMinutes}m).`,
+        "success"
+      );
+    } catch (error) {
+      setStoreStatus(error.message || "Could not award chatters.", "error");
+    }
+  });
+}
+
 window.addEventListener("auth:change", async (event) => {
   currentUser = event.detail?.user || null;
   await refreshStore();
 });
 
 initCatalogForm();
+initAwardChatForm();
 refreshStore();
