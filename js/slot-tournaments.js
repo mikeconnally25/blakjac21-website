@@ -278,57 +278,6 @@ function renderAdminForm() {
   if (toggle) {
     toggle.textContent = state.open ? "Close signups" : "Open signups";
   }
-
-  renderResultsEditor();
-}
-
-function renderResultsEditor() {
-  const editor = document.getElementById("st-results-editor");
-  if (!editor) return;
-
-  const places = Math.max(3, Math.min(10, state.entries.length || 3));
-  editor.replaceChildren();
-
-  for (let place = 1; place <= places; place += 1) {
-    const existing = state.results.find((row) => row.place === place);
-    const row = document.createElement("div");
-    row.className = "slot-tournaments-result-row";
-    row.dataset.place = String(place);
-
-    const label = document.createElement("span");
-    label.className = "slot-tournaments-result-place";
-    label.textContent = `#${place}`;
-
-    const select = document.createElement("select");
-    select.className = "guess-input";
-    select.name = `entry-${place}`;
-
-    const blank = document.createElement("option");
-    blank.value = "";
-    blank.textContent = "— Select entrant —";
-    select.append(blank);
-
-    state.entries.forEach((entry) => {
-      const option = document.createElement("option");
-      option.value = entry.id;
-      option.textContent = entry.username;
-      if (existing?.entryId === entry.id || existing?.username === entry.username) {
-        option.selected = true;
-      }
-      select.append(option);
-    });
-
-    const score = document.createElement("input");
-    score.className = "guess-input";
-    score.type = "text";
-    score.placeholder = "Score / x";
-    score.maxLength = 40;
-    score.value = existing?.score || "";
-    score.name = `score-${place}`;
-
-    row.append(label, select, score);
-    editor.append(row);
-  }
 }
 
 function renderAll() {
@@ -441,38 +390,6 @@ function initAdmin() {
     } catch (error) {
       setAdminStatus(error.message || "Could not update SUB.", "error");
       await refreshStatus().catch(() => {});
-    }
-  });
-
-  document.getElementById("st-results-form")?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const rows = [
-      ...document.querySelectorAll("#st-results-editor .slot-tournaments-result-row"),
-    ];
-    const results = rows
-      .map((row) => {
-        const place = Number(row.dataset.place);
-        const select = row.querySelector("select");
-        const score = row.querySelector('input[name^="score"]');
-        const entryId = select?.value || "";
-        if (!entryId) return null;
-        const entry = state.entries.find((item) => item.id === entryId);
-        return {
-          place,
-          entryId,
-          username: entry?.username || "",
-          kickUserId: entry?.kickUserId || null,
-          score: score?.value || "",
-        };
-      })
-      .filter(Boolean);
-
-    setAdminStatus("Saving results...");
-    try {
-      await postJson("/api/slot-tournaments/results", { results });
-      setAdminStatus("Results saved.", "success");
-    } catch (error) {
-      setAdminStatus(error.message || "Could not save results.", "error");
     }
   });
 }
