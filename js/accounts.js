@@ -2,6 +2,8 @@ let currentUser = null;
 let allUsers = [];
 let altClusters = [];
 let searchQuery = "";
+let filterAffOnly = false;
+let filterSubOnly = false;
 
 function formatDate(iso) {
   if (!iso) {
@@ -52,39 +54,54 @@ function updateAccountCounts(total, visible = total) {
   const countPill = document.getElementById("accounts-count");
   const searchResults = document.getElementById("accounts-search-results");
   const trimmedQuery = searchQuery.trim();
+  const hasFilters = Boolean(trimmedQuery || filterAffOnly || filterSubOnly);
 
   if (heroCount) heroCount.textContent = String(total);
   if (countBadge) countBadge.textContent = String(total);
 
   if (countPill) {
     countPill.textContent =
-      trimmedQuery && visible !== total
+      hasFilters && visible !== total
         ? `${visible} of ${total} shown`
         : `${total} registered`;
   }
 
   if (searchResults) {
-    if (!trimmedQuery) {
+    if (!hasFilters) {
       searchResults.textContent = "";
       searchResults.classList.add("is-hidden");
       return;
     }
 
+    const parts = [];
+    if (trimmedQuery) parts.push(`"${trimmedQuery}"`);
+    if (filterAffOnly) parts.push("AFF");
+    if (filterSubOnly) parts.push("SUB");
+    const label = parts.join(" + ");
+
     searchResults.textContent =
       visible === 0
-        ? `No players match "${trimmedQuery}".`
-        : `${visible} player${visible === 1 ? "" : "s"} match "${trimmedQuery}".`;
+        ? `No players match ${label}.`
+        : `${visible} player${visible === 1 ? "" : "s"} match ${label}.`;
     searchResults.classList.remove("is-hidden");
   }
 }
 
 function filterUsers(users, query) {
   const term = query.trim().toLowerCase();
-  if (!term) {
-    return users;
-  }
 
   return users.filter((user) => {
+    if (filterAffOnly && !user.stakeCodeVerified) {
+      return false;
+    }
+    if (filterSubOnly && !user.kickSubActive) {
+      return false;
+    }
+
+    if (!term) {
+      return true;
+    }
+
     const username = String(user.username || "").toLowerCase();
     const kickUserId = String(user.kickUserId || "").toLowerCase();
     const stakeUsername = String(user.stakeUsername || "").toLowerCase();
@@ -217,8 +234,12 @@ function renderAccounts(users) {
   }
 
   if (visible === 0) {
-    empty.textContent = searchQuery.trim()
-      ? `No players match "${searchQuery.trim()}".`
+    const parts = [];
+    if (searchQuery.trim()) parts.push(`"${searchQuery.trim()}"`);
+    if (filterAffOnly) parts.push("AFF");
+    if (filterSubOnly) parts.push("SUB");
+    empty.textContent = parts.length
+      ? `No players match ${parts.join(" + ")}.`
       : "No registered users yet.";
     empty.classList.remove("is-hidden");
     list.classList.add("is-hidden");
@@ -726,6 +747,8 @@ async function loadAccounts() {
 function initSearch() {
   const searchInput = document.getElementById("accounts-search");
   const clearBtn = document.getElementById("accounts-search-clear");
+  const affToggle = document.getElementById("accounts-filter-aff");
+  const subToggle = document.getElementById("accounts-filter-sub");
 
   searchInput?.addEventListener("input", () => {
     searchQuery = searchInput.value;
@@ -740,6 +763,20 @@ function initSearch() {
       searchInput.focus();
     }
     updateSearchControls();
+    renderFilteredAccounts();
+  });
+
+  affToggle?.addEventListener("click", () => {
+    filterAffOnly = !filterAffOnly;
+    affToggle.classList.toggle("is-active", filterAffOnly);
+    affToggle.setAttribute("aria-pressed", filterAffOnly ? "true" : "false");
+    renderFilteredAccounts();
+  });
+
+  subToggle?.addEventListener("click", () => {
+    filterSubOnly = !filterSubOnly;
+    subToggle.classList.toggle("is-active", filterSubOnly);
+    subToggle.setAttribute("aria-pressed", filterSubOnly ? "true" : "false");
     renderFilteredAccounts();
   });
 }

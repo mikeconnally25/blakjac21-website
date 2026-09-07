@@ -1915,6 +1915,45 @@ ul {
   font-weight: 600;
 }
 
+.accounts-filter-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.accounts-filter-toggle {
+  min-height: 1.7rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.55);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.accounts-filter-toggle:hover,
+.accounts-filter-toggle:focus-visible {
+  border-color: rgba(126, 216, 255, 0.4);
+  color: var(--text);
+  outline: none;
+}
+
+.accounts-filter-toggle.is-active {
+  border-color: rgba(83, 252, 24, 0.35);
+  background: rgba(83, 252, 24, 0.14);
+  color: #9dff73;
+}
+
+#accounts-filter-sub.is-active {
+  border-color: rgba(83, 45, 255, 0.4);
+  background: rgba(83, 45, 255, 0.18);
+  color: #c4b5ff;
+}
+
 .accounts-viewport {
   position: relative;
   z-index: 1;
