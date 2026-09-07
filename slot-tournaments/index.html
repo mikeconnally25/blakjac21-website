@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Slot Tournaments — live board, signups, and results on BLAKJAC21." />
+  <title>Slot Tournaments | BLAKJAC21</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <header class="header" id="top">
+    <nav class="nav container">
+      <a href="/" class="logo">
+        <img src="/images/logo.png" alt="" class="logo-image" width="50" height="50" />
+        <span class="logo-text">Blakjac<span class="accent">21</span></span>
+      </a>
+
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="nav-links">
+        <li><a href="/#watch">Watch</a></li>
+        <li><a href="/#menu">Menu</a></li>
+        <li><a href="/#about">About</a></li>
+        <li><a href="/#links">Links</a></li>
+        <li class="is-hidden" id="admin-nav-accounts">
+          <a href="/accounts/">Accounts</a>
+        </li>
+        <li>
+          <div class="auth-panel" id="auth-panel">
+            <div class="auth-guest" id="auth-guest">
+              <a href="/api/auth/login" class="btn btn-sm btn-kick">Sign in with Kick</a>
+            </div>
+            <div class="auth-member is-hidden" id="auth-member">
+              <div class="auth-user">
+                <img id="auth-avatar" class="auth-avatar is-hidden" alt="" width="32" height="32" />
+                <span id="auth-username" class="auth-username"></span>
+                <span id="auth-admin-badge" class="auth-admin-badge is-hidden">Admin</span>
+                <button type="button" id="auth-stake-badge" class="auth-stake-badge is-hidden"></button>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline" id="auth-logout">Sign out</button>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
+
+    <section class="section page-section slot-tournaments-page">
+      <div class="section-atmosphere" aria-hidden="true"></div>
+      <div class="container page-content slot-tournaments-shell">
+        <a href="/#about" class="back-link">← Back</a>
+
+        <header class="slot-tournaments-top">
+          <div class="slot-tournaments-hero">
+            <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
+            <h1 class="slot-tournaments-heading">Slot Tournaments</h1>
+            <p class="slot-tournaments-lede" id="st-lede">
+              Timed races on Stake slots — sign up live, chase the board, and check results here.
+            </p>
+          </div>
+          <div class="slot-tournaments-status-card bj21-panel theme-surface" id="st-status-card" data-phase="closed">
+            <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <p class="slot-tournaments-panel-label">Status</p>
+            <p class="slot-tournaments-status-value" id="st-status-value">Closed</p>
+            <p class="slot-tournaments-status-meta" id="st-status-meta">No active tournament.</p>
+          </div>
+        </header>
+
+        <p class="slot-tournaments-banner is-hidden" id="st-banner" role="status"></p>
+
+        <section class="slot-tournaments-panel bj21-panel theme-surface" aria-labelledby="st-info-title">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <p class="slot-tournaments-panel-label">Live board</p>
+          <h2 class="slot-tournaments-panel-title" id="st-info-title">Tournament</h2>
+          <dl class="slot-tournaments-meta" id="st-meta">
+            <div>
+              <dt>Title</dt>
+              <dd id="st-title">—</dd>
+            </div>
+            <div>
+              <dt>Slot</dt>
+              <dd id="st-slot">—</dd>
+            </div>
+            <div>
+              <dt>Buy-in</dt>
+              <dd id="st-buyin">—</dd>
+            </div>
+            <div>
+              <dt>Signups</dt>
+              <dd id="st-entry-count">0</dd>
+            </div>
+          </dl>
+          <p class="slot-tournaments-panel-text" id="st-join-hint">
+            When signups open, type the keyword in Kick chat or join on this page.
+          </p>
+          <div class="slot-tournaments-actions">
+            <button type="button" class="btn btn-primary is-hidden" id="st-join-btn">Join tournament</button>
+            <a href="/#watch" class="btn btn-outline">Watch live</a>
+          </div>
+        </section>
+
+        <section class="slot-tournaments-panel bj21-panel theme-surface" aria-labelledby="st-signups-title">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <div class="slot-tournaments-section-head">
+            <h2 class="slot-tournaments-panel-title" id="st-signups-title">Signups</h2>
+            <p class="slot-tournaments-panel-text" id="st-keyword-display"></p>
+          </div>
+          <p class="slot-tournaments-empty" id="st-entries-empty">No signups yet.</p>
+          <div class="slot-tournaments-scroll">
+            <ol class="slot-tournaments-entries is-hidden" id="st-entries"></ol>
+          </div>
+        </section>
+
+        <section class="slot-tournaments-panel bj21-panel theme-surface" aria-labelledby="st-results-title">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <h2 class="slot-tournaments-panel-title" id="st-results-title">Results</h2>
+          <p class="slot-tournaments-empty" id="st-results-empty">Results appear here after the race.</p>
+          <ol class="slot-tournaments-results is-hidden" id="st-results"></ol>
+        </section>
+
+        <section class="slot-tournaments-admin is-hidden" id="st-admin" aria-labelledby="st-admin-title">
+          <div class="slot-tournaments-section-head">
+            <h2 class="slot-tournaments-panel-title" id="st-admin-title">Admin</h2>
+            <p class="slot-tournaments-panel-text">Open signups, run the race, then post placements.</p>
+          </div>
+          <p class="slot-tournaments-banner is-hidden" id="st-admin-status" role="status"></p>
+
+          <form class="slot-tournaments-panel bj21-panel theme-surface" id="st-settings-form">
+            <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <p class="slot-tournaments-panel-label">Setup</p>
+            <div class="slot-tournaments-admin-grid">
+              <label class="guess-label" for="st-admin-title-input">Title</label>
+              <input class="guess-input" id="st-admin-title-input" maxlength="80" />
+              <label class="guess-label" for="st-admin-slot">Slot</label>
+              <input class="guess-input" id="st-admin-slot" maxlength="80" />
+              <label class="guess-label" for="st-admin-buyin">Buy-in</label>
+              <input class="guess-input" id="st-admin-buyin" maxlength="40" placeholder="$1" />
+              <label class="guess-label" for="st-admin-keyword">Chat keyword</label>
+              <input class="guess-input" id="st-admin-keyword" maxlength="64" placeholder="tour" />
+            </div>
+            <div class="slot-tournaments-actions">
+              <button type="submit" class="btn btn-sm btn-primary">Save setup</button>
+            </div>
+          </form>
+
+          <div class="slot-tournaments-panel bj21-panel theme-surface">
+            <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <p class="slot-tournaments-panel-label">Controls</p>
+            <div class="slot-tournaments-actions">
+              <button type="button" class="btn btn-sm btn-primary" id="st-toggle-open">Open signups</button>
+              <button type="button" class="btn btn-sm btn-outline" id="st-phase-live">Start live</button>
+              <button type="button" class="btn btn-sm btn-outline" id="st-phase-closed">Close board</button>
+              <button type="button" class="btn btn-sm btn-outline" id="st-clear-entries">Clear signups</button>
+            </div>
+            <div class="slot-tournaments-actions">
+              <label class="slot-tournaments-check">
+                <input type="checkbox" id="st-aff-only" />
+                AFF only
+              </label>
+              <label class="slot-tournaments-check">
+                <input type="checkbox" id="st-sub-only" />
+                SUB only
+              </label>
+            </div>
+          </div>
+
+          <form class="slot-tournaments-panel bj21-panel theme-surface" id="st-results-form">
+            <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <p class="slot-tournaments-panel-label">Post results</p>
+            <p class="slot-tournaments-panel-text">Pick placements from signups. Leave unused rows empty.</p>
+            <div class="slot-tournaments-results-editor" id="st-results-editor"></div>
+            <div class="slot-tournaments-actions">
+              <button type="submit" class="btn btn-sm btn-primary">Save results</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo-text">BLAKJAC<span class="accent">21</span></span>
+        <p>Gambling entertainment stream. 18+ only.</p>
+      </div>
+      <p class="disclaimer">
+        Gambling can be addictive. Please play responsibly. This channel is for entertainment purposes only.
+        If you or someone you know has a gambling problem, call <strong>1-800-GAMBLER</strong> or visit
+        <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer">BeGambleAware.org</a>.
+      </p>
+      <p class="copyright">&copy; <span id="year"></span> BLAKJAC21. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/slot-tournaments.js"></script>
+</body>
+</html>

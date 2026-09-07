@@ -81,6 +81,17 @@ import {
   handlePointsRedemptionFulfill,
   handlePointsRedemptionsList,
 } from "./lib/points-handlers.js";
+import {
+  handleSlotTournamentAffiliatesOnly,
+  handleSlotTournamentEntriesClear,
+  handleSlotTournamentJoin,
+  handleSlotTournamentPhase,
+  handleSlotTournamentResults,
+  handleSlotTournamentSettings,
+  handleSlotTournamentStatus,
+  handleSlotTournamentSubscribersOnly,
+  handleSlotTournamentToggle,
+} from "./lib/slot-tournament-handlers.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 loadProjectEnv(__dirname);
@@ -201,6 +212,33 @@ app.post("/api/points/cancel-redemption", (req, res) =>
 );
 app.post("/api/points/delete-redemption", (req, res) =>
   handlePointsRedemptionDelete(req, res)
+);
+app.get("/api/slot-tournaments/status", (req, res) =>
+  handleSlotTournamentStatus(req, res)
+);
+app.post("/api/slot-tournaments/toggle", (req, res) =>
+  handleSlotTournamentToggle(req, res)
+);
+app.post("/api/slot-tournaments/settings", (req, res) =>
+  handleSlotTournamentSettings(req, res)
+);
+app.post("/api/slot-tournaments/phase", (req, res) =>
+  handleSlotTournamentPhase(req, res)
+);
+app.post("/api/slot-tournaments/affiliates-only", (req, res) =>
+  handleSlotTournamentAffiliatesOnly(req, res)
+);
+app.post("/api/slot-tournaments/subscribers-only", (req, res) =>
+  handleSlotTournamentSubscribersOnly(req, res)
+);
+app.post("/api/slot-tournaments/entries/clear", (req, res) =>
+  handleSlotTournamentEntriesClear(req, res)
+);
+app.post("/api/slot-tournaments/results", (req, res) =>
+  handleSlotTournamentResults(req, res)
+);
+app.post("/api/slot-tournaments/join", (req, res) =>
+  handleSlotTournamentJoin(req, res)
 );
 app.get("/api/giveaways/status", (req, res) => handleGiveawayStatus(req, res));
 app.post("/api/giveaways/toggle", (req, res) => handleGiveawayToggle(req, res));

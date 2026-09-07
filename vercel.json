@@ -4,5 +4,17 @@
     "api/**/*.js": {
       "maxDuration": 10
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/slots-bonus-buys",
+      "destination": "/slot-tournaments/",
+      "permanent": true
+    },
+    {
+      "source": "/slots-bonus-buys/",
+      "destination": "/slot-tournaments/",
+      "permanent": true
+    }
+  ]
 }
