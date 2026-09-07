@@ -159,6 +159,38 @@
           </div>
         </section>
 
+        <section class="slot-tournaments-panel bj21-panel theme-surface" aria-labelledby="st-predictions-title">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <div class="slot-tournaments-section-head">
+            <div>
+              <h2 class="slot-tournaments-panel-title" id="st-predictions-title">Predictions</h2>
+              <p class="slot-tournaments-panel-text" id="st-predictions-status">
+                Predictions closed
+              </p>
+            </div>
+            <div class="slot-tournaments-actions is-hidden" id="st-predictions-admin">
+              <button type="button" class="btn btn-sm btn-primary" id="st-predictions-toggle">
+                Enable predictions
+              </button>
+            </div>
+          </div>
+          <p class="slot-tournaments-banner is-hidden" id="st-predictions-banner" role="status"></p>
+          <p class="slot-tournaments-empty" id="st-predictions-empty">
+            Generate a bracket before predictions.
+          </p>
+          <div class="st-predictions-guest is-hidden" id="st-predictions-guest">
+            <a href="/api/auth/login" class="btn btn-sm btn-outline">Sign in with Kick to predict</a>
+          </div>
+          <div class="st-predictions-body is-hidden" id="st-predictions-body">
+            <div class="st-predictions-list" id="st-predictions-list"></div>
+            <div class="slot-tournaments-actions">
+              <button type="button" class="btn btn-sm btn-primary is-hidden" id="st-predictions-save">
+                Save picks
+              </button>
+            </div>
+          </div>
+        </section>
+
         <section class="slot-tournaments-panel bj21-panel theme-surface" aria-labelledby="st-results-title">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
           <h2 class="slot-tournaments-panel-title" id="st-results-title">Results</h2>

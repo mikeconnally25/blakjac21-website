@@ -90,6 +90,8 @@ import {
   handleSlotTournamentEntriesClear,
   handleSlotTournamentJoin,
   handleSlotTournamentPhase,
+  handleSlotTournamentPredictionsSave,
+  handleSlotTournamentPredictionsToggle,
   handleSlotTournamentResults,
   handleSlotTournamentSettings,
   handleSlotTournamentSlots,
@@ -253,6 +255,12 @@ app.post("/api/slot-tournaments/bracket/score", (req, res) =>
 );
 app.post("/api/slot-tournaments/bracket/clear", (req, res) =>
   handleSlotTournamentBracketClear(req, res)
+);
+app.post("/api/slot-tournaments/predictions/toggle", (req, res) =>
+  handleSlotTournamentPredictionsToggle(req, res)
+);
+app.post("/api/slot-tournaments/predictions/save", (req, res) =>
+  handleSlotTournamentPredictionsSave(req, res)
 );
 app.post("/api/slot-tournaments/results", (req, res) =>
   handleSlotTournamentResults(req, res)

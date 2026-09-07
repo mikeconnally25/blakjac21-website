@@ -6,6 +6,8 @@ let assignSaveTimer = null;
 let assignDirty = false;
 let pickerOpen = false;
 let pickerFilter = "";
+let predictionDraft = {};
+let predictionDirty = false;
 let state = {
   open: false,
   phase: "closed",
@@ -19,7 +21,11 @@ let state = {
   entryCount: 0,
   entries: [],
   slots: [],
+  bracket: { generatedAt: null, entrantIds: [], matches: [] },
   results: [],
+  predictionsOpen: false,
+  viewerPrediction: null,
+  predictionCount: 0,
   viewerEntered: false,
 };
 
@@ -155,11 +161,209 @@ function assignedSlotForEntry(entryId) {
   return state.slots.find((slot) => slot.entryId === id) || null;
 }
 
+function entryById(entryId) {
+  const id = String(entryId || "").trim();
+  if (!id) return null;
+  return state.entries.find((entry) => entry.id === id) || null;
+}
+
+function renderPredictions() {
+  const status = document.getElementById("st-predictions-status");
+  const admin = document.getElementById("st-predictions-admin");
+  const toggle = document.getElementById("st-predictions-toggle");
+  const empty = document.getElementById("st-predictions-empty");
+  const guest = document.getElementById("st-predictions-guest");
+  const body = document.getElementById("st-predictions-body");
+  const list = document.getElementById("st-predictions-list");
+  const saveBtn = document.getElementById("st-predictions-save");
+  const isAdmin = Boolean(currentUser?.isAdmin);
+  const signedIn = Boolean(currentUser?.kickUserId);
+  const matches = Array.isArray(state.bracket?.matches)
+    ? [...state.bracket.matches].sort(
+        (a, b) => a.round - b.round || a.index - b.index
+      )
+    : [];
+  const hasBracket = matches.length > 0;
+
+  if (status) {
+    if (!hasBracket) {
+      status.textContent = "Generate a bracket before predictions.";
+    } else if (state.predictionsOpen) {
+      status.textContent = isAdmin
+        ? `Predictions open${state.predictionCount ? ` · ${state.predictionCount} sheets` : ""}`
+        : "Predictions open — pick a winner for each matchup.";
+    } else {
+      status.textContent = "Predictions closed";
+    }
+  }
+
+  admin?.classList.toggle("is-hidden", !isAdmin);
+  if (toggle) {
+    toggle.textContent = state.predictionsOpen
+      ? "Close predictions"
+      : "Enable predictions";
+    toggle.disabled = !hasBracket && !state.predictionsOpen;
+  }
+
+  empty?.classList.toggle("is-hidden", hasBracket);
+  if (empty && !hasBracket) {
+    empty.textContent = "Generate a bracket before predictions.";
+  }
+
+  guest?.classList.toggle("is-hidden", !hasBracket || signedIn);
+  body?.classList.toggle("is-hidden", !hasBracket || !signedIn);
+  if (!list || !hasBracket || !signedIn) {
+    saveBtn?.classList.add("is-hidden");
+    return;
+  }
+
+  const active = document.activeElement;
+  const activeMatchId = active?.closest?.("[data-match-id]")?.getAttribute(
+    "data-match-id"
+  );
+
+  list.replaceChildren();
+  matches.forEach((match) => {
+    const card = document.createElement("article");
+    card.className = "st-predictions-match";
+    card.dataset.matchId = match.id;
+
+    const heading = document.createElement("p");
+    heading.className = "slot-tournaments-panel-label";
+    heading.textContent = `R${match.round} · Match ${match.index + 1}`;
+    card.append(heading);
+
+    const canPick = Boolean(match.entryAId && match.entryBId);
+    if (!canPick) {
+      const note = document.createElement("p");
+      note.className = "st-predictions-note";
+      note.textContent = "Waiting for both players.";
+      card.append(note);
+      list.append(card);
+      return;
+    }
+
+    const choices = document.createElement("div");
+    choices.className = "st-predictions-choices";
+
+    ["A", "B"].forEach((side) => {
+      const entryId = side === "A" ? match.entryAId : match.entryBId;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "st-predictions-choice";
+      button.dataset.matchId = match.id;
+      button.dataset.entryId = entryId;
+      button.disabled = !state.predictionsOpen;
+      if (predictionDraft[match.id] === entryId) {
+        button.classList.add("is-selected");
+      }
+
+      const slot = assignedSlotForEntry(entryId);
+      const primary = document.createElement("span");
+      primary.className = "st-predictions-choice-primary";
+      primary.textContent = slot?.name || entryById(entryId)?.username || "Unknown";
+
+      const secondary = document.createElement("span");
+      secondary.className = "st-predictions-choice-secondary";
+      secondary.textContent = slot?.name
+        ? entryById(entryId)?.username || ""
+        : "";
+
+      button.append(primary);
+      if (secondary.textContent) button.append(secondary);
+      choices.append(button);
+    });
+
+    card.append(choices);
+    list.append(card);
+  });
+
+  saveBtn?.classList.toggle("is-hidden", !state.predictionsOpen);
+  if (saveBtn) {
+    saveBtn.disabled = !state.predictionsOpen;
+  }
+
+  if (activeMatchId && state.predictionsOpen) {
+    const next = list.querySelector(
+      `.st-predictions-choice.is-selected[data-match-id="${activeMatchId}"]`
+    );
+    next?.focus();
+  }
+}
+
+function initPredictions() {
+  document.getElementById("st-predictions-toggle")?.addEventListener(
+    "click",
+    async () => {
+      const nextOpen = !state.predictionsOpen;
+      setPredictionStatus(
+        nextOpen ? "Enabling predictions..." : "Closing predictions..."
+      );
+      try {
+        await postJson("/api/slot-tournaments/predictions/toggle", {
+          open: nextOpen,
+        });
+        setPredictionStatus(
+          nextOpen ? "Predictions enabled." : "Predictions closed.",
+          "success"
+        );
+      } catch (error) {
+        setPredictionStatus(
+          error.message || "Could not update predictions.",
+          "error"
+        );
+      }
+    }
+  );
+
+  document.getElementById("st-predictions-list")?.addEventListener(
+    "click",
+    (event) => {
+      const button = event.target.closest(".st-predictions-choice");
+      if (!button || button.disabled) return;
+      const matchId = button.dataset.matchId;
+      const entryId = button.dataset.entryId;
+      if (!matchId || !entryId) return;
+      predictionDraft = { ...predictionDraft, [matchId]: entryId };
+      predictionDirty = true;
+      renderPredictions();
+    }
+  );
+
+  document.getElementById("st-predictions-save")?.addEventListener(
+    "click",
+    async () => {
+      setPredictionStatus("Saving picks...");
+      try {
+        await postJson("/api/slot-tournaments/predictions/save", {
+          picks: predictionDraft,
+        });
+        predictionDirty = false;
+        setPredictionStatus("Picks saved.", "success");
+      } catch (error) {
+        setPredictionStatus(error.message || "Could not save picks.", "error");
+      }
+    }
+  );
+}
+
 function resolveSlotThumbnail(slot) {
   return (
     normalizeSlotThumbnailUrl(slot?.thumbnailUrl) ||
     normalizeSlotThumbnailUrl(findCatalogSlot(slot)?.thumbnailUrl)
   );
+}
+
+function setPredictionStatus(message, tone = "") {
+  const status = document.getElementById("st-predictions-banner");
+  if (!status) {
+    setBanner(message, tone);
+    return;
+  }
+  status.textContent = message || "";
+  status.classList.toggle("is-hidden", !message);
+  status.classList.toggle("is-error", tone === "error");
+  status.classList.toggle("is-success", tone === "success");
 }
 
 function applyState(data) {
@@ -177,13 +381,21 @@ function applyState(data) {
       subscribersOnly: Boolean(data.subscribersOnly),
       entryCount: Number(data.entryCount) || 0,
       entries: Array.isArray(data.entries) ? data.entries : [],
+      bracket: data.bracket || state.bracket,
       results: Array.isArray(data.results) ? data.results : [],
+      predictionsOpen: Boolean(data.predictionsOpen),
+      viewerPrediction: data.viewerPrediction || null,
+      predictionCount: Number(data.predictionCount) || 0,
       viewerEntered: Boolean(data.viewerEntered),
     };
+    if (!predictionDirty) {
+      predictionDraft = { ...(state.viewerPrediction?.picks || {}) };
+    }
     renderStatus();
     renderInfo();
     renderEntries();
     renderResults();
+    renderPredictions();
     renderAdminForm();
     return;
   }
@@ -201,9 +413,16 @@ function applyState(data) {
     entryCount: Number(data.entryCount) || 0,
     entries: Array.isArray(data.entries) ? data.entries : [],
     slots: Array.isArray(data.slots) ? data.slots : [],
+    bracket: data.bracket || { generatedAt: null, entrantIds: [], matches: [] },
     results: Array.isArray(data.results) ? data.results : [],
+    predictionsOpen: Boolean(data.predictionsOpen),
+    viewerPrediction: data.viewerPrediction || null,
+    predictionCount: Number(data.predictionCount) || 0,
     viewerEntered: Boolean(data.viewerEntered),
   };
+  if (!predictionDirty) {
+    predictionDraft = { ...(state.viewerPrediction?.picks || {}) };
+  }
   renderAll();
 }
 
@@ -577,6 +796,7 @@ function renderAll() {
   renderStatus();
   renderInfo();
   renderEntries();
+  renderPredictions();
   renderResults();
   renderAssignPanel();
   renderAdminForm();
@@ -1104,6 +1324,7 @@ window.addEventListener("auth:change", async (event) => {
 });
 
 initAssign();
+initPredictions();
 initAdmin();
 initJoin();
 refreshStatus()

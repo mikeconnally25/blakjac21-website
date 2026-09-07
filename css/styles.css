@@ -7008,6 +7008,88 @@ a.feature-card:focus-visible {
   }
 }
 
+.st-predictions-guest {
+  margin-top: 0.35rem;
+}
+
+.st-predictions-body {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.st-predictions-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.st-predictions-match {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.7rem 0.75rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(8, 14, 22, 0.45);
+}
+
+.st-predictions-note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
+
+.st-predictions-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.st-predictions-choice {
+  display: grid;
+  gap: 0.12rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.65rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(8, 12, 18, 0.72);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.st-predictions-choice:hover:not(:disabled),
+.st-predictions-choice:focus-visible {
+  border-color: rgba(126, 216, 255, 0.4);
+  outline: none;
+}
+
+.st-predictions-choice.is-selected {
+  border-color: rgba(126, 216, 255, 0.55);
+  background: rgba(126, 216, 255, 0.12);
+}
+
+.st-predictions-choice:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.st-predictions-choice-primary {
+  font-weight: 600;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.st-predictions-choice-secondary {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .st-predictions-choices {
+    grid-template-columns: 1fr;
+  }
+}
+
 .slot-tournaments-entry-slot {
   color: var(--text-muted);
   font-size: 0.84rem;
