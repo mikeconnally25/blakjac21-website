@@ -407,12 +407,29 @@ function initCatalogForm() {
   });
 }
 
+function setAwardChatStatus(message, tone = "") {
+  const status = document.getElementById("store-award-chat-status");
+  if (!status) {
+    setStoreStatus(message, tone);
+    return;
+  }
+
+  status.textContent = message || "";
+  status.classList.toggle("is-hidden", !message);
+  status.classList.toggle("is-error", tone === "error");
+  status.classList.toggle("is-success", tone === "success");
+  if (message) {
+    setStoreStatus(message, tone);
+  }
+}
+
 function initAwardChatForm() {
   const form = document.getElementById("store-award-chat-form");
   if (!form) return;
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    const submit = document.getElementById("store-award-chat-submit");
     const amount = Number(
       document.getElementById("store-award-chat-amount")?.value || 0
     );
@@ -420,7 +437,8 @@ function initAwardChatForm() {
       document.getElementById("store-award-chat-minutes")?.value || 15
     );
 
-    setStoreStatus("Awarding recent chatters...");
+    if (submit) submit.disabled = true;
+    setAwardChatStatus("Awarding recent Kick chatters...");
     try {
       const response = await fetch("/api/points/award-chat", {
         method: "POST",
@@ -428,18 +446,20 @@ function initAwardChatForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount, withinMinutes }),
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) {
         throw new Error(data.error || "Could not award chatters.");
       }
       await loadMe();
       renderAll();
-      setStoreStatus(
+      setAwardChatStatus(
         `Awarded ${data.amount > 0 ? "+" : ""}${data.amount} points to ${data.awarded} chatters (last ${data.withinMinutes}m).`,
         "success"
       );
     } catch (error) {
-      setStoreStatus(error.message || "Could not award chatters.", "error");
+      setAwardChatStatus(error.message || "Could not award chatters.", "error");
+    } finally {
+      if (submit) submit.disabled = false;
     }
   });
 }

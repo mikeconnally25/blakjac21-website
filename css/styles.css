@@ -6861,6 +6861,20 @@ a.feature-card:focus-visible {
   color: #ffb0b0;
 }
 
+.store-award-chat-status {
+  margin: 0.65rem 0 0;
+  color: var(--text-muted, #9aa4b2);
+  font-size: 0.88rem;
+}
+
+.store-award-chat-status.is-success {
+  color: #9dff73;
+}
+
+.store-award-chat-status.is-error {
+  color: #ffb0b0;
+}
+
 .store-balance-panel {
   display: grid;
   gap: 0.35rem;

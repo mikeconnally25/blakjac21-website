@@ -115,7 +115,10 @@
               <label class="guess-label" for="store-award-chat-minutes">Active within (minutes)</label>
               <input class="guess-input" id="store-award-chat-minutes" name="minutes" type="number" min="1" max="120" step="1" value="15" />
             </div>
-            <button type="submit" class="btn btn-sm btn-primary">Award chatters</button>
+            <button type="submit" class="btn btn-sm btn-primary" id="store-award-chat-submit">
+              Award chatters
+            </button>
+            <p class="store-award-chat-status is-hidden" id="store-award-chat-status" role="status"></p>
           </form>
 
           <form class="store-admin-form bj21-panel theme-surface" id="store-catalog-form">
