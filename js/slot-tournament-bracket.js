@@ -96,6 +96,25 @@ function renderHeader() {
   admin?.classList.toggle("is-hidden", !isAdmin);
 }
 
+function renderRoundColumn(round, roundMatches, maxRound, isAdmin, side) {
+  const column = document.createElement("div");
+  column.className = "st-bracket-round";
+  if (side) column.classList.add(`is-${side}`);
+
+  const heading = document.createElement("p");
+  heading.className = "st-bracket-round-label";
+  heading.textContent = roundLabel(round, maxRound);
+  column.append(heading);
+
+  const stack = document.createElement("div");
+  stack.className = "st-bracket-round-stack";
+  roundMatches.forEach((match) => {
+    stack.append(renderMatchCard(match, isAdmin));
+  });
+  column.append(stack);
+  return column;
+}
+
 function renderBracket() {
   const board = document.getElementById("st-bracket-board");
   const empty = document.getElementById("st-bracket-empty");
@@ -124,25 +143,48 @@ function renderBracket() {
   const active = document.activeElement;
   const activeMatchId = active?.closest?.("[data-match-id]")?.getAttribute("data-match-id");
   const activeField = active?.dataset?.scoreSide || null;
+  const roundOneMatches = matches
+    .filter((match) => match.round === 1)
+    .sort((a, b) => a.index - b.index);
 
-  for (let round = 1; round <= maxRound; round += 1) {
-    const column = document.createElement("div");
-    column.className = "st-bracket-round";
+  // Split bracket when there are enough round-1 matches for left/right wings.
+  if (roundOneMatches.length >= 2 && maxRound >= 2) {
+    board.classList.add("is-split");
 
-    const heading = document.createElement("p");
-    heading.className = "st-bracket-round-label";
-    heading.textContent = roundLabel(round, maxRound);
-    column.append(heading);
+    const leftWing = document.createElement("div");
+    leftWing.className = "st-bracket-wing is-left";
+    const center = document.createElement("div");
+    center.className = "st-bracket-center";
+    const rightWing = document.createElement("div");
+    rightWing.className = "st-bracket-wing is-right";
 
-    const roundMatches = matches
-      .filter((match) => match.round === round)
+    for (let round = 1; round < maxRound; round += 1) {
+      const roundMatches = matches
+        .filter((match) => match.round === round)
+        .sort((a, b) => a.index - b.index);
+      const mid = Math.ceil(roundMatches.length / 2);
+      leftWing.append(
+        renderRoundColumn(round, roundMatches.slice(0, mid), maxRound, isAdmin, "left")
+      );
+      rightWing.append(
+        renderRoundColumn(round, roundMatches.slice(mid), maxRound, isAdmin, "right")
+      );
+    }
+
+    const finals = matches
+      .filter((match) => match.round === maxRound)
       .sort((a, b) => a.index - b.index);
+    center.append(renderRoundColumn(maxRound, finals, maxRound, isAdmin, "center"));
 
-    roundMatches.forEach((match) => {
-      column.append(renderMatchCard(match, isAdmin));
-    });
-
-    board.append(column);
+    board.append(leftWing, center, rightWing);
+  } else {
+    board.classList.remove("is-split");
+    for (let round = 1; round <= maxRound; round += 1) {
+      const roundMatches = matches
+        .filter((match) => match.round === round)
+        .sort((a, b) => a.index - b.index);
+      board.append(renderRoundColumn(round, roundMatches, maxRound, isAdmin));
+    }
   }
 
   if (activeMatchId && activeField && isAdmin) {
