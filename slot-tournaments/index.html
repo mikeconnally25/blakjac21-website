@@ -148,20 +148,38 @@
           <div class="slot-tournaments-panel bj21-panel theme-surface">
             <span class="bj21-panel-glow" aria-hidden="true"></span>
             <p class="slot-tournaments-panel-label">Slots</p>
-            <form class="slot-tournaments-assign-add" id="st-assign-add-form">
-              <label class="guess-label" for="st-assign-slot-input">Slot name</label>
-              <input
-                class="guess-input"
-                id="st-assign-slot-input"
-                list="st-assign-slot-catalog"
-                maxlength="80"
-                placeholder="Add a slot name"
-                autocomplete="off"
-              />
-              <datalist id="st-assign-slot-catalog"></datalist>
-              <button type="submit" class="btn btn-sm btn-primary">Add slot</button>
-            </form>
-            <p class="slot-tournaments-empty" id="st-assign-empty">No slots yet. Add slots above.</p>
+            <div class="slot-tournaments-assign-add" id="st-assign-add">
+              <label class="guess-label" for="st-assign-slot-search">Choose a slot</label>
+              <div class="st-slot-picker" id="st-slot-picker">
+                <button
+                  type="button"
+                  class="st-slot-picker-trigger"
+                  id="st-assign-slot-trigger"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-controls="st-assign-slot-menu"
+                >
+                  <span class="st-slot-picker-trigger-copy" id="st-assign-slot-trigger-label">
+                    Choose New Releases or Only on Stake…
+                  </span>
+                </button>
+                <div class="st-slot-picker-menu is-hidden" id="st-assign-slot-menu" hidden>
+                  <input
+                    class="guess-input st-slot-picker-search"
+                    id="st-assign-slot-search"
+                    type="search"
+                    placeholder="Search slots…"
+                    autocomplete="off"
+                  />
+                  <div class="st-slot-picker-groups" id="st-assign-slot-groups" role="listbox"></div>
+                  <p class="st-slot-picker-empty is-hidden" id="st-assign-slot-empty">
+                    No matching slots.
+                  </p>
+                </div>
+              </div>
+              <p class="slot-tournaments-panel-text" id="st-assign-catalog-meta"></p>
+            </div>
+            <p class="slot-tournaments-empty" id="st-assign-empty">No slots yet. Pick slots above.</p>
             <ul class="slot-tournaments-assign-list is-hidden" id="st-assign-list"></ul>
             <div class="slot-tournaments-actions">
               <button type="button" class="btn btn-sm btn-outline" id="st-assign-random">

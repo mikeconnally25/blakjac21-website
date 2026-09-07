@@ -6960,6 +6960,19 @@ a.feature-card:focus-visible {
   font-size: 0.84rem;
 }
 
+.slot-tournaments-entry-slot-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.slot-tournaments-entry-slot-row .st-slot-thumb {
+  width: 1.35rem;
+  height: 1.35rem;
+  font-size: 0.5rem;
+}
+
 .slot-tournaments-result-copy {
   display: grid;
   gap: 0.1rem;
@@ -6983,14 +6996,149 @@ a.feature-card:focus-visible {
 
 .slot-tournaments-assign-add {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.55rem;
-  align-items: end;
+  gap: 0.45rem;
   margin-bottom: 0.85rem;
 }
 
-.slot-tournaments-assign-add .guess-label {
-  grid-column: 1 / -1;
+.st-slot-picker {
+  position: relative;
+}
+
+.st-slot-picker-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(8, 14, 22, 0.72);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.st-slot-picker-trigger-copy {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-muted);
+}
+
+.st-slot-picker-menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.7rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(8, 12, 18, 0.98);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+.st-slot-picker-search {
+  width: 100%;
+}
+
+.st-slot-picker-groups {
+  max-height: min(22rem, 48vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.st-slot-picker-group {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.st-slot-picker-group-label {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7ed8ff;
+}
+
+.st-slot-picker-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: center;
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius-sm) + 2px);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.st-slot-picker-option:hover:not(:disabled),
+.st-slot-picker-option:focus-visible {
+  border-color: rgba(126, 216, 255, 0.28);
+  background: rgba(126, 216, 255, 0.08);
+  outline: none;
+}
+
+.st-slot-picker-option:disabled,
+.st-slot-picker-option.is-added {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.st-slot-picker-option-copy {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.st-slot-picker-option-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.st-slot-picker-option-provider {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.st-slot-picker-empty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.st-slot-thumb {
+  flex-shrink: 0;
+  width: 2.15rem;
+  height: 2.15rem;
+  border-radius: 0.4rem;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.st-slot-thumb.is-fallback {
+  text-transform: uppercase;
+}
+
+.st-slot-thumb-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .slot-tournaments-assign-list {
@@ -7010,6 +7158,13 @@ a.feature-card:focus-visible {
   border-radius: calc(var(--radius-sm) + 2px);
   border: 1px solid rgba(148, 163, 184, 0.14);
   background: rgba(8, 14, 22, 0.45);
+}
+
+.slot-tournaments-assign-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
 }
 
 .slot-tournaments-assign-name {
@@ -7050,10 +7205,6 @@ a.feature-card:focus-visible {
 }
 
 @media (max-width: 640px) {
-  .slot-tournaments-assign-add {
-    grid-template-columns: 1fr;
-  }
-
   .slot-tournaments-assign-row {
     grid-template-columns: auto 1fr;
   }

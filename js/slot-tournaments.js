@@ -1,8 +1,11 @@
 let currentUser = null;
 let pollTimer = null;
 let slotCatalog = [];
+let slotGroups = [];
 let assignSaveTimer = null;
 let assignDirty = false;
+let pickerOpen = false;
+let pickerFilter = "";
 let state = {
   open: false,
   phase: "closed",
@@ -67,8 +70,78 @@ function newSlotId() {
   return `slot-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function findCatalogSlot(name) {
-  const needle = String(name || "").trim().toLowerCase();
+function slotInitials(name) {
+  return (
+    String(name || "")
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0] || "")
+      .join("")
+      .toUpperCase() || "?"
+  );
+}
+
+function avatarColor(name) {
+  let hash = 0;
+  for (const char of String(name || "")) {
+    hash = char.charCodeAt(0) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue} 58% 42%)`;
+}
+
+function normalizeSlotThumbnailUrl(url) {
+  const value = String(url || "").trim();
+  if (!value) return null;
+  const normalized = value.startsWith("//") ? `https:${value}` : value;
+  const base = normalized.split("?")[0];
+  return `${base}?w=150&h=200&fit=min&auto=format`;
+}
+
+function createSlotThumb(slotName, thumbnailUrl) {
+  const thumb = document.createElement("div");
+  thumb.className = "st-slot-thumb";
+  const imageUrl = normalizeSlotThumbnailUrl(thumbnailUrl);
+
+  if (imageUrl) {
+    const image = document.createElement("img");
+    image.className = "st-slot-thumb-image";
+    image.src = imageUrl;
+    image.alt = "";
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.referrerPolicy = "no-referrer";
+    image.addEventListener("error", () => {
+      image.remove();
+      thumb.textContent = slotInitials(slotName);
+      thumb.classList.add("is-fallback");
+      thumb.style.background = avatarColor(slotName);
+    });
+    thumb.append(image);
+  } else {
+    thumb.textContent = slotInitials(slotName);
+    thumb.classList.add("is-fallback");
+    thumb.style.background = avatarColor(slotName);
+  }
+
+  return thumb;
+}
+
+function findCatalogSlotBySlug(slug) {
+  const needle = String(slug || "").trim().toLowerCase();
+  if (!needle) return null;
+  return slotCatalog.find((slot) => String(slot.slug || "").toLowerCase() === needle) || null;
+}
+
+function findCatalogSlot(nameOrSlot) {
+  if (nameOrSlot && typeof nameOrSlot === "object") {
+    return (
+      findCatalogSlotBySlug(nameOrSlot.slug) ||
+      findCatalogSlot(nameOrSlot.name || nameOrSlot.slotName || "")
+    );
+  }
+  const needle = String(nameOrSlot || "").trim().toLowerCase();
   if (!needle) return null;
   return (
     slotCatalog.find((slot) => String(slot.name || "").toLowerCase() === needle) ||
@@ -80,6 +153,13 @@ function assignedSlotForEntry(entryId) {
   const id = String(entryId || "").trim();
   if (!id) return null;
   return state.slots.find((slot) => slot.entryId === id) || null;
+}
+
+function resolveSlotThumbnail(slot) {
+  return (
+    normalizeSlotThumbnailUrl(slot?.thumbnailUrl) ||
+    normalizeSlotThumbnailUrl(findCatalogSlot(slot)?.thumbnailUrl)
+  );
 }
 
 function applyState(data) {
@@ -278,10 +358,14 @@ function renderEntries() {
 
     const assigned = assignedSlotForEntry(entry.id);
     if (assigned?.name) {
+      const slotRow = document.createElement("span");
+      slotRow.className = "slot-tournaments-entry-slot-row";
+      slotRow.append(createSlotThumb(assigned.name, resolveSlotThumbnail(assigned)));
       const slot = document.createElement("span");
       slot.className = "slot-tournaments-entry-slot";
       slot.textContent = assigned.name;
-      copy.append(slot);
+      slotRow.append(slot);
+      copy.append(slotRow);
     }
 
     row.append(place, copy);
@@ -363,9 +447,14 @@ function renderAssignPanel() {
     indexEl.className = "slot-tournaments-entry-index";
     indexEl.textContent = String(index + 1).padStart(2, "0");
 
+    const identity = document.createElement("div");
+    identity.className = "slot-tournaments-assign-identity";
+    identity.append(createSlotThumb(slot.name, resolveSlotThumbnail(slot)));
+
     const name = document.createElement("p");
     name.className = "slot-tournaments-assign-name";
     name.textContent = slot.name;
+    identity.append(name);
 
     const select = document.createElement("select");
     select.className = "guess-input slot-tournaments-assign-select";
@@ -397,7 +486,7 @@ function renderAssignPanel() {
     remove.dataset.removeSlotId = slot.id;
     remove.textContent = "Remove";
 
-    row.append(indexEl, name, select, remove);
+    row.append(indexEl, identity, select, remove);
     list.append(row);
   });
 
@@ -508,28 +597,177 @@ function shuffle(items) {
   return list;
 }
 
-function initAssign() {
-  document.getElementById("st-assign-add-form")?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const input = document.getElementById("st-assign-slot-input");
-    const name = String(input?.value || "").trim();
-    if (!name) {
-      setAssignStatus("Enter a slot name.", "error");
-      return;
-    }
+function setPickerOpen(nextOpen) {
+  pickerOpen = Boolean(nextOpen);
+  const menu = document.getElementById("st-assign-slot-menu");
+  const trigger = document.getElementById("st-assign-slot-trigger");
+  menu?.classList.toggle("is-hidden", !pickerOpen);
+  if (menu) menu.hidden = !pickerOpen;
+  trigger?.setAttribute("aria-expanded", pickerOpen ? "true" : "false");
+  if (pickerOpen) {
+    renderSlotPickerOptions();
+    window.setTimeout(() => {
+      document.getElementById("st-assign-slot-search")?.focus();
+    }, 0);
+  } else {
+    pickerFilter = "";
+    const search = document.getElementById("st-assign-slot-search");
+    if (search) search.value = "";
+  }
+}
 
-    const catalogHit = findCatalogSlot(name);
-    const next = [
-      ...state.slots,
-      {
-        id: newSlotId(),
-        name: catalogHit?.name || name,
-        slug: catalogHit?.slug || null,
-        entryId: null,
-      },
-    ];
-    if (input) input.value = "";
-    queueSlotSave(next);
+function renderSlotPickerOptions() {
+  const groupsEl = document.getElementById("st-assign-slot-groups");
+  const empty = document.getElementById("st-assign-slot-empty");
+  const meta = document.getElementById("st-assign-catalog-meta");
+  if (!groupsEl) return;
+
+  groupsEl.replaceChildren();
+  const query = pickerFilter.trim().toLowerCase();
+  const addedSlugs = new Set(
+    state.slots.map((slot) => String(slot.slug || "").toLowerCase()).filter(Boolean)
+  );
+
+  const groups =
+    slotGroups.length > 0
+      ? slotGroups
+      : [
+          { slug: "new-releases", label: "New Releases" },
+          { slug: "only-on-stake", label: "Only on Stake" },
+        ];
+
+  let visibleCount = 0;
+
+  for (const group of groups) {
+    const slots = slotCatalog
+      .filter((slot) => slot.groupSlug === group.slug)
+      .filter((slot) => {
+        if (!query) return true;
+        const haystack = [slot.name, slot.provider, group.label]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(query);
+      });
+
+    if (!slots.length) continue;
+
+    const section = document.createElement("div");
+    section.className = "st-slot-picker-group";
+
+    const heading = document.createElement("p");
+    heading.className = "st-slot-picker-group-label";
+    heading.textContent = group.label;
+    section.append(heading);
+
+    slots.forEach((slot) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "st-slot-picker-option";
+      button.dataset.slotSlug = slot.slug;
+      button.setAttribute("role", "option");
+
+      const alreadyAdded = addedSlugs.has(String(slot.slug || "").toLowerCase());
+      if (alreadyAdded) {
+        button.disabled = true;
+        button.classList.add("is-added");
+      }
+
+      button.append(createSlotThumb(slot.name, slot.thumbnailUrl));
+
+      const copy = document.createElement("span");
+      copy.className = "st-slot-picker-option-copy";
+
+      const name = document.createElement("span");
+      name.className = "st-slot-picker-option-name";
+      name.textContent = slot.name;
+
+      const provider = document.createElement("span");
+      provider.className = "st-slot-picker-option-provider";
+      provider.textContent = alreadyAdded
+        ? "Already added"
+        : slot.provider || group.label;
+
+      copy.append(name, provider);
+      button.append(copy);
+      section.append(button);
+      visibleCount += 1;
+    });
+
+    groupsEl.append(section);
+  }
+
+  empty?.classList.toggle("is-hidden", visibleCount > 0);
+
+  if (meta) {
+    if (!slotCatalog.length) {
+      meta.textContent =
+        "Slot catalog is empty. Sync New Releases / Only on Stake from Bonus Hunt first.";
+    } else {
+      meta.textContent = `${slotCatalog.length} Stake slots loaded`;
+    }
+  }
+}
+
+function addCatalogSlot(slug) {
+  const catalogHit = findCatalogSlotBySlug(slug);
+  if (!catalogHit) {
+    setAssignStatus("Choose a slot from the list.", "error");
+    return;
+  }
+
+  const already = state.slots.some(
+    (slot) =>
+      String(slot.slug || "").toLowerCase() ===
+      String(catalogHit.slug || "").toLowerCase()
+  );
+  if (already) {
+    setAssignStatus("That slot is already on the list.", "error");
+    return;
+  }
+
+  const next = [
+    ...state.slots,
+    {
+      id: newSlotId(),
+      name: catalogHit.name,
+      slug: catalogHit.slug || null,
+      thumbnailUrl: normalizeSlotThumbnailUrl(catalogHit.thumbnailUrl),
+      entryId: null,
+    },
+  ];
+  setPickerOpen(false);
+  queueSlotSave(next);
+}
+
+function initAssign() {
+  document.getElementById("st-assign-slot-trigger")?.addEventListener("click", () => {
+    setPickerOpen(!pickerOpen);
+  });
+
+  document.getElementById("st-assign-slot-search")?.addEventListener("input", (event) => {
+    pickerFilter = String(event.target.value || "");
+    renderSlotPickerOptions();
+  });
+
+  document.getElementById("st-assign-slot-groups")?.addEventListener("click", (event) => {
+    const option = event.target.closest(".st-slot-picker-option");
+    if (!option || option.disabled) return;
+    addCatalogSlot(option.dataset.slotSlug);
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!pickerOpen) return;
+    const picker = document.getElementById("st-slot-picker");
+    if (picker && !picker.contains(event.target)) {
+      setPickerOpen(false);
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && pickerOpen) {
+      setPickerOpen(false);
+    }
   });
 
   document.getElementById("st-assign-list")?.addEventListener("change", (event) => {
@@ -589,19 +827,23 @@ async function loadSlotCatalog() {
       credentials: "same-origin",
       cache: "no-store",
     });
-    if (!response.ok) return;
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || "Could not load slot catalog.");
+    }
     const data = await response.json();
     slotCatalog = Array.isArray(data.slots) ? data.slots : [];
-    const list = document.getElementById("st-assign-slot-catalog");
-    if (!list) return;
-    list.replaceChildren();
-    slotCatalog.forEach((slot) => {
-      const option = document.createElement("option");
-      option.value = slot.name;
-      list.append(option);
-    });
-  } catch {
-    // Catalog is optional for free-text slot names.
+    slotGroups = Array.isArray(data.groups) ? data.groups : [];
+    renderSlotPickerOptions();
+    if (currentUser?.isAdmin) {
+      renderAssignPanel();
+      renderEntries();
+    }
+  } catch (error) {
+    const meta = document.getElementById("st-assign-catalog-meta");
+    if (meta) {
+      meta.textContent = error.message || "Could not load Stake slot catalog.";
+    }
   }
 }
 
