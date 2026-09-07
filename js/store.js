@@ -403,7 +403,7 @@ async function fulfillRedemption(id, button) {
     renderAll();
     setStoreStatus("Redemption fulfilled.", "success");
     document
-      .getElementById("store-history-header")
+      .getElementById("store-history-panel")
       ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   } catch (error) {
     setStoreStatus(error.message || "Could not fulfill redemption.", "error");
@@ -430,7 +430,7 @@ async function cancelRedemption(id, button) {
     renderAll();
     setStoreStatus("Redemption cancelled and points refunded.", "success");
     document
-      .getElementById("store-history-header")
+      .getElementById("store-history-panel")
       ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   } catch (error) {
     setStoreStatus(error.message || "Could not cancel redemption.", "error");
