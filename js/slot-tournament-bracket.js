@@ -6,6 +6,7 @@ let state = {
   buyIn: "",
   entryCount: 0,
   entries: [],
+  slots: [],
   bracket: { generatedAt: null, entrantIds: [], matches: [] },
 };
 
@@ -22,6 +23,15 @@ function entryById(id) {
   const key = String(id || "").trim();
   if (!key) return null;
   return state.entries.find((entry) => entry.id === key) || null;
+}
+
+function assignedSlotForEntry(entryId) {
+  const id = String(entryId || "").trim();
+  if (!id) return null;
+  return (
+    (state.slots || []).find((slot) => String(slot.entryId || "").trim() === id) ||
+    null
+  );
 }
 
 function entryLabel(id) {
@@ -44,6 +54,7 @@ function applyState(data) {
     buyIn: data.buyIn || "",
     entryCount: Number(data.entryCount) || 0,
     entries: Array.isArray(data.entries) ? data.entries : [],
+    slots: Array.isArray(data.slots) ? data.slots : [],
     bracket: data.bracket || { generatedAt: null, entrantIds: [], matches: [] },
   };
   renderAll();
@@ -244,18 +255,40 @@ function renderMatchCard(match, isAdmin) {
 function renderPlayerRow(match, side, isAdmin) {
   const entryId = side === "A" ? match.entryAId : match.entryBId;
   const score = side === "A" ? match.scoreA : match.scoreB;
+  const assigned = assignedSlotForEntry(entryId);
   const row = document.createElement("div");
   row.className = "st-bracket-player";
   if (match.winnerEntryId && entryId && match.winnerEntryId === entryId) {
     row.classList.add("is-winner");
   }
 
-  const name = document.createElement("span");
-  name.className = "st-bracket-player-name";
-  name.textContent = entryId ? entryLabel(entryId) : side === "A" || side === "B" ? "Bye / TBD" : "TBD";
-  if (!entryId) name.classList.add("is-empty");
+  const copy = document.createElement("div");
+  copy.className = "st-bracket-player-copy";
 
-  row.append(name);
+  if (entryId && assigned?.name) {
+    const slot = document.createElement("span");
+    slot.className = "st-bracket-player-name";
+    slot.textContent = assigned.name;
+    slot.title = assigned.name;
+
+    const user = document.createElement("span");
+    user.className = "st-bracket-player-user";
+    user.textContent = entryLabel(entryId);
+
+    copy.append(slot, user);
+  } else {
+    const name = document.createElement("span");
+    name.className = "st-bracket-player-name";
+    name.textContent = entryId
+      ? entryLabel(entryId)
+      : side === "A" || side === "B"
+        ? "Bye / TBD"
+        : "TBD";
+    if (!entryId) name.classList.add("is-empty");
+    copy.append(name);
+  }
+
+  row.append(copy);
 
   if (match.entryAId && match.entryBId) {
     if (isAdmin) {
