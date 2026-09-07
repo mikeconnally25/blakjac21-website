@@ -65,6 +65,9 @@ function renderStatus() {
   const card = document.getElementById("st-status-card");
   const value = document.getElementById("st-status-value");
   const meta = document.getElementById("st-status-meta");
+  const toggleWrap = document.getElementById("st-status-toggle-wrap");
+  const toggle = document.getElementById("st-status-toggle");
+  const isAdmin = Boolean(currentUser?.isAdmin);
   const phase = state.open ? "signup" : state.phase;
   card?.setAttribute("data-phase", phase);
   if (value) value.textContent = phaseLabel(state.phase, state.open);
@@ -76,7 +79,36 @@ function renderStatus() {
   if (meta) {
     meta.textContent = bits.length
       ? bits.join(" · ")
-      : "No active tournament.";
+      : state.open
+        ? "Signups are open."
+        : "No active tournament.";
+  }
+
+  toggleWrap?.classList.toggle("is-hidden", !isAdmin);
+  if (toggle && document.activeElement !== toggle) {
+    toggle.checked = Boolean(state.open);
+    toggle.disabled = false;
+  }
+}
+
+async function toggleSignups(nextOpen) {
+  const toggle = document.getElementById("st-status-toggle");
+  if (toggle) toggle.disabled = true;
+  setAdminStatus(nextOpen ? "Opening signups..." : "Closing signups...");
+  setBanner(nextOpen ? "Opening signups..." : "Closing signups...");
+  try {
+    await postJson("/api/slot-tournaments/toggle", { open: nextOpen });
+    setAdminStatus(
+      state.open ? "Signups open." : "Signups closed.",
+      "success"
+    );
+    setBanner(state.open ? "Signups open." : "Signups closed.", "success");
+  } catch (error) {
+    if (toggle) toggle.checked = Boolean(state.open);
+    setAdminStatus(error.message || "Could not toggle signups.", "error");
+    setBanner(error.message || "Could not toggle signups.", "error");
+  } finally {
+    if (toggle) toggle.disabled = false;
   }
 }
 
@@ -332,16 +364,13 @@ function initAdmin() {
   });
 
   document.getElementById("st-toggle-open")?.addEventListener("click", async () => {
-    setAdminStatus(state.open ? "Closing signups..." : "Opening signups...");
-    try {
-      await postJson("/api/slot-tournaments/toggle", { open: !state.open });
-      setAdminStatus(
-        state.open ? "Signups open." : "Signups closed.",
-        "success"
-      );
-    } catch (error) {
-      setAdminStatus(error.message || "Could not toggle signups.", "error");
-    }
+    await toggleSignups(!state.open);
+  });
+
+  document.getElementById("st-status-toggle")?.addEventListener("change", async (event) => {
+    const nextOpen = Boolean(event.target.checked);
+    if (nextOpen === state.open) return;
+    await toggleSignups(nextOpen);
   });
 
   document.getElementById("st-phase-live")?.addEventListener("click", async () => {

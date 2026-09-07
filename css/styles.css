@@ -6779,6 +6779,29 @@ a.feature-card:focus-visible {
   padding: 1.05rem 1.15rem;
 }
 
+.slot-tournaments-status-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.slot-tournaments-status-toggle {
+  width: 46px;
+  height: 26px;
+}
+
+.slot-tournaments-status-toggle .toggle-slider::before {
+  width: 18px;
+  height: 18px;
+  top: 3px;
+  left: 3px;
+}
+
+.slot-tournaments-status-toggle input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+}
+
 .slot-tournaments-status-value {
   margin: 0;
   font-family: var(--font-display);

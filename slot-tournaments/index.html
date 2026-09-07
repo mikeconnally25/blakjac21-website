@@ -72,7 +72,13 @@
           </div>
           <div class="slot-tournaments-status-card bj21-panel theme-surface" id="st-status-card" data-phase="closed">
             <span class="bj21-panel-glow" aria-hidden="true"></span>
-            <p class="slot-tournaments-panel-label">Status</p>
+            <div class="slot-tournaments-status-head">
+              <p class="slot-tournaments-panel-label">Status</p>
+              <label class="toggle slot-tournaments-status-toggle is-hidden" id="st-status-toggle-wrap" title="Open or close signups">
+                <input type="checkbox" id="st-status-toggle" aria-label="Open or close tournament signups" />
+                <span class="toggle-slider" aria-hidden="true"></span>
+              </label>
+            </div>
             <p class="slot-tournaments-status-value" id="st-status-value">Closed</p>
             <p class="slot-tournaments-status-meta" id="st-status-meta">No active tournament.</p>
           </div>
@@ -107,7 +113,6 @@
           </p>
           <div class="slot-tournaments-actions">
             <button type="button" class="btn btn-primary is-hidden" id="st-join-btn">Join tournament</button>
-            <a href="/#watch" class="btn btn-outline">Watch live</a>
           </div>
         </section>
 
