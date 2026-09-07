@@ -86,6 +86,23 @@ function renderCatalog() {
   });
 }
 
+function formatWhen(value) {
+  const at = Date.parse(value || "");
+  if (!Number.isFinite(at)) return "";
+  return new Date(at).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function statusLabel(status) {
+  if (status === "fulfilled") return "Fulfilled";
+  if (status === "cancelled") return "Cancelled";
+  return "Pending";
+}
+
 function renderMyRedemptions() {
   const list = document.getElementById("store-redemptions-list");
   const empty = document.getElementById("store-redemptions-empty");
@@ -107,8 +124,15 @@ function renderMyRedemptions() {
 
   myRedemptions.forEach((entry) => {
     const row = document.createElement("li");
-    row.className = "store-redemption-item";
-    row.textContent = `${entry.itemTitle} · ${formatPoints(entry.cost)} · ${entry.status}`;
+    row.className = `store-redemption-item is-${entry.status || "pending"}`;
+
+    const copy = document.createElement("span");
+    const when = formatWhen(entry.updatedAt || entry.createdAt);
+    copy.textContent = `${entry.itemTitle} · ${formatPoints(entry.cost)} · ${statusLabel(
+      entry.status
+    )}${when ? ` · ${when}` : ""}`;
+
+    row.append(copy);
     list.append(row);
   });
 }
@@ -189,6 +213,45 @@ function renderQueue() {
   });
 }
 
+function renderHistory() {
+  const list = document.getElementById("store-history-list");
+  const empty = document.getElementById("store-history-empty");
+  if (!list || !empty) return;
+
+  const history = pendingQueue
+    .filter((entry) => entry.status === "fulfilled" || entry.status === "cancelled")
+    .sort(
+      (a, b) =>
+        Date.parse(b.updatedAt || b.createdAt) -
+        Date.parse(a.updatedAt || a.createdAt)
+    );
+
+  list.replaceChildren();
+
+  if (!history.length) {
+    empty.classList.remove("is-hidden");
+    list.classList.add("is-hidden");
+    return;
+  }
+
+  empty.classList.add("is-hidden");
+  list.classList.remove("is-hidden");
+
+  history.forEach((entry) => {
+    const row = document.createElement("li");
+    row.className = `store-queue-item store-history-item is-${entry.status}`;
+
+    const copy = document.createElement("span");
+    const when = formatWhen(entry.updatedAt || entry.createdAt);
+    copy.textContent = `${entry.username} · ${entry.itemTitle} · ${formatPoints(
+      entry.cost
+    )} · ${statusLabel(entry.status)}${when ? ` · ${when}` : ""}`;
+
+    row.append(copy);
+    list.append(row);
+  });
+}
+
 function renderAdmin() {
   const panel = document.getElementById("store-admin");
   const isAdmin = Boolean(currentUser?.isAdmin);
@@ -196,6 +259,7 @@ function renderAdmin() {
   if (!isAdmin) return;
   renderAdminCatalog();
   renderQueue();
+  renderHistory();
 }
 
 function renderAll() {
@@ -324,13 +388,13 @@ async function toggleCatalogItem(id, active, button) {
 async function fulfillRedemption(id, button) {
   if (button) button.disabled = true;
   try {
-    const response = await fetch("/api/points/redemptions/fulfill", {
+    const response = await fetch("/api/points/fulfill-redemption", {
       method: "POST",
       credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       throw new Error(data.error || "Could not fulfill redemption.");
     }
@@ -338,6 +402,9 @@ async function fulfillRedemption(id, button) {
     await loadMe();
     renderAll();
     setStoreStatus("Redemption fulfilled.", "success");
+    document
+      .getElementById("store-history-header")
+      ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   } catch (error) {
     setStoreStatus(error.message || "Could not fulfill redemption.", "error");
   } finally {
@@ -348,13 +415,13 @@ async function fulfillRedemption(id, button) {
 async function cancelRedemption(id, button) {
   if (button) button.disabled = true;
   try {
-    const response = await fetch("/api/points/redemptions/cancel", {
+    const response = await fetch("/api/points/cancel-redemption", {
       method: "POST",
       credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       throw new Error(data.error || "Could not cancel redemption.");
     }
@@ -362,6 +429,9 @@ async function cancelRedemption(id, button) {
     await loadMe();
     renderAll();
     setStoreStatus("Redemption cancelled and points refunded.", "success");
+    document
+      .getElementById("store-history-header")
+      ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   } catch (error) {
     setStoreStatus(error.message || "Could not cancel redemption.", "error");
   } finally {

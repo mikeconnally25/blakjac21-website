@@ -189,7 +189,13 @@ app.get("/api/points/redemptions", (req, res) =>
 app.post("/api/points/redemptions/fulfill", (req, res) =>
   handlePointsRedemptionFulfill(req, res)
 );
+app.post("/api/points/fulfill-redemption", (req, res) =>
+  handlePointsRedemptionFulfill(req, res)
+);
 app.post("/api/points/redemptions/cancel", (req, res) =>
+  handlePointsRedemptionCancel(req, res)
+);
+app.post("/api/points/cancel-redemption", (req, res) =>
   handlePointsRedemptionCancel(req, res)
 );
 app.get("/api/giveaways/status", (req, res) => handleGiveawayStatus(req, res));

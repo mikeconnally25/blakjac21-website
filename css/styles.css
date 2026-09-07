@@ -6999,6 +6999,27 @@ a.feature-card:focus-visible {
   gap: 0.4rem;
 }
 
+.store-history-list {
+  margin-top: 0.35rem;
+}
+
+.store-history-item.is-fulfilled {
+  border-color: rgba(157, 255, 115, 0.28);
+}
+
+.store-history-item.is-cancelled {
+  border-color: rgba(255, 176, 176, 0.28);
+  opacity: 0.85;
+}
+
+.store-redemption-item.is-fulfilled {
+  border-color: rgba(157, 255, 115, 0.28);
+}
+
+.store-redemption-item.is-cancelled {
+  opacity: 0.8;
+}
+
 .store-admin-form {
   display: grid;
   gap: 0.7rem;
