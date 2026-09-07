@@ -915,11 +915,7 @@ function renderPastHunts(hunts) {
     wonStat.className = "past-hunt-detail-stat";
     wonStat.innerHTML = `<span>Won</span><strong>${formatCurrency(summary.totalWon || 0)}</strong>`;
 
-    const costStat = document.createElement("div");
-    costStat.className = "past-hunt-detail-stat";
-    costStat.innerHTML = `<span>Cost</span><strong>${formatCurrency(summary.totalCost || 0)}</strong>`;
-
-    detailStats.append(startStat, wonStat, costStat);
+    detailStats.append(startStat, wonStat);
 
     const bonusList = document.createElement("ul");
     bonusList.className = "past-hunt-bonus-list";
