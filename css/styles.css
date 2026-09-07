@@ -3226,12 +3226,102 @@ ul {
   font-weight: 600;
 }
 
-.case-reel-result strong {
+.case-reel-result strong,
+.case-reel-winner-name {
   color: #f0c98e;
   font-family: var(--font-display);
   font-size: 1.85rem;
   font-weight: 600;
   letter-spacing: 0.04em;
+}
+
+.case-reel-winner-name {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(240, 201, 142, 0.35);
+  text-underline-offset: 0.18em;
+}
+
+.case-reel-winner-name:hover,
+.case-reel-winner-name:focus-visible {
+  color: #ffe0ad;
+  text-decoration-color: rgba(255, 224, 173, 0.7);
+  outline: none;
+}
+
+.winner-profile-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 420;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.winner-profile-modal.is-hidden {
+  display: none;
+}
+
+.winner-profile-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 10, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.winner-profile-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 22rem);
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.35rem 1.4rem;
+  border-radius: calc(var(--radius) + 4px);
+  border: 1px solid rgba(88, 201, 243, 0.2);
+  background:
+    linear-gradient(165deg, rgba(18, 28, 40, 0.98), rgba(8, 13, 20, 0.96));
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+}
+
+.winner-profile-title {
+  margin: 0;
+  color: #f0c98e;
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.winner-profile-fields {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+}
+
+.winner-profile-field {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.winner-profile-field dt {
+  color: var(--text-muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.winner-profile-field dd {
+  margin: 0;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .case-reel-result.is-pop {
@@ -3383,7 +3473,8 @@ ul {
     font-size: 1.3rem;
   }
 
-  .case-reel-result strong {
+  .case-reel-result strong,
+  .case-reel-winner-name {
     font-size: 1.5rem;
   }
 

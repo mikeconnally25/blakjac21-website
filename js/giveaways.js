@@ -364,6 +364,70 @@ function setReelIdle(entries) {
 
 let lastWinnerChatId = null;
 
+function ensureWinnerProfileModal() {
+  let modal = document.getElementById("winner-profile-modal");
+  if (modal) return modal;
+
+  modal = document.createElement("div");
+  modal.id = "winner-profile-modal";
+  modal.className = "winner-profile-modal is-hidden";
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+  modal.setAttribute("aria-labelledby", "winner-profile-title");
+  modal.innerHTML = `
+    <div class="winner-profile-backdrop" data-winner-profile-close="true"></div>
+    <div class="winner-profile-dialog">
+      <p class="giveaways-eyebrow">Winner account</p>
+      <h3 class="winner-profile-title" id="winner-profile-title">Account</h3>
+      <dl class="winner-profile-fields">
+        <div class="winner-profile-field">
+          <dt>Kick</dt>
+          <dd id="winner-profile-kick">—</dd>
+        </div>
+        <div class="winner-profile-field">
+          <dt>Stake</dt>
+          <dd id="winner-profile-stake">—</dd>
+        </div>
+      </dl>
+      <button type="button" class="btn btn-sm btn-outline" data-winner-profile-close="true">
+        Close
+      </button>
+    </div>
+  `;
+  document.body.append(modal);
+
+  modal.addEventListener("click", (event) => {
+    if (event.target?.closest?.("[data-winner-profile-close]")) {
+      hideWinnerProfile();
+    }
+  });
+
+  return modal;
+}
+
+function hideWinnerProfile() {
+  const modal = document.getElementById("winner-profile-modal");
+  modal?.classList.add("is-hidden");
+}
+
+function showWinnerProfile(winner) {
+  if (!winner) return;
+
+  const modal = ensureWinnerProfileModal();
+  const title = document.getElementById("winner-profile-title");
+  const kick = document.getElementById("winner-profile-kick");
+  const stake = document.getElementById("winner-profile-stake");
+
+  const username = String(winner.username || "").trim() || "Unknown";
+  if (title) title.textContent = username;
+  if (kick) kick.textContent = username;
+  if (stake) {
+    stake.textContent = String(winner.stakeUsername || "").trim() || "Not linked";
+  }
+
+  modal.classList.remove("is-hidden");
+}
+
 function showWinnerResult(winner, animated = false) {
   const result = document.getElementById("case-reel-result");
   if (!result || !winner) return;
@@ -375,7 +439,20 @@ function showWinnerResult(winner, animated = false) {
     void result.offsetWidth;
     result.classList.add("is-pop");
   }
-  result.innerHTML = `Winner: <strong>${winner.username}</strong>`;
+
+  result.replaceChildren();
+  result.append(document.createTextNode("Winner: "));
+
+  const nameBtn = document.createElement("button");
+  nameBtn.type = "button";
+  nameBtn.className = "case-reel-winner-name";
+  nameBtn.textContent = winner.username || "winner";
+  nameBtn.title = "View Kick and Stake usernames";
+  nameBtn.addEventListener("click", () => {
+    showWinnerProfile(winner);
+  });
+  result.append(nameBtn);
+
   updateWinnerChat(winner, { celebrate: animated });
 }
 
@@ -384,7 +461,8 @@ function clearWinnerResult() {
   if (!result) return;
   result.classList.add("is-hidden");
   result.classList.remove("is-pop");
-  result.textContent = "";
+  result.replaceChildren();
+  hideWinnerProfile();
   updateWinnerChat(null);
 }
 
@@ -1012,3 +1090,11 @@ initClearEntries();
 initRevealWinner();
 loadGiveawayStatus();
 schedulePolling();
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  const modal = document.getElementById("winner-profile-modal");
+  if (modal && !modal.classList.contains("is-hidden")) {
+    hideWinnerProfile();
+  }
+});
