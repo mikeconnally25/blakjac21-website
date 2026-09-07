@@ -6,7 +6,8 @@ let state = {
   title: "",
   slotName: "",
   buyIn: "",
-  keyword: "",
+  capacity: 0,
+  spotsLeft: 0,
   affiliatesOnly: false,
   subscribersOnly: false,
   entryCount: 0,
@@ -50,7 +51,8 @@ function applyState(data) {
     title: data.title || "",
     slotName: data.slotName || "",
     buyIn: data.buyIn || "",
-    keyword: data.keyword || "",
+    capacity: Number(data.capacity) || 0,
+    spotsLeft: Number(data.spotsLeft) || 0,
     affiliatesOnly: Boolean(data.affiliatesOnly),
     subscribersOnly: Boolean(data.subscribersOnly),
     entryCount: Number(data.entryCount) || 0,
@@ -119,45 +121,63 @@ function renderInfo() {
   const count = document.getElementById("st-entry-count");
   const hint = document.getElementById("st-join-hint");
   const joinBtn = document.getElementById("st-join-btn");
-  const keywordDisplay = document.getElementById("st-keyword-display");
+  const signInBtn = document.getElementById("st-signin-btn");
+  const spotsDisplay = document.getElementById("st-spots-display");
 
   if (title) title.textContent = state.title || "—";
   if (slot) slot.textContent = state.slotName || "—";
   if (buyin) buyin.textContent = state.buyIn || "—";
-  if (count) count.textContent = String(state.entryCount);
+  if (count) {
+    count.textContent = state.capacity
+      ? `${state.entryCount} / ${state.capacity}`
+      : String(state.entryCount);
+  }
 
-  if (keywordDisplay) {
-    if (state.open && state.keyword) {
-      keywordDisplay.textContent = `Chat keyword: ${state.keyword} (or !tour)`;
-    } else if (state.open) {
-      keywordDisplay.textContent = "Signups open — use !tour in chat.";
+  if (spotsDisplay) {
+    if (state.capacity) {
+      spotsDisplay.textContent = state.open
+        ? `${state.spotsLeft} spot${state.spotsLeft === 1 ? "" : "s"} left`
+        : `Capacity ${state.capacity}`;
     } else {
-      keywordDisplay.textContent = "";
+      spotsDisplay.textContent = "";
     }
   }
 
   if (hint) {
     if (state.open) {
-      hint.textContent = state.viewerEntered
-        ? "You're signed up. Good luck."
-        : "Signups are open — join here or type the keyword in Kick chat.";
+      if (state.viewerEntered) {
+        hint.textContent = "You're in. Good luck.";
+      } else if (!currentUser?.kickUserId) {
+        hint.textContent = "Sign in with Kick to claim a spot.";
+      } else if (state.spotsLeft <= 0) {
+        hint.textContent = "Tournament is full.";
+      } else {
+        hint.textContent = "Signups are open — claim a spot below.";
+      }
     } else if (state.phase === "live") {
       hint.textContent = "Signups closed. Tournament is live.";
     } else if (state.phase === "results") {
       hint.textContent = "Tournament complete — see results below.";
     } else {
       hint.textContent =
-        "When signups open, type the keyword in Kick chat or join on this page.";
+        "When signups open, sign in with Kick and claim a spot on this page.";
     }
   }
 
   const canJoin =
-    state.open && currentUser?.kickUserId && !state.viewerEntered;
-  joinBtn?.classList.toggle("is-hidden", !canJoin);
+    state.open &&
+    currentUser?.kickUserId &&
+    !state.viewerEntered &&
+    state.spotsLeft > 0;
+  const needsSignIn = state.open && !currentUser?.kickUserId;
+
+  joinBtn?.classList.toggle("is-hidden", !canJoin && !state.viewerEntered);
   if (joinBtn) {
     joinBtn.disabled = !canJoin;
-    joinBtn.textContent = state.viewerEntered ? "Joined" : "Join tournament";
+    joinBtn.textContent = state.viewerEntered ? "Spot claimed" : "Claim spot";
   }
+
+  signInBtn?.classList.toggle("is-hidden", !needsSignIn);
 }
 
 function renderEntries() {
@@ -242,7 +262,7 @@ function renderAdminForm() {
   const title = document.getElementById("st-admin-title-input");
   const slot = document.getElementById("st-admin-slot");
   const buyin = document.getElementById("st-admin-buyin");
-  const keyword = document.getElementById("st-admin-keyword");
+  const capacity = document.getElementById("st-admin-capacity");
   const aff = document.getElementById("st-aff-only");
   const sub = document.getElementById("st-sub-only");
   const toggle = document.getElementById("st-toggle-open");
@@ -250,8 +270,8 @@ function renderAdminForm() {
   if (title && document.activeElement !== title) title.value = state.title;
   if (slot && document.activeElement !== slot) slot.value = state.slotName;
   if (buyin && document.activeElement !== buyin) buyin.value = state.buyIn;
-  if (keyword && document.activeElement !== keyword) {
-    keyword.value = state.keyword;
+  if (capacity && document.activeElement !== capacity) {
+    capacity.value = state.capacity ? String(state.capacity) : "";
   }
   if (aff) aff.checked = state.affiliatesOnly;
   if (sub) sub.checked = state.subscribersOnly;
@@ -355,7 +375,9 @@ function initAdmin() {
         title: document.getElementById("st-admin-title-input")?.value || "",
         slotName: document.getElementById("st-admin-slot")?.value || "",
         buyIn: document.getElementById("st-admin-buyin")?.value || "",
-        keyword: document.getElementById("st-admin-keyword")?.value || "",
+        capacity: Number(
+          document.getElementById("st-admin-capacity")?.value || 0
+        ),
       });
       setAdminStatus("Setup saved.", "success");
     } catch (error) {
@@ -457,15 +479,15 @@ function initAdmin() {
 
 function initJoin() {
   document.getElementById("st-join-btn")?.addEventListener("click", async () => {
-    setBanner("Joining...");
+    setBanner("Claiming spot...");
     try {
       const data = await postJson("/api/slot-tournaments/join", {});
       setBanner(
-        data.alreadyEntered ? "Already signed up." : "You're in.",
+        data.alreadyEntered ? "You already claimed a spot." : "Spot claimed.",
         "success"
       );
     } catch (error) {
-      setBanner(error.message || "Could not join.", "error");
+      setBanner(error.message || "Could not claim a spot.", "error");
     }
   });
 }
