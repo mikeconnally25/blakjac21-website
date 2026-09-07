@@ -267,6 +267,7 @@ function renderInfo() {
   const joinBtn = document.getElementById("st-join-btn");
   const signInBtn = document.getElementById("st-signin-btn");
   const spotsDisplay = document.getElementById("st-spots-display");
+  const viewBracket = document.getElementById("st-view-bracket");
 
   if (title) title.textContent = state.title || "—";
   if (slot) slot.textContent = state.slotName || "—";
@@ -286,6 +287,8 @@ function renderInfo() {
       spotsDisplay.textContent = "";
     }
   }
+
+  viewBracket?.classList.toggle("is-hidden", state.entryCount < 2);
 
   if (hint) {
     if (state.open) {

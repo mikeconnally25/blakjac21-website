@@ -83,6 +83,9 @@ import {
 } from "./lib/points-handlers.js";
 import {
   handleSlotTournamentAffiliatesOnly,
+  handleSlotTournamentBracketClear,
+  handleSlotTournamentBracketGenerate,
+  handleSlotTournamentBracketScore,
   handleSlotTournamentEntriesClear,
   handleSlotTournamentJoin,
   handleSlotTournamentPhase,
@@ -237,6 +240,15 @@ app.post("/api/slot-tournaments/entries/clear", (req, res) =>
 );
 app.post("/api/slot-tournaments/slots", (req, res) =>
   handleSlotTournamentSlots(req, res)
+);
+app.post("/api/slot-tournaments/bracket/generate", (req, res) =>
+  handleSlotTournamentBracketGenerate(req, res)
+);
+app.post("/api/slot-tournaments/bracket/score", (req, res) =>
+  handleSlotTournamentBracketScore(req, res)
+);
+app.post("/api/slot-tournaments/bracket/clear", (req, res) =>
+  handleSlotTournamentBracketClear(req, res)
 );
 app.post("/api/slot-tournaments/results", (req, res) =>
   handleSlotTournamentResults(req, res)
