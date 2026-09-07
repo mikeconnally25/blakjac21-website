@@ -6963,6 +6963,51 @@ a.feature-card:focus-visible {
   min-width: 0;
 }
 
+.slot-tournaments-entry-bot {
+  width: fit-content;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.slot-tournaments-bots {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+  display: grid;
+  gap: 0.45rem;
+}
+
+.slot-tournaments-bots-row {
+  display: grid;
+  grid-template-columns: auto 5rem auto auto;
+  gap: 0.55rem;
+  align-items: end;
+}
+
+.slot-tournaments-bots-row .guess-label {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+  .slot-tournaments-bots-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .slot-tournaments-bots-row .guess-input,
+  .slot-tournaments-bots-row .btn {
+    grid-column: auto;
+  }
+
+  .slot-tournaments-bots-row .guess-input {
+    grid-column: 1 / -1;
+  }
+}
+
 .slot-tournaments-entry-slot {
   color: var(--text-muted);
   font-size: 0.84rem;

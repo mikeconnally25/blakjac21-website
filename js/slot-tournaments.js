@@ -290,6 +290,26 @@ function renderInfo() {
 
   viewBracket?.classList.toggle("is-hidden", state.entryCount < 2);
 
+  const botsPanel = document.getElementById("st-bots");
+  const botsFill = document.getElementById("st-bots-fill");
+  const botsCount = document.getElementById("st-bots-count");
+  const isAdmin = Boolean(currentUser?.isAdmin);
+  botsPanel?.classList.toggle("is-hidden", !isAdmin);
+  if (botsFill) {
+    const canFill = Boolean(state.capacity) && state.spotsLeft > 0;
+    botsFill.classList.toggle("is-hidden", !canFill);
+    botsFill.textContent = canFill
+      ? `Fill remaining (${state.spotsLeft})`
+      : "Fill remaining";
+  }
+  if (botsCount && document.activeElement !== botsCount) {
+    const max = state.capacity ? Math.max(1, state.spotsLeft || 1) : 100;
+    botsCount.max = String(Math.min(100, max));
+    if (Number(botsCount.value) > Number(botsCount.max)) {
+      botsCount.value = botsCount.max;
+    }
+  }
+
   if (hint) {
     if (state.open) {
       if (state.viewerEntered) {
@@ -358,6 +378,13 @@ function renderEntries() {
     name.textContent = entry.username;
 
     copy.append(name);
+
+    if (entry.isBot) {
+      const badge = document.createElement("span");
+      badge.className = "slot-tournaments-entry-bot";
+      badge.textContent = "Bot";
+      copy.append(badge);
+    }
 
     const assigned = assignedSlotForEntry(entry.id);
     if (assigned?.name) {
@@ -973,6 +1000,35 @@ function initAdmin() {
       setAdminStatus("Signups cleared.", "success");
     } catch (error) {
       setAdminStatus(error.message || "Could not clear signups.", "error");
+    }
+  });
+
+  document.getElementById("st-bots-add")?.addEventListener("click", async () => {
+    const count = Number(document.getElementById("st-bots-count")?.value || 0);
+    setBanner("Adding bots...");
+    try {
+      const data = await postJson("/api/slot-tournaments/entries/bots", { count });
+      setBanner(
+        `Added ${data.botsAdded || count} bot${(data.botsAdded || count) === 1 ? "" : "s"}.`,
+        "success"
+      );
+    } catch (error) {
+      setBanner(error.message || "Could not add bots.", "error");
+    }
+  });
+
+  document.getElementById("st-bots-fill")?.addEventListener("click", async () => {
+    setBanner("Filling remaining spots with bots...");
+    try {
+      const data = await postJson("/api/slot-tournaments/entries/bots", {
+        fillRemaining: true,
+      });
+      setBanner(
+        `Filled with ${data.botsAdded || 0} bot${(data.botsAdded || 0) === 1 ? "" : "s"}.`,
+        "success"
+      );
+    } catch (error) {
+      setBanner(error.message || "Could not fill with bots.", "error");
     }
   });
 

@@ -136,6 +136,27 @@
           <div class="slot-tournaments-scroll">
             <ol class="slot-tournaments-entries is-hidden" id="st-entries"></ol>
           </div>
+          <div class="slot-tournaments-bots is-hidden" id="st-bots">
+            <p class="slot-tournaments-panel-label">Fill with bots</p>
+            <div class="slot-tournaments-bots-row">
+              <label class="guess-label" for="st-bots-count">Count</label>
+              <input
+                class="guess-input"
+                id="st-bots-count"
+                type="number"
+                min="1"
+                max="100"
+                step="1"
+                value="1"
+              />
+              <button type="button" class="btn btn-sm btn-primary" id="st-bots-add">
+                Add bots
+              </button>
+              <button type="button" class="btn btn-sm btn-outline is-hidden" id="st-bots-fill">
+                Fill remaining
+              </button>
+            </div>
+          </div>
         </section>
 
         <section class="slot-tournaments-panel bj21-panel theme-surface" aria-labelledby="st-results-title">
