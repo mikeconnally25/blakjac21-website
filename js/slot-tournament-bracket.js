@@ -224,7 +224,7 @@ function renderMatchCard(match, isAdmin) {
     save.type = "button";
     save.className = "btn btn-sm btn-primary";
     save.dataset.saveMatchId = match.id;
-    save.textContent = "Save scores";
+    save.textContent = "Save";
     actions.append(save);
     card.append(actions);
   } else if (!canScore) {
