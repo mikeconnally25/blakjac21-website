@@ -6712,6 +6712,71 @@ a.feature-card:focus-visible {
   margin-top: 0.35rem;
 }
 
+/* Store */
+.store-page.page-section {
+  padding-bottom: 4rem;
+}
+
+.store-shell {
+  max-width: 42rem;
+}
+
+.store-hero {
+  margin-bottom: 1.5rem;
+}
+
+.store-heading {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 6vw, 3.4rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  background: var(--heading-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.store-lede {
+  margin: 0;
+  max-width: 36rem;
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.store-panel {
+  position: relative;
+  display: grid;
+  gap: 0.65rem;
+  padding: 1.35rem 1.4rem 1.4rem;
+}
+
+.store-panel-label {
+  margin: 0;
+  color: rgba(126, 216, 255, 0.75);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.store-panel-text {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.store-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+}
+
 .level-up-page > .container.level-up-shell,
 .level-up-shell {
   width: min(100% - 2rem, 72rem);
