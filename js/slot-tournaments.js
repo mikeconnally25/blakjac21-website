@@ -373,29 +373,43 @@ function renderEntries() {
     const copy = document.createElement("div");
     copy.className = "slot-tournaments-entry-copy";
 
-    const name = document.createElement("span");
-    name.className = "slot-tournaments-entry-name";
-    name.textContent = entry.username;
-
-    copy.append(name);
-
-    if (entry.isBot) {
-      const badge = document.createElement("span");
-      badge.className = "slot-tournaments-entry-bot";
-      badge.textContent = "Bot";
-      copy.append(badge);
-    }
-
     const assigned = assignedSlotForEntry(entry.id);
+
     if (assigned?.name) {
       const slotRow = document.createElement("span");
-      slotRow.className = "slot-tournaments-entry-slot-row";
+      slotRow.className = "slot-tournaments-entry-slot-row is-primary";
       slotRow.append(createSlotThumb(assigned.name, resolveSlotThumbnail(assigned)));
       const slot = document.createElement("span");
-      slot.className = "slot-tournaments-entry-slot";
+      slot.className = "slot-tournaments-entry-name";
       slot.textContent = assigned.name;
       slotRow.append(slot);
       copy.append(slotRow);
+
+      const userRow = document.createElement("span");
+      userRow.className = "slot-tournaments-entry-user-row";
+      const name = document.createElement("span");
+      name.className = "slot-tournaments-entry-slot";
+      name.textContent = entry.username;
+      userRow.append(name);
+      if (entry.isBot) {
+        const badge = document.createElement("span");
+        badge.className = "slot-tournaments-entry-bot";
+        badge.textContent = "Bot";
+        userRow.append(badge);
+      }
+      copy.append(userRow);
+    } else {
+      const name = document.createElement("span");
+      name.className = "slot-tournaments-entry-name";
+      name.textContent = entry.username;
+      copy.append(name);
+
+      if (entry.isBot) {
+        const badge = document.createElement("span");
+        badge.className = "slot-tournaments-entry-bot";
+        badge.textContent = "Bot";
+        copy.append(badge);
+      }
     }
 
     row.append(place, copy);

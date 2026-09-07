@@ -7020,6 +7020,19 @@ a.feature-card:focus-visible {
   min-width: 0;
 }
 
+.slot-tournaments-entry-slot-row.is-primary .st-slot-thumb {
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 0.58rem;
+}
+
+.slot-tournaments-entry-user-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
 .slot-tournaments-entry-slot-row .st-slot-thumb {
   width: 1.35rem;
   height: 1.35rem;
