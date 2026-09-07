@@ -318,7 +318,19 @@ function renderHistory() {
       ])
     );
 
-    row.append(copy, createStatusPill(entry.status));
+    const actions = document.createElement("div");
+    actions.className = "store-queue-actions";
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "btn btn-sm btn-outline";
+    remove.textContent = "Delete";
+    remove.addEventListener("click", () => {
+      void deletePastRedemption(entry.id, remove);
+    });
+
+    actions.append(createStatusPill(entry.status), remove);
+    row.append(copy, actions);
     list.append(row);
   });
 }
@@ -505,6 +517,30 @@ async function cancelRedemption(id, button) {
       ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   } catch (error) {
     setStoreStatus(error.message || "Could not cancel redemption.", "error");
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+async function deletePastRedemption(id, button) {
+  if (button) button.disabled = true;
+  try {
+    const response = await fetch("/api/points/delete-redemption", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Could not delete redemption.");
+    }
+    pendingQueue = Array.isArray(data.redemptions) ? data.redemptions : [];
+    await loadMe();
+    renderAll();
+    setStoreStatus("Past redemption deleted.", "success");
+  } catch (error) {
+    setStoreStatus(error.message || "Could not delete redemption.", "error");
   } finally {
     if (button) button.disabled = false;
   }

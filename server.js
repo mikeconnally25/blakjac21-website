@@ -77,6 +77,7 @@ import {
   handlePointsMe,
   handlePointsRedeem,
   handlePointsRedemptionCancel,
+  handlePointsRedemptionDelete,
   handlePointsRedemptionFulfill,
   handlePointsRedemptionsList,
 } from "./lib/points-handlers.js";
@@ -197,6 +198,9 @@ app.post("/api/points/redemptions/cancel", (req, res) =>
 );
 app.post("/api/points/cancel-redemption", (req, res) =>
   handlePointsRedemptionCancel(req, res)
+);
+app.post("/api/points/delete-redemption", (req, res) =>
+  handlePointsRedemptionDelete(req, res)
 );
 app.get("/api/giveaways/status", (req, res) => handleGiveawayStatus(req, res));
 app.post("/api/giveaways/toggle", (req, res) => handleGiveawayToggle(req, res));
