@@ -420,6 +420,10 @@ function renderAssignPanel() {
   panel?.classList.toggle("is-hidden", !isAdmin);
   if (!isAdmin) return;
 
+  if (!slotCatalog.length) {
+    loadSlotCatalog().catch(() => {});
+  }
+
   const list = document.getElementById("st-assign-list");
   const empty = document.getElementById("st-assign-empty");
   if (!list || !empty) return;
@@ -601,11 +605,20 @@ function setPickerOpen(nextOpen) {
   pickerOpen = Boolean(nextOpen);
   const menu = document.getElementById("st-assign-slot-menu");
   const trigger = document.getElementById("st-assign-slot-trigger");
+  const label = document.getElementById("st-assign-slot-trigger-label");
   menu?.classList.toggle("is-hidden", !pickerOpen);
   if (menu) menu.hidden = !pickerOpen;
   trigger?.setAttribute("aria-expanded", pickerOpen ? "true" : "false");
+  if (label) {
+    label.textContent = pickerOpen
+      ? "Hide slot list"
+      : "Choose New Releases or Only on Stake…";
+  }
   if (pickerOpen) {
     renderSlotPickerOptions();
+    if (!slotCatalog.length) {
+      loadSlotCatalog({ force: true });
+    }
     window.setTimeout(() => {
       document.getElementById("st-assign-slot-search")?.focus();
     }, 0);
@@ -640,7 +653,7 @@ function renderSlotPickerOptions() {
 
   for (const group of groups) {
     const slots = slotCatalog
-      .filter((slot) => slot.groupSlug === group.slug)
+      .filter((slot) => String(slot.groupSlug || "") === group.slug)
       .filter((slot) => {
         if (!query) return true;
         const haystack = [slot.name, slot.provider, group.label]
@@ -648,7 +661,12 @@ function renderSlotPickerOptions() {
           .join(" ")
           .toLowerCase();
         return haystack.includes(query);
-      });
+      })
+      .sort((a, b) =>
+        String(a.name || "").localeCompare(String(b.name || ""), undefined, {
+          sensitivity: "base",
+        })
+      );
 
     if (!slots.length) continue;
 
@@ -697,12 +715,24 @@ function renderSlotPickerOptions() {
     groupsEl.append(section);
   }
 
-  empty?.classList.toggle("is-hidden", visibleCount > 0);
+  if (empty) {
+    if (!slotCatalog.length) {
+      empty.textContent = "Loading Stake slots…";
+      empty.classList.remove("is-hidden");
+    } else if (!visibleCount) {
+      empty.textContent = query
+        ? "No matching slots."
+        : "No New Releases / Only on Stake slots found.";
+      empty.classList.remove("is-hidden");
+    } else {
+      empty.classList.add("is-hidden");
+    }
+  }
 
   if (meta) {
     if (!slotCatalog.length) {
       meta.textContent =
-        "Slot catalog is empty. Sync New Releases / Only on Stake from Bonus Hunt first.";
+        "Loading catalog… If this stays empty, sync slots from Bonus Hunt.";
     } else {
       meta.textContent = `${slotCatalog.length} Stake slots loaded`;
     }
@@ -741,22 +771,39 @@ function addCatalogSlot(slug) {
 }
 
 function initAssign() {
-  document.getElementById("st-assign-slot-trigger")?.addEventListener("click", () => {
+  const trigger = document.getElementById("st-assign-slot-trigger");
+  trigger?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     setPickerOpen(!pickerOpen);
   });
+
+  document.querySelector('label[for="st-assign-slot-search"]')?.addEventListener(
+    "click",
+    (event) => {
+      event.preventDefault();
+      setPickerOpen(true);
+    }
+  );
 
   document.getElementById("st-assign-slot-search")?.addEventListener("input", (event) => {
     pickerFilter = String(event.target.value || "");
     renderSlotPickerOptions();
   });
 
+  document.getElementById("st-assign-slot-search")?.addEventListener("keydown", (event) => {
+    event.stopPropagation();
+  });
+
   document.getElementById("st-assign-slot-groups")?.addEventListener("click", (event) => {
     const option = event.target.closest(".st-slot-picker-option");
     if (!option || option.disabled) return;
+    event.preventDefault();
+    event.stopPropagation();
     addCatalogSlot(option.dataset.slotSlug);
   });
 
-  document.addEventListener("click", (event) => {
+  document.addEventListener("pointerdown", (event) => {
     if (!pickerOpen) return;
     const picker = document.getElementById("st-slot-picker");
     if (picker && !picker.contains(event.target)) {
@@ -821,30 +868,53 @@ function initAssign() {
   });
 }
 
-async function loadSlotCatalog() {
-  try {
-    const response = await fetch("/api/bonus-hunt/slots", {
-      credentials: "same-origin",
-      cache: "no-store",
-    });
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      throw new Error(data.error || "Could not load slot catalog.");
-    }
-    const data = await response.json();
-    slotCatalog = Array.isArray(data.slots) ? data.slots : [];
-    slotGroups = Array.isArray(data.groups) ? data.groups : [];
-    renderSlotPickerOptions();
-    if (currentUser?.isAdmin) {
-      renderAssignPanel();
-      renderEntries();
-    }
-  } catch (error) {
-    const meta = document.getElementById("st-assign-catalog-meta");
-    if (meta) {
-      meta.textContent = error.message || "Could not load Stake slot catalog.";
-    }
+let catalogLoadPromise = null;
+
+async function loadSlotCatalog({ force = false } = {}) {
+  if (catalogLoadPromise && !force) {
+    return catalogLoadPromise;
   }
+
+  catalogLoadPromise = (async () => {
+    const meta = document.getElementById("st-assign-catalog-meta");
+    if (meta && !slotCatalog.length) {
+      meta.textContent = "Loading Stake slots…";
+    }
+
+    try {
+      const response = await fetch("/api/bonus-hunt/slots", {
+        credentials: "same-origin",
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Could not load slot catalog.");
+      }
+      const data = await response.json();
+      slotCatalog = Array.isArray(data.slots) ? data.slots : [];
+      slotGroups = Array.isArray(data.groups) ? data.groups : [];
+      renderSlotPickerOptions();
+      if (currentUser?.isAdmin) {
+        renderAssignPanel();
+        renderEntries();
+      }
+      return slotCatalog;
+    } catch (error) {
+      if (meta) {
+        meta.textContent = error.message || "Could not load Stake slot catalog.";
+      }
+      const empty = document.getElementById("st-assign-slot-empty");
+      if (empty && pickerOpen) {
+        empty.textContent = error.message || "Could not load Stake slots.";
+        empty.classList.remove("is-hidden");
+      }
+      throw error;
+    } finally {
+      catalogLoadPromise = null;
+    }
+  })();
+
+  return catalogLoadPromise;
 }
 
 function initAdmin() {
