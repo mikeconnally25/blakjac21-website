@@ -136,6 +136,44 @@
           <ol class="slot-tournaments-results is-hidden" id="st-results"></ol>
         </section>
 
+        <section class="slot-tournaments-assign is-hidden" id="st-assign" aria-labelledby="st-assign-title">
+          <div class="slot-tournaments-section-head">
+            <h2 class="slot-tournaments-panel-title" id="st-assign-title">Slot assignments</h2>
+            <p class="slot-tournaments-panel-text">
+              Add slots for the race, then assign each one to an entrant.
+            </p>
+          </div>
+          <p class="slot-tournaments-banner is-hidden" id="st-assign-status" role="status"></p>
+
+          <div class="slot-tournaments-panel bj21-panel theme-surface">
+            <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <p class="slot-tournaments-panel-label">Slots</p>
+            <form class="slot-tournaments-assign-add" id="st-assign-add-form">
+              <label class="guess-label" for="st-assign-slot-input">Slot name</label>
+              <input
+                class="guess-input"
+                id="st-assign-slot-input"
+                list="st-assign-slot-catalog"
+                maxlength="80"
+                placeholder="Add a slot name"
+                autocomplete="off"
+              />
+              <datalist id="st-assign-slot-catalog"></datalist>
+              <button type="submit" class="btn btn-sm btn-primary">Add slot</button>
+            </form>
+            <p class="slot-tournaments-empty" id="st-assign-empty">No slots yet. Add slots above.</p>
+            <ul class="slot-tournaments-assign-list is-hidden" id="st-assign-list"></ul>
+            <div class="slot-tournaments-actions">
+              <button type="button" class="btn btn-sm btn-outline" id="st-assign-random">
+                Assign randomly
+              </button>
+              <button type="button" class="btn btn-sm btn-outline" id="st-assign-clear">
+                Clear assignments
+              </button>
+            </div>
+          </div>
+        </section>
+
         <section class="slot-tournaments-admin is-hidden" id="st-admin" aria-labelledby="st-admin-title">
           <div class="slot-tournaments-section-head">
             <h2 class="slot-tournaments-panel-title" id="st-admin-title">Admin</h2>

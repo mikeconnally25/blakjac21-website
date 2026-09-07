@@ -6949,6 +6949,17 @@ a.feature-card:focus-visible {
   color: var(--text);
 }
 
+.slot-tournaments-entry-copy {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.slot-tournaments-entry-slot {
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
+
 .slot-tournaments-result-copy {
   display: grid;
   gap: 0.1rem;
@@ -6961,12 +6972,56 @@ a.feature-card:focus-visible {
   font-size: 0.84rem;
 }
 
+.slot-tournaments-assign,
 .slot-tournaments-admin {
   display: grid;
   gap: 1rem;
   margin-top: 0.35rem;
   padding-top: 0.85rem;
   border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.slot-tournaments-assign-add {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: end;
+  margin-bottom: 0.85rem;
+}
+
+.slot-tournaments-assign-add .guess-label {
+  grid-column: 1 / -1;
+}
+
+.slot-tournaments-assign-list {
+  list-style: none;
+  margin: 0 0 0.85rem;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.slot-tournaments-assign-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1.1fr) minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.65rem 0.75rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(8, 14, 22, 0.45);
+}
+
+.slot-tournaments-assign-name {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.slot-tournaments-assign-select {
+  min-width: 0;
 }
 
 .slot-tournaments-admin-grid {
@@ -6995,6 +7050,19 @@ a.feature-card:focus-visible {
 }
 
 @media (max-width: 640px) {
+  .slot-tournaments-assign-add {
+    grid-template-columns: 1fr;
+  }
+
+  .slot-tournaments-assign-row {
+    grid-template-columns: auto 1fr;
+  }
+
+  .slot-tournaments-assign-row .slot-tournaments-assign-select,
+  .slot-tournaments-assign-row .btn {
+    grid-column: 1 / -1;
+  }
+
   .slot-tournaments-result-row {
     grid-template-columns: auto 1fr;
   }

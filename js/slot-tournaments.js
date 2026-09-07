@@ -1,5 +1,8 @@
 let currentUser = null;
 let pollTimer = null;
+let slotCatalog = [];
+let assignSaveTimer = null;
+let assignDirty = false;
 let state = {
   open: false,
   phase: "closed",
@@ -12,6 +15,7 @@ let state = {
   subscribersOnly: false,
   entryCount: 0,
   entries: [],
+  slots: [],
   results: [],
   viewerEntered: false,
 };
@@ -37,6 +41,18 @@ function setAdminStatus(message, tone = "") {
   status.classList.toggle("is-success", tone === "success");
 }
 
+function setAssignStatus(message, tone = "") {
+  const status = document.getElementById("st-assign-status");
+  if (!status) {
+    setAdminStatus(message, tone);
+    return;
+  }
+  status.textContent = message || "";
+  status.classList.toggle("is-hidden", !message);
+  status.classList.toggle("is-error", tone === "error");
+  status.classList.toggle("is-success", tone === "success");
+}
+
 function phaseLabel(phase, open) {
   if (open || phase === "signup") return "Signups open";
   if (phase === "live") return "Live";
@@ -44,7 +60,54 @@ function phaseLabel(phase, open) {
   return "Closed";
 }
 
+function newSlotId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `slot-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function findCatalogSlot(name) {
+  const needle = String(name || "").trim().toLowerCase();
+  if (!needle) return null;
+  return (
+    slotCatalog.find((slot) => String(slot.name || "").toLowerCase() === needle) ||
+    null
+  );
+}
+
+function assignedSlotForEntry(entryId) {
+  const id = String(entryId || "").trim();
+  if (!id) return null;
+  return state.slots.find((slot) => slot.entryId === id) || null;
+}
+
 function applyState(data) {
+  if (assignDirty) {
+    state = {
+      ...state,
+      open: Boolean(data.open),
+      phase: data.phase || "closed",
+      title: data.title || "",
+      slotName: data.slotName || "",
+      buyIn: data.buyIn || "",
+      capacity: Number(data.capacity) || 0,
+      spotsLeft: Number(data.spotsLeft) || 0,
+      affiliatesOnly: Boolean(data.affiliatesOnly),
+      subscribersOnly: Boolean(data.subscribersOnly),
+      entryCount: Number(data.entryCount) || 0,
+      entries: Array.isArray(data.entries) ? data.entries : [],
+      results: Array.isArray(data.results) ? data.results : [],
+      viewerEntered: Boolean(data.viewerEntered),
+    };
+    renderStatus();
+    renderInfo();
+    renderEntries();
+    renderResults();
+    renderAdminForm();
+    return;
+  }
+
   state = {
     open: Boolean(data.open),
     phase: data.phase || "closed",
@@ -57,6 +120,7 @@ function applyState(data) {
     subscribersOnly: Boolean(data.subscribersOnly),
     entryCount: Number(data.entryCount) || 0,
     entries: Array.isArray(data.entries) ? data.entries : [],
+    slots: Array.isArray(data.slots) ? data.slots : [],
     results: Array.isArray(data.results) ? data.results : [],
     viewerEntered: Boolean(data.viewerEntered),
   };
@@ -203,11 +267,24 @@ function renderEntries() {
     place.className = "slot-tournaments-entry-index";
     place.textContent = String(index + 1).padStart(2, "0");
 
+    const copy = document.createElement("div");
+    copy.className = "slot-tournaments-entry-copy";
+
     const name = document.createElement("span");
     name.className = "slot-tournaments-entry-name";
     name.textContent = entry.username;
 
-    row.append(place, name);
+    copy.append(name);
+
+    const assigned = assignedSlotForEntry(entry.id);
+    if (assigned?.name) {
+      const slot = document.createElement("span");
+      slot.className = "slot-tournaments-entry-slot";
+      slot.textContent = assigned.name;
+      copy.append(slot);
+    }
+
+    row.append(place, copy);
     list.append(row);
   });
 }
@@ -253,6 +330,85 @@ function renderResults() {
   });
 }
 
+function renderAssignPanel() {
+  const panel = document.getElementById("st-assign");
+  const isAdmin = Boolean(currentUser?.isAdmin);
+  panel?.classList.toggle("is-hidden", !isAdmin);
+  if (!isAdmin) return;
+
+  const list = document.getElementById("st-assign-list");
+  const empty = document.getElementById("st-assign-empty");
+  if (!list || !empty) return;
+
+  const active = document.activeElement;
+  const activeSlotId = active?.closest?.("[data-slot-id]")?.getAttribute("data-slot-id");
+  const activeIsSelect = active?.classList?.contains("slot-tournaments-assign-select");
+
+  list.replaceChildren();
+  if (!state.slots.length) {
+    empty.classList.remove("is-hidden");
+    list.classList.add("is-hidden");
+    return;
+  }
+
+  empty.classList.add("is-hidden");
+  list.classList.remove("is-hidden");
+
+  state.slots.forEach((slot, index) => {
+    const row = document.createElement("li");
+    row.className = "slot-tournaments-assign-row";
+    row.dataset.slotId = slot.id;
+
+    const indexEl = document.createElement("span");
+    indexEl.className = "slot-tournaments-entry-index";
+    indexEl.textContent = String(index + 1).padStart(2, "0");
+
+    const name = document.createElement("p");
+    name.className = "slot-tournaments-assign-name";
+    name.textContent = slot.name;
+
+    const select = document.createElement("select");
+    select.className = "guess-input slot-tournaments-assign-select";
+    select.dataset.slotId = slot.id;
+
+    const blank = document.createElement("option");
+    blank.value = "";
+    blank.textContent = "Unassigned";
+    select.append(blank);
+
+    state.entries.forEach((entry) => {
+      const option = document.createElement("option");
+      option.value = entry.id;
+      option.textContent = entry.username;
+      const takenByOther = state.slots.some(
+        (other) => other.id !== slot.id && other.entryId === entry.id
+      );
+      if (takenByOther) {
+        option.disabled = true;
+      }
+      select.append(option);
+    });
+
+    select.value = slot.entryId || "";
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "btn btn-sm btn-outline";
+    remove.dataset.removeSlotId = slot.id;
+    remove.textContent = "Remove";
+
+    row.append(indexEl, name, select, remove);
+    list.append(row);
+  });
+
+  if (activeIsSelect && activeSlotId) {
+    const next = list.querySelector(
+      `.slot-tournaments-assign-select[data-slot-id="${activeSlotId}"]`
+    );
+    next?.focus();
+  }
+}
+
 function renderAdminForm() {
   const panel = document.getElementById("st-admin");
   const isAdmin = Boolean(currentUser?.isAdmin);
@@ -285,6 +441,7 @@ function renderAll() {
   renderInfo();
   renderEntries();
   renderResults();
+  renderAssignPanel();
   renderAdminForm();
 }
 
@@ -313,6 +470,139 @@ async function postJson(url, body) {
   }
   applyState(data);
   return data;
+}
+
+async function saveSlots(nextSlots, { statusMessage } = {}) {
+  assignDirty = false;
+  if (assignSaveTimer) {
+    window.clearTimeout(assignSaveTimer);
+    assignSaveTimer = null;
+  }
+  setAssignStatus(statusMessage || "Saving slots...");
+  try {
+    await postJson("/api/slot-tournaments/slots", { slots: nextSlots });
+    setAssignStatus("Slots saved.", "success");
+  } catch (error) {
+    setAssignStatus(error.message || "Could not save slots.", "error");
+    await refreshStatus().catch(() => {});
+  }
+}
+
+function queueSlotSave(nextSlots) {
+  state.slots = nextSlots;
+  assignDirty = true;
+  renderAssignPanel();
+  renderEntries();
+  if (assignSaveTimer) window.clearTimeout(assignSaveTimer);
+  assignSaveTimer = window.setTimeout(() => {
+    saveSlots(state.slots);
+  }, 350);
+}
+
+function shuffle(items) {
+  const list = [...items];
+  for (let i = list.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [list[i], list[j]] = [list[j], list[i]];
+  }
+  return list;
+}
+
+function initAssign() {
+  document.getElementById("st-assign-add-form")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const input = document.getElementById("st-assign-slot-input");
+    const name = String(input?.value || "").trim();
+    if (!name) {
+      setAssignStatus("Enter a slot name.", "error");
+      return;
+    }
+
+    const catalogHit = findCatalogSlot(name);
+    const next = [
+      ...state.slots,
+      {
+        id: newSlotId(),
+        name: catalogHit?.name || name,
+        slug: catalogHit?.slug || null,
+        entryId: null,
+      },
+    ];
+    if (input) input.value = "";
+    queueSlotSave(next);
+  });
+
+  document.getElementById("st-assign-list")?.addEventListener("change", (event) => {
+    const select = event.target.closest(".slot-tournaments-assign-select");
+    if (!select) return;
+    const slotId = select.dataset.slotId;
+    const entryId = String(select.value || "").trim() || null;
+    const next = state.slots.map((slot) => {
+      if (slot.id === slotId) {
+        return { ...slot, entryId };
+      }
+      if (entryId && slot.entryId === entryId) {
+        return { ...slot, entryId: null };
+      }
+      return slot;
+    });
+    queueSlotSave(next);
+  });
+
+  document.getElementById("st-assign-list")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-remove-slot-id]");
+    if (!button) return;
+    const slotId = button.getAttribute("data-remove-slot-id");
+    queueSlotSave(state.slots.filter((slot) => slot.id !== slotId));
+  });
+
+  document.getElementById("st-assign-random")?.addEventListener("click", () => {
+    if (!state.slots.length) {
+      setAssignStatus("Add slots before assigning.", "error");
+      return;
+    }
+    if (!state.entries.length) {
+      setAssignStatus("No entrants to assign yet.", "error");
+      return;
+    }
+
+    const entrants = shuffle(state.entries.map((entry) => entry.id));
+    const next = state.slots.map((slot, index) => ({
+      ...slot,
+      entryId: entrants[index] || null,
+    }));
+    queueSlotSave(next);
+  });
+
+  document.getElementById("st-assign-clear")?.addEventListener("click", () => {
+    if (!state.slots.some((slot) => slot.entryId)) {
+      setAssignStatus("No assignments to clear.");
+      return;
+    }
+    queueSlotSave(state.slots.map((slot) => ({ ...slot, entryId: null })));
+  });
+}
+
+async function loadSlotCatalog() {
+  try {
+    const response = await fetch("/api/bonus-hunt/slots", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    slotCatalog = Array.isArray(data.slots) ? data.slots : [];
+    const list = document.getElementById("st-assign-slot-catalog");
+    if (!list) return;
+    list.replaceChildren();
+    slotCatalog.forEach((slot) => {
+      const option = document.createElement("option");
+      option.value = slot.name;
+      list.append(option);
+    });
+  } catch {
+    // Catalog is optional for free-text slot names.
+  }
 }
 
 function initAdmin() {
@@ -420,15 +710,24 @@ window.addEventListener("auth:change", async (event) => {
   currentUser = event.detail?.user || null;
   try {
     await refreshStatus();
+    if (currentUser?.isAdmin) {
+      loadSlotCatalog();
+    }
   } catch (error) {
     setBanner(error.message || "Could not load board.", "error");
   }
 });
 
+initAssign();
 initAdmin();
 initJoin();
 refreshStatus()
-  .then(() => startPolling())
+  .then(() => {
+    startPolling();
+    if (currentUser?.isAdmin) {
+      loadSlotCatalog();
+    }
+  })
   .catch((error) => {
     setBanner(error.message || "Could not load board.", "error");
     startPolling();

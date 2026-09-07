@@ -88,6 +88,7 @@ import {
   handleSlotTournamentPhase,
   handleSlotTournamentResults,
   handleSlotTournamentSettings,
+  handleSlotTournamentSlots,
   handleSlotTournamentStatus,
   handleSlotTournamentSubscribersOnly,
   handleSlotTournamentToggle,
@@ -233,6 +234,9 @@ app.post("/api/slot-tournaments/subscribers-only", (req, res) =>
 );
 app.post("/api/slot-tournaments/entries/clear", (req, res) =>
   handleSlotTournamentEntriesClear(req, res)
+);
+app.post("/api/slot-tournaments/slots", (req, res) =>
+  handleSlotTournamentSlots(req, res)
 );
 app.post("/api/slot-tournaments/results", (req, res) =>
   handleSlotTournamentResults(req, res)
