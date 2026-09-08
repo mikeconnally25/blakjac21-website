@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Slot Tournament bracket — matchups and scores on BLAKJAC21." />
-  <title>Tournament Bracket | BLAKJAC21</title>
+  <meta name="description" content="Kick chat commands for BLAKJAC21 streams — slot requests, giveaways, and more." />
+  <title>Commands | BLAKJAC21</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -27,8 +27,8 @@
       </button>
 
       <ul class="nav-links">
-        <li><a href="/#watch">Watch</a></li>
         <li><a href="/commands/">Commands</a></li>
+        <li><a href="/#watch">Watch</a></li>
         <li><a href="/#menu">Menu</a></li>
         <li><a href="/#about">About</a></li>
         <li><a href="/#links">Links</a></li>
@@ -45,7 +45,6 @@
                 <img id="auth-avatar" class="auth-avatar is-hidden" alt="" width="32" height="32" />
                 <span id="auth-username" class="auth-username"></span>
                 <span id="auth-admin-badge" class="auth-admin-badge is-hidden">Admin</span>
-                <button type="button" id="auth-stake-badge" class="auth-stake-badge is-hidden"></button>
               </div>
               <button type="button" class="btn btn-sm btn-outline" id="auth-logout">Sign out</button>
             </div>
@@ -58,41 +57,37 @@
   <main>
     <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
 
-    <section class="section page-section slot-tournaments-page st-bracket-page">
-      <div class="container page-content slot-tournaments-shell st-bracket-shell">
-        <a href="/slot-tournaments/" class="back-link">← Back to tournaments</a>
+    <section class="section page-section">
+      <div class="section-atmosphere" aria-hidden="true"></div>
+      <div class="container">
+        <a href="/#menu" class="back-link">← Back to menu</a>
 
-        <header class="slot-tournaments-top">
-          <div class="slot-tournaments-hero">
-            <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
-            <h1 class="slot-tournaments-heading">Bracket</h1>
-            <p class="slot-tournaments-lede" id="st-bracket-lede">
-              Single-elimination board. Admins click a player to advance them.
-            </p>
-          </div>
-          <div class="slot-tournaments-status-card bj21-panel theme-surface">
-            <p class="slot-tournaments-panel-label">Tournament</p>
-            <p class="slot-tournaments-status-value" id="st-bracket-title">—</p>
-            <p class="slot-tournaments-status-meta" id="st-bracket-meta">No bracket yet.</p>
-          </div>
+        <header class="section-header">
+          <p class="section-eyebrow">Kick chat</p>
+          <h1>Commands</h1>
+          <p>Type these in the Kick chat during stream.</p>
         </header>
 
-        <p class="slot-tournaments-banner is-hidden" id="st-bracket-banner" role="status"></p>
+        <div class="link-grid">
+          <article class="link-card theme-surface">
+            <span class="menu-label">Bonus Hunt</span>
+            <span class="link-platform"><code>!s &lt;slot name&gt;</code></span>
+            <span class="link-handle">
+              Request a slot from New Releases or Only on Stake when requests are open.
+              Example: <strong>!s Gates of Olympus</strong>
+            </span>
+            <a class="menu-card-cta" href="/bonus-hunt/">Open Bonus Hunt <span aria-hidden="true">→</span></a>
+          </article>
 
-        <div class="slot-tournaments-actions st-bracket-toolbar is-hidden" id="st-bracket-admin">
-          <button type="button" class="btn btn-sm btn-primary" id="st-bracket-generate">
-            Generate bracket
-          </button>
-          <button type="button" class="btn btn-sm btn-outline" id="st-bracket-reset">
-            Reset bracket
-          </button>
+          <article class="link-card theme-surface">
+            <span class="menu-label">Giveaways</span>
+            <span class="link-platform">Live keyword</span>
+            <span class="link-handle">
+              When a giveaway is open, type the keyword shown on stream / the giveaways page to enter.
+            </span>
+            <a class="menu-card-cta" href="/giveaways/">Open Giveaways <span aria-hidden="true">→</span></a>
+          </article>
         </div>
-
-        <p class="slot-tournaments-empty" id="st-bracket-empty">
-          Bracket appears here once it is generated from signups.
-        </p>
-
-        <div class="st-bracket-board is-hidden" id="st-bracket-board"></div>
       </div>
     </section>
   </main>
@@ -114,6 +109,5 @@
 
   <script src="/js/main.js"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/slot-tournament-bracket.js"></script>
 </body>
 </html>
