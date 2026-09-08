@@ -153,7 +153,7 @@ function renderBracket() {
   const maxRound = matches.reduce((max, match) => Math.max(max, match.round), 1);
   const active = document.activeElement;
   const activeMatchId = active?.closest?.("[data-match-id]")?.getAttribute("data-match-id");
-  const activeField = active?.dataset?.scoreSide || null;
+  const activeEntryId = active?.dataset?.entryId || null;
   const roundOneMatches = matches
     .filter((match) => match.round === 1)
     .sort((a, b) => a.index - b.index);
@@ -198,9 +198,9 @@ function renderBracket() {
     }
   }
 
-  if (activeMatchId && activeField && isAdmin) {
+  if (activeMatchId && activeEntryId && isAdmin) {
     const next = board.querySelector(
-      `[data-match-id="${activeMatchId}"] [data-score-side="${activeField}"]`
+      `[data-match-id="${activeMatchId}"] [data-entry-id="${activeEntryId}"]`
     );
     next?.focus();
   }
@@ -227,25 +227,22 @@ function renderMatchCard(match, isAdmin) {
   card.append(renderPlayerRow(match, "A", isAdmin));
   card.append(renderPlayerRow(match, "B", isAdmin));
 
-  const canScore = Boolean(match.entryAId && match.entryBId);
-  if (isAdmin && canScore) {
-    const actions = document.createElement("div");
-    actions.className = "st-bracket-match-actions";
-    const save = document.createElement("button");
-    save.type = "button";
-    save.className = "btn btn-sm btn-primary";
-    save.dataset.saveMatchId = match.id;
-    save.textContent = "Save";
-    actions.append(save);
-    card.append(actions);
-  } else if (!canScore) {
+  const canPick = Boolean(match.entryAId && match.entryBId);
+  if (!canPick) {
     const note = document.createElement("p");
     note.className = "st-bracket-match-note";
     if (match.round === 1 && (match.entryAId || match.entryBId) && !(match.entryAId && match.entryBId)) {
       note.textContent = "Bye — auto advance";
+    } else if (isAdmin) {
+      note.textContent = "Waiting for players";
     } else {
       note.textContent = "Waiting for players";
     }
+    card.append(note);
+  } else if (isAdmin && !match.winnerEntryId) {
+    const note = document.createElement("p");
+    note.className = "st-bracket-match-note";
+    note.textContent = "Click a player to advance";
     card.append(note);
   }
 
@@ -254,10 +251,16 @@ function renderMatchCard(match, isAdmin) {
 
 function renderPlayerRow(match, side, isAdmin) {
   const entryId = side === "A" ? match.entryAId : match.entryBId;
-  const score = side === "A" ? match.scoreA : match.scoreB;
   const assigned = assignedSlotForEntry(entryId);
-  const row = document.createElement("div");
+  const canPick = Boolean(isAdmin && match.entryAId && match.entryBId && entryId);
+  const row = document.createElement(canPick ? "button" : "div");
   row.className = "st-bracket-player";
+  if (canPick) {
+    row.type = "button";
+    row.classList.add("is-pickable");
+    row.dataset.matchId = match.id;
+    row.dataset.entryId = entryId;
+  }
   if (match.winnerEntryId && entryId && match.winnerEntryId === entryId) {
     row.classList.add("is-winner");
   }
@@ -289,42 +292,12 @@ function renderPlayerRow(match, side, isAdmin) {
   }
 
   row.append(copy);
-
-  if (match.entryAId && match.entryBId) {
-    if (isAdmin) {
-      const input = document.createElement("input");
-      input.className = "guess-input st-bracket-score-input";
-      input.type = "text";
-      input.inputMode = "decimal";
-      input.placeholder = "Score";
-      input.value = score || "";
-      input.dataset.scoreSide = side;
-      input.dataset.matchId = match.id;
-      input.maxLength = 40;
-      row.append(input);
-    } else {
-      const value = document.createElement("span");
-      value.className = "st-bracket-score-value";
-      value.textContent = score || "—";
-      row.append(value);
-    }
-  }
-
   return row;
 }
 
 function renderAll() {
   renderHeader();
   renderBracket();
-}
-
-function readMatchScores(matchId) {
-  const card = document.querySelector(`[data-match-id="${matchId}"]`);
-  if (!card) return { scoreA: "", scoreB: "" };
-  return {
-    scoreA: card.querySelector('[data-score-side="A"]')?.value || "",
-    scoreB: card.querySelector('[data-score-side="B"]')?.value || "",
-  };
 }
 
 function initAdmin() {
@@ -336,7 +309,7 @@ function initAdmin() {
     } catch (error) {
       if (/already has scores/i.test(error.message || "")) {
         const ok = window.confirm(
-          "Bracket already has scores. Regenerate anyway and wipe those scores?"
+          "Bracket already has results. Regenerate anyway and wipe them?"
         );
         if (!ok) {
           setBanner("");
@@ -368,40 +341,26 @@ function initAdmin() {
   });
 
   document.getElementById("st-bracket-board")?.addEventListener("click", async (event) => {
-    const button = event.target.closest("[data-save-match-id]");
-    if (!button) return;
-    const matchId = button.getAttribute("data-save-match-id");
-    const scores = readMatchScores(matchId);
-    setBanner("Saving scores...");
-    try {
-      await postJson("/api/slot-tournaments/bracket/score", {
-        matchId,
-        scoreA: scores.scoreA,
-        scoreB: scores.scoreB,
-      });
-      setBanner("Scores saved.", "success");
-    } catch (error) {
-      setBanner(error.message || "Could not save scores.", "error");
-    }
-  });
+    const pick = event.target.closest(".st-bracket-player.is-pickable");
+    if (!pick) return;
+    const matchId = pick.dataset.matchId;
+    const winnerEntryId = pick.dataset.entryId;
+    const match = (state.bracket?.matches || []).find((entry) => entry.id === matchId);
+    if (!match || !winnerEntryId) return;
 
-  document.getElementById("st-bracket-board")?.addEventListener("keydown", async (event) => {
-    if (event.key !== "Enter") return;
-    const input = event.target.closest(".st-bracket-score-input");
-    if (!input) return;
-    event.preventDefault();
-    const matchId = input.dataset.matchId;
-    const scores = readMatchScores(matchId);
-    setBanner("Saving scores...");
+    const scoreA = winnerEntryId === match.entryAId ? "1" : "0";
+    const scoreB = winnerEntryId === match.entryBId ? "1" : "0";
+
+    setBanner("Advancing winner...");
     try {
       await postJson("/api/slot-tournaments/bracket/score", {
         matchId,
-        scoreA: scores.scoreA,
-        scoreB: scores.scoreB,
+        scoreA,
+        scoreB,
       });
-      setBanner("Scores saved.", "success");
+      setBanner("Winner advanced.", "success");
     } catch (error) {
-      setBanner(error.message || "Could not save scores.", "error");
+      setBanner(error.message || "Could not advance winner.", "error");
     }
   });
 }

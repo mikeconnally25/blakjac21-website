@@ -7496,13 +7496,27 @@ a.feature-card:focus-visible {
 
 .st-bracket-player {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 3.4rem;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.3rem;
   align-items: center;
+  width: 100%;
   padding: 0.28rem 0.35rem;
   border-radius: calc(var(--radius-sm) + 2px);
   border: 1px solid rgba(148, 163, 184, 0.14);
   background: rgba(8, 14, 22, 0.45);
+  color: inherit;
+  text-align: left;
+}
+
+.st-bracket-player.is-pickable {
+  cursor: pointer;
+}
+
+.st-bracket-player.is-pickable:hover,
+.st-bracket-player.is-pickable:focus-visible {
+  border-color: rgba(126, 216, 255, 0.45);
+  background: rgba(126, 216, 255, 0.08);
+  outline: none;
 }
 
 .st-bracket-player.is-winner {
