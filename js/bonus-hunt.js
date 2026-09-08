@@ -5,6 +5,7 @@ let slotPollTimer = null;
 let slotCatalog = [];
 let slotGroups = [];
 let slotCatalogUpdatedAt = null;
+let slotCatalogSyncInfo = null;
 let acceptingRequests = false;
 let affiliatesOnly = false;
 let subscribersOnly = false;
@@ -931,13 +932,26 @@ function updateSlotCatalogAutoNote() {
   const note = document.getElementById("slot-catalog-auto-note");
   if (!note || !currentUser?.isAdmin) return;
 
-  if (!slotCatalog.length) {
-    note.textContent =
-      "No slots imported yet. Paste GraphQL JSON from New Releases and Only on Stake above.";
+  const sync = slotCatalogSyncInfo;
+  const catalogSummary = slotCatalog.length
+    ? formatCatalogCountSummary()
+    : "No slots in catalog yet.";
+
+  if (!sync?.syncConfigured) {
+    note.textContent = `${catalogSummary} Daily auto-sync needs STAKE_ACCESS_TOKEN (and usually STAKE_COOKIE) in Vercel. Paste import works as fallback.`;
     return;
   }
 
-  note.textContent = formatCatalogCountSummary();
+  if (sync.syncOk) {
+    const when = sync.lastSyncAttemptAt
+      ? ` Last sync ${new Date(sync.lastSyncAttemptAt).toLocaleString()}.`
+      : "";
+    note.textContent = `${catalogSummary} Daily auto-sync OK.${when}`;
+    return;
+  }
+
+  const err = sync.syncError || "Cloudflare may be blocking Vercel.";
+  note.textContent = `${catalogSummary} Daily auto-sync failed: ${err} Use paste import below until cookies are refreshed.`;
 }
 
 function updateHuntAddSlotMeta() {
@@ -1998,6 +2012,13 @@ async function loadSlotCatalog() {
     slotCatalog = data.slots || [];
     slotGroups = data.groups || [];
     slotCatalogUpdatedAt = data.updatedAt || null;
+    slotCatalogSyncInfo = {
+      syncConfigured: Boolean(data.syncConfigured),
+      cookieConfigured: Boolean(data.cookieConfigured),
+      syncError: data.syncError || "",
+      syncOk: Boolean(data.syncOk),
+      lastSyncAttemptAt: data.lastSyncAttemptAt || null,
+    };
 
     const select = document.getElementById("slot-request-select");
     const selectedSlug = select?.value || "";

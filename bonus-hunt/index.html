@@ -305,13 +305,16 @@
                 <div class="slot-import-section" id="slot-import-section">
                   <p class="admin-panel-label">Import Stake slots</p>
                   <p class="admin-panel-text">
+                    Catalog refreshes daily from Stake when
+                    <code>STAKE_ACCESS_TOKEN</code> and <code>STAKE_COOKIE</code>
+                    are set in Vercel. If auto-sync fails (Cloudflare), paste
+                    console scrape JSON below as a fallback.
                     On stake.com open
                     <a href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
                     or
                     <a href="https://stake.com/casino/group/only-on-stake" target="_blank" rel="noopener noreferrer">Only on Stake</a>,
                     press F12 → <strong>Console</strong>, paste the scrape script, press Enter
                     (it copies JSON). Then paste that JSON here — not the script itself.
-                    Import each group separately.
                   </p>
                   <label class="guess-label" for="slot-import-payload">Copied slot JSON</label>
                   <textarea
