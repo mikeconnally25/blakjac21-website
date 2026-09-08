@@ -302,9 +302,31 @@
                   </div>
                   <p class="requests-hub-kick-meta is-hidden" id="kick-webhook-log"></p>
                 </div>
-                <p class="requests-hub-kick-meta" id="slot-catalog-auto-note">
-                  Slot catalog auto-syncs from Stake when configured.
-                </p>
+                <div class="slot-import-section" id="slot-import-section">
+                  <p class="admin-panel-label">Import Stake slots</p>
+                  <p class="admin-panel-text">
+                    On stake.com open
+                    <a href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
+                    or
+                    <a href="https://stake.com/casino/group/only-on-stake" target="_blank" rel="noopener noreferrer">Only on Stake</a>,
+                    press F12 → Network → filter <code>graphql</code> → open a
+                    <code>SlugKuratorGroup</code> response → copy Response JSON → paste below.
+                    Import each group (repeat for the other).
+                  </p>
+                  <label class="guess-label" for="slot-import-payload">GraphQL response JSON</label>
+                  <textarea
+                    class="slot-import-textarea"
+                    id="slot-import-payload"
+                    rows="8"
+                    placeholder='Paste {"data":{"slugKuratorGroup":...}} here'
+                  ></textarea>
+                  <button type="button" class="btn btn-sm btn-primary" id="slot-import-submit">
+                    Import Stake slots
+                  </button>
+                  <p class="requests-hub-kick-meta" id="slot-catalog-auto-note">
+                    Slot catalog loads from imported New Releases and Only on Stake lists.
+                  </p>
+                </div>
                 <button type="button" class="btn btn-sm btn-outline" id="slot-requests-clear">
                   Clear requests
                 </button>

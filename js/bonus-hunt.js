@@ -15,13 +15,6 @@ let slotRequestLimit = 3;
 const pendingSlotRequestRemovals = new Set();
 let slotBetDrafts = new Map();
 let bonusPayoutDrafts = new Map();
-let slotCatalogHealth = {
-  syncConfigured: false,
-  cookieConfigured: false,
-  syncError: "",
-  unique: 0,
-  sections: [],
-};
 let huntMeta = {
   title: "Live Hunt",
   startBalance: 0,
@@ -918,23 +911,6 @@ function formatCatalogCountSummary() {
       ? "1 unique Stake slot"
       : `${unique} unique Stake slots`;
 
-  if (currentUser?.isAdmin) {
-    if (!slotCatalogHealth.syncConfigured) {
-      summary += " · auto-sync needs STAKE_ACCESS_TOKEN";
-    } else if (slotCatalogHealth.syncError) {
-      const blocked = /403|cloudflare/i.test(slotCatalogHealth.syncError);
-      if (blocked) {
-        summary += slotCatalogHealth.cookieConfigured
-          ? " · auto-sync blocked by Cloudflare (cookie still rejected)"
-          : " · auto-sync blocked by Cloudflare (add STAKE_COOKIE)";
-      } else {
-        summary += " · auto-sync error";
-      }
-    } else {
-      summary += " · auto-sync OK";
-    }
-  }
-
   if (slotCatalogUpdatedAt) {
     const updatedMs = Date.parse(slotCatalogUpdatedAt);
     if (Number.isFinite(updatedMs)) {
@@ -955,6 +931,12 @@ function updateSlotCatalogAutoNote() {
   const note = document.getElementById("slot-catalog-auto-note");
   if (!note || !currentUser?.isAdmin) return;
 
+  if (!slotCatalog.length) {
+    note.textContent =
+      "No slots imported yet. Paste GraphQL JSON from New Releases and Only on Stake above.";
+    return;
+  }
+
   note.textContent = formatCatalogCountSummary();
 }
 
@@ -963,16 +945,8 @@ function updateHuntAddSlotMeta() {
   if (!meta) return;
 
   if (!slotCatalog.length) {
-    if (!slotCatalogHealth.syncConfigured) {
-      meta.textContent =
-        "No slots loaded. Set STAKE_ACCESS_TOKEN in Vercel so auto-sync can populate the catalog.";
-    } else if (slotCatalogHealth.syncError) {
-      meta.textContent = /403|cloudflare/i.test(slotCatalogHealth.syncError)
-        ? "No slots loaded. Auto-sync is blocked by Cloudflare — add STAKE_CF_CLEARANCE."
-        : `No slots loaded. Auto-sync error: ${slotCatalogHealth.syncError}`;
-    } else {
-      meta.textContent = "No slots loaded yet. Auto-sync will fill New Releases and Only on Stake.";
-    }
+    meta.textContent =
+      "No slots loaded. Paste GraphQL JSON from stake.com New Releases / Only on Stake in Requests admin.";
     return;
   }
 
@@ -1063,11 +1037,8 @@ function renderHuntAddSlotResults() {
   if (!slotCatalog.length) {
     results.classList.add("is-hidden");
     empty.classList.remove("is-hidden");
-    empty.textContent = !slotCatalogHealth.syncConfigured
-      ? "Slot catalog is empty. Set STAKE_ACCESS_TOKEN in Vercel so auto-sync can load slots."
-      : slotCatalogHealth.syncError
-        ? "Slot catalog is empty. Auto-sync is not updating — check STAKE_ACCESS_TOKEN / STAKE_CF_CLEARANCE."
-        : "Slot catalog is empty. Auto-sync will fill it shortly.";
+    empty.textContent =
+      "Slot catalog is empty. Paste GraphQL JSON from New Releases and Only on Stake in Requests admin.";
     return;
   }
 
@@ -2027,13 +1998,6 @@ async function loadSlotCatalog() {
     slotCatalog = data.slots || [];
     slotGroups = data.groups || [];
     slotCatalogUpdatedAt = data.updatedAt || null;
-    slotCatalogHealth = {
-      syncConfigured: Boolean(data.syncConfigured),
-      cookieConfigured: Boolean(data.cookieConfigured),
-      syncError: String(data.syncError || ""),
-      unique: Number(data.unique) || 0,
-      sections: Array.isArray(data.sections) ? data.sections : [],
-    };
 
     const select = document.getElementById("slot-request-select");
     const selectedSlug = select?.value || "";
@@ -2044,7 +2008,7 @@ async function loadSlotCatalog() {
 
     if (currentUser?.isAdmin && data.total > 0 && !data.withThumbnails) {
       setStatus(
-        "Slot list is loaded, but logos are missing. Auto-sync may still be catching up.",
+        "Slot list is loaded, but logos are missing. Re-import GraphQL JSON that includes thumbnailUrl.",
         "error"
       );
     }
@@ -2102,11 +2066,8 @@ async function loadSlotRequests({ forceRender = false } = {}) {
       if (slotCatalog.length) {
         catalogCount.textContent = formatCatalogCountSummary();
       } else if (currentUser?.isAdmin) {
-        catalogCount.textContent = !slotCatalogHealth.syncConfigured
-          ? "Slot list empty · auto-sync needs STAKE_ACCESS_TOKEN"
-          : slotCatalogHealth.syncError
-            ? "Slot list empty · auto-sync error"
-            : "Slot list empty · waiting for auto-sync";
+        catalogCount.textContent =
+          "Slot list empty · paste GraphQL JSON from New Releases / Only on Stake";
       } else {
         catalogCount.textContent = "Slot list is loading...";
       }
@@ -2742,9 +2703,7 @@ function initAdminForm() {
       const slotMessage =
         refreshedCount > 0
           ? `Kick chat !s enabled. ${refreshedCount} slots loaded.`
-          : slotCatalogHealth.syncConfigured
-            ? "Kick chat !s enabled. Waiting for auto-sync to load slots."
-            : "Kick chat !s enabled. Set STAKE_ACCESS_TOKEN so auto-sync can load slots.";
+          : "Kick chat !s enabled. Import Stake slots (paste GraphQL JSON) to load the catalog.";
       setStatus(slotMessage, refreshedCount > 0 ? "success" : "error");
       await loadKickChatStatus();
     } catch {
@@ -2902,6 +2861,57 @@ function initAdminForm() {
       setStatus(error.message || "Could not update SUB-only setting.", "error");
     } finally {
       toggle.disabled = false;
+    }
+  });
+
+  document.getElementById("slot-import-submit")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    const textarea = document.getElementById("slot-import-payload");
+    const raw = String(textarea?.value || "").trim();
+    if (!raw) {
+      setStatus("Paste GraphQL response JSON from stake.com first.", "error");
+      return;
+    }
+
+    let payload = raw;
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      // Import API also accepts raw strings / line lists.
+    }
+
+    button.disabled = true;
+    setStatus("Importing Stake slots...");
+
+    try {
+      const response = await fetch("/api/bonus-hunt/slots/import", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payload }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setStatus(data.error || "Could not import slots.", "error");
+        return;
+      }
+
+      if (textarea) {
+        textarea.value = "";
+      }
+      await loadSlotCatalog();
+      const thumbNote =
+        data.withThumbnails > 0
+          ? ` (${data.withThumbnails} with logos)`
+          : " (logos missing in this paste — import a response that includes thumbnailUrl)";
+      setStatus(
+        `Imported slots. Catalog now has ${data.unique || data.count} unique slots${thumbNote}.`,
+        data.withThumbnails > 0 ? "success" : "error"
+      );
+    } catch {
+      setStatus("Could not import slots. Try again.", "error");
+    } finally {
+      button.disabled = false;
     }
   });
 
