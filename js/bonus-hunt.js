@@ -17,6 +17,7 @@ let slotBetDrafts = new Map();
 let bonusPayoutDrafts = new Map();
 let slotCatalogHealth = {
   syncConfigured: false,
+  cookieConfigured: false,
   syncError: "",
   unique: 0,
   sections: [],
@@ -922,9 +923,13 @@ function formatCatalogCountSummary() {
       summary += " · auto-sync needs STAKE_ACCESS_TOKEN";
     } else if (slotCatalogHealth.syncError) {
       const blocked = /403|cloudflare/i.test(slotCatalogHealth.syncError);
-      summary += blocked
-        ? " · auto-sync blocked by Cloudflare"
-        : " · auto-sync error";
+      if (blocked) {
+        summary += slotCatalogHealth.cookieConfigured
+          ? " · auto-sync blocked by Cloudflare (cookie still rejected)"
+          : " · auto-sync blocked by Cloudflare (add STAKE_COOKIE)";
+      } else {
+        summary += " · auto-sync error";
+      }
     } else {
       summary += " · auto-sync OK";
     }
@@ -2024,6 +2029,7 @@ async function loadSlotCatalog() {
     slotCatalogUpdatedAt = data.updatedAt || null;
     slotCatalogHealth = {
       syncConfigured: Boolean(data.syncConfigured),
+      cookieConfigured: Boolean(data.cookieConfigured),
       syncError: String(data.syncError || ""),
       unique: Number(data.unique) || 0,
       sections: Array.isArray(data.sections) ? data.sections : [],
