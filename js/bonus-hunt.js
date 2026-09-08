@@ -15,12 +15,12 @@ let slotRequestLimit = 3;
 const pendingSlotRequestRemovals = new Set();
 let slotBetDrafts = new Map();
 let bonusPayoutDrafts = new Map();
-let stakeSyncPollTimer = null;
-let stakeSyncInProgress = false;
-let slotCatalogRefreshTimer = null;
-const SLOT_CATALOG_REFRESH_MS = 10 * 1000;
-let slotCatalogSyncInfo = null;
-let browserSyncPrompted = false;
+let slotCatalogHealth = {
+  syncConfigured: false,
+  syncError: "",
+  unique: 0,
+  sections: [],
+};
 let huntMeta = {
   title: "Live Hunt",
   startBalance: 0,
@@ -66,333 +66,6 @@ function formatMultiplier(value) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}x`;
-}
-
-function buildStakeBookmarkletHref(token = "") {
-  const builder = window.BJ21StakeSyncCode;
-  if (!builder?.buildStakeSyncBookmarkletHref) {
-    return "#";
-  }
-
-  return builder.buildStakeSyncBookmarkletHref({
-    token,
-    apiOrigin: window.location.origin,
-  });
-}
-
-function buildStakeConsoleScript(token = "") {
-  const builder = window.BJ21StakeSyncCode;
-  if (!builder?.buildStakeSyncScript) {
-    return "";
-  }
-
-  return builder.buildStakeSyncScript({
-    token,
-    apiOrigin: window.location.origin,
-  });
-}
-
-function updateStakeSyncHelp({ token, stakeUrl, message } = {}) {
-  const section = document.getElementById("slot-sync-help");
-  const helpText = document.getElementById("slot-sync-help-text");
-  const bookmarklet = document.getElementById("slot-sync-bookmarklet");
-  const openStake = document.getElementById("slot-sync-open-stake");
-  const copyScript = document.getElementById("slot-sync-copy-script");
-
-  if (!section) return;
-
-  if (!token) {
-    section.classList.add("is-hidden");
-    if (copyScript) {
-      copyScript.onclick = null;
-    }
-    return;
-  }
-
-  section.classList.remove("is-hidden");
-  if (helpText) {
-    helpText.textContent =
-      message ||
-      "On stake.com: press F12 → Console → Paste → Enter. Counts update live.";
-  }
-  if (bookmarklet) {
-    bookmarklet.href = buildStakeBookmarkletHref(token);
-  }
-  if (openStake && stakeUrl) {
-    openStake.href = stakeUrl;
-  }
-  if (copyScript) {
-    copyScript.onclick = async () => {
-      const script = buildStakeConsoleScript(token);
-      try {
-        await navigator.clipboard.writeText(script);
-        setStatus("Sync script copied. Paste it into the stake.com console and press Enter.", "success");
-      } catch {
-        window.prompt("Copy this sync script:", script);
-      }
-    };
-  }
-}
-
-function stopStakeSyncPolling() {
-  if (stakeSyncPollTimer) {
-    clearInterval(stakeSyncPollTimer);
-    stakeSyncPollTimer = null;
-  }
-  stakeSyncInProgress = false;
-}
-
-function startStakeSyncPolling(token) {
-  stopStakeSyncPolling();
-  stakeSyncInProgress = true;
-  slotCatalogSyncInfo = {
-    groupLabel: "browser sync",
-    offset: 0,
-  };
-  updateHuntAddSlotMeta();
-
-  stakeSyncPollTimer = setInterval(async () => {
-    try {
-      await loadSlotCatalog();
-
-      const response = await fetch(
-        `/api/bonus-hunt/slots/sync-status?token=${encodeURIComponent(token)}`,
-        { credentials: "same-origin", cache: "no-store" }
-      );
-      if (!response.ok) {
-        return;
-      }
-
-      const status = await response.json();
-      if (status.progress) {
-        slotCatalogSyncInfo = {
-          groupLabel: status.progress,
-          offset: Number(status.count) || 0,
-        };
-        updateHuntAddSlotMeta();
-      }
-
-      if (!status.complete) {
-        return;
-      }
-
-      stopStakeSyncPolling();
-      updateStakeSyncHelp({ token: null });
-      slotCatalogSyncInfo = null;
-      await loadSlotCatalog();
-      updateHuntAddSlotMeta();
-
-      if (status.count > 0) {
-        const thumbNote = status.withThumbnails
-          ? ` ${status.withThumbnails} slot logos loaded.`
-          : " Slot names loaded, but logos are still missing. Run BJ21 Stake Sync again while logged in.";
-        setStatus(
-          `Loaded ${status.count} slots from New Releases and Only on Stake.${thumbNote}`,
-          status.withThumbnails ? "success" : "error"
-        );
-        return;
-      }
-
-      setStatus(status.error || "Stake sync finished but no slots were imported.", "error");
-    } catch {
-      // Keep polling until token expires.
-    }
-  }, 2000);
-}
-
-function catalogNeedsBrowserSync() {
-  if (!slotCatalog.length) {
-    return true;
-  }
-
-  const { counts } = getCatalogSectionCounts();
-  if ((counts["only-on-stake"] || 0) === 1000) {
-    return true;
-  }
-
-  const updatedAt = Date.parse(slotCatalogUpdatedAt || "");
-  if (!Number.isFinite(updatedAt)) {
-    return true;
-  }
-
-  // Older than 12 hours — prompt a fresh browser sync.
-  return Date.now() - updatedAt > 12 * 60 * 60 * 1000;
-}
-
-async function startBrowserSlotSync({ auto = false } = {}) {
-  if (!currentUser?.isAdmin) {
-    return false;
-  }
-
-  if (stakeSyncInProgress) {
-    return true;
-  }
-
-  if (auto && browserSyncPrompted) {
-    return false;
-  }
-
-  if (!auto) {
-    setStatus("Starting Stake browser sync...");
-  }
-
-  try {
-    const response = await fetch("/api/bonus-hunt/slots/sync-token", {
-      method: "POST",
-      credentials: "same-origin",
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      setStatus(data.error || "Could not start Stake sync.", "error");
-      return false;
-    }
-
-    browserSyncPrompted = true;
-
-    const message = auto
-      ? "Catalog needs a refresh. On stake.com press F12 → Console → Paste (Copy script) → Enter."
-      : "On stake.com: press F12 → Console → click Copy script → Paste → Enter. Counts update live.";
-
-    updateStakeSyncHelp({
-      token: data.token,
-      stakeUrl: data.stakeUrl,
-      message,
-    });
-    setStatus(message);
-
-    const script = buildStakeConsoleScript(data.token);
-    if (script) {
-      try {
-        await navigator.clipboard.writeText(script);
-        setStatus(
-          "Sync script copied. On stake.com press F12 → Console → Paste → Enter.",
-          "success"
-        );
-      } catch {
-        // Clipboard may be blocked; Copy script button still works.
-      }
-    }
-
-    if (data.stakeUrl) {
-      window.open(data.stakeUrl, "_blank", "noopener,noreferrer");
-    }
-    startStakeSyncPolling(data.token);
-    return true;
-  } catch {
-    setStatus("Could not start Stake sync. Try again.", "error");
-    return false;
-  }
-}
-
-async function tryServerSlotRefresh({ silent = false } = {}) {
-  try {
-    const response = await fetch("/api/bonus-hunt/slots/refresh", {
-      method: "POST",
-      credentials: "same-origin",
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      if (!silent) {
-        setStatus(data.error || "Could not refresh slot list.", "error");
-      }
-      return { count: 0, withThumbnails: 0, ok: false, blocked: true };
-    }
-
-    if (data.sync) {
-      slotCatalogSyncInfo = data.sync;
-    }
-
-    // Server "success" with 0 fetched usually means Cloudflare blocked Stake.
-    if (!Number(data.sync?.fetched) && Number(data.count || 0) > 0) {
-      // Incremental may still advance cursor with empty pages; treat as blocked if unique stuck.
-      return {
-        count: Number(data.unique || data.count) || 0,
-        withThumbnails: Number(data.withThumbnails) || 0,
-        ok: false,
-        blocked: true,
-      };
-    }
-
-    if (!silent) {
-      const thumbNote =
-        data.withThumbnails > 0
-          ? ` (${data.withThumbnails} with logos)`
-          : " (logos missing — run BJ21 Stake Sync on stake.com)";
-      setStatus(
-        `Slot list refreshed (${data.unique || data.count} unique)${thumbNote}.`,
-        data.withThumbnails > 0 ? "success" : "error"
-      );
-    }
-    await loadSlotCatalog();
-    updateHuntAddSlotMeta();
-    return {
-      count: Number(data.unique || data.count) || 0,
-      withThumbnails: Number(data.withThumbnails) || 0,
-      ok: true,
-      blocked: false,
-    };
-  } catch {
-    if (!silent) {
-      setStatus("Could not refresh slot list. Try again.", "error");
-    }
-    return { count: 0, withThumbnails: 0, ok: false, blocked: true };
-  }
-}
-
-async function ensureSlotCatalogFresh({ force = false } = {}) {
-  if (!currentUser?.isAdmin) {
-    return slotCatalog.length;
-  }
-
-  if (stakeSyncInProgress) {
-    await loadSlotCatalog();
-    updateHuntAddSlotMeta();
-    return slotCatalog.length;
-  }
-
-  await loadSlotCatalog();
-
-  if (force || catalogNeedsBrowserSync()) {
-    await startBrowserSlotSync({ auto: !force });
-  }
-
-  updateHuntAddSlotMeta();
-  return slotCatalog.length;
-}
-
-function stopSlotCatalogAutoRefresh() {
-  if (slotCatalogRefreshTimer) {
-    clearInterval(slotCatalogRefreshTimer);
-    slotCatalogRefreshTimer = null;
-  }
-}
-
-function scheduleSlotCatalogAutoRefresh() {
-  stopSlotCatalogAutoRefresh();
-  if (!currentUser?.isAdmin) {
-    return;
-  }
-
-  void ensureSlotCatalogFresh();
-  slotCatalogRefreshTimer = setInterval(() => {
-    void (async () => {
-      await loadSlotCatalog();
-      updateHuntAddSlotMeta();
-      if (!stakeSyncInProgress && catalogNeedsBrowserSync()) {
-        await startBrowserSlotSync({ auto: true });
-      }
-    })();
-  }, SLOT_CATALOG_REFRESH_MS);
-}
-
-async function syncSlotsFromStake({ auto = false } = {}) {
-  if (!currentUser?.isAdmin) {
-    return 0;
-  }
-
-  // Prefer browser sync — Stake Cloudflare-blocks server GraphQL.
-  const started = await startBrowserSlotSync({ auto });
-  return started ? slotCatalog.length : 0;
 }
 
 function formatCurrency(amount) {
@@ -1228,7 +901,10 @@ function getCatalogSectionCounts() {
 
 function formatCatalogCountSummary() {
   const { counts, unique } = getCatalogSectionCounts();
-  const parts = slotGroups
+  const parts = (slotGroups.length ? slotGroups : [
+    { slug: "new-releases", label: "New Releases" },
+    { slug: "only-on-stake", label: "Only on Stake" },
+  ])
     .map((group) => {
       const total = counts[group.slug] || 0;
       return `${group.label}: ${total}`;
@@ -1241,9 +917,17 @@ function formatCatalogCountSummary() {
       ? "1 unique Stake slot"
       : `${unique} unique Stake slots`;
 
-  if (slotCatalogSyncInfo?.groupLabel) {
-    const offset = Number(slotCatalogSyncInfo.offset) || 0;
-    summary += ` · syncing ${slotCatalogSyncInfo.groupLabel} @ ${offset}`;
+  if (currentUser?.isAdmin) {
+    if (!slotCatalogHealth.syncConfigured) {
+      summary += " · auto-sync needs STAKE_ACCESS_TOKEN";
+    } else if (slotCatalogHealth.syncError) {
+      const blocked = /403|cloudflare/i.test(slotCatalogHealth.syncError);
+      summary += blocked
+        ? " · auto-sync blocked by Cloudflare"
+        : " · auto-sync error";
+    } else {
+      summary += " · auto-sync OK";
+    }
   }
 
   if (slotCatalogUpdatedAt) {
@@ -1253,11 +937,20 @@ function formatCatalogCountSummary() {
       summary +=
         secondsAgo < 5
           ? " · updated just now"
-          : ` · updated ${secondsAgo}s ago`;
+          : secondsAgo < 60
+            ? ` · updated ${secondsAgo}s ago`
+            : ` · updated ${Math.round(secondsAgo / 60)}m ago`;
     }
   }
 
   return summary;
+}
+
+function updateSlotCatalogAutoNote() {
+  const note = document.getElementById("slot-catalog-auto-note");
+  if (!note || !currentUser?.isAdmin) return;
+
+  note.textContent = formatCatalogCountSummary();
 }
 
 function updateHuntAddSlotMeta() {
@@ -1265,8 +958,16 @@ function updateHuntAddSlotMeta() {
   if (!meta) return;
 
   if (!slotCatalog.length) {
-    meta.textContent =
-      "No slots loaded yet. Click Sync slots from Stake, then BJ21 Stake Sync on stake.com.";
+    if (!slotCatalogHealth.syncConfigured) {
+      meta.textContent =
+        "No slots loaded. Set STAKE_ACCESS_TOKEN in Vercel so auto-sync can populate the catalog.";
+    } else if (slotCatalogHealth.syncError) {
+      meta.textContent = /403|cloudflare/i.test(slotCatalogHealth.syncError)
+        ? "No slots loaded. Auto-sync is blocked by Cloudflare — add STAKE_CF_CLEARANCE."
+        : `No slots loaded. Auto-sync error: ${slotCatalogHealth.syncError}`;
+    } else {
+      meta.textContent = "No slots loaded yet. Auto-sync will fill New Releases and Only on Stake.";
+    }
     return;
   }
 
@@ -1357,8 +1058,11 @@ function renderHuntAddSlotResults() {
   if (!slotCatalog.length) {
     results.classList.add("is-hidden");
     empty.classList.remove("is-hidden");
-    empty.textContent =
-      "Slot catalog is empty. Click Sync slots from Stake, then BJ21 Stake Sync on stake.com.";
+    empty.textContent = !slotCatalogHealth.syncConfigured
+      ? "Slot catalog is empty. Set STAKE_ACCESS_TOKEN in Vercel so auto-sync can load slots."
+      : slotCatalogHealth.syncError
+        ? "Slot catalog is empty. Auto-sync is not updating — check STAKE_ACCESS_TOKEN / STAKE_CF_CLEARANCE."
+        : "Slot catalog is empty. Auto-sync will fill it shortly.";
     return;
   }
 
@@ -1885,7 +1589,7 @@ async function setAcceptingRequests(nextAccepting) {
   renderSlotRequests(slotRequests);
 
   if (acceptingRequests) {
-    void ensureSlotCatalogFresh({ force: true });
+    void loadSlotCatalog();
   }
 
   if (currentUser?.isAdmin && data.kickChatError) {
@@ -2318,16 +2022,23 @@ async function loadSlotCatalog() {
     slotCatalog = data.slots || [];
     slotGroups = data.groups || [];
     slotCatalogUpdatedAt = data.updatedAt || null;
+    slotCatalogHealth = {
+      syncConfigured: Boolean(data.syncConfigured),
+      syncError: String(data.syncError || ""),
+      unique: Number(data.unique) || 0,
+      sections: Array.isArray(data.sections) ? data.sections : [],
+    };
 
     const select = document.getElementById("slot-request-select");
     const selectedSlug = select?.value || "";
     renderSlotCatalogSelect(selectedSlug);
     updateHuntAddSlotMeta();
+    updateSlotCatalogAutoNote();
     renderHuntAddSlotResults();
 
     if (currentUser?.isAdmin && data.total > 0 && !data.withThumbnails) {
       setStatus(
-        "Slot list is loaded, but logos are missing. Run BJ21 Stake Sync on stake.com while logged in.",
+        "Slot list is loaded, but logos are missing. Auto-sync may still be catching up.",
         "error"
       );
     }
@@ -2382,14 +2093,14 @@ async function loadSlotRequests({ forceRender = false } = {}) {
 
     const catalogCount = document.getElementById("slot-catalog-count");
     if (catalogCount) {
-      if (data.slotCatalogCount > 0) {
-        catalogCount.textContent =
-          data.slotCatalogCount === 1
-            ? "1 allowed slot loaded"
-            : `${data.slotCatalogCount} allowed slots loaded`;
+      if (slotCatalog.length) {
+        catalogCount.textContent = formatCatalogCountSummary();
       } else if (currentUser?.isAdmin) {
-        catalogCount.textContent =
-          "Slot list is empty. Click Sync slots from Stake, then BJ21 Stake Sync on stake.com.";
+        catalogCount.textContent = !slotCatalogHealth.syncConfigured
+          ? "Slot list empty · auto-sync needs STAKE_ACCESS_TOKEN"
+          : slotCatalogHealth.syncError
+            ? "Slot list empty · auto-sync error"
+            : "Slot list empty · waiting for auto-sync";
       } else {
         catalogCount.textContent = "Slot list is loading...";
       }
@@ -2568,8 +2279,6 @@ function schedulePolling() {
     loadSlotCatalog();
     loadSlotRequests();
   }, 5000);
-
-  scheduleSlotCatalogAutoRefresh();
 }
 
 async function saveBonusPayout(id, rawPayout, button) {
@@ -3023,16 +2732,13 @@ function initAdminForm() {
       updateToggleLabel();
       await Promise.all([loadSlotCatalog(), loadSlotRequests()]);
 
-      if (!data.slotCount) {
-        await syncSlotsFromStake({ auto: true });
-        await loadSlotCatalog();
-      }
-
       const refreshedCount = slotCatalog.length;
       const slotMessage =
         refreshedCount > 0
           ? `Kick chat !s enabled. ${refreshedCount} slots loaded.`
-          : "Kick chat !s enabled. Finish Stake sync to load slots.";
+          : slotCatalogHealth.syncConfigured
+            ? "Kick chat !s enabled. Waiting for auto-sync to load slots."
+            : "Kick chat !s enabled. Set STAKE_ACCESS_TOKEN so auto-sync can load slots.";
       setStatus(slotMessage, refreshedCount > 0 ? "success" : "error");
       await loadKickChatStatus();
     } catch {
@@ -3070,29 +2776,6 @@ function initAdminForm() {
       await loadKickChatStatus();
     } catch {
       setStatus("Queue test failed. Try again.", "error");
-    } finally {
-      button.disabled = false;
-    }
-  });
-
-  document.getElementById("slot-catalog-sync")?.addEventListener("click", async (event) => {
-    const button = event.currentTarget;
-    button.disabled = true;
-
-    try {
-      await syncSlotsFromStake();
-    } finally {
-      button.disabled = false;
-    }
-  });
-
-  document.getElementById("slot-catalog-refresh")?.addEventListener("click", async (event) => {
-    const button = event.currentTarget;
-    button.disabled = true;
-    setStatus("Refreshing slot list from Stake...");
-
-    try {
-      await tryServerSlotRefresh();
     } finally {
       button.disabled = false;
     }
@@ -3332,7 +3015,6 @@ window.addEventListener("auth:change", async (event) => {
   updateBonusList(huntBonuses, { force: true });
   renderPastHunts(pastHunts);
   await Promise.all([loadBonusHunt(), loadSlotCatalog(), loadSlotRequests(), loadKickChatStatus()]);
-  scheduleSlotCatalogAutoRefresh();
 });
 
 document.addEventListener("visibilitychange", () => {
@@ -3340,9 +3022,6 @@ document.addEventListener("visibilitychange", () => {
     loadBonusHunt();
     loadSlotCatalog();
     loadSlotRequests();
-    if (currentUser?.isAdmin) {
-      void ensureSlotCatalogFresh();
-    }
   }
 });
 

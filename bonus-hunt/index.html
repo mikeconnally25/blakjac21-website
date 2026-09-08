@@ -302,38 +302,8 @@
                   </div>
                   <p class="requests-hub-kick-meta is-hidden" id="kick-webhook-log"></p>
                 </div>
-                <button type="button" class="btn btn-sm btn-primary" id="slot-catalog-sync">
-                  Sync slots from Stake
-                </button>
-                <div class="slot-sync-help is-hidden" id="slot-sync-help">
-                  <p class="requests-hub-kick-meta" id="slot-sync-help-text">
-                    On stake.com: press F12 → Console → Paste → Enter.
-                  </p>
-                  <div class="slot-sync-help-actions">
-                    <button type="button" class="btn btn-sm btn-primary" id="slot-sync-copy-script">
-                      Copy script
-                    </button>
-                    <a
-                      class="btn btn-sm btn-outline"
-                      id="slot-sync-open-stake"
-                      href="https://stake.com/casino/group/new-releases"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Open stake.com
-                    </a>
-                    <a
-                      class="btn btn-sm btn-outline"
-                      id="slot-sync-bookmarklet"
-                      href="#"
-                      title="Optional: drag to favorites bar"
-                    >
-                      Bookmarklet
-                    </a>
-                  </div>
-                </div>
                 <p class="requests-hub-kick-meta" id="slot-catalog-auto-note">
-                  Stake blocks server sync. Use Sync slots from Stake, then paste the script into the stake.com console.
+                  Slot catalog auto-syncs from Stake when configured.
                 </p>
                 <button type="button" class="btn btn-sm btn-outline" id="slot-requests-clear">
                   Clear requests
@@ -552,7 +522,6 @@
 
   <script src="/js/main.js"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/stake-sync-code.js"></script>
   <script src="/js/bonus-hunt.js"></script>
 </body>
 </html>

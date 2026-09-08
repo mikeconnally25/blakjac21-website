@@ -27,6 +27,7 @@ import {
   handleBonusHuntRequestsAffSubOnly,
   handleBonusHuntSlots,
   handleBonusHuntSlotsRefresh,
+  handleBonusHuntSlotsAutoSync,
   handleBonusHuntSlotsImport,
   handleBonusHuntSlotsSyncToken,
   handleBonusHuntSlotsSyncStatus,
@@ -147,6 +148,12 @@ app.post("/api/bonus-hunt/history/remove", (req, res) =>
 app.get("/api/bonus-hunt/slots", (req, res) => handleBonusHuntSlots(req, res));
 app.post("/api/bonus-hunt/slots/refresh", (req, res) =>
   handleBonusHuntSlotsRefresh(req, res)
+);
+app.get("/api/bonus-hunt/slots/auto-sync", (req, res) =>
+  handleBonusHuntSlotsAutoSync(req, res)
+);
+app.post("/api/bonus-hunt/slots/auto-sync", (req, res) =>
+  handleBonusHuntSlotsAutoSync(req, res)
 );
 app.post("/api/bonus-hunt/slots/import", (req, res) =>
   handleBonusHuntSlotsImport(req, res)

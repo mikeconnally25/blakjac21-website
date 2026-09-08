@@ -2,125 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="0; url=/bonus-hunt/" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Stake Slot Sync</title>
-    <link rel="stylesheet" href="/css/styles.css" />
-    <style>
-      body {
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
-        padding: 2rem;
-      }
-
-      .sync-card {
-        width: min(100%, 40rem);
-        padding: 2rem;
-        border-radius: var(--radius-md);
-        border: 1px solid var(--border);
-        background: rgba(8, 12, 18, 0.92);
-      }
-
-      .sync-steps {
-        margin: 1rem 0 0;
-        padding-left: 1.2rem;
-        color: var(--text-muted);
-        line-height: 1.6;
-      }
-
-      .sync-steps li + li {
-        margin-top: 0.65rem;
-      }
-
-      .sync-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        margin-top: 1.25rem;
-      }
-
-      .sync-note {
-        margin-top: 1rem;
-        padding: 0.85rem 1rem;
-        border-radius: var(--radius-sm);
-        border: 1px solid rgba(88, 201, 243, 0.18);
-        background: rgba(88, 201, 243, 0.08);
-        color: var(--text-muted);
-        font-size: 0.95rem;
-        line-height: 1.5;
-      }
-    </style>
+    <link rel="canonical" href="/bonus-hunt/" />
+    <script>
+      location.replace("/bonus-hunt/");
+    </script>
   </head>
   <body>
-    <main class="sync-card">
-      <h1>Sync Stake slots</h1>
-      <p id="sync-status">Preparing sync...</p>
-      <ol class="sync-steps" id="sync-steps">
-        <li>Make sure you are logged into <strong>stake.com</strong>.</li>
-        <li>Click <strong>Copy script</strong> below.</li>
-        <li>On the stake.com tab, press <strong>F12</strong> → <strong>Console</strong>.</li>
-        <li>Paste the script and press <strong>Enter</strong>.</li>
-      </ol>
-      <div class="sync-note" id="sync-edge-tip">
-        A status pill appears in the bottom-left of stake.com while pages import.
-      </div>
-      <div class="sync-actions">
-        <button type="button" class="btn btn-primary" id="sync-copy-script">Copy script</button>
-        <a class="btn btn-outline" id="stake-open-link" href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">
-          Open stake.com
-        </a>
-        <a class="btn btn-outline" id="stake-bookmarklet" href="#" title="Optional">Bookmarklet</a>
-        <a class="btn btn-outline" href="/bonus-hunt/">Back to bonus hunt</a>
-      </div>
-    </main>
-    <script src="/js/stake-sync-code.js"></script>
-    <script>
-      (function initStakeSyncPage() {
-        const params = new URLSearchParams(location.search);
-        const token = params.get("token") || "";
-        const status = document.getElementById("sync-status");
-        const steps = document.getElementById("sync-steps");
-        const openLink = document.getElementById("stake-open-link");
-        const bookmarklet = document.getElementById("stake-bookmarklet");
-        const copyBtn = document.getElementById("sync-copy-script");
-
-        if (!token) {
-          status.textContent =
-            "This page needs to be opened from the bonus hunt page.";
-          if (steps) {
-            steps.innerHTML =
-              "<li>Go to the <strong>bonus hunt</strong> page while logged in as admin.</li>" +
-              "<li>Click <strong>Sync slots from Stake</strong>.</li>";
-          }
-          return;
-        }
-
-        const origin = location.origin;
-        const stakeUrl = `https://stake.com/casino/group/new-releases#bj21sync=${encodeURIComponent(token)}`;
-        const script = window.BJ21StakeSyncCode.buildStakeSyncScript({
-          token,
-          apiOrigin: origin,
-        });
-
-        openLink.href = stakeUrl;
-        bookmarklet.href = window.BJ21StakeSyncCode.buildStakeSyncBookmarkletHref({
-          token,
-          apiOrigin: origin,
-        });
-        status.textContent =
-          "Copy the script, open stake.com (logged in), paste into the console, press Enter.";
-
-        copyBtn?.addEventListener("click", async () => {
-          try {
-            await navigator.clipboard.writeText(script);
-            status.textContent = "Script copied. Paste it into the stake.com console and press Enter.";
-          } catch {
-            window.prompt("Copy this sync script:", script);
-          }
-        });
-
-        window.open(stakeUrl, "_blank", "noopener,noreferrer");
-      })();
-    </script>
+    <p>
+      Stake slot sync is automatic now.
+      <a href="/bonus-hunt/">Go to Bonus Hunt</a>.
+    </p>
   </body>
 </html>
