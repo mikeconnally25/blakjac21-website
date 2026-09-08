@@ -2873,6 +2873,12 @@ function initAdminForm() {
   const token = ${JSON.stringify(token)};
   const importUrl = ${JSON.stringify(importUrl)};
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const lockKey = "__bhSlotSyncLock_" + groupSlug + "_" + token.slice(0, 12);
+  if (window[lockKey]) {
+    console.warn("Sync already running for this token — ignore duplicate paste.");
+    return;
+  }
+  window[lockKey] = true;
 
   const countGames = () =>
     document.querySelectorAll('a[href*="/casino/games/"]').length;
@@ -2967,17 +2973,21 @@ function initAdminForm() {
   }
 
   console.log("Uploading " + slots.length + " ${label} slots (" + withLogos + " with logos)...");
-  const response = await fetch(importUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token, payload: { slots }, done: true }),
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    console.error("Upload failed:", data.error || response.status);
-    throw new Error(data.error || "Upload failed");
+  try {
+    const response = await fetch(importUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, payload: { slots }, done: true }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      console.error("Upload failed:", data.error || response.status);
+      throw new Error(data.error || "Upload failed");
+    }
+    console.log("Done. Uploaded " + slots.length + " ${label} slots (" + (data.withThumbnails || withLogos) + " logos). Return to Bonus Hunt.");
+  } finally {
+    window[lockKey] = false;
   }
-  console.log("Done. Uploaded " + slots.length + " ${label} slots (" + (data.withThumbnails || withLogos) + " logos). Return to Bonus Hunt.");
 })();`;
   }
 
