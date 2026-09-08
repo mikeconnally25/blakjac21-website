@@ -5,6 +5,7 @@ let slotPollTimer = null;
 let slotCatalog = [];
 let slotGroups = [];
 let slotCatalogUpdatedAt = null;
+let slotCatalogSectionStats = null;
 let acceptingRequests = false;
 let affiliatesOnly = false;
 let subscribersOnly = false;
@@ -894,16 +895,31 @@ function getCatalogSectionCounts() {
 }
 
 function formatCatalogCountSummary() {
-  const { counts, unique } = getCatalogSectionCounts();
-  const parts = (slotGroups.length ? slotGroups : [
-    { slug: "new-releases", label: "New Releases" },
-    { slug: "only-on-stake", label: "Only on Stake" },
-  ])
-    .map((group) => {
-      const total = counts[group.slug] || 0;
+  const sections = slotCatalogSectionStats?.sections;
+  const uniqueFromApi = slotCatalogSectionStats?.unique;
+  let parts;
+  let unique;
+
+  if (sections?.length) {
+    parts = sections.map((section) => `${section.label}: ${section.count || 0}`);
+    unique =
+      Number.isFinite(uniqueFromApi) && uniqueFromApi >= 0
+        ? uniqueFromApi
+        : sections.reduce((sum, section) => sum + (section.count || 0), 0);
+  } else {
+    const local = getCatalogSectionCounts();
+    unique = local.unique;
+    parts = (slotGroups.length
+      ? slotGroups
+      : [
+          { slug: "new-releases", label: "New Releases" },
+          { slug: "only-on-stake", label: "Only on Stake" },
+        ]
+    ).map((group) => {
+      const total = local.counts[group.slug] || 0;
       return `${group.label}: ${total}`;
-    })
-    .filter(Boolean);
+    });
+  }
 
   let summary = parts.length
     ? `${parts.join(" · ")} (${unique} unique)`
@@ -929,15 +945,22 @@ function formatCatalogCountSummary() {
 
 function updateSlotCatalogNote() {
   const note = document.getElementById("slot-catalog-note");
-  if (!note || !currentUser?.isAdmin) return;
+  const summary = slotCatalog.length
+    ? formatCatalogCountSummary()
+    : "No slots loaded yet. Use Sync New Releases and Sync Only on Stake above.";
 
-  if (!slotCatalog.length) {
-    note.textContent =
-      "No slots loaded yet. Use Sync New Releases and Sync Only on Stake above.";
-    return;
+  if (note && currentUser?.isAdmin) {
+    note.textContent = summary;
   }
 
-  note.textContent = formatCatalogCountSummary();
+  const count = document.getElementById("slot-catalog-count");
+  if (count) {
+    if (slotCatalog.length) {
+      count.textContent = formatCatalogCountSummary();
+    } else if (currentUser?.isAdmin) {
+      count.textContent = "Slot list empty · sync Allowed slots above";
+    }
+  }
 }
 
 function updateHuntAddSlotMeta() {
@@ -1998,6 +2021,10 @@ async function loadSlotCatalog() {
     slotCatalog = data.slots || [];
     slotGroups = data.groups || [];
     slotCatalogUpdatedAt = data.updatedAt || null;
+    slotCatalogSectionStats = {
+      sections: Array.isArray(data.sections) ? data.sections : null,
+      unique: Number(data.unique) || 0,
+    };
 
     const select = document.getElementById("slot-request-select");
     const selectedSlug = select?.value || "";
@@ -3069,6 +3096,21 @@ function initAdminForm() {
   }
 
   let stakeSyncMessageBound = false;
+  const syncCompletionWaiters = new Map();
+
+  function waitForSyncCompletion(token) {
+    return new Promise((resolve) => {
+      syncCompletionWaiters.set(token, resolve);
+    });
+  }
+
+  function resolveSyncCompletion(token, payload) {
+    const resolve = syncCompletionWaiters.get(token);
+    if (!resolve) return;
+    syncCompletionWaiters.delete(token);
+    resolve(payload);
+  }
+
   function ensureStakeSyncMessageListener() {
     if (stakeSyncMessageBound) return;
     stakeSyncMessageBound = true;
@@ -3099,6 +3141,14 @@ function initAdminForm() {
           if (!response.ok) {
             throw new Error(result.error || "Could not import slots.");
           }
+
+          // Refresh Allowed slots immediately — don't wait for the poll loop.
+          await loadSlotCatalog();
+          setCatalogSyncStatus(
+            `Imported ${data.slots.length} slots. ${formatCatalogCountSummary()}`,
+            "success"
+          );
+
           event.source?.postMessage(
             {
               source: "bh-slot-sync-ack",
@@ -3109,6 +3159,12 @@ function initAdminForm() {
             },
             event.origin
           );
+          resolveSyncCompletion(data.token, {
+            complete: true,
+            count: result.unique || result.count,
+            withThumbnails: result.withThumbnails,
+            sections: result.sections,
+          });
         } catch (error) {
           event.source?.postMessage(
             {
@@ -3176,7 +3232,7 @@ function initAdminForm() {
       if (data.progress) {
         setCatalogSyncStatus(`Syncing… ${data.progress}`);
       }
-      await new Promise((r) => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, 750));
     }
     throw new Error("Timed out waiting for Stake sync. Run the console script, then try again.");
   }
@@ -3215,14 +3271,19 @@ function initAdminForm() {
       `${label} script copied. Keep this Bonus Hunt tab open. On Stake: F12 → Console → paste → Enter. Large groups can take 1–2 minutes while Load More finishes…`
     );
 
-    const status = await pollSyncToken(tokenData.token);
+    const status = await Promise.race([
+      pollSyncToken(tokenData.token),
+      waitForSyncCompletion(tokenData.token),
+    ]);
+    syncCompletionWaiters.delete(tokenData.token);
+
     await loadSlotCatalog();
     const logoNote =
       status.withThumbnails > 0
-        ? ` (${status.withThumbnails} with logos)`
+        ? ` · ${status.withThumbnails} with logos`
         : "";
     setCatalogSyncStatus(
-      `${label} synced. Catalog now has ${status.count || slotCatalog.length} unique slots${logoNote}.`,
+      `${label} synced. ${formatCatalogCountSummary()}${logoNote}`,
       "success"
     );
   }
