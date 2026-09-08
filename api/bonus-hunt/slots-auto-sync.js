@@ -1,8 +1,4 @@
-import { handleBonusHuntSlotsAutoSync } from "../../../lib/bonus-hunt-handlers.js";
-
-export const config = {
-  maxDuration: 30,
-};
+import { handleBonusHuntSlotsAutoSync } from "../../lib/bonus-hunt-handlers.js";
 
 export default function handler(req, res) {
   if (req.method !== "GET" && req.method !== "POST") {

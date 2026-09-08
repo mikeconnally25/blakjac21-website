@@ -3,14 +3,11 @@
   "functions": {
     "api/**/*.js": {
       "maxDuration": 10
-    },
-    "api/bonus-hunt/slots/*.js": {
-      "maxDuration": 30
     }
   },
   "crons": [
     {
-      "path": "/api/bonus-hunt/slots/auto-sync",
+      "path": "/api/bonus-hunt/slots-auto-sync",
       "schedule": "*/2 * * * *"
     }
   ],
