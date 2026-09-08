@@ -27,6 +27,9 @@ import {
   handleBonusHuntRequestsAffSubOnly,
   handleBonusHuntSlots,
   handleBonusHuntSlotsImport,
+  handleBonusHuntSlotsImportSync,
+  handleBonusHuntSlotsSyncToken,
+  handleBonusHuntSlotsSyncStatus,
   handleKickChatSubscribe,
   handleKickChatStatus,
   handleKickTestSlotCommand,
@@ -143,6 +146,18 @@ app.post("/api/bonus-hunt/history/remove", (req, res) =>
 app.get("/api/bonus-hunt/slots", (req, res) => handleBonusHuntSlots(req, res));
 app.post("/api/bonus-hunt/slots/import", (req, res) =>
   handleBonusHuntSlotsImport(req, res)
+);
+app.post("/api/bonus-hunt/slots/import-sync", (req, res) =>
+  handleBonusHuntSlotsImportSync(req, res)
+);
+app.options("/api/bonus-hunt/slots/import-sync", (req, res) =>
+  handleBonusHuntSlotsImportSync(req, res)
+);
+app.post("/api/bonus-hunt/slots/sync-token", (req, res) =>
+  handleBonusHuntSlotsSyncToken(req, res)
+);
+app.get("/api/bonus-hunt/slots/sync-status", (req, res) =>
+  handleBonusHuntSlotsSyncStatus(req, res)
 );
 app.get("/api/bonus-hunt/requests", (req, res) =>
   handleBonusHuntRequestsList(req, res)

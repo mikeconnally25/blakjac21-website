@@ -927,12 +927,26 @@ function formatCatalogCountSummary() {
   return summary;
 }
 
+function updateSlotCatalogNote() {
+  const note = document.getElementById("slot-catalog-note");
+  if (!note || !currentUser?.isAdmin) return;
+
+  if (!slotCatalog.length) {
+    note.textContent =
+      "No slots loaded yet. Use Sync New Releases and Sync Only on Stake above.";
+    return;
+  }
+
+  note.textContent = formatCatalogCountSummary();
+}
+
 function updateHuntAddSlotMeta() {
   const meta = document.getElementById("hunt-add-slot-meta");
   if (!meta) return;
 
   if (!slotCatalog.length) {
-    meta.textContent = "No slots loaded in the catalog yet.";
+    meta.textContent =
+      "No slots loaded. Sync Allowed slots in Requests admin first.";
     return;
   }
 
@@ -1023,7 +1037,8 @@ function renderHuntAddSlotResults() {
   if (!slotCatalog.length) {
     results.classList.add("is-hidden");
     empty.classList.remove("is-hidden");
-    empty.textContent = "Slot catalog is empty.";
+    empty.textContent =
+      "Slot catalog is empty. Sync Allowed slots in Requests admin first.";
     return;
   }
 
@@ -1988,6 +2003,7 @@ async function loadSlotCatalog() {
     const selectedSlug = select?.value || "";
     renderSlotCatalogSelect(selectedSlug);
     updateHuntAddSlotMeta();
+    updateSlotCatalogNote();
     renderHuntAddSlotResults();
 
     if (currentUser?.isAdmin && data.total > 0 && !data.withThumbnails) {
@@ -2051,7 +2067,7 @@ async function loadSlotRequests({ forceRender = false } = {}) {
         catalogCount.textContent = formatCatalogCountSummary();
       } else if (currentUser?.isAdmin) {
         catalogCount.textContent =
-          "Slot list empty";
+          "Slot list empty · sync Allowed slots above";
       } else {
         catalogCount.textContent = "Slot list is loading...";
       }
@@ -2687,7 +2703,7 @@ function initAdminForm() {
       const slotMessage =
         refreshedCount > 0
           ? `Kick chat !s enabled. ${refreshedCount} slots loaded.`
-          : "Kick chat !s enabled. Slot catalog is empty.";
+          : "Kick chat !s enabled. Sync Allowed slots so viewers can request.";
       setStatus(slotMessage, refreshedCount > 0 ? "success" : "error");
       await loadKickChatStatus();
     } catch {
@@ -2845,6 +2861,226 @@ function initAdminForm() {
       setStatus(error.message || "Could not update SUB-only setting.", "error");
     } finally {
       toggle.disabled = false;
+    }
+  });
+
+  function buildDirectSyncScript({ groupSlug, token, apiBase }) {
+    const label =
+      groupSlug === "only-on-stake" ? "Only on Stake" : "New Releases";
+    const importUrl = `${apiBase}/api/bonus-hunt/slots/import-sync`;
+    return `(async () => {
+  const groupSlug = ${JSON.stringify(groupSlug)};
+  const token = ${JSON.stringify(token)};
+  const importUrl = ${JSON.stringify(importUrl)};
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  const countGames = () =>
+    document.querySelectorAll('a[href*="/casino/games/"]').length;
+
+  const findLoadMore = () =>
+    [...document.querySelectorAll("button")].find((b) => {
+      if (b.disabled) return false;
+      return /^\\s*Load More\\s*$/i.test((b.innerText || b.textContent || "").trim());
+    });
+
+  const scrollables = () => {
+    const list = [
+      document.scrollingElement,
+      document.documentElement,
+      document.body,
+      ...document.querySelectorAll("main, [class*='scroll'], [style*='overflow']"),
+    ].filter(Boolean);
+    return [...new Set(list)];
+  };
+
+  const scrollToBottom = () => {
+    for (const el of scrollables()) {
+      try {
+        if (el === document.scrollingElement || el === document.documentElement || el === document.body) {
+          window.scrollTo(0, Math.max(document.body.scrollHeight, document.documentElement.scrollHeight));
+          el.scrollTop = el.scrollHeight;
+        } else if (el.scrollHeight > el.clientHeight + 40) {
+          el.scrollTop = el.scrollHeight;
+        }
+      } catch {}
+    }
+    const btn = findLoadMore();
+    if (btn) btn.scrollIntoView({ block: "center", behavior: "auto" });
+  };
+
+  console.log("Syncing ${label} to Bonus Hunt — scrolling + Load More...");
+  let lastCount = 0;
+  let stable = 0;
+
+  for (let i = 0; i < 400; i++) {
+    scrollToBottom();
+    await sleep(400);
+    scrollToBottom();
+
+    const btn = findLoadMore();
+    if (btn) {
+      btn.click();
+      await sleep(1100);
+      scrollToBottom();
+    } else {
+      await sleep(700);
+    }
+
+    const count = countGames();
+    if (i % 3 === 0 || !btn) {
+      console.log("Pass " + (i + 1) + ": " + count + " links" + (btn ? " (Load More)" : " (scrolling)"));
+    }
+
+    if (count === lastCount) {
+      stable += 1;
+      if (stable >= 8 && !findLoadMore()) break;
+      if (stable >= 12) break;
+    } else {
+      stable = 0;
+      lastCount = count;
+    }
+  }
+
+  scrollToBottom();
+  await sleep(500);
+
+  const skip = new Set(["poker", "roulette", "blackjack", "baccarat", "dice", "mines", "plinko", "limbo", "keno", "wheel", "hilo", "crash"]);
+  const seen = new Set();
+  const slots = [];
+
+  for (const a of document.querySelectorAll('a[href*="/casino/games/"]')) {
+    const slug = a.pathname.split("/").filter(Boolean).pop();
+    if (!slug || skip.has(slug) || seen.has(slug)) continue;
+    seen.add(slug);
+    const raw = (a.textContent || "").replace(/\\s+/g, " ").trim();
+    const name = raw.replace(/\\s+\\d+\\s*playing.*$/i, "").trim() || slug;
+    slots.push({ name, slug, groupSlug });
+  }
+
+  console.log("Uploading " + slots.length + " ${label} slots to Bonus Hunt...");
+  const response = await fetch(importUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, payload: { slots }, done: true }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    console.error("Upload failed:", data.error || response.status);
+    throw new Error(data.error || "Upload failed");
+  }
+  console.log("Done. Uploaded " + slots.length + " ${label} slots. You can close this tab and return to Bonus Hunt.");
+})();`;
+  }
+
+  async function copyTextToClipboard(text) {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+
+  function setCatalogSyncStatus(message, tone = "") {
+    const el = document.getElementById("slot-catalog-import-status");
+    if (el) {
+      el.textContent = message;
+      el.classList.toggle("is-hidden", !message);
+      el.classList.toggle("is-error", tone === "error");
+      el.classList.toggle("is-success", tone === "success");
+    }
+    setStatus(message, tone);
+  }
+
+  async function pollSyncToken(token, { timeoutMs = 10 * 60 * 1000 } = {}) {
+    const started = Date.now();
+    while (Date.now() - started < timeoutMs) {
+      const response = await fetch(
+        `/api/bonus-hunt/slots/sync-status?${new URLSearchParams({ token })}`,
+        { credentials: "same-origin", cache: "no-store" }
+      );
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "Could not check sync status.");
+      }
+      if (data.complete) {
+        return data;
+      }
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      if (data.progress) {
+        setCatalogSyncStatus(`Syncing… ${data.progress}`);
+      }
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+    throw new Error("Timed out waiting for Stake sync. Run the console script, then try again.");
+  }
+
+  async function startDirectGroupSync(groupSlug) {
+    const label =
+      groupSlug === "only-on-stake" ? "Only on Stake" : "New Releases";
+    const stakeUrl =
+      groupSlug === "only-on-stake"
+        ? "https://stake.com/casino/group/only-on-stake"
+        : "https://stake.com/casino/group/new-releases";
+
+    setCatalogSyncStatus(`Preparing ${label} sync…`);
+
+    const tokenResponse = await fetch("/api/bonus-hunt/slots/sync-token", {
+      method: "POST",
+      credentials: "same-origin",
+    });
+    const tokenData = await tokenResponse.json().catch(() => ({}));
+    if (!tokenResponse.ok || !tokenData.token) {
+      throw new Error(tokenData.error || "Could not start sync.");
+    }
+
+    const script = buildDirectSyncScript({
+      groupSlug,
+      token: tokenData.token,
+      apiBase: window.location.origin,
+    });
+    await copyTextToClipboard(script);
+    window.open(stakeUrl, "_blank", "noopener,noreferrer");
+
+    setCatalogSyncStatus(
+      `${label} script copied. On the Stake tab: F12 → Console → Ctrl+V → Enter. Waiting for upload…`
+    );
+
+    const status = await pollSyncToken(tokenData.token);
+    await loadSlotCatalog();
+    setCatalogSyncStatus(
+      `${label} synced. Catalog now has ${status.count || slotCatalog.length} unique slots.`,
+      "success"
+    );
+  }
+
+  document.getElementById("slot-sync-new-releases")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    try {
+      await startDirectGroupSync("new-releases");
+    } catch (error) {
+      setCatalogSyncStatus(error.message || "Could not sync New Releases.", "error");
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  document.getElementById("slot-sync-only-on-stake")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    try {
+      await startDirectGroupSync("only-on-stake");
+    } catch (error) {
+      setCatalogSyncStatus(error.message || "Could not sync Only on Stake.", "error");
+    } finally {
+      button.disabled = false;
     }
   });
 
