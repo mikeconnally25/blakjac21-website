@@ -302,34 +302,19 @@
                   </div>
                   <p class="requests-hub-kick-meta is-hidden" id="kick-webhook-log"></p>
                 </div>
-                <div class="slot-import-section" id="slot-import-section">
-                  <p class="admin-panel-label">Import Stake slots</p>
+                <div class="slot-sync-section" id="slot-sync-section">
+                  <p class="admin-panel-label">Stake slot auto-sync</p>
                   <p class="admin-panel-text">
-                    Catalog refreshes daily from Stake when
-                    <code>STAKE_ACCESS_TOKEN</code> and <code>STAKE_COOKIE</code>
-                    are set in Vercel. If auto-sync fails (Cloudflare), paste
-                    console scrape JSON below as a fallback.
-                    On stake.com open
-                    <a href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
-                    or
-                    <a href="https://stake.com/casino/group/only-on-stake" target="_blank" rel="noopener noreferrer">Only on Stake</a>,
-                    press F12 → <strong>Console</strong>, paste the scrape script, press Enter
-                    (it copies JSON). Then paste that JSON here — not the script itself.
+                    Catalog refreshes daily at 9:00 PM Eastern from New Releases and Only on Stake.
+                    Needs <code>STAKE_ACCESS_TOKEN</code> and <code>STAKE_COOKIE</code> in Vercel.
                   </p>
-                  <label class="guess-label" for="slot-import-payload">Copied slot JSON</label>
-                  <textarea
-                    class="slot-import-textarea"
-                    id="slot-import-payload"
-                    rows="8"
-                    placeholder='Paste {"slots":[...]} here (from stake.com console copy)'
-                  ></textarea>
-                  <button type="button" class="btn btn-sm btn-primary" id="slot-import-submit">
-                    Import Stake slots
-                  </button>
-                  <p class="guess-status is-hidden" id="slot-import-status" role="status" aria-live="polite"></p>
                   <p class="requests-hub-kick-meta" id="slot-catalog-auto-note">
-                    Slot catalog loads from imported New Releases and Only on Stake lists.
+                    Checking auto-sync status…
                   </p>
+                  <button type="button" class="btn btn-sm btn-primary" id="slot-sync-now">
+                    Sync now
+                  </button>
+                  <p class="guess-status is-hidden" id="slot-sync-status" role="status" aria-live="polite"></p>
                 </div>
                 <button type="button" class="btn btn-sm btn-outline" id="slot-requests-clear">
                   Clear requests

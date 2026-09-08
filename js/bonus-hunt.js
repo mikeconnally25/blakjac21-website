@@ -938,7 +938,7 @@ function updateSlotCatalogAutoNote() {
     : "No slots in catalog yet.";
 
   if (!sync?.syncConfigured) {
-    note.textContent = `${catalogSummary} Daily auto-sync needs STAKE_ACCESS_TOKEN (and usually STAKE_COOKIE) in Vercel. Paste import works as fallback.`;
+    note.textContent = `${catalogSummary} Auto-sync needs STAKE_ACCESS_TOKEN (and usually STAKE_COOKIE) in Vercel.`;
     return;
   }
 
@@ -946,12 +946,12 @@ function updateSlotCatalogAutoNote() {
     const when = sync.lastSyncAttemptAt
       ? ` Last sync ${new Date(sync.lastSyncAttemptAt).toLocaleString()}.`
       : "";
-    note.textContent = `${catalogSummary} Daily auto-sync OK.${when}`;
+    note.textContent = `${catalogSummary} Daily auto-sync OK (9:00 PM Eastern).${when}`;
     return;
   }
 
   const err = sync.syncError || "Cloudflare may be blocking Vercel.";
-  note.textContent = `${catalogSummary} Daily auto-sync failed: ${err} Use paste import below until cookies are refreshed.`;
+  note.textContent = `${catalogSummary} Auto-sync failed: ${err} Refresh STAKE_COOKIE in Vercel, then use Sync now.`;
 }
 
 function updateHuntAddSlotMeta() {
@@ -960,7 +960,7 @@ function updateHuntAddSlotMeta() {
 
   if (!slotCatalog.length) {
     meta.textContent =
-      "No slots loaded. Paste GraphQL JSON from stake.com New Releases / Only on Stake in Requests admin.";
+      "No slots loaded yet. Wait for daily auto-sync or click Sync now in Requests admin.";
     return;
   }
 
@@ -1052,7 +1052,7 @@ function renderHuntAddSlotResults() {
     results.classList.add("is-hidden");
     empty.classList.remove("is-hidden");
     empty.textContent =
-      "Slot catalog is empty. Paste GraphQL JSON from New Releases and Only on Stake in Requests admin.";
+      "Slot catalog is empty. Wait for daily auto-sync or click Sync now in Requests admin.";
     return;
   }
 
@@ -2088,7 +2088,7 @@ async function loadSlotRequests({ forceRender = false } = {}) {
         catalogCount.textContent = formatCatalogCountSummary();
       } else if (currentUser?.isAdmin) {
         catalogCount.textContent =
-          "Slot list empty · paste GraphQL JSON from New Releases / Only on Stake";
+          "Slot list empty · waiting for daily auto-sync";
       } else {
         catalogCount.textContent = "Slot list is loading...";
       }
@@ -2724,7 +2724,7 @@ function initAdminForm() {
       const slotMessage =
         refreshedCount > 0
           ? `Kick chat !s enabled. ${refreshedCount} slots loaded.`
-          : "Kick chat !s enabled. Import Stake slots (paste GraphQL JSON) to load the catalog.";
+          : "Kick chat !s enabled. Slot catalog will load from daily auto-sync.";
       setStatus(slotMessage, refreshedCount > 0 ? "success" : "error");
       await loadKickChatStatus();
     } catch {
@@ -2885,78 +2885,42 @@ function initAdminForm() {
     }
   });
 
-  document.getElementById("slot-import-submit")?.addEventListener("click", async (event) => {
+  document.getElementById("slot-sync-now")?.addEventListener("click", async (event) => {
     const button = event.currentTarget;
-    const textarea = document.getElementById("slot-import-payload");
-    const importStatus = document.getElementById("slot-import-status");
+    const syncStatus = document.getElementById("slot-sync-status");
 
-    const setImportStatus = (message, tone = "") => {
-      if (importStatus) {
-        importStatus.textContent = message;
-        importStatus.classList.toggle("is-hidden", !message);
-        importStatus.classList.toggle("is-error", tone === "error");
-        importStatus.classList.toggle("is-success", tone === "success");
+    const setSyncStatus = (message, tone = "") => {
+      if (syncStatus) {
+        syncStatus.textContent = message;
+        syncStatus.classList.toggle("is-hidden", !message);
+        syncStatus.classList.toggle("is-error", tone === "error");
+        syncStatus.classList.toggle("is-success", tone === "success");
       }
       setStatus(message, tone);
     };
 
-    const raw = String(textarea?.value || "").trim();
-    if (!raw) {
-      setImportStatus(
-        "Paste the copied JSON from stake.com first (not the console script).",
-        "error"
-      );
-      return;
-    }
-
-    if (
-      /querySelectorAll|groupSlug\s*:|copy\s*\(/.test(raw) &&
-      !/"slots"\s*:\s*\[/.test(raw)
-    ) {
-      setImportStatus(
-        "That looks like the console script. Run it on stake.com Console first, then paste the copied {\"slots\":[...]} JSON here.",
-        "error"
-      );
-      return;
-    }
-
-    let payload = raw;
-    try {
-      payload = JSON.parse(raw);
-    } catch {
-      // Import API also accepts raw strings / line lists.
-    }
-
     button.disabled = true;
-    setImportStatus("Importing Stake slots...");
+    setSyncStatus("Syncing Stake slots…");
 
     try {
-      const response = await fetch("/api/bonus-hunt/slots/import", {
+      const response = await fetch("/api/bonus-hunt/slots/refresh", {
         method: "POST",
         credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payload }),
       });
       const data = await response.json();
       if (!response.ok) {
-        setImportStatus(data.error || "Could not import slots.", "error");
+        setSyncStatus(data.error || "Could not sync slots.", "error");
+        await loadSlotCatalog();
         return;
       }
 
-      if (textarea) {
-        textarea.value = "";
-      }
       await loadSlotCatalog();
-      const thumbNote =
-        data.withThumbnails > 0
-          ? ` (${data.withThumbnails} with logos)`
-          : " (logos missing for now — names/slugs still imported)";
-      setImportStatus(
-        `Imported slots. Catalog now has ${data.unique || data.count} unique slots${thumbNote}.`,
+      setSyncStatus(
+        `Synced. Catalog now has ${data.unique || data.count} unique slots.`,
         "success"
       );
     } catch {
-      setImportStatus("Could not import slots. Try again.", "error");
+      setSyncStatus("Could not sync slots. Try again.", "error");
     } finally {
       button.disabled = false;
     }
