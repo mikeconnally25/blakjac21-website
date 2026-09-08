@@ -331,6 +331,70 @@
                 </button>
               </div>
             </form>
+
+            <section class="hunt-add-bonus" id="hunt-add-bonus" aria-labelledby="hunt-add-bonus-heading">
+              <div class="hunt-add-bonus-header">
+                <p class="section-eyebrow" id="hunt-add-bonus-heading">Manual add</p>
+                <h3 class="hunt-add-bonus-title">Add bonus</h3>
+                <p class="admin-panel-text">
+                  Search New Releases / Only on Stake and add a buy to this hunt.
+                </p>
+              </div>
+              <form class="hunt-add-bonus-form" id="hunt-add-bonus-form">
+                <div class="bonus-field">
+                  <label class="guess-label" for="hunt-add-slot-search">Search slot</label>
+                  <input
+                    class="guess-input"
+                    id="hunt-add-slot-search"
+                    type="search"
+                    autocomplete="off"
+                    spellcheck="false"
+                    placeholder="Type a slot name…"
+                  />
+                </div>
+                <div
+                  class="hunt-add-slot-results is-hidden"
+                  id="hunt-add-slot-results"
+                  role="listbox"
+                  aria-label="Matching slots"
+                ></div>
+                <p class="hunt-add-slot-empty is-hidden" id="hunt-add-slot-empty"></p>
+                <div class="hunt-add-slot-selected is-hidden" id="hunt-add-slot-selected">
+                  <div class="hunt-add-slot-selected-copy">
+                    <p class="hunt-add-slot-selected-label">Selected</p>
+                    <p class="hunt-add-slot-selected-name" id="hunt-add-slot-selected-name"></p>
+                    <p class="hunt-add-slot-selected-meta" id="hunt-add-slot-selected-meta"></p>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline" id="hunt-add-slot-clear">
+                    Clear
+                  </button>
+                </div>
+                <div class="hunt-add-bonus-row">
+                  <div class="bonus-field">
+                    <label class="guess-label" for="hunt-add-bet">Bet size</label>
+                    <div class="guess-input-row">
+                      <span class="guess-prefix" aria-hidden="true">$</span>
+                      <input
+                        class="guess-input"
+                        id="hunt-add-bet"
+                        name="bet"
+                        type="number"
+                        inputmode="decimal"
+                        min="0"
+                        step="0.01"
+                        placeholder="1.00"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-sm btn-primary" id="hunt-add-bonus-submit">
+                    Add to hunt
+                  </button>
+                </div>
+                <p class="hunt-add-slot-meta" id="hunt-add-slot-meta"></p>
+              </form>
+            </section>
+
             <div class="bonus-admin-actions">
               <button type="button" class="btn btn-sm btn-primary" id="bonus-end-hunt">
                 End hunt

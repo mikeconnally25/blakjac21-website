@@ -25,6 +25,8 @@ let huntMeta = {
 };
 let pastHunts = [];
 let lastSummary = null;
+let huntAddSelectedSlot = null;
+let huntAddSearchQuery = "";
 
 const REQUEST_STATUS_LABELS = {
   open: "Collecting",
@@ -1033,6 +1035,158 @@ async function loadBonusHunt() {
   }
 }
 
+function groupLabelForSlot(slot) {
+  if (!slot) return "";
+  const group = slotGroups.find((entry) => entry.slug === slot.groupSlug);
+  return group?.label || slot.provider || "";
+}
+
+function updateHuntAddSlotMeta() {
+  const meta = document.getElementById("hunt-add-slot-meta");
+  if (!meta) return;
+
+  if (!slotCatalog.length) {
+    meta.textContent =
+      "No slots loaded yet. Sync slots from Stake in the queue panel.";
+    return;
+  }
+
+  meta.textContent =
+    slotCatalog.length === 1
+      ? "1 Stake slot available"
+      : `${slotCatalog.length} Stake slots available`;
+}
+
+function renderHuntAddSelectedSlot() {
+  const selected = document.getElementById("hunt-add-slot-selected");
+  const nameEl = document.getElementById("hunt-add-slot-selected-name");
+  const metaEl = document.getElementById("hunt-add-slot-selected-meta");
+  const submit = document.getElementById("hunt-add-bonus-submit");
+  if (!selected || !nameEl || !metaEl) return;
+
+  if (!huntAddSelectedSlot) {
+    selected.classList.add("is-hidden");
+    nameEl.textContent = "";
+    metaEl.textContent = "";
+    if (submit) submit.disabled = false;
+    return;
+  }
+
+  selected.classList.remove("is-hidden");
+  nameEl.textContent = huntAddSelectedSlot.name || "Selected slot";
+  metaEl.textContent = [
+    huntAddSelectedSlot.provider,
+    groupLabelForSlot(huntAddSelectedSlot),
+  ]
+    .filter(Boolean)
+    .filter((value, index, list) => list.indexOf(value) === index)
+    .join(" · ");
+}
+
+function clearHuntAddSelection({ keepSearch = false } = {}) {
+  huntAddSelectedSlot = null;
+  if (!keepSearch) {
+    huntAddSearchQuery = "";
+    const search = document.getElementById("hunt-add-slot-search");
+    if (search) search.value = "";
+  }
+  renderHuntAddSelectedSlot();
+  renderHuntAddSlotResults();
+}
+
+function renderHuntAddSlotResults() {
+  const results = document.getElementById("hunt-add-slot-results");
+  const empty = document.getElementById("hunt-add-slot-empty");
+  if (!results || !empty) return;
+
+  results.replaceChildren();
+  const query = huntAddSearchQuery.trim().toLowerCase();
+
+  if (!query || huntAddSelectedSlot) {
+    results.classList.add("is-hidden");
+    empty.classList.add("is-hidden");
+    empty.textContent = "";
+    return;
+  }
+
+  const matches = slotCatalog
+    .filter((slot) => {
+      const haystack = [slot.name, slot.provider, groupLabelForSlot(slot)]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(query);
+    })
+    .sort((a, b) =>
+      String(a.name || "").localeCompare(String(b.name || ""), undefined, {
+        sensitivity: "base",
+      })
+    )
+    .slice(0, 40);
+
+  if (!slotCatalog.length) {
+    results.classList.add("is-hidden");
+    empty.classList.remove("is-hidden");
+    empty.textContent = "Slot catalog is empty. Sync slots from Stake first.";
+    return;
+  }
+
+  if (!matches.length) {
+    results.classList.add("is-hidden");
+    empty.classList.remove("is-hidden");
+    empty.textContent = "No matching slots.";
+    return;
+  }
+
+  empty.classList.add("is-hidden");
+  empty.textContent = "";
+  results.classList.remove("is-hidden");
+
+  matches.forEach((slot) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "hunt-add-slot-option";
+    button.dataset.slotSlug = slot.slug || "";
+    button.setAttribute("role", "option");
+
+    button.append(
+      createSlotThumb(slot.name, normalizeSlotThumbnailUrl(slot.thumbnailUrl), {
+        rootClass: "hunt-add-slot-thumb",
+        imageClass: "hunt-add-slot-thumb-image",
+      })
+    );
+
+    const copy = document.createElement("span");
+    copy.className = "hunt-add-slot-option-copy";
+
+    const name = document.createElement("span");
+    name.className = "hunt-add-slot-option-name";
+    name.textContent = slot.name;
+
+    const provider = document.createElement("span");
+    provider.className = "hunt-add-slot-option-provider";
+    provider.textContent = [slot.provider, groupLabelForSlot(slot)]
+      .filter(Boolean)
+      .filter((value, index, list) => list.indexOf(value) === index)
+      .join(" · ");
+
+    copy.append(name, provider);
+    button.append(copy);
+    results.append(button);
+  });
+}
+
+function selectHuntAddSlot(slot) {
+  if (!slot) return;
+  huntAddSelectedSlot = slot;
+  huntAddSearchQuery = slot.name || "";
+  const search = document.getElementById("hunt-add-slot-search");
+  if (search) search.value = slot.name || "";
+  renderHuntAddSelectedSlot();
+  renderHuntAddSlotResults();
+  document.getElementById("hunt-add-bet")?.focus();
+}
+
 async function addBonusToHunt({
   slot,
   bet,
@@ -1909,6 +2063,8 @@ async function loadSlotCatalog() {
     const select = document.getElementById("slot-request-select");
     const selectedSlug = select?.value || "";
     renderSlotCatalogSelect(selectedSlug);
+    updateHuntAddSlotMeta();
+    renderHuntAddSlotResults();
 
     if (currentUser?.isAdmin && data.total > 0 && !data.withThumbnails) {
       setStatus(
@@ -2394,6 +2550,80 @@ function initHighestMultiToggle() {
 
 function initAdminForm() {
   const settingsForm = document.getElementById("hunt-settings-form");
+  const addBonusForm = document.getElementById("hunt-add-bonus-form");
+  const addSearch = document.getElementById("hunt-add-slot-search");
+  const addResults = document.getElementById("hunt-add-slot-results");
+  const addClear = document.getElementById("hunt-add-slot-clear");
+
+  addSearch?.addEventListener("input", (event) => {
+    huntAddSearchQuery = event.currentTarget.value || "";
+    if (
+      huntAddSelectedSlot &&
+      huntAddSearchQuery.trim().toLowerCase() !==
+        String(huntAddSelectedSlot.name || "")
+          .trim()
+          .toLowerCase()
+    ) {
+      huntAddSelectedSlot = null;
+      renderHuntAddSelectedSlot();
+    }
+    renderHuntAddSlotResults();
+  });
+
+  addSearch?.addEventListener("focus", () => {
+    if (huntAddSearchQuery.trim() && !huntAddSelectedSlot) {
+      renderHuntAddSlotResults();
+    }
+  });
+
+  addResults?.addEventListener("click", (event) => {
+    const option = event.target.closest(".hunt-add-slot-option");
+    if (!option) return;
+    const slug = option.dataset.slotSlug || "";
+    const slot =
+      slotCatalog.find(
+        (entry) =>
+          String(entry.slug || "").toLowerCase() === slug.toLowerCase()
+      ) || null;
+    selectHuntAddSlot(slot);
+  });
+
+  addClear?.addEventListener("click", () => {
+    clearHuntAddSelection();
+    addSearch?.focus();
+  });
+
+  addBonusForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const submit = document.getElementById("hunt-add-bonus-submit");
+    const bet = document.getElementById("hunt-add-bet")?.value;
+    const slot = huntAddSelectedSlot;
+
+    if (!slot) {
+      setStatus("Search and select a slot first.", "error");
+      addSearch?.focus();
+      return;
+    }
+
+    const bonus = await submitBonusAddForm({
+      button: submit,
+      slot: slot.name,
+      bet,
+      slotSlug: slot.slug,
+      thumbnailUrl: normalizeSlotThumbnailUrl(slot.thumbnailUrl),
+      provider: slot.provider,
+    });
+
+    if (bonus) {
+      const betInput = document.getElementById("hunt-add-bet");
+      if (betInput) betInput.value = "";
+      clearHuntAddSelection();
+      addSearch?.focus();
+    }
+  });
+
+  updateHuntAddSlotMeta();
+
   settingsForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
 

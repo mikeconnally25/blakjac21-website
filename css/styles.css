@@ -4396,6 +4396,147 @@ ul {
   margin-bottom: 0.65rem;
 }
 
+.hunt-add-bonus {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.85rem 0 1rem;
+  padding: 0.95rem 1rem;
+  border-radius: calc(var(--radius-sm) + 4px);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(8, 14, 22, 0.42);
+}
+
+.hunt-add-bonus-header {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.hunt-add-bonus-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 2.6vw, 1.7rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  background: var(--heading-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hunt-add-bonus-form {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.hunt-add-bonus-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  align-items: end;
+}
+
+.hunt-add-slot-results {
+  display: grid;
+  gap: 0.35rem;
+  max-height: min(18rem, 42vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.45rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(6, 10, 16, 0.88);
+}
+
+.hunt-add-slot-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: center;
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hunt-add-slot-option:hover,
+.hunt-add-slot-option:focus-visible {
+  border-color: rgba(126, 216, 255, 0.35);
+  background: rgba(126, 216, 255, 0.08);
+  outline: none;
+}
+
+.hunt-add-slot-thumb {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.45rem;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #e8f7ff;
+  background: rgba(30, 41, 59, 0.9);
+}
+
+.hunt-add-slot-thumb-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hunt-add-slot-option-copy {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.hunt-add-slot-option-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.hunt-add-slot-option-provider,
+.hunt-add-slot-empty,
+.hunt-add-slot-meta,
+.hunt-add-slot-selected-label,
+.hunt-add-slot-selected-meta {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.hunt-add-slot-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(126, 216, 255, 0.28);
+  background: rgba(126, 216, 255, 0.08);
+}
+
+.hunt-add-slot-selected-copy {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.hunt-add-slot-selected-name {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
 .hunt-settings-row {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
@@ -5536,6 +5677,10 @@ ul {
   }
 
   .hunt-settings-row {
+    grid-template-columns: 1fr;
+  }
+
+  .hunt-add-bonus-row {
     grid-template-columns: 1fr;
   }
 
