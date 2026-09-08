@@ -69,16 +69,27 @@ function formatMultiplier(value) {
 }
 
 function buildStakeBookmarkletHref(token = "") {
-  const origin = window.location.origin;
-  const scriptUrl = `${origin}/js/stake-sync-bookmarklet.js?origin=${encodeURIComponent(origin)}`;
-  const tokenLiteral = token ? JSON.stringify(token) : "null";
-  const code =
-    "javascript:(function(){var token=" +
-    tokenLiteral +
-    ";var scriptUrl=" +
-    JSON.stringify(scriptUrl) +
-    ";function run(){var s=document.createElement('script');s.src=scriptUrl;document.head.appendChild(s);}if(location.hostname.indexOf('stake.com')!==-1){var m=location.hash.match(/bj21sync=([^&]+)/);if(!token)token=m&&m[1];if(!token){alert('Missing sync token. Start sync from bonus-hunt first.');return;}if(!m)location.hash='bj21sync='+encodeURIComponent(token);run();return;}if(!token){alert('Missing sync token. Start sync from bonus-hunt first.');return;}window.open('https://stake.com/casino/group/new-releases#bj21sync='+encodeURIComponent(token),'_blank');})();";
-  return code;
+  const builder = window.BJ21StakeSyncCode;
+  if (!builder?.buildStakeSyncBookmarkletHref) {
+    return "#";
+  }
+
+  return builder.buildStakeSyncBookmarkletHref({
+    token,
+    apiOrigin: window.location.origin,
+  });
+}
+
+function buildStakeConsoleScript(token = "") {
+  const builder = window.BJ21StakeSyncCode;
+  if (!builder?.buildStakeSyncScript) {
+    return "";
+  }
+
+  return builder.buildStakeSyncScript({
+    token,
+    apiOrigin: window.location.origin,
+  });
 }
 
 function updateStakeSyncHelp({ token, stakeUrl, message } = {}) {
@@ -86,11 +97,15 @@ function updateStakeSyncHelp({ token, stakeUrl, message } = {}) {
   const helpText = document.getElementById("slot-sync-help-text");
   const bookmarklet = document.getElementById("slot-sync-bookmarklet");
   const openStake = document.getElementById("slot-sync-open-stake");
+  const copyScript = document.getElementById("slot-sync-copy-script");
 
   if (!section) return;
 
   if (!token) {
     section.classList.add("is-hidden");
+    if (copyScript) {
+      copyScript.onclick = null;
+    }
     return;
   }
 
@@ -98,13 +113,24 @@ function updateStakeSyncHelp({ token, stakeUrl, message } = {}) {
   if (helpText) {
     helpText.textContent =
       message ||
-      "Stake blocks server sync. Open stake.com, then click BJ21 Stake Sync once while logged in.";
+      "On stake.com: press F12 → Console → Paste → Enter. Counts update live.";
   }
   if (bookmarklet) {
     bookmarklet.href = buildStakeBookmarkletHref(token);
   }
   if (openStake && stakeUrl) {
     openStake.href = stakeUrl;
+  }
+  if (copyScript) {
+    copyScript.onclick = async () => {
+      const script = buildStakeConsoleScript(token);
+      try {
+        await navigator.clipboard.writeText(script);
+        setStatus("Sync script copied. Paste it into the stake.com console and press Enter.", "success");
+      } catch {
+        window.prompt("Copy this sync script:", script);
+      }
+    };
   }
 }
 
@@ -224,8 +250,8 @@ async function startBrowserSlotSync({ auto = false } = {}) {
     browserSyncPrompted = true;
 
     const message = auto
-      ? "Catalog looks stale/capped. Open stake.com and click BJ21 Stake Sync once."
-      : "Open stake.com (logged in), then click BJ21 Stake Sync once. Counts update live.";
+      ? "Catalog needs a refresh. On stake.com press F12 → Console → Paste (Copy script) → Enter."
+      : "On stake.com: press F12 → Console → click Copy script → Paste → Enter. Counts update live.";
 
     updateStakeSyncHelp({
       token: data.token,
@@ -234,9 +260,22 @@ async function startBrowserSlotSync({ auto = false } = {}) {
     });
     setStatus(message);
 
-    const syncPageUrl =
-      data.syncPageUrl || `/stake-sync.html?token=${encodeURIComponent(data.token)}`;
-    window.open(syncPageUrl, "_blank", "noopener,noreferrer");
+    const script = buildStakeConsoleScript(data.token);
+    if (script) {
+      try {
+        await navigator.clipboard.writeText(script);
+        setStatus(
+          "Sync script copied. On stake.com press F12 → Console → Paste → Enter.",
+          "success"
+        );
+      } catch {
+        // Clipboard may be blocked; Copy script button still works.
+      }
+    }
+
+    if (data.stakeUrl) {
+      window.open(data.stakeUrl, "_blank", "noopener,noreferrer");
+    }
     startStakeSyncPolling(data.token);
     return true;
   } catch {

@@ -49,10 +49,6 @@
         font-size: 0.95rem;
         line-height: 1.5;
       }
-
-      .sync-note strong {
-        color: var(--text);
-      }
     </style>
   </head>
   <body>
@@ -60,65 +56,68 @@
       <h1>Sync Stake slots</h1>
       <p id="sync-status">Preparing sync...</p>
       <ol class="sync-steps" id="sync-steps">
-        <li>Press <strong>Ctrl + Shift + B</strong> to show your favorites bar in Edge.</li>
-        <li>
-          <strong>Right-click</strong> the <strong>BJ21 Stake Sync</strong> button below and choose
-          <strong>Add to favorites bar</strong>. If you added an older version before, delete it and add this one.
-        </li>
-        <li>Open stake.com and make sure you are logged in.</li>
-        <li>
-          Switch to the <strong>stake.com</strong> tab and click
-          <strong>BJ21 Stake Sync</strong> in your favorites bar once.
-        </li>
+        <li>Make sure you are logged into <strong>stake.com</strong>.</li>
+        <li>Click <strong>Copy script</strong> below.</li>
+        <li>On the stake.com tab, press <strong>F12</strong> → <strong>Console</strong>.</li>
+        <li>Paste the script and press <strong>Enter</strong>.</li>
       </ol>
-      <div class="sync-note is-hidden" id="sync-edge-tip">
-        In Edge, if it asks to run a script, click <strong>Allow</strong>.
+      <div class="sync-note" id="sync-edge-tip">
+        A status pill appears in the bottom-left of stake.com while pages import.
       </div>
       <div class="sync-actions">
-        <a class="btn btn-primary" id="stake-open-link" href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">
+        <button type="button" class="btn btn-primary" id="sync-copy-script">Copy script</button>
+        <a class="btn btn-outline" id="stake-open-link" href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">
           Open stake.com
         </a>
-        <a class="btn btn-outline" id="stake-bookmarklet" href="#">BJ21 Stake Sync</a>
+        <a class="btn btn-outline" id="stake-bookmarklet" href="#" title="Optional">Bookmarklet</a>
         <a class="btn btn-outline" href="/bonus-hunt/">Back to bonus hunt</a>
       </div>
     </main>
+    <script src="/js/stake-sync-code.js"></script>
     <script>
       (function initStakeSyncPage() {
         const params = new URLSearchParams(location.search);
         const token = params.get("token") || "";
         const status = document.getElementById("sync-status");
         const steps = document.getElementById("sync-steps");
-        const edgeTip = document.getElementById("sync-edge-tip");
         const openLink = document.getElementById("stake-open-link");
         const bookmarklet = document.getElementById("stake-bookmarklet");
+        const copyBtn = document.getElementById("sync-copy-script");
 
         if (!token) {
           status.textContent =
-            "This page needs to be opened from the bonus hunt page. Do not bookmark this URL.";
+            "This page needs to be opened from the bonus hunt page.";
           if (steps) {
             steps.innerHTML =
               "<li>Go to the <strong>bonus hunt</strong> page while logged in as admin.</li>" +
-              "<li>Click <strong>Sync slots from Stake</strong>.</li>" +
-              "<li>This setup page will open automatically with everything ready.</li>";
+              "<li>Click <strong>Sync slots from Stake</strong>.</li>";
           }
           return;
         }
 
         const origin = location.origin;
         const stakeUrl = `https://stake.com/casino/group/new-releases#bj21sync=${encodeURIComponent(token)}`;
-        const scriptUrl = `${origin}/js/stake-sync-bookmarklet.js?origin=${encodeURIComponent(origin)}`;
-        const bookmarkletCode =
-          "javascript:(function(){var token=" +
-          JSON.stringify(token) +
-          ";var scriptUrl=" +
-          JSON.stringify(scriptUrl) +
-          ";function run(){var s=document.createElement('script');s.src=scriptUrl;document.head.appendChild(s);}if(location.hostname.indexOf('stake.com')!==-1){var m=location.hash.match(/bj21sync=([^&]+)/);if(!token)token=m&&m[1];if(!token){alert('Missing sync token. Start sync from bonus-hunt first.');return;}if(!m)location.hash='bj21sync='+encodeURIComponent(token);run();return;}if(!token){alert('Missing sync token. Start sync from bonus-hunt first.');return;}window.open('https://stake.com/casino/group/new-releases#bj21sync='+encodeURIComponent(token),'_blank');})();";
+        const script = window.BJ21StakeSyncCode.buildStakeSyncScript({
+          token,
+          apiOrigin: origin,
+        });
 
         openLink.href = stakeUrl;
-        bookmarklet.href = bookmarkletCode;
+        bookmarklet.href = window.BJ21StakeSyncCode.buildStakeSyncBookmarkletHref({
+          token,
+          apiOrigin: origin,
+        });
         status.textContent =
-          "Step 1: right-click BJ21 Stake Sync below and add it to your favorites bar. Step 2: switch to the stake.com tab and click it once.";
-        edgeTip?.classList.remove("is-hidden");
+          "Copy the script, open stake.com (logged in), paste into the console, press Enter.";
+
+        copyBtn?.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(script);
+            status.textContent = "Script copied. Paste it into the stake.com console and press Enter.";
+          } catch {
+            window.prompt("Copy this sync script:", script);
+          }
+        });
 
         window.open(stakeUrl, "_blank", "noopener,noreferrer");
       })();
