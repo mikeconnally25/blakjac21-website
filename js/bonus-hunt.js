@@ -29,8 +29,8 @@ let huntAddSelectedSlot = null;
 let huntAddSearchQuery = "";
 
 const REQUEST_STATUS_LABELS = {
-  open: "Collecting",
-  closed: "Check back later",
+  open: "Requests open",
+  closed: "Requests closed",
 };
 
 function slotInitials(name) {
@@ -284,6 +284,7 @@ function renderHuntHeader(hunt) {
   }
 
   updateHighestMultiToggle(hunt);
+  updateHuntPhaseStatus(hunt);
 }
 
 function updateHighestMultiToggle(hunt) {
@@ -1492,36 +1493,58 @@ function accessModeNoteText() {
   return "";
 }
 
-function updateCollectingStatus() {
+function huntPhaseClass(status) {
+  switch (status) {
+    case "opening":
+      return "hunt-status hunt-status--opening";
+    case "complete":
+      return "hunt-status hunt-status--complete";
+    case "collecting":
+    default:
+      return "hunt-status hunt-status--collecting";
+  }
+}
+
+function updateHuntPhaseStatus(hunt = huntMeta) {
   const status = document.getElementById("hunt-status");
+  if (!status) return;
+
+  const phase = hunt?.status || "collecting";
+  status.textContent = huntStatusLabel(phase);
+  status.className = huntPhaseClass(phase);
+  status.title = `Hunt phase: ${huntStatusLabel(phase)}`;
+}
+
+function updateRequestStatusBadges() {
+  const requestsStatus = document.getElementById("hunt-requests-status");
   const panelStatus = document.getElementById("requests-panel-status");
   const isAdmin = Boolean(currentUser?.isAdmin);
   const mode = accessModeLabel();
 
   const label = acceptingRequests
     ? mode
-      ? `Collecting · ${mode}`
+      ? `Requests · ${mode}`
       : REQUEST_STATUS_LABELS.open
     : REQUEST_STATUS_LABELS.closed;
   const statusClass = acceptingRequests
-    ? "hunt-status hunt-status--collecting hunt-status-toggle"
-    : "hunt-status hunt-status--closed hunt-status-toggle";
+    ? "hunt-status hunt-status--requests-open hunt-status-toggle"
+    : "hunt-status hunt-status--requests-closed hunt-status-toggle";
   const panelClass = acceptingRequests
     ? "requests-hub-status requests-hub-status--open"
     : "requests-hub-status requests-hub-status--closed";
 
-  if (status) {
-    status.textContent = label;
-    status.className = statusClass;
-    status.setAttribute("aria-pressed", acceptingRequests ? "true" : "false");
-    status.disabled = !isAdmin;
-    status.title = isAdmin
-      ? "Click to toggle slot request collection"
+  if (requestsStatus) {
+    requestsStatus.textContent = label;
+    requestsStatus.className = statusClass;
+    requestsStatus.setAttribute("aria-pressed", acceptingRequests ? "true" : "false");
+    requestsStatus.disabled = !isAdmin;
+    requestsStatus.title = isAdmin
+      ? "Click to toggle slot requests (separate from hunt phase)"
       : acceptingRequests
         ? mode
-          ? `Collecting slot requests (${mode} only)`
-          : "Collecting slot requests"
-        : "Check back later for slot requests";
+          ? `Slot requests open (${mode} only)`
+          : "Slot requests are open"
+        : "Slot requests are closed";
   }
 
   if (panelStatus) {
@@ -1544,7 +1567,7 @@ function updateToggleLabel() {
     toggle.checked = acceptingRequests;
   }
 
-  updateCollectingStatus();
+  updateRequestStatusBadges();
   updateAccessModeLabels();
 }
 
@@ -1632,9 +1655,9 @@ async function setAcceptingRequests(nextAccepting) {
   renderSlotRequests(slotRequests);
 
   if (currentUser?.isAdmin && data.kickChatError) {
-    setStatus(`Collecting is on, but Kick chat failed to connect: ${data.kickChatError}`, "error");
+    setStatus(`Slot requests are on, but Kick chat failed to connect: ${data.kickChatError}`, "error");
   } else if (currentUser?.isAdmin && data.acceptingRequests && data.kickChatSubscribed === false) {
-    setStatus("Collecting is on, but chat is not subscribed. Click Enable !s in chat.", "error");
+    setStatus("Slot requests are on, but chat is not subscribed. Click Enable !s in chat.", "error");
   }
 
   if (currentUser?.isAdmin) {
@@ -1880,10 +1903,10 @@ function renderSlotRequests(requests) {
       empty.textContent = "No requests yet. Viewers can type !s slot name in chat.";
     } else if (isAdmin) {
       empty.textContent =
-        "No requests in the queue. Click Collecting in the hunt header to start accepting them.";
+        "No requests in the queue. Turn on Slot requests (header or toggle) to start accepting them.";
     } else {
       empty.textContent =
-        "Nothing in the queue yet. Check back when the stream is Collecting.";
+        "Nothing in the queue yet. Check back when Requests are open.";
     }
   }
 
@@ -2837,7 +2860,7 @@ function initAdminForm() {
     }
   });
 
-  document.getElementById("hunt-status")?.addEventListener("click", async (event) => {
+  document.getElementById("hunt-requests-status")?.addEventListener("click", async (event) => {
     const button = event.currentTarget;
     if (!currentUser?.isAdmin || button.disabled) {
       return;
@@ -2851,7 +2874,7 @@ function initAdminForm() {
       await setAcceptingRequests(nextAccepting);
       setStatus(
         acceptingRequests
-          ? "Now collecting slot requests. Announced in Kick chat."
+          ? "Slot requests are now open. Announced in Kick chat."
           : "Slot requests closed for now.",
         "success"
       );
@@ -2909,7 +2932,7 @@ function initAdminForm() {
             : "AFF-only mode on. Only verified affiliates can request."
           : subscribersOnly
             ? "AFF-only off. SUB-only still active."
-            : "Access open to everyone while collecting is on.",
+            : "Access open to everyone while requests are open.",
         "success"
       );
     } catch (error) {
@@ -2944,7 +2967,7 @@ function initAdminForm() {
             : "SUB-only mode on. Only Kick subscribers can request."
           : affiliatesOnly
             ? "SUB-only off. AFF-only still active."
-            : "Access open to everyone while collecting is on.",
+            : "Access open to everyone while requests are open.",
         "success"
       );
     } catch (error) {

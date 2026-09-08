@@ -76,14 +76,22 @@
                   <p class="section-eyebrow">Live session</p>
                   <h3 class="hunt-title" id="hunt-title">Live Hunt</h3>
                 </div>
-                <button
-                  type="button"
-                  class="hunt-status hunt-status--closed hunt-status-toggle"
-                  id="hunt-status"
-                  aria-pressed="false"
-                >
-                  Check back later
-                </button>
+                <div class="hunt-status-group" aria-label="Hunt and request status">
+                  <span
+                    class="hunt-status hunt-status--collecting"
+                    id="hunt-status"
+                  >
+                    Collecting
+                  </span>
+                  <button
+                    type="button"
+                    class="hunt-status hunt-status--closed hunt-status-toggle"
+                    id="hunt-requests-status"
+                    aria-pressed="false"
+                  >
+                    Requests closed
+                  </button>
+                </div>
               </div>
 
               <div class="hunt-stats" aria-label="Hunt statistics">
@@ -174,7 +182,7 @@
                 <div class="requests-hub-meta">
                   <span class="requests-hub-count" id="slot-requests-count">0 requests</span>
                   <span class="requests-hub-status requests-hub-status--closed" id="requests-panel-status">
-                    Check back later
+                    Requests closed
                   </span>
                 </div>
               </div>
@@ -193,7 +201,7 @@
               </div>
 
               <div class="requests-hub-notice is-hidden" id="slot-request-closed">
-                <p>Requests are closed right now. Check back when the stream turns on <strong>Collecting</strong>.</p>
+                <p>Requests are closed right now. Check back when the stream turns on <strong>Requests open</strong>.</p>
               </div>
 
               <div class="requests-hub-notice is-hidden" id="slot-request-guest">
@@ -246,7 +254,7 @@
                     <div>
                       <p class="admin-panel-label">AFF only</p>
                       <p class="admin-panel-text" id="slot-requests-aff-status">
-                        Affiliates can request when collecting is on
+                        Affiliates can request when requests are open
                       </p>
                     </div>
                     <label class="toggle">
@@ -262,7 +270,7 @@
                     <div>
                       <p class="admin-panel-label">SUB only</p>
                       <p class="admin-panel-text" id="slot-requests-sub-status">
-                        Kick subscribers can request when collecting is on
+                        Kick subscribers can request when requests are open
                       </p>
                     </div>
                     <label class="toggle">

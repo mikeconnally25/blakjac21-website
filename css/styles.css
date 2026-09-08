@@ -3663,11 +3663,20 @@ ul {
   overflow-wrap: anywhere;
 }
 
+.hunt-status-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
 .hunt-status {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   padding: 0.32rem 0.7rem;
+  border: 1px solid transparent;
   border-radius: 999px;
   font-size: 0.68rem;
   font-weight: 700;
@@ -3725,6 +3734,18 @@ ul {
   color: #7dffb0;
   background: rgba(125, 255, 176, 0.1);
   border-color: rgba(125, 255, 176, 0.24);
+}
+
+.hunt-status--requests-open {
+  color: #9ed0ff;
+  background: rgba(88, 201, 243, 0.12);
+  border-color: rgba(88, 201, 243, 0.24);
+}
+
+.hunt-status--requests-closed {
+  color: #b7c7d4;
+  background: rgba(139, 164, 182, 0.12);
+  border-color: rgba(139, 164, 182, 0.24);
 }
 
 @keyframes hunt-status-glow {
