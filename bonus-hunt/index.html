@@ -174,166 +174,6 @@
               </div>
             </div>
 
-            <div class="requests-hub hunt-side-card bj21-panel" id="slot-requests-panel">
-              <span class="bj21-panel-glow" aria-hidden="true"></span>
-              <div class="requests-hub-header">
-                <div>
-                  <p class="section-eyebrow">Viewer requests</p>
-                  <h3 class="requests-hub-title">Slot queue</h3>
-                </div>
-                <div class="requests-hub-meta">
-                  <span class="requests-hub-count" id="slot-requests-count">0 requests</span>
-                  <span class="requests-hub-status requests-hub-status--closed" id="requests-panel-status">
-                    Requests closed
-                  </span>
-                </div>
-              </div>
-
-              <div class="requests-hub-command">
-                <p class="requests-hub-command-label">Request in Kick chat</p>
-                <code class="requests-hub-command-code">!s &lt;slot name&gt;</code>
-                <p class="requests-hub-command-example">Example: <strong>!s Gates of Olympus</strong></p>
-                <p class="requests-hub-command-note">
-                  Request up to <strong>3 slots</strong> each. Slots must be from
-                  <a href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
-                  or
-                  <a href="https://stake.com/casino/group/only-on-stake" target="_blank" rel="noopener noreferrer">Only on Stake</a>.
-                </p>
-                <p class="requests-hub-aff-note is-hidden" id="slot-request-access-note"></p>
-              </div>
-
-              <div class="requests-hub-notice is-hidden" id="slot-request-closed">
-                <p>Requests are closed right now. Check back when the stream turns on <strong>Requests open</strong>.</p>
-              </div>
-
-              <div class="requests-hub-notice is-hidden" id="slot-request-guest">
-                <p>Sign in with Kick to request here, or type <strong>!s &lt;slot&gt;</strong> in chat.</p>
-                <a href="/api/auth/login" class="btn btn-primary btn-sm">Sign in with Kick</a>
-              </div>
-
-              <div class="requests-hub-form is-hidden" id="slot-request-panel">
-                <p class="requests-hub-form-text">Or submit a request on the site:</p>
-                <form class="slot-request-form" id="slot-request-form">
-                  <label class="guess-label" for="slot-request-select">Slot</label>
-                  <select class="slot-request-select" id="slot-request-select" required>
-                    <option value="">Choose a slot...</option>
-                  </select>
-                  <button type="submit" class="btn btn-primary" id="slot-request-submit">
-                    Submit request
-                  </button>
-                  <p class="requests-hub-limit is-hidden" id="slot-request-limit-note"></p>
-                  <p class="guess-status is-hidden" id="slot-request-status" role="status" aria-live="polite"></p>
-                </form>
-                <p class="requests-hub-catalog" id="slot-catalog-count">Loading slots...</p>
-              </div>
-
-              <div id="slot-requests-viewer-mount">
-                <div class="requests-hub-list-wrap hunt-admin-queue-list">
-                  <p class="requests-hub-empty" id="slot-requests-empty">No slot requests yet.</p>
-                  <ul class="slot-requests-list is-hidden" id="slot-requests-list"></ul>
-                </div>
-              </div>
-
-              <div class="requests-hub-admin hunt-admin-queue-tools is-hidden" id="slot-requests-admin">
-                <div class="requests-hub-access-toggles">
-                  <div class="requests-hub-aff-toggle">
-                    <div>
-                      <p class="admin-panel-label">Slot requests</p>
-                      <p class="admin-panel-text" id="slot-requests-toggle-status">
-                        Slot requests are closed
-                      </p>
-                    </div>
-                    <label class="toggle">
-                      <input
-                        type="checkbox"
-                        id="slot-requests-toggle"
-                        aria-labelledby="slot-requests-toggle-status"
-                      />
-                      <span class="toggle-slider" aria-hidden="true"></span>
-                    </label>
-                  </div>
-                  <div class="requests-hub-aff-toggle">
-                    <div>
-                      <p class="admin-panel-label">AFF only</p>
-                      <p class="admin-panel-text" id="slot-requests-aff-status">
-                        Affiliates can request when requests are open
-                      </p>
-                    </div>
-                    <label class="toggle">
-                      <input
-                        type="checkbox"
-                        id="slot-requests-aff-toggle"
-                        aria-labelledby="slot-requests-aff-status"
-                      />
-                      <span class="toggle-slider" aria-hidden="true"></span>
-                    </label>
-                  </div>
-                  <div class="requests-hub-aff-toggle">
-                    <div>
-                      <p class="admin-panel-label">SUB only</p>
-                      <p class="admin-panel-text" id="slot-requests-sub-status">
-                        Kick subscribers can request when requests are open
-                      </p>
-                    </div>
-                    <label class="toggle">
-                      <input
-                        type="checkbox"
-                        id="slot-requests-sub-toggle"
-                        aria-labelledby="slot-requests-sub-status"
-                      />
-                      <span class="toggle-slider" aria-hidden="true"></span>
-                    </label>
-                  </div>
-                </div>
-                <div class="requests-hub-kick is-hidden" id="kick-chat-admin">
-                  <p class="requests-hub-kick-title">Kick chat setup</p>
-                  <p class="requests-hub-kick-status" id="kick-chat-status">
-                    Checking Kick chat connection...
-                  </p>
-                  <p class="requests-hub-kick-meta" id="kick-bot-status"></p>
-                  <div class="requests-hub-kick-actions">
-                    <a href="/api/kick/bot/login" class="btn btn-sm btn-kick" id="kick-bot-connect">
-                      Connect chat bot
-                    </a>
-                    <button type="button" class="btn btn-sm btn-primary" id="kick-chat-subscribe">
-                      Enable !s in chat
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline" id="kick-test-command">
-                      Test queue
-                    </button>
-                  </div>
-                  <p class="requests-hub-kick-meta is-hidden" id="kick-webhook-log"></p>
-                </div>
-                <div class="slot-catalog-section" id="slot-catalog-section">
-                  <p class="admin-panel-label">Allowed slots</p>
-                  <p class="admin-panel-text">
-                    Sync
-                    <a href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
-                    and
-                    <a href="https://stake.com/casino/group/only-on-stake" target="_blank" rel="noopener noreferrer">Only on Stake</a>
-                    for hunt search and Kick <code>!s</code>.
-                    Click Sync → Stake opens → F12 Console → paste → Enter.
-                    Keep this Bonus Hunt tab open (upload comes back here). Do both groups.
-                  </p>
-                  <div class="slot-catalog-script-actions">
-                    <button type="button" class="btn btn-sm btn-primary" id="slot-sync-new-releases">
-                      Sync New Releases
-                    </button>
-                    <button type="button" class="btn btn-sm btn-primary" id="slot-sync-only-on-stake">
-                      Sync Only on Stake
-                    </button>
-                  </div>
-                  <p class="guess-status is-hidden" id="slot-catalog-import-status" role="status" aria-live="polite"></p>
-                  <p class="requests-hub-kick-meta" id="slot-catalog-note">
-                    No slots loaded yet.
-                  </p>
-                </div>
-                <button type="button" class="btn btn-sm btn-outline" id="slot-requests-clear">
-                  Clear requests
-                </button>
-              </div>
-            </div>
-
             <div class="admin-panel hunt-admin-card bj21-panel is-hidden" id="bonus-hunt-admin">
               <span class="bj21-panel-glow" aria-hidden="true"></span>
               <div class="admin-panel-section">
@@ -509,6 +349,168 @@
             <p class="guess-status is-hidden" id="bonus-hunt-status" role="status" aria-live="polite"></p>
               </div>
             </div>
+          </div>
+
+          <aside class="hunt-layout-side">
+            <div class="requests-hub hunt-side-card bj21-panel" id="slot-requests-panel">
+              <span class="bj21-panel-glow" aria-hidden="true"></span>
+              <div class="requests-hub-header">
+                <div>
+                  <p class="section-eyebrow">Viewer requests</p>
+                  <h3 class="requests-hub-title">Slot queue</h3>
+                </div>
+                <div class="requests-hub-meta">
+                  <span class="requests-hub-count" id="slot-requests-count">0 requests</span>
+                  <span class="requests-hub-status requests-hub-status--closed" id="requests-panel-status">
+                    Requests closed
+                  </span>
+                </div>
+              </div>
+
+              <div class="requests-hub-command">
+                <div class="requests-hub-command-row">
+                  <code class="requests-hub-command-code">!s &lt;slot name&gt;</code>
+                  <p class="requests-hub-command-note">
+                    Up to <strong>3</strong> each ·
+                    <a href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
+                    /
+                    <a href="https://stake.com/casino/group/only-on-stake" target="_blank" rel="noopener noreferrer">Only on Stake</a>
+                  </p>
+                </div>
+                <p class="requests-hub-aff-note is-hidden" id="slot-request-access-note"></p>
+              </div>
+
+              <div class="requests-hub-notice is-hidden" id="slot-request-closed">
+                <p>Requests are closed right now. Check back when the stream turns on <strong>Requests open</strong>.</p>
+              </div>
+
+              <div class="requests-hub-notice is-hidden" id="slot-request-guest">
+                <p>Sign in with Kick to request here, or type <strong>!s &lt;slot&gt;</strong> in chat.</p>
+                <a href="/api/auth/login" class="btn btn-primary btn-sm">Sign in with Kick</a>
+              </div>
+
+              <div class="requests-hub-form is-hidden" id="slot-request-panel">
+                <p class="requests-hub-form-text">Or submit a request on the site:</p>
+                <form class="slot-request-form" id="slot-request-form">
+                  <label class="guess-label" for="slot-request-select">Slot</label>
+                  <select class="slot-request-select" id="slot-request-select" required>
+                    <option value="">Choose a slot...</option>
+                  </select>
+                  <button type="submit" class="btn btn-primary" id="slot-request-submit">
+                    Submit request
+                  </button>
+                  <p class="requests-hub-limit is-hidden" id="slot-request-limit-note"></p>
+                  <p class="guess-status is-hidden" id="slot-request-status" role="status" aria-live="polite"></p>
+                </form>
+                <p class="requests-hub-catalog" id="slot-catalog-count">Loading slots...</p>
+              </div>
+
+              <div id="slot-requests-viewer-mount">
+                <div class="requests-hub-list-wrap hunt-admin-queue-list">
+                  <p class="requests-hub-empty" id="slot-requests-empty">No slot requests yet.</p>
+                  <ul class="slot-requests-list is-hidden" id="slot-requests-list"></ul>
+                </div>
+              </div>
+
+              <div class="requests-hub-admin hunt-admin-queue-tools is-hidden" id="slot-requests-admin">
+                <div class="requests-hub-access-toggles">
+                  <div class="requests-hub-aff-toggle">
+                    <div>
+                      <p class="admin-panel-label">Slot requests</p>
+                      <p class="admin-panel-text" id="slot-requests-toggle-status">
+                        Slot requests are closed
+                      </p>
+                    </div>
+                    <label class="toggle">
+                      <input
+                        type="checkbox"
+                        id="slot-requests-toggle"
+                        aria-labelledby="slot-requests-toggle-status"
+                      />
+                      <span class="toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                  <div class="requests-hub-aff-toggle">
+                    <div>
+                      <p class="admin-panel-label">AFF only</p>
+                      <p class="admin-panel-text" id="slot-requests-aff-status">
+                        Affiliates can request when requests are open
+                      </p>
+                    </div>
+                    <label class="toggle">
+                      <input
+                        type="checkbox"
+                        id="slot-requests-aff-toggle"
+                        aria-labelledby="slot-requests-aff-status"
+                      />
+                      <span class="toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                  <div class="requests-hub-aff-toggle">
+                    <div>
+                      <p class="admin-panel-label">SUB only</p>
+                      <p class="admin-panel-text" id="slot-requests-sub-status">
+                        Kick subscribers can request when requests are open
+                      </p>
+                    </div>
+                    <label class="toggle">
+                      <input
+                        type="checkbox"
+                        id="slot-requests-sub-toggle"
+                        aria-labelledby="slot-requests-sub-status"
+                      />
+                      <span class="toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                </div>
+                <div class="requests-hub-kick is-hidden" id="kick-chat-admin">
+                  <p class="requests-hub-kick-title">Kick chat setup</p>
+                  <p class="requests-hub-kick-status" id="kick-chat-status">
+                    Checking Kick chat connection...
+                  </p>
+                  <p class="requests-hub-kick-meta" id="kick-bot-status"></p>
+                  <div class="requests-hub-kick-actions">
+                    <a href="/api/kick/bot/login" class="btn btn-sm btn-kick" id="kick-bot-connect">
+                      Connect chat bot
+                    </a>
+                    <button type="button" class="btn btn-sm btn-primary" id="kick-chat-subscribe">
+                      Enable !s in chat
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline" id="kick-test-command">
+                      Test queue
+                    </button>
+                  </div>
+                  <p class="requests-hub-kick-meta is-hidden" id="kick-webhook-log"></p>
+                </div>
+                <div class="slot-catalog-section" id="slot-catalog-section">
+                  <p class="admin-panel-label">Allowed slots</p>
+                  <p class="admin-panel-text">
+                    Sync
+                    <a href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
+                    and
+                    <a href="https://stake.com/casino/group/only-on-stake" target="_blank" rel="noopener noreferrer">Only on Stake</a>
+                    for hunt search and Kick <code>!s</code>.
+                    Click Sync → Stake opens → F12 Console → paste → Enter.
+                    Keep this Bonus Hunt tab open (upload comes back here). Do both groups.
+                  </p>
+                  <div class="slot-catalog-script-actions">
+                    <button type="button" class="btn btn-sm btn-primary" id="slot-sync-new-releases">
+                      Sync New Releases
+                    </button>
+                    <button type="button" class="btn btn-sm btn-primary" id="slot-sync-only-on-stake">
+                      Sync Only on Stake
+                    </button>
+                  </div>
+                  <p class="guess-status is-hidden" id="slot-catalog-import-status" role="status" aria-live="polite"></p>
+                  <p class="requests-hub-kick-meta" id="slot-catalog-note">
+                    No slots loaded yet.
+                  </p>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline" id="slot-requests-clear">
+                  Clear requests
+                </button>
+              </div>
+            </div>
 
             <section class="past-hunts-card hunt-side-card bj21-panel" id="past-hunts-section" aria-labelledby="past-hunts-heading">
               <span class="bj21-panel-glow" aria-hidden="true"></span>
@@ -522,7 +524,7 @@
               <p class="past-hunts-empty" id="past-hunts-empty">No completed hunts yet.</p>
               <ul class="past-hunts-list is-hidden" id="past-hunts-list"></ul>
             </section>
-          </div>
+          </aside>
         </div>
       </div>
     </section>
