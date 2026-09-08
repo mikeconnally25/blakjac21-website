@@ -2870,41 +2870,86 @@ function initAdminForm() {
     return `(async () => {
   const groupSlug = ${JSON.stringify(groupSlug)};
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-  const findLoadMore = () =>
-    [...document.querySelectorAll("button")].find((b) =>
-      /^\\s*Load More\\s*$/i.test((b.innerText || b.textContent || "").trim())
-    );
 
+  const countGames = () =>
+    document.querySelectorAll('a[href*="/casino/games/"]').length;
+
+  const findLoadMore = () =>
+    [...document.querySelectorAll("button")].find((b) => {
+      if (b.disabled) return false;
+      return /^\\s*Load More\\s*$/i.test((b.innerText || b.textContent || "").trim());
+    });
+
+  const scrollables = () => {
+    const list = [
+      document.scrollingElement,
+      document.documentElement,
+      document.body,
+      ...document.querySelectorAll("main, [class*='scroll'], [style*='overflow']"),
+    ].filter(Boolean);
+    return [...new Set(list)];
+  };
+
+  const scrollToBottom = () => {
+    for (const el of scrollables()) {
+      try {
+        if (el === document.scrollingElement || el === document.documentElement || el === document.body) {
+          window.scrollTo(0, Math.max(document.body.scrollHeight, document.documentElement.scrollHeight));
+          el.scrollTop = el.scrollHeight;
+        } else if (el.scrollHeight > el.clientHeight + 40) {
+          el.scrollTop = el.scrollHeight;
+        }
+      } catch {}
+    }
+    const btn = findLoadMore();
+    if (btn) btn.scrollIntoView({ block: "center", behavior: "auto" });
+  };
+
+  console.log("Loading all ${label} slots — scrolling + Load More...");
   let lastCount = 0;
   let stable = 0;
 
-  for (let i = 0; i < 200; i++) {
+  for (let i = 0; i < 400; i++) {
+    scrollToBottom();
+    await sleep(400);
+    scrollToBottom();
+
     const btn = findLoadMore();
-    if (!btn || btn.disabled) {
-      console.log("No more Load More button.");
-      break;
+    if (btn) {
+      btn.click();
+      await sleep(1100);
+      scrollToBottom();
+    } else {
+      await sleep(700);
     }
-    btn.scrollIntoView({ block: "center" });
-    btn.click();
-    await sleep(900);
-    const count = document.querySelectorAll('a[href*="/casino/games/"]').length;
-    console.log("Click " + (i + 1) + ": " + count + " game links");
+
+    const count = countGames();
+    if (i % 3 === 0 || !btn) {
+      console.log("Pass " + (i + 1) + ": " + count + " links" + (btn ? " (Load More)" : " (scrolling)"));
+    }
+
     if (count === lastCount) {
       stable += 1;
-      if (stable >= 5) break;
+      if (stable >= 8 && !findLoadMore()) break;
+      if (stable >= 12) break;
     } else {
       stable = 0;
       lastCount = count;
     }
   }
 
-  const skip = new Set(["poker", "roulette", "blackjack"]);
+  scrollToBottom();
+  await sleep(500);
+
+  const skip = new Set(["poker", "roulette", "blackjack", "baccarat", "dice", "mines", "plinko", "limbo", "keno", "wheel", "hilo", "crash"]);
   const seen = new Set();
   const slots = [];
+
   for (const a of document.querySelectorAll('a[href*="/casino/games/"]')) {
     const slug = a.pathname.split("/").filter(Boolean).pop();
     if (!slug || skip.has(slug) || seen.has(slug)) continue;
     seen.add(slug);
+
     const raw = (a.textContent || "").replace(/\\s+/g, " ").trim();
     const name = raw.replace(/\\s+\\d+\\s*playing.*$/i, "").trim() || slug;
     slots.push({ name, slug, groupSlug });
@@ -2922,7 +2967,7 @@ function initAdminForm() {
       document.execCommand("copy");
       ta.remove();
     }
-    console.log("Copied " + slots.length + " ${label} slots. Paste into Bonus Hunt (Ctrl+V).");
+    console.log("Done. Copied " + slots.length + " ${label} slots. Paste into Bonus Hunt (Ctrl+V).");
   } catch (err) {
     console.log("Built " + slots.length + " slots, but clipboard failed. Copy JSON below:");
     console.log(json);
