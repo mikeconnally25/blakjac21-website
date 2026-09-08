@@ -1103,6 +1103,49 @@ function groupLabelForSlot(slot) {
   return group?.label || slot.provider || "";
 }
 
+function slotBelongsToGroup(slot, groupSlug) {
+  if (!slot || !groupSlug) {
+    return false;
+  }
+
+  if (slot.groupSlug === groupSlug) {
+    return true;
+  }
+
+  return Array.isArray(slot.groupSlugs) && slot.groupSlugs.includes(groupSlug);
+}
+
+function getCatalogSectionCounts() {
+  const counts = {};
+  for (const group of slotGroups) {
+    counts[group.slug] = slotCatalog.filter((slot) =>
+      slotBelongsToGroup(slot, group.slug)
+    ).length;
+  }
+
+  const unique = new Set(
+    slotCatalog.map((slot) => String(slot.slug || "").toLowerCase()).filter(Boolean)
+  ).size;
+
+  return { counts, unique };
+}
+
+function formatCatalogCountSummary() {
+  const { counts, unique } = getCatalogSectionCounts();
+  const parts = slotGroups
+    .map((group) => {
+      const total = counts[group.slug] || 0;
+      return `${group.label}: ${total}`;
+    })
+    .filter(Boolean);
+
+  if (!parts.length) {
+    return unique === 1 ? "1 unique Stake slot" : `${unique} unique Stake slots`;
+  }
+
+  return `${parts.join(" · ")} (${unique} unique)`;
+}
+
 function updateHuntAddSlotMeta() {
   const meta = document.getElementById("hunt-add-slot-meta");
   if (!meta) return;
@@ -1113,10 +1156,7 @@ function updateHuntAddSlotMeta() {
     return;
   }
 
-  meta.textContent =
-    slotCatalog.length === 1
-      ? "1 Stake slot available"
-      : `${slotCatalog.length} Stake slots available`;
+  meta.textContent = formatCatalogCountSummary();
 }
 
 function renderHuntAddSelectedSlot() {
@@ -1171,20 +1211,34 @@ function renderHuntAddSlotResults() {
     return;
   }
 
-  const matches = slotCatalog
-    .filter((slot) => {
-      const haystack = [slot.name, slot.provider, groupLabelForSlot(slot)]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return haystack.includes(query);
+  const matches = [];
+  const seenSlugs = new Set();
+  for (const slot of slotCatalog) {
+    const slug = String(slot.slug || "").toLowerCase();
+    if (slug && seenSlugs.has(slug)) {
+      continue;
+    }
+
+    const haystack = [slot.name, slot.provider, groupLabelForSlot(slot)]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    if (!haystack.includes(query)) {
+      continue;
+    }
+
+    if (slug) {
+      seenSlugs.add(slug);
+    }
+    matches.push(slot);
+  }
+
+  matches.sort((a, b) =>
+    String(a.name || "").localeCompare(String(b.name || ""), undefined, {
+      sensitivity: "base",
     })
-    .sort((a, b) =>
-      String(a.name || "").localeCompare(String(b.name || ""), undefined, {
-        sensitivity: "base",
-      })
-    )
-    .slice(0, 40);
+  );
+  const limited = matches.slice(0, 40);
 
   if (!slotCatalog.length) {
     results.classList.add("is-hidden");
@@ -1204,7 +1258,7 @@ function renderHuntAddSlotResults() {
   empty.textContent = "";
   results.classList.remove("is-hidden");
 
-  matches.forEach((slot) => {
+  limited.forEach((slot) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "hunt-add-slot-option";
@@ -1814,10 +1868,15 @@ function renderSlotCatalogSelect(selectedSlug = "") {
 
   const grouped = new Map();
   for (const slot of slotCatalog) {
-    if (!grouped.has(slot.groupSlug)) {
-      grouped.set(slot.groupSlug, []);
+    for (const group of slotGroups) {
+      if (!slotBelongsToGroup(slot, group.slug)) {
+        continue;
+      }
+      if (!grouped.has(group.slug)) {
+        grouped.set(group.slug, []);
+      }
+      grouped.get(group.slug).push(slot);
     }
-    grouped.get(slot.groupSlug).push(slot);
   }
 
   for (const group of slotGroups) {
@@ -1831,7 +1890,7 @@ function renderSlotCatalogSelect(selectedSlug = "") {
       const option = document.createElement("option");
       option.value = slot.slug;
       option.textContent = slot.name;
-      option.dataset.groupSlug = slot.groupSlug;
+      option.dataset.groupSlug = group.slug;
       if (slot.slug === selectedSlug) {
         option.selected = true;
       }
@@ -1842,10 +1901,7 @@ function renderSlotCatalogSelect(selectedSlug = "") {
   }
 
   if (count) {
-    count.textContent =
-      slotCatalog.length === 1
-        ? "1 allowed slot"
-        : `${slotCatalog.length} allowed slots`;
+    count.textContent = formatCatalogCountSummary();
   }
 }
 
