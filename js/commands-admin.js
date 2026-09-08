@@ -105,7 +105,7 @@
       replyLabel.textContent = "Reply";
       const replyInput = document.createElement("textarea");
       replyInput.className = "guess-input commands-reply-input";
-      replyInput.rows = 2;
+      replyInput.rows = 1;
       replyInput.maxLength = 400;
       replyInput.value = command.reply || "";
       replyInput.placeholder = "Join the Discord: …";
@@ -169,7 +169,7 @@
         input.className = "guess-input commands-reply-input";
         input.id = `bot-reply-${field.key}`;
         input.name = field.key;
-        input.rows = 2;
+        input.rows = 1;
         input.maxLength = 400;
         input.value = replies[field.key] || field.defaultValue || "";
 

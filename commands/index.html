@@ -104,26 +104,28 @@
           </div>
 
           <form id="commands-replies-form" class="commands-replies-form">
-            <div class="commands-replies-group">
-              <p class="admin-panel-label">Built-in triggers</p>
-              <p class="admin-panel-text">Comma-separated. Example: <code>!s, !slot</code></p>
-              <div id="commands-trigger-fields" class="commands-replies-fields"></div>
-            </div>
-
-            <div class="commands-replies-group">
-              <div class="commands-admin-top">
-                <div>
-                  <p class="admin-panel-label">Custom commands</p>
-                  <p class="admin-panel-text">Add your own chat commands with a fixed reply.</p>
-                </div>
-                <button type="button" class="btn btn-sm btn-outline" id="commands-custom-add">
-                  Add command
-                </button>
+            <div class="commands-admin-scroll">
+              <div class="commands-replies-group">
+                <p class="admin-panel-label">Built-in triggers</p>
+                <p class="admin-panel-text">Comma-separated. Example: <code>!s, !slot</code></p>
+                <div id="commands-trigger-fields" class="commands-replies-fields"></div>
               </div>
-              <div id="commands-custom-fields" class="commands-custom-fields"></div>
-            </div>
 
-            <div id="commands-replies-fields" class="commands-replies-fields"></div>
+              <div class="commands-replies-group">
+                <div class="commands-admin-top">
+                  <div>
+                    <p class="admin-panel-label">Custom commands</p>
+                    <p class="admin-panel-text">Add your own chat commands with a fixed reply.</p>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline" id="commands-custom-add">
+                    Add command
+                  </button>
+                </div>
+                <div id="commands-custom-fields" class="commands-custom-fields"></div>
+              </div>
+
+              <div id="commands-replies-fields" class="commands-replies-fields"></div>
+            </div>
             <div class="commands-admin-actions">
               <button type="submit" class="btn btn-sm btn-primary" id="commands-replies-save">
                 Save commands
