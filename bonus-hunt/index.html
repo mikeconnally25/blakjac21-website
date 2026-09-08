@@ -309,20 +309,21 @@
                     <a href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
                     or
                     <a href="https://stake.com/casino/group/only-on-stake" target="_blank" rel="noopener noreferrer">Only on Stake</a>,
-                    press F12 → Network → filter <code>graphql</code> → open a
-                    <code>SlugKuratorGroup</code> response → copy Response JSON → paste below.
-                    Import each group (repeat for the other).
+                    press F12 → <strong>Console</strong>, paste the scrape script, press Enter
+                    (it copies JSON). Then paste that JSON here — not the script itself.
+                    Import each group separately.
                   </p>
-                  <label class="guess-label" for="slot-import-payload">GraphQL response JSON</label>
+                  <label class="guess-label" for="slot-import-payload">Copied slot JSON</label>
                   <textarea
                     class="slot-import-textarea"
                     id="slot-import-payload"
                     rows="8"
-                    placeholder='Paste {"data":{"slugKuratorGroup":...}} here'
+                    placeholder='Paste {"slots":[...]} here (from stake.com console copy)'
                   ></textarea>
                   <button type="button" class="btn btn-sm btn-primary" id="slot-import-submit">
                     Import Stake slots
                   </button>
+                  <p class="guess-status is-hidden" id="slot-import-status" role="status" aria-live="polite"></p>
                   <p class="requests-hub-kick-meta" id="slot-catalog-auto-note">
                     Slot catalog loads from imported New Releases and Only on Stake lists.
                   </p>

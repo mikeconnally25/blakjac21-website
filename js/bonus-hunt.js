@@ -2867,9 +2867,35 @@ function initAdminForm() {
   document.getElementById("slot-import-submit")?.addEventListener("click", async (event) => {
     const button = event.currentTarget;
     const textarea = document.getElementById("slot-import-payload");
+    const importStatus = document.getElementById("slot-import-status");
+
+    const setImportStatus = (message, tone = "") => {
+      if (importStatus) {
+        importStatus.textContent = message;
+        importStatus.classList.toggle("is-hidden", !message);
+        importStatus.classList.toggle("is-error", tone === "error");
+        importStatus.classList.toggle("is-success", tone === "success");
+      }
+      setStatus(message, tone);
+    };
+
     const raw = String(textarea?.value || "").trim();
     if (!raw) {
-      setStatus("Paste GraphQL response JSON from stake.com first.", "error");
+      setImportStatus(
+        "Paste the copied JSON from stake.com first (not the console script).",
+        "error"
+      );
+      return;
+    }
+
+    if (
+      /querySelectorAll|groupSlug\s*:|copy\s*\(/.test(raw) &&
+      !/"slots"\s*:\s*\[/.test(raw)
+    ) {
+      setImportStatus(
+        "That looks like the console script. Run it on stake.com Console first, then paste the copied {\"slots\":[...]} JSON here.",
+        "error"
+      );
       return;
     }
 
@@ -2881,7 +2907,7 @@ function initAdminForm() {
     }
 
     button.disabled = true;
-    setStatus("Importing Stake slots...");
+    setImportStatus("Importing Stake slots...");
 
     try {
       const response = await fetch("/api/bonus-hunt/slots/import", {
@@ -2892,7 +2918,7 @@ function initAdminForm() {
       });
       const data = await response.json();
       if (!response.ok) {
-        setStatus(data.error || "Could not import slots.", "error");
+        setImportStatus(data.error || "Could not import slots.", "error");
         return;
       }
 
@@ -2903,13 +2929,13 @@ function initAdminForm() {
       const thumbNote =
         data.withThumbnails > 0
           ? ` (${data.withThumbnails} with logos)`
-          : " (logos missing in this paste — import a response that includes thumbnailUrl)";
-      setStatus(
+          : " (logos missing for now — names/slugs still imported)";
+      setImportStatus(
         `Imported slots. Catalog now has ${data.unique || data.count} unique slots${thumbNote}.`,
-        data.withThumbnails > 0 ? "success" : "error"
+        "success"
       );
     } catch {
-      setStatus("Could not import slots. Try again.", "error");
+      setImportStatus("Could not import slots. Try again.", "error");
     } finally {
       button.disabled = false;
     }
