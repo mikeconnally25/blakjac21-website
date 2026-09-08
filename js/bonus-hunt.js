@@ -965,15 +965,28 @@ function updateSlotCatalogNote() {
 
 function updateHuntAddSlotMeta() {
   const meta = document.getElementById("hunt-add-slot-meta");
+  const search = document.getElementById("hunt-add-slot-search");
   if (!meta) return;
 
   if (!slotCatalog.length) {
     meta.textContent =
       "No slots loaded. Sync Allowed slots in Requests admin first.";
+    if (search) {
+      search.placeholder = "Sync Allowed slots first…";
+      search.disabled = true;
+    }
     return;
   }
 
   meta.textContent = formatCatalogCountSummary();
+  if (search) {
+    const unique =
+      slotCatalogSectionStats?.unique ||
+      getCatalogSectionCounts().unique ||
+      slotCatalog.length;
+    search.placeholder = `Search ${unique} slots…`;
+    search.disabled = false;
+  }
 }
 
 function renderHuntAddSelectedSlot() {
@@ -1020,11 +1033,20 @@ function renderHuntAddSlotResults() {
 
   results.replaceChildren();
   const query = huntAddSearchQuery.trim().toLowerCase();
+  const tokens = query.split(/\s+/).filter(Boolean);
 
-  if (!query || huntAddSelectedSlot) {
+  if (huntAddSelectedSlot) {
     results.classList.add("is-hidden");
     empty.classList.add("is-hidden");
     empty.textContent = "";
+    return;
+  }
+
+  if (!slotCatalog.length) {
+    results.classList.add("is-hidden");
+    empty.classList.remove("is-hidden");
+    empty.textContent =
+      "Slot catalog is empty. Sync Allowed slots in Requests admin first.";
     return;
   }
 
@@ -1036,11 +1058,12 @@ function renderHuntAddSlotResults() {
       continue;
     }
 
-    const haystack = [slot.name, slot.provider, groupLabelForSlot(slot)]
+    const haystack = [slot.name, slot.slug, slot.provider, groupLabelForSlot(slot)]
       .filter(Boolean)
       .join(" ")
       .toLowerCase();
-    if (!haystack.includes(query)) {
+
+    if (tokens.length && !tokens.every((token) => haystack.includes(token))) {
       continue;
     }
 
@@ -1050,25 +1073,26 @@ function renderHuntAddSlotResults() {
     matches.push(slot);
   }
 
-  matches.sort((a, b) =>
-    String(a.name || "").localeCompare(String(b.name || ""), undefined, {
+  matches.sort((a, b) => {
+    if (tokens.length) {
+      const aName = String(a.name || "").toLowerCase();
+      const bName = String(b.name || "").toLowerCase();
+      const aStarts = tokens.some((token) => aName.startsWith(token)) ? 0 : 1;
+      const bStarts = tokens.some((token) => bName.startsWith(token)) ? 0 : 1;
+      if (aStarts !== bStarts) return aStarts - bStarts;
+    }
+    return String(a.name || "").localeCompare(String(b.name || ""), undefined, {
       sensitivity: "base",
-    })
-  );
-  const limited = matches.slice(0, 40);
+    });
+  });
 
-  if (!slotCatalog.length) {
+  // Empty query = browse the catalog; typed query = filtered matches.
+  const limited = matches.slice(0, query ? 40 : 30);
+
+  if (!limited.length) {
     results.classList.add("is-hidden");
     empty.classList.remove("is-hidden");
-    empty.textContent =
-      "Slot catalog is empty. Sync Allowed slots in Requests admin first.";
-    return;
-  }
-
-  if (!matches.length) {
-    results.classList.add("is-hidden");
-    empty.classList.remove("is-hidden");
-    empty.textContent = "No matching slots.";
+    empty.textContent = query ? "No matching slots." : "No slots available.";
     return;
   }
 
@@ -2535,7 +2559,13 @@ function initAdminForm() {
   });
 
   addSearch?.addEventListener("focus", () => {
-    if (huntAddSearchQuery.trim() && !huntAddSelectedSlot) {
+    if (!huntAddSelectedSlot) {
+      renderHuntAddSlotResults();
+    }
+  });
+
+  addSearch?.addEventListener("click", () => {
+    if (!huntAddSelectedSlot) {
       renderHuntAddSlotResults();
     }
   });
@@ -3052,11 +3082,29 @@ function initAdminForm() {
     const slug = a.pathname.split("/").filter(Boolean).pop();
     if (!slug || skip.has(slug) || seen.has(slug)) continue;
     seen.add(slug);
+    const nameEl =
+      a.querySelector(".edge-typography-body-md-strong") ||
+      a.querySelector(".game-info-wrap:not(.game-group) span") ||
+      a.querySelector("img[alt]");
+    const providerEl = a.querySelector(".game-group");
+    const nameFromDom = (nameEl?.alt || nameEl?.textContent || "")
+      .replace(/\\s+/g, " ")
+      .trim();
     const raw = (a.textContent || "").replace(/\\s+/g, " ").trim();
-    const name = raw.replace(/\\s+\\d+\\s*playing.*$/i, "").trim() || slug;
+    const name =
+      nameFromDom ||
+      raw.replace(/\\s+\\d+\\s*playing.*$/i, "").trim() ||
+      slug;
+    const provider = (providerEl?.textContent || "").replace(/\\s+/g, " ").trim() || undefined;
     const thumbnailUrl = pickThumbnail(a);
     if (thumbnailUrl) withLogos += 1;
-    slots.push({ name, slug, groupSlug, thumbnailUrl: thumbnailUrl || undefined });
+    slots.push({
+      name,
+      slug,
+      groupSlug,
+      provider,
+      thumbnailUrl: thumbnailUrl || undefined,
+    });
   }
 
   console.log("Uploading " + slots.length + " ${label} slots (" + withLogos + " with logos)...");
