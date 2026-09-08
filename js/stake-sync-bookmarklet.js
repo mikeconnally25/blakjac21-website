@@ -32,8 +32,10 @@
 
   async function loadGroup(slug, label) {
     const groupGamesList = [];
+    const limit = 50;
+    const maxOffset = 20000;
 
-    for (let offset = 0; offset < 1000; offset += 50) {
+    for (let offset = 0; offset < maxOffset; offset += limit) {
       const response = await fetch("/_api/graphql", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -41,7 +43,7 @@
         body: JSON.stringify({
           operationName: "SlugKuratorGroup",
           query,
-          variables: { slug, limit: 50, offset },
+          variables: { slug, limit, offset },
         }),
       });
 
@@ -56,6 +58,9 @@
       }
 
       groupGamesList.push(...batch);
+      if (batch.length < limit) {
+        break;
+      }
     }
 
     return {
