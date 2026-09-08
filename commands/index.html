@@ -89,13 +89,13 @@
           </article>
         </div>
 
-        <section class="admin-panel commands-admin is-hidden" id="commands-admin-panel" aria-label="Bot reply settings">
+        <section class="admin-panel commands-admin is-hidden" id="commands-admin-panel" aria-label="Bot command settings">
           <div class="commands-admin-top">
             <div>
-              <p class="admin-panel-label">Admin — bot replies</p>
+              <p class="admin-panel-label">Admin — bot commands</p>
               <p class="admin-panel-text">
-                Edit what the Kick bot says for each command. Use tokens like
-                <code>{slot}</code>, <code>{group}</code>, <code>{username}</code> where noted.
+                Edit command triggers (including the <code>!</code>), reply text, and add custom commands.
+                Tokens: <code>{slot}</code>, <code>{group}</code>, <code>{username}</code>, <code>{args}</code>.
               </p>
             </div>
             <button type="button" class="btn btn-sm btn-outline" id="commands-replies-reset">
@@ -104,10 +104,29 @@
           </div>
 
           <form id="commands-replies-form" class="commands-replies-form">
+            <div class="commands-replies-group">
+              <p class="admin-panel-label">Built-in triggers</p>
+              <p class="admin-panel-text">Comma-separated. Example: <code>!s, !slot</code></p>
+              <div id="commands-trigger-fields" class="commands-replies-fields"></div>
+            </div>
+
+            <div class="commands-replies-group">
+              <div class="commands-admin-top">
+                <div>
+                  <p class="admin-panel-label">Custom commands</p>
+                  <p class="admin-panel-text">Add your own chat commands with a fixed reply.</p>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline" id="commands-custom-add">
+                  Add command
+                </button>
+              </div>
+              <div id="commands-custom-fields" class="commands-custom-fields"></div>
+            </div>
+
             <div id="commands-replies-fields" class="commands-replies-fields"></div>
             <div class="commands-admin-actions">
               <button type="submit" class="btn btn-sm btn-primary" id="commands-replies-save">
-                Save replies
+                Save commands
               </button>
               <p class="guess-status is-hidden" id="commands-replies-status" role="status" aria-live="polite"></p>
             </div>
