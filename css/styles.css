@@ -3717,6 +3717,12 @@ ul {
   border-color: rgba(88, 201, 243, 0.24);
 }
 
+.hunt-status--collecting-off {
+  color: #b7c7d4;
+  background: rgba(139, 164, 182, 0.12);
+  border-color: rgba(139, 164, 182, 0.24);
+}
+
 .hunt-status--closed {
   color: #b7c7d4;
   background: rgba(139, 164, 182, 0.12);

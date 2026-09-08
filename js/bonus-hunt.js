@@ -20,6 +20,7 @@ let huntMeta = {
   title: "Live Hunt",
   startBalance: 0,
   showHighestMulti: false,
+  collecting: true,
   status: "collecting",
 };
 let pastHunts = [];
@@ -110,6 +111,7 @@ function renderHuntHeader(hunt) {
 
   updateHighestMultiToggle(hunt);
   updateHuntPhaseStatus(hunt);
+  updateHuntAddAvailability();
 }
 
 function updateHighestMultiToggle(hunt) {
@@ -857,7 +859,10 @@ async function loadBonusHunt() {
 
     const data = await response.json();
     const previousBonuses = huntBonuses;
-    huntMeta = data.hunt || huntMeta;
+    huntMeta = {
+      ...(data.hunt || huntMeta),
+      collecting: data.hunt?.collecting !== false,
+    };
     huntBonuses = data.bonuses || [];
     renderHuntHeader(huntMeta);
     renderSummary(data.summary, huntMeta);
@@ -1033,6 +1038,8 @@ function updateHuntAddSlotMeta() {
   const search = document.getElementById("hunt-add-slot-search");
   if (!meta) return;
 
+  const collectingOff = Boolean(currentUser?.isAdmin) && huntMeta?.collecting === false;
+
   if (!slotCatalog.length) {
     meta.textContent =
       "No slots loaded. Sync Allowed slots in Requests admin first.";
@@ -1043,15 +1050,24 @@ function updateHuntAddSlotMeta() {
     return;
   }
 
-  meta.textContent = formatCatalogCountSummary();
+  if (collectingOff) {
+    meta.textContent = "Collecting is off. Turn Collecting on to add bonuses.";
+  } else {
+    meta.textContent = formatCatalogCountSummary();
+  }
+
   if (search) {
     const unique =
       slotCatalogSectionStats?.unique ||
       getCatalogSectionCounts().unique ||
       slotCatalog.length;
-    search.placeholder = `Search ${unique} slots…`;
-    search.disabled = false;
+    search.placeholder = collectingOff
+      ? "Collecting is off…"
+      : `Search ${unique} slots…`;
+    search.disabled = collectingOff;
   }
+
+  updateHuntAddAvailability();
 }
 
 function renderHuntAddSelectedSlot() {
@@ -1522,10 +1538,62 @@ function updateHuntPhaseStatus(hunt = huntMeta) {
   const status = document.getElementById("hunt-status");
   if (!status) return;
 
-  const phase = hunt?.status || "collecting";
-  status.textContent = huntStatusLabel(phase);
-  status.className = huntPhaseClass(phase);
-  status.title = `Hunt phase: ${huntStatusLabel(phase)}`;
+  const collecting = hunt?.collecting !== false;
+  const isAdmin = Boolean(currentUser?.isAdmin);
+
+  status.textContent = collecting ? "Collecting" : "Collecting off";
+  status.className = collecting
+    ? "hunt-status hunt-status--collecting hunt-status-toggle"
+    : "hunt-status hunt-status--collecting-off hunt-status-toggle";
+  status.setAttribute("aria-pressed", collecting ? "true" : "false");
+  status.disabled = !isAdmin;
+  status.title = isAdmin
+    ? "Click to toggle collecting bonuses"
+    : collecting
+      ? "Hunt is collecting bonuses"
+      : "Collecting is off";
+}
+
+async function setCollecting(nextCollecting) {
+  const response = await fetch("/api/bonus-hunt/settings", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      title: huntMeta.title,
+      startBalance: huntMeta.startBalance,
+      showHighestMulti: Boolean(huntMeta.showHighestMulti),
+      collecting: Boolean(nextCollecting),
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || "Could not update collecting setting.");
+  }
+
+  huntMeta = {
+    ...huntMeta,
+    ...(data.hunt || {}),
+    collecting: data.hunt?.collecting !== false,
+  };
+  updateHuntPhaseStatus(huntMeta);
+  updateHuntAddAvailability();
+  return data;
+}
+
+function updateHuntAddAvailability() {
+  const form = document.getElementById("hunt-add-bonus-form");
+  const search = document.getElementById("hunt-add-slot-search");
+  const submit = document.getElementById("hunt-add-bonus-submit");
+  const bet = document.getElementById("hunt-add-bet");
+  const collecting = huntMeta?.collecting !== false;
+  const locked = Boolean(currentUser?.isAdmin) && !collecting;
+
+  if (search) search.disabled = locked || (!slotCatalog.length && Boolean(currentUser?.isAdmin));
+  if (bet) bet.disabled = locked;
+  if (submit) submit.disabled = locked;
+  form?.classList.toggle("is-collecting-off", locked);
 }
 
 function updateRequestStatusBadges() {
@@ -2551,6 +2619,7 @@ async function setShowHighestMulti(nextValue) {
       title: huntMeta.title,
       startBalance: huntMeta.startBalance,
       showHighestMulti: nextValue,
+      collecting: huntMeta.collecting !== false,
     }),
   });
 
@@ -2559,9 +2628,10 @@ async function setShowHighestMulti(nextValue) {
     throw new Error(data.error || "Could not update highest multi setting.");
   }
 
-  huntMeta = data.hunt || {
-    ...huntMeta,
-    showHighestMulti: nextValue,
+  huntMeta = {
+    ...(data.hunt || huntMeta),
+    collecting: data.hunt?.collecting !== false,
+    showHighestMulti: data.hunt?.showHighestMulti ?? nextValue,
   };
   renderHuntHeader(huntMeta);
   renderSummary(data.summary || lastSummary || {}, huntMeta);
@@ -2700,6 +2770,7 @@ function initAdminForm() {
           title,
           startBalance,
           showHighestMulti: Boolean(huntMeta.showHighestMulti),
+          collecting: huntMeta.collecting !== false,
         }),
       });
 
@@ -2709,7 +2780,10 @@ function initAdminForm() {
         return;
       }
 
-      huntMeta = data.hunt || huntMeta;
+      huntMeta = {
+        ...(data.hunt || huntMeta),
+        collecting: data.hunt?.collecting !== false,
+      };
       renderHuntHeader(huntMeta);
       renderSummary(data.summary, huntMeta);
       setStatus("Hunt settings saved.", "success");
@@ -2863,6 +2937,31 @@ function initAdminForm() {
       setStatus("Queue test failed. Try again.", "error");
     } finally {
       button.disabled = false;
+    }
+  });
+
+  document.getElementById("hunt-status")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    if (!currentUser?.isAdmin || button.disabled) {
+      return;
+    }
+
+    const nextCollecting = !(huntMeta.collecting !== false);
+    button.disabled = true;
+    setStatus(nextCollecting ? "Turning collecting on..." : "Turning collecting off...");
+
+    try {
+      await setCollecting(nextCollecting);
+      setStatus(
+        huntMeta.collecting !== false
+          ? "Collecting is on."
+          : "Collecting is off. New bonuses are blocked until you turn it back on.",
+        "success"
+      );
+    } catch (error) {
+      setStatus(error.message || "Could not update collecting.", "error");
+    } finally {
+      button.disabled = !currentUser?.isAdmin;
     }
   });
 
