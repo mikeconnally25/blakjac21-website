@@ -2883,58 +2883,64 @@ function initAdminForm() {
       return /^\\s*Load More\\s*$/i.test((b.innerText || b.textContent || "").trim());
     });
 
-  const scrollables = () => {
-    const list = [
-      document.scrollingElement,
-      document.documentElement,
-      document.body,
-      ...document.querySelectorAll("main, [class*='scroll'], [style*='overflow']"),
-    ].filter(Boolean);
-    return [...new Set(list)];
-  };
-
   const scrollToBottom = () => {
-    for (const el of scrollables()) {
-      try {
-        if (el === document.scrollingElement || el === document.documentElement || el === document.body) {
-          window.scrollTo(0, Math.max(document.body.scrollHeight, document.documentElement.scrollHeight));
-          el.scrollTop = el.scrollHeight;
-        } else if (el.scrollHeight > el.clientHeight + 40) {
-          el.scrollTop = el.scrollHeight;
-        }
-      } catch {}
-    }
+    const top = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    window.scrollTo(0, top);
+    document.documentElement.scrollTop = top;
+    document.body.scrollTop = top;
     const btn = findLoadMore();
-    if (btn) btn.scrollIntoView({ block: "center", behavior: "auto" });
+    if (btn) btn.scrollIntoView({ block: "end", behavior: "auto" });
   };
 
-  console.log("Syncing ${label} to Bonus Hunt — scrolling + Load More...");
+  const pickThumbnail = (anchor) => {
+    const img =
+      anchor.querySelector("img[src], img[srcset], img[data-src]") ||
+      anchor.querySelector("img");
+    if (!img) return null;
+    let url =
+      img.currentSrc ||
+      img.getAttribute("src") ||
+      img.getAttribute("data-src") ||
+      "";
+    if (!url && img.srcset) {
+      url = String(img.srcset).split(",")[0].trim().split(/\\s+/)[0] || "";
+    }
+    if (!url) return null;
+    if (url.startsWith("//")) url = "https:" + url;
+    if (url.startsWith("/")) url = location.origin + url;
+    return url;
+  };
+
+  console.log("Syncing ${label} to Bonus Hunt (fast mode + logos)...");
   let lastCount = 0;
   let stable = 0;
 
-  for (let i = 0; i < 400; i++) {
+  for (let i = 0; i < 250; i++) {
     scrollToBottom();
-    await sleep(400);
-    scrollToBottom();
-
     const btn = findLoadMore();
     if (btn) {
       btn.click();
-      await sleep(1100);
+      // Click again quickly if Stake re-renders another Load More
+      await sleep(220);
       scrollToBottom();
+      const again = findLoadMore();
+      if (again && again !== btn) {
+        again.click();
+        await sleep(180);
+      }
     } else {
-      await sleep(700);
+      await sleep(160);
     }
 
     const count = countGames();
-    if (i % 3 === 0 || !btn) {
-      console.log("Pass " + (i + 1) + ": " + count + " links" + (btn ? " (Load More)" : " (scrolling)"));
+    if (i % 5 === 0 || !btn) {
+      console.log("Pass " + (i + 1) + ": " + count + " links" + (btn ? " (Load More)" : ""));
     }
 
     if (count === lastCount) {
       stable += 1;
-      if (stable >= 8 && !findLoadMore()) break;
-      if (stable >= 12) break;
+      if (stable >= 4 && !findLoadMore()) break;
+      if (stable >= 6) break;
     } else {
       stable = 0;
       lastCount = count;
@@ -2942,11 +2948,12 @@ function initAdminForm() {
   }
 
   scrollToBottom();
-  await sleep(500);
+  await sleep(200);
 
   const skip = new Set(["poker", "roulette", "blackjack", "baccarat", "dice", "mines", "plinko", "limbo", "keno", "wheel", "hilo", "crash"]);
   const seen = new Set();
   const slots = [];
+  let withLogos = 0;
 
   for (const a of document.querySelectorAll('a[href*="/casino/games/"]')) {
     const slug = a.pathname.split("/").filter(Boolean).pop();
@@ -2954,10 +2961,12 @@ function initAdminForm() {
     seen.add(slug);
     const raw = (a.textContent || "").replace(/\\s+/g, " ").trim();
     const name = raw.replace(/\\s+\\d+\\s*playing.*$/i, "").trim() || slug;
-    slots.push({ name, slug, groupSlug });
+    const thumbnailUrl = pickThumbnail(a);
+    if (thumbnailUrl) withLogos += 1;
+    slots.push({ name, slug, groupSlug, thumbnailUrl: thumbnailUrl || undefined });
   }
 
-  console.log("Uploading " + slots.length + " ${label} slots to Bonus Hunt...");
+  console.log("Uploading " + slots.length + " ${label} slots (" + withLogos + " with logos)...");
   const response = await fetch(importUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -2968,7 +2977,7 @@ function initAdminForm() {
     console.error("Upload failed:", data.error || response.status);
     throw new Error(data.error || "Upload failed");
   }
-  console.log("Done. Uploaded " + slots.length + " ${label} slots. You can close this tab and return to Bonus Hunt.");
+  console.log("Done. Uploaded " + slots.length + " ${label} slots (" + (data.withThumbnails || withLogos) + " logos). Return to Bonus Hunt.");
 })();`;
   }
 
@@ -3054,8 +3063,12 @@ function initAdminForm() {
 
     const status = await pollSyncToken(tokenData.token);
     await loadSlotCatalog();
+    const logoNote =
+      status.withThumbnails > 0
+        ? ` (${status.withThumbnails} with logos)`
+        : "";
     setCatalogSyncStatus(
-      `${label} synced. Catalog now has ${status.count || slotCatalog.length} unique slots.`,
+      `${label} synced. Catalog now has ${status.count || slotCatalog.length} unique slots${logoNote}.`,
       "success"
     );
   }
