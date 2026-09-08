@@ -1006,7 +1006,7 @@ function renderHuntAddSelectedSlot() {
 
   selected.classList.remove("is-hidden");
   nameEl.textContent = huntAddSelectedSlot.name || "Selected slot";
-  metaEl.textContent = groupLabelForSlot(huntAddSelectedSlot) || "";
+  metaEl.textContent = String(huntAddSelectedSlot.provider || "").trim();
 }
 
 function clearHuntAddSelection({ keepSearch = false } = {}) {
@@ -1052,7 +1052,7 @@ function renderHuntAddSlotResults() {
       continue;
     }
 
-    const haystack = [slot.name, slot.slug, groupLabelForSlot(slot)]
+    const haystack = [slot.name, slot.slug, slot.provider]
       .filter(Boolean)
       .join(" ")
       .toLowerCase();
@@ -1117,7 +1117,7 @@ function renderHuntAddSlotResults() {
 
     const provider = document.createElement("span");
     provider.className = "hunt-add-slot-option-provider";
-    provider.textContent = groupLabelForSlot(slot) || "";
+    provider.textContent = String(slot.provider || "").trim();
 
     copy.append(name, provider);
     button.append(copy);
@@ -3081,12 +3081,12 @@ function initAdminForm() {
     let name = (nameEl?.alt || nameEl?.textContent || "")
       .replace(/\\s+/g, " ")
       .trim();
-    const providerText = (providerEl?.textContent || "").replace(/\\s+/g, " ").trim();
+    const provider = (providerEl?.textContent || "").replace(/\\s+/g, " ").trim() || undefined;
     if (!name) {
       const raw = (a.textContent || "").replace(/\\s+/g, " ").trim();
       name = raw.replace(/\\s+\\d+\\s*playing.*$/i, "").trim();
-      if (providerText && name.toLowerCase().endsWith(providerText.toLowerCase())) {
-        name = name.slice(0, -providerText.length).trim();
+      if (provider && name.toLowerCase().endsWith(provider.toLowerCase())) {
+        name = name.slice(0, -provider.length).trim();
       }
     }
     name = name || slug;
@@ -3096,6 +3096,7 @@ function initAdminForm() {
       name,
       slug,
       groupSlug,
+      provider,
       thumbnailUrl: thumbnailUrl || undefined,
     });
   }
