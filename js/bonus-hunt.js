@@ -2864,7 +2864,7 @@ function initAdminForm() {
     }
   });
 
-  function buildDirectSyncScript({ groupSlug, token, apiBase }) {
+  function buildDirectSyncScript({ groupSlug, token, apiBase, openerOrigin }) {
     const label =
       groupSlug === "only-on-stake" ? "Only on Stake" : "New Releases";
     const importUrl = `${apiBase}/api/bonus-hunt/slots/import-sync`;
@@ -2872,6 +2872,7 @@ function initAdminForm() {
   const groupSlug = ${JSON.stringify(groupSlug)};
   const token = ${JSON.stringify(token)};
   const importUrl = ${JSON.stringify(importUrl)};
+  const openerOrigin = ${JSON.stringify(openerOrigin)};
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const lockKey = "__bhSlotSyncLock_" + groupSlug + "_" + token.slice(0, 12);
   if (window[lockKey]) {
@@ -2917,6 +2918,43 @@ function initAdminForm() {
     return url;
   };
 
+  const uploadViaOpener = (slots) =>
+    new Promise((resolve, reject) => {
+      if (!window.opener || window.opener.closed) {
+        reject(new Error("no opener"));
+        return;
+      }
+      const onAck = (event) => {
+        if (event.origin !== openerOrigin) return;
+        if (event.data?.source !== "bh-slot-sync-ack" || event.data.token !== token) return;
+        window.removeEventListener("message", onAck);
+        if (event.data.ok) resolve(event.data);
+        else reject(new Error(event.data.error || "Upload failed"));
+      };
+      window.addEventListener("message", onAck);
+      window.opener.postMessage(
+        { source: "bh-slot-sync", token, groupSlug, slots },
+        openerOrigin
+      );
+      setTimeout(() => {
+        window.removeEventListener("message", onAck);
+        reject(new Error("Bonus Hunt did not acknowledge upload (keep the Bonus Hunt tab open)."));
+      }, 90000);
+    });
+
+  const uploadViaFetch = async (slots) => {
+    const response = await fetch(importUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, payload: { slots }, done: true }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Upload failed");
+    }
+    return data;
+  };
+
   console.log("Syncing ${label} to Bonus Hunt (fast mode + logos)...");
   let lastCount = 0;
   let stable = 0;
@@ -2926,7 +2964,6 @@ function initAdminForm() {
     const btn = findLoadMore();
     if (btn) {
       btn.click();
-      // Click again quickly if Stake re-renders another Load More
       await sleep(220);
       scrollToBottom();
       const again = findLoadMore();
@@ -2974,21 +3011,102 @@ function initAdminForm() {
 
   console.log("Uploading " + slots.length + " ${label} slots (" + withLogos + " with logos)...");
   try {
-    const response = await fetch(importUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, payload: { slots }, done: true }),
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      console.error("Upload failed:", data.error || response.status);
-      throw new Error(data.error || "Upload failed");
+    let data;
+    try {
+      data = await uploadViaOpener(slots);
+      console.log("Uploaded via Bonus Hunt tab (bypasses Stake CSP).");
+    } catch (openerError) {
+      console.warn("Opener upload unavailable (" + (openerError.message || openerError) + "). Trying direct fetch…");
+      data = await uploadViaFetch(slots);
     }
     console.log("Done. Uploaded " + slots.length + " ${label} slots (" + (data.withThumbnails || withLogos) + " logos). Return to Bonus Hunt.");
+  } catch (error) {
+    console.error("Upload failed:", error.message || error);
+    throw error;
   } finally {
     window[lockKey] = false;
   }
 })();`;
+  }
+
+  function isStakeMessageOrigin(origin) {
+    try {
+      const host = new URL(origin).hostname.toLowerCase();
+      return (
+        host === "stake.com" ||
+        host.endsWith(".stake.com") ||
+        host === "stake.bet" ||
+        host.endsWith(".stake.bet") ||
+        host === "stake.us" ||
+        host.endsWith(".stake.us")
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  let stakeSyncMessageBound = false;
+  function ensureStakeSyncMessageListener() {
+    if (stakeSyncMessageBound) return;
+    stakeSyncMessageBound = true;
+
+    window.addEventListener("message", (event) => {
+      if (!isStakeMessageOrigin(event.origin)) return;
+      const data = event.data;
+      if (data?.source !== "bh-slot-sync" || !data.token || !Array.isArray(data.slots)) {
+        return;
+      }
+
+      void (async () => {
+        try {
+          setCatalogSyncStatus(
+            `Receiving ${data.slots.length} slots from Stake…`
+          );
+          const response = await fetch("/api/bonus-hunt/slots/import-sync", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              token: data.token,
+              payload: { slots: data.slots },
+              done: true,
+            }),
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(result.error || "Could not import slots.");
+          }
+          event.source?.postMessage(
+            {
+              source: "bh-slot-sync-ack",
+              token: data.token,
+              ok: true,
+              count: result.count,
+              withThumbnails: result.withThumbnails,
+            },
+            event.origin
+          );
+        } catch (error) {
+          event.source?.postMessage(
+            {
+              source: "bh-slot-sync-ack",
+              token: data.token,
+              ok: false,
+              error: error.message || "Import failed",
+            },
+            event.origin
+          );
+        }
+      })();
+    });
+  }
+
+  function resolveSyncApiBase() {
+    const origin = window.location.origin;
+    if (/vercel\.app$/i.test(window.location.hostname)) {
+      return "https://www.blakjac21.com";
+    }
+    return origin;
   }
 
   async function copyTextToClipboard(text) {
@@ -3048,6 +3166,7 @@ function initAdminForm() {
         ? "https://stake.com/casino/group/only-on-stake"
         : "https://stake.com/casino/group/new-releases";
 
+    ensureStakeSyncMessageListener();
     setCatalogSyncStatus(`Preparing ${label} sync…`);
 
     const tokenResponse = await fetch("/api/bonus-hunt/slots/sync-token", {
@@ -3062,13 +3181,15 @@ function initAdminForm() {
     const script = buildDirectSyncScript({
       groupSlug,
       token: tokenData.token,
-      apiBase: window.location.origin,
+      apiBase: resolveSyncApiBase(),
+      openerOrigin: window.location.origin,
     });
     await copyTextToClipboard(script);
-    window.open(stakeUrl, "_blank", "noopener,noreferrer");
+    // Keep window.opener so Stake can postMessage back (avoids Stake CSP blocking fetch).
+    window.open(stakeUrl, "_blank");
 
     setCatalogSyncStatus(
-      `${label} script copied. On the Stake tab: F12 → Console → Ctrl+V → Enter. Waiting for upload…`
+      `${label} script copied. Keep this Bonus Hunt tab open. On Stake: F12 → Console → Ctrl+V → Enter. Waiting…`
     );
 
     const status = await pollSyncToken(tokenData.token);
