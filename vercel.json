@@ -2,12 +2,6 @@
   "version": 2,
   "functions": {
     "api/**/*.js": {
-      "maxDuration": 10
-    },
-    "api/bonus-hunt/slots-auto-sync.js": {
-      "maxDuration": 60
-    },
-    "api/bonus-hunt/slots/refresh.js": {
       "maxDuration": 60
     }
   },
