@@ -302,11 +302,34 @@
                   </div>
                   <p class="requests-hub-kick-meta is-hidden" id="kick-webhook-log"></p>
                 </div>
-                <button type="button" class="btn btn-sm btn-outline" id="slot-catalog-sync">
-                  Force sync from Stake
+                <button type="button" class="btn btn-sm btn-primary" id="slot-catalog-sync">
+                  Sync slots from Stake
                 </button>
+                <div class="slot-sync-help is-hidden" id="slot-sync-help">
+                  <p class="requests-hub-kick-meta" id="slot-sync-help-text">
+                    Stake blocks server sync. Click BJ21 Stake Sync once on stake.com.
+                  </p>
+                  <div class="slot-sync-help-actions">
+                    <a
+                      class="btn btn-sm btn-kick"
+                      id="slot-sync-bookmarklet"
+                      href="#"
+                    >
+                      BJ21 Stake Sync
+                    </a>
+                    <a
+                      class="btn btn-sm btn-outline"
+                      id="slot-sync-open-stake"
+                      href="https://stake.com/casino/group/new-releases"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Open stake.com
+                    </a>
+                  </div>
+                </div>
                 <p class="requests-hub-kick-meta" id="slot-catalog-auto-note">
-                  Slot list auto-syncs from Stake every 10 seconds (a few pages each tick). Counts update as sync progresses.
+                  Stake blocks automatic server sync. Use Sync slots from Stake, then click BJ21 Stake Sync once while logged into stake.com. Counts update live as pages import.
                 </p>
                 <button type="button" class="btn btn-sm btn-outline" id="slot-requests-clear">
                   Clear requests

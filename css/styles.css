@@ -5138,6 +5138,22 @@ ul {
   gap: 0.55rem;
 }
 
+.slot-sync-help {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0.55rem 0;
+  padding: 0.75rem 0.85rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(126, 216, 255, 0.28);
+  background: rgba(126, 216, 255, 0.08);
+}
+
+.slot-sync-help-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
 .hunt-admin-queue {
   margin-top: 0.85rem;
   padding-top: 0.85rem;
