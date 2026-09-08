@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Kick chat commands for BLAKJAC21 streams — slot requests, giveaways, and more." />
-  <title>Commands | BLAKJAC21</title>
+  <meta name="description" content="Bonus Hunt Kick chat command — request slots with !s on BLAKJAC21." />
+  <title>Bonus Hunt Command | BLAKJAC21</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -60,33 +60,37 @@
     <section class="section page-section">
       <div class="section-atmosphere" aria-hidden="true"></div>
       <div class="container">
-        <a href="/#menu" class="back-link">← Back to menu</a>
+        <a href="/commands/" class="back-link">← Back to commands</a>
 
         <header class="section-header">
-          <p class="section-eyebrow">Kick chat</p>
-          <h1>Commands</h1>
-          <p>Type these in the Kick chat during stream.</p>
+          <p class="section-eyebrow">Bonus Hunt</p>
+          <h1>Slot request command</h1>
+          <p>Use Kick chat to request a slot when requests are open on stream.</p>
         </header>
 
-        <div class="link-grid">
-          <article class="link-card theme-surface">
-            <span class="menu-label">Bonus Hunt</span>
-            <span class="link-platform"><code>!s &lt;slot name&gt;</code></span>
-            <span class="link-handle">
-              Request a slot from New Releases or Only on Stake when requests are open.
-              Example: <strong>!s Gates of Olympus</strong>
-            </span>
-            <a class="menu-card-cta" href="/commands/bonus-hunt/">View command <span aria-hidden="true">→</span></a>
-          </article>
+        <div class="requests-hub bj21-panel" style="max-width: 40rem">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
 
-          <article class="link-card theme-surface">
-            <span class="menu-label">Giveaways</span>
-            <span class="link-platform">Live keyword</span>
-            <span class="link-handle">
-              When a giveaway is open, type the keyword shown on stream / the giveaways page to enter.
-            </span>
-            <a class="menu-card-cta" href="/giveaways/">Open Giveaways <span aria-hidden="true">→</span></a>
-          </article>
+          <div class="requests-hub-command">
+            <p class="requests-hub-command-label">Request in Kick chat</p>
+            <code class="requests-hub-command-code">!s &lt;slot name&gt;</code>
+            <p class="requests-hub-command-example">
+              Example: <strong>!s Gates of Olympus</strong>
+            </p>
+            <p class="requests-hub-command-note">
+              Request up to <strong>3 slots</strong> each. Slots must be from
+              <a href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
+              or
+              <a href="https://stake.com/casino/group/only-on-stake" target="_blank" rel="noopener noreferrer">Only on Stake</a>.
+            </p>
+          </div>
+
+          <div class="requests-hub-notice">
+            <p>
+              Requests only work while the stream has <strong>Requests open</strong> turned on.
+              Type the command in Kick chat — no need to open the hunt tracker.
+            </p>
+          </div>
         </div>
       </div>
     </section>
