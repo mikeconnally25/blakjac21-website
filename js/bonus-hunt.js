@@ -18,7 +18,7 @@ let bonusPayoutDrafts = new Map();
 let stakeSyncPollTimer = null;
 let stakeSyncInProgress = false;
 let slotCatalogRefreshTimer = null;
-const SLOT_CATALOG_REFRESH_MS = 5 * 60 * 1000;
+const SLOT_CATALOG_REFRESH_MS = 10 * 1000;
 let huntMeta = {
   title: "Live Hunt",
   startBalance: 0,
