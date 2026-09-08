@@ -2,15 +2,9 @@
   "version": 2,
   "functions": {
     "api/**/*.js": {
-      "maxDuration": 60
+      "maxDuration": 10
     }
   },
-  "crons": [
-    {
-      "path": "/api/bonus-hunt/slots-auto-sync",
-      "schedule": "0 1 * * *"
-    }
-  ],
   "redirects": [
     {
       "source": "/slots-bonus-buys",

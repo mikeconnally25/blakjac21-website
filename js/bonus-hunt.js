@@ -5,7 +5,6 @@ let slotPollTimer = null;
 let slotCatalog = [];
 let slotGroups = [];
 let slotCatalogUpdatedAt = null;
-let slotCatalogSyncInfo = null;
 let acceptingRequests = false;
 let affiliatesOnly = false;
 let subscribersOnly = false;
@@ -932,26 +931,13 @@ function updateSlotCatalogAutoNote() {
   const note = document.getElementById("slot-catalog-auto-note");
   if (!note || !currentUser?.isAdmin) return;
 
-  const sync = slotCatalogSyncInfo;
-  const catalogSummary = slotCatalog.length
-    ? formatCatalogCountSummary()
-    : "No slots in catalog yet.";
-
-  if (!sync?.syncConfigured) {
-    note.textContent = `${catalogSummary} Auto-sync needs STAKE_ACCESS_TOKEN (and usually STAKE_COOKIE) in Vercel.`;
+  if (!slotCatalog.length) {
+    note.textContent =
+      "No slots imported yet. Copy a script above, run it on stake.com, then paste JSON here.";
     return;
   }
 
-  if (sync.syncOk) {
-    const when = sync.lastSyncAttemptAt
-      ? ` Last sync ${new Date(sync.lastSyncAttemptAt).toLocaleString()}.`
-      : "";
-    note.textContent = `${catalogSummary} Daily auto-sync OK (9:00 PM Eastern).${when}`;
-    return;
-  }
-
-  const err = sync.syncError || "Cloudflare may be blocking Vercel.";
-  note.textContent = `${catalogSummary} Auto-sync failed: ${err} Refresh STAKE_COOKIE in Vercel, then use Sync now.`;
+  note.textContent = formatCatalogCountSummary();
 }
 
 function updateHuntAddSlotMeta() {
@@ -960,7 +946,7 @@ function updateHuntAddSlotMeta() {
 
   if (!slotCatalog.length) {
     meta.textContent =
-      "No slots loaded yet. Wait for daily auto-sync or click Sync now in Requests admin.";
+      "No slots loaded. Import New Releases / Only on Stake from Requests admin.";
     return;
   }
 
@@ -1052,7 +1038,7 @@ function renderHuntAddSlotResults() {
     results.classList.add("is-hidden");
     empty.classList.remove("is-hidden");
     empty.textContent =
-      "Slot catalog is empty. Wait for daily auto-sync or click Sync now in Requests admin.";
+      "Slot catalog is empty. Import New Releases / Only on Stake from Requests admin.";
     return;
   }
 
@@ -2012,13 +1998,6 @@ async function loadSlotCatalog() {
     slotCatalog = data.slots || [];
     slotGroups = data.groups || [];
     slotCatalogUpdatedAt = data.updatedAt || null;
-    slotCatalogSyncInfo = {
-      syncConfigured: Boolean(data.syncConfigured),
-      cookieConfigured: Boolean(data.cookieConfigured),
-      syncError: data.syncError || "",
-      syncOk: Boolean(data.syncOk),
-      lastSyncAttemptAt: data.lastSyncAttemptAt || null,
-    };
 
     const select = document.getElementById("slot-request-select");
     const selectedSlug = select?.value || "";
@@ -2088,7 +2067,7 @@ async function loadSlotRequests({ forceRender = false } = {}) {
         catalogCount.textContent = formatCatalogCountSummary();
       } else if (currentUser?.isAdmin) {
         catalogCount.textContent =
-          "Slot list empty · waiting for daily auto-sync";
+          "Slot list empty · import slots in Requests admin";
       } else {
         catalogCount.textContent = "Slot list is loading...";
       }
@@ -2724,7 +2703,7 @@ function initAdminForm() {
       const slotMessage =
         refreshedCount > 0
           ? `Kick chat !s enabled. ${refreshedCount} slots loaded.`
-          : "Kick chat !s enabled. Slot catalog will load from daily auto-sync.";
+          : "Kick chat !s enabled. Import slots in Requests admin to load the catalog.";
       setStatus(slotMessage, refreshedCount > 0 ? "success" : "error");
       await loadKickChatStatus();
     } catch {
@@ -2885,42 +2864,168 @@ function initAdminForm() {
     }
   });
 
-  document.getElementById("slot-sync-now")?.addEventListener("click", async (event) => {
-    const button = event.currentTarget;
-    const syncStatus = document.getElementById("slot-sync-status");
+  function buildStakeScrapeScript(groupSlug) {
+    const label =
+      groupSlug === "only-on-stake" ? "Only on Stake" : "New Releases";
+    return `(async () => {
+  const groupSlug = ${JSON.stringify(groupSlug)};
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const findLoadMore = () =>
+    [...document.querySelectorAll("button")].find((b) =>
+      /^\\s*Load More\\s*$/i.test((b.innerText || b.textContent || "").trim())
+    );
 
-    const setSyncStatus = (message, tone = "") => {
-      if (syncStatus) {
-        syncStatus.textContent = message;
-        syncStatus.classList.toggle("is-hidden", !message);
-        syncStatus.classList.toggle("is-error", tone === "error");
-        syncStatus.classList.toggle("is-success", tone === "success");
+  let lastCount = 0;
+  let stable = 0;
+
+  for (let i = 0; i < 200; i++) {
+    const btn = findLoadMore();
+    if (!btn || btn.disabled) {
+      console.log("No more Load More button.");
+      break;
+    }
+    btn.scrollIntoView({ block: "center" });
+    btn.click();
+    await sleep(900);
+    const count = document.querySelectorAll('a[href*="/casino/games/"]').length;
+    console.log("Click " + (i + 1) + ": " + count + " game links");
+    if (count === lastCount) {
+      stable += 1;
+      if (stable >= 5) break;
+    } else {
+      stable = 0;
+      lastCount = count;
+    }
+  }
+
+  const skip = new Set(["poker", "roulette", "blackjack"]);
+  const seen = new Set();
+  const slots = [];
+  for (const a of document.querySelectorAll('a[href*="/casino/games/"]')) {
+    const slug = a.pathname.split("/").filter(Boolean).pop();
+    if (!slug || skip.has(slug) || seen.has(slug)) continue;
+    seen.add(slug);
+    const raw = (a.textContent || "").replace(/\\s+/g, " ").trim();
+    const name = raw.replace(/\\s+\\d+\\s*playing.*$/i, "").trim() || slug;
+    slots.push({ name, slug, groupSlug });
+  }
+
+  const json = JSON.stringify({ slots });
+  try {
+    if (typeof copy === "function") copy(json);
+    else if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(json);
+    else {
+      const ta = document.createElement("textarea");
+      ta.value = json;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+    }
+    console.log("Copied " + slots.length + " ${label} slots. Paste into Bonus Hunt (Ctrl+V).");
+  } catch (err) {
+    console.log("Built " + slots.length + " slots, but clipboard failed. Copy JSON below:");
+    console.log(json);
+  }
+})();`;
+  }
+
+  async function copyTextToClipboard(text) {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+
+  document.getElementById("slot-copy-new-releases-script")?.addEventListener("click", async () => {
+    try {
+      await copyTextToClipboard(buildStakeScrapeScript("new-releases"));
+      setStatus("New Releases script copied. Paste it into the stake.com Console.", "success");
+    } catch {
+      setStatus("Could not copy script. Try again.", "error");
+    }
+  });
+
+  document.getElementById("slot-copy-only-on-stake-script")?.addEventListener("click", async () => {
+    try {
+      await copyTextToClipboard(buildStakeScrapeScript("only-on-stake"));
+      setStatus("Only on Stake script copied. Paste it into the stake.com Console.", "success");
+    } catch {
+      setStatus("Could not copy script. Try again.", "error");
+    }
+  });
+
+  document.getElementById("slot-import-submit")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    const textarea = document.getElementById("slot-import-payload");
+    const importStatus = document.getElementById("slot-import-status");
+
+    const setImportStatus = (message, tone = "") => {
+      if (importStatus) {
+        importStatus.textContent = message;
+        importStatus.classList.toggle("is-hidden", !message);
+        importStatus.classList.toggle("is-error", tone === "error");
+        importStatus.classList.toggle("is-success", tone === "success");
       }
       setStatus(message, tone);
     };
 
+    const raw = String(textarea?.value || "").trim();
+    if (!raw) {
+      setImportStatus("Paste the copied JSON from stake.com first (not the console script).", "error");
+      return;
+    }
+
+    if (
+      /querySelectorAll|groupSlug\s*:|copy\s*\(/.test(raw) &&
+      !/"slots"\s*:\s*\[/.test(raw)
+    ) {
+      setImportStatus(
+        "That looks like the console script. Run it on stake.com Console first, then paste the copied {\"slots\":[...]} JSON here.",
+        "error"
+      );
+      return;
+    }
+
+    let payload = raw;
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      // Import API also accepts raw strings / line lists.
+    }
+
     button.disabled = true;
-    setSyncStatus("Syncing Stake slots…");
+    setImportStatus("Importing Stake slots...");
 
     try {
-      const response = await fetch("/api/bonus-hunt/slots/refresh", {
+      const response = await fetch("/api/bonus-hunt/slots/import", {
         method: "POST",
         credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payload }),
       });
       const data = await response.json();
       if (!response.ok) {
-        setSyncStatus(data.error || "Could not sync slots.", "error");
-        await loadSlotCatalog();
+        setImportStatus(data.error || "Could not import slots.", "error");
         return;
       }
 
+      if (textarea) {
+        textarea.value = "";
+      }
       await loadSlotCatalog();
-      setSyncStatus(
-        `Synced. Catalog now has ${data.unique || data.count} unique slots.`,
+      setImportStatus(
+        `Imported slots. Catalog now has ${data.unique || data.count} unique slots.`,
         "success"
       );
     } catch {
-      setSyncStatus("Could not sync slots. Try again.", "error");
+      setImportStatus("Could not import slots. Try again.", "error");
     } finally {
       button.disabled = false;
     }
