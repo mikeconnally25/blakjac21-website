@@ -1006,13 +1006,7 @@ function renderHuntAddSelectedSlot() {
 
   selected.classList.remove("is-hidden");
   nameEl.textContent = huntAddSelectedSlot.name || "Selected slot";
-  metaEl.textContent = [
-    huntAddSelectedSlot.provider,
-    groupLabelForSlot(huntAddSelectedSlot),
-  ]
-    .filter(Boolean)
-    .filter((value, index, list) => list.indexOf(value) === index)
-    .join(" · ");
+  metaEl.textContent = groupLabelForSlot(huntAddSelectedSlot) || "";
 }
 
 function clearHuntAddSelection({ keepSearch = false } = {}) {
@@ -1058,7 +1052,7 @@ function renderHuntAddSlotResults() {
       continue;
     }
 
-    const haystack = [slot.name, slot.slug, slot.provider, groupLabelForSlot(slot)]
+    const haystack = [slot.name, slot.slug, groupLabelForSlot(slot)]
       .filter(Boolean)
       .join(" ")
       .toLowerCase();
@@ -1123,10 +1117,7 @@ function renderHuntAddSlotResults() {
 
     const provider = document.createElement("span");
     provider.className = "hunt-add-slot-option-provider";
-    provider.textContent = [slot.provider, groupLabelForSlot(slot)]
-      .filter(Boolean)
-      .filter((value, index, list) => list.indexOf(value) === index)
-      .join(" · ");
+    provider.textContent = groupLabelForSlot(slot) || "";
 
     copy.append(name, provider);
     button.append(copy);
@@ -3087,22 +3078,24 @@ function initAdminForm() {
       a.querySelector(".game-info-wrap:not(.game-group) span") ||
       a.querySelector("img[alt]");
     const providerEl = a.querySelector(".game-group");
-    const nameFromDom = (nameEl?.alt || nameEl?.textContent || "")
+    let name = (nameEl?.alt || nameEl?.textContent || "")
       .replace(/\\s+/g, " ")
       .trim();
-    const raw = (a.textContent || "").replace(/\\s+/g, " ").trim();
-    const name =
-      nameFromDom ||
-      raw.replace(/\\s+\\d+\\s*playing.*$/i, "").trim() ||
-      slug;
-    const provider = (providerEl?.textContent || "").replace(/\\s+/g, " ").trim() || undefined;
+    const providerText = (providerEl?.textContent || "").replace(/\\s+/g, " ").trim();
+    if (!name) {
+      const raw = (a.textContent || "").replace(/\\s+/g, " ").trim();
+      name = raw.replace(/\\s+\\d+\\s*playing.*$/i, "").trim();
+      if (providerText && name.toLowerCase().endsWith(providerText.toLowerCase())) {
+        name = name.slice(0, -providerText.length).trim();
+      }
+    }
+    name = name || slug;
     const thumbnailUrl = pickThumbnail(a);
     if (thumbnailUrl) withLogos += 1;
     slots.push({
       name,
       slug,
       groupSlug,
-      provider,
       thumbnailUrl: thumbnailUrl || undefined,
     });
   }
