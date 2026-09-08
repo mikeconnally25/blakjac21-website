@@ -2955,35 +2955,49 @@ function initAdminForm() {
     return data;
   };
 
-  console.log("Syncing ${label} to Bonus Hunt (fast mode + logos)...");
+  console.log("Syncing ${label} to Bonus Hunt (full group load + logos)...");
   let lastCount = 0;
   let stable = 0;
+  let missingBtnStreak = 0;
 
-  for (let i = 0; i < 250; i++) {
+  for (let i = 0; i < 400; i++) {
     scrollToBottom();
     const btn = findLoadMore();
     if (btn) {
+      missingBtnStreak = 0;
       btn.click();
-      await sleep(220);
+      // Stake hides Load More while the next page loads — wait for it.
+      await sleep(850);
       scrollToBottom();
       const again = findLoadMore();
-      if (again && again !== btn) {
+      if (again) {
         again.click();
-        await sleep(180);
+        await sleep(500);
       }
     } else {
-      await sleep(160);
+      missingBtnStreak += 1;
+      // Keep scrolling; button often reappears after the request finishes.
+      await sleep(650);
+      scrollToBottom();
     }
 
     const count = countGames();
     if (i % 5 === 0 || !btn) {
-      console.log("Pass " + (i + 1) + ": " + count + " links" + (btn ? " (Load More)" : ""));
+      console.log(
+        "Pass " +
+          (i + 1) +
+          ": " +
+          count +
+          " links" +
+          (btn ? " (Load More)" : " (waiting for Load More)")
+      );
     }
 
     if (count === lastCount) {
       stable += 1;
-      if (stable >= 4 && !findLoadMore()) break;
-      if (stable >= 6) break;
+      // Only finish after a long quiet stretch with no Load More.
+      // Early "no button" gaps are normal mid-load and must not stop the sync.
+      if (stable >= 12 && missingBtnStreak >= 8) break;
     } else {
       stable = 0;
       lastCount = count;
@@ -2991,7 +3005,16 @@ function initAdminForm() {
   }
 
   scrollToBottom();
-  await sleep(200);
+  await sleep(800);
+  // One last sweep in case a final page landed after the last click.
+  for (let j = 0; j < 6; j++) {
+    const btn = findLoadMore();
+    if (!btn) break;
+    btn.click();
+    await sleep(900);
+    scrollToBottom();
+  }
+  await sleep(500);
 
   const skip = new Set(["poker", "roulette", "blackjack", "baccarat", "dice", "mines", "plinko", "limbo", "keno", "wheel", "hilo", "crash"]);
   const seen = new Set();
@@ -3189,7 +3212,7 @@ function initAdminForm() {
     window.open(stakeUrl, "_blank");
 
     setCatalogSyncStatus(
-      `${label} script copied. Keep this Bonus Hunt tab open. On Stake: F12 → Console → Ctrl+V → Enter. Waiting…`
+      `${label} script copied. Keep this Bonus Hunt tab open. On Stake: F12 → Console → paste → Enter. Large groups can take 1–2 minutes while Load More finishes…`
     );
 
     const status = await pollSyncToken(tokenData.token);
