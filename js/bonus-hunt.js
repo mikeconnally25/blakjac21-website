@@ -19,6 +19,7 @@ let stakeSyncPollTimer = null;
 let stakeSyncInProgress = false;
 let slotCatalogRefreshTimer = null;
 const SLOT_CATALOG_REFRESH_MS = 10 * 1000;
+let slotCatalogSyncInfo = null;
 let huntMeta = {
   title: "Live Hunt",
   startBalance: 0,
@@ -162,19 +163,27 @@ async function tryServerSlotRefresh({ silent = false } = {}) {
       return { count: 0, withThumbnails: 0, ok: false };
     }
 
+    if (data.sync) {
+      slotCatalogSyncInfo = data.sync;
+    }
+
     if (!silent) {
       const thumbNote =
         data.withThumbnails > 0
           ? ` (${data.withThumbnails} with logos)`
           : " (logos missing — run BJ21 Stake Sync on stake.com)";
+      const syncNote = data.sync?.groupLabel
+        ? ` Now syncing ${data.sync.groupLabel}…`
+        : "";
       setStatus(
-        `Slot list refreshed (${data.count} slots)${thumbNote}.`,
+        `Slot list refreshed (${data.unique || data.count} unique)${thumbNote}.${syncNote}`,
         data.withThumbnails > 0 ? "success" : "error"
       );
     }
     await loadSlotCatalog();
+    updateHuntAddSlotMeta();
     return {
-      count: Number(data.count) || 0,
+      count: Number(data.unique || data.count) || 0,
       withThumbnails: Number(data.withThumbnails) || 0,
       ok: true,
     };
@@ -213,6 +222,10 @@ async function ensureSlotCatalogFresh({ force = false } = {}) {
   }
 
   const result = await tryServerSlotRefresh({ silent: true });
+  if (!result.ok && !slotCatalogSyncInfo) {
+    slotCatalogSyncInfo = { groupLabel: "Stake", offset: 0 };
+  }
+  updateHuntAddSlotMeta();
   return result.count || slotCatalog.length;
 }
 
@@ -1139,11 +1152,29 @@ function formatCatalogCountSummary() {
     })
     .filter(Boolean);
 
-  if (!parts.length) {
-    return unique === 1 ? "1 unique Stake slot" : `${unique} unique Stake slots`;
+  let summary = parts.length
+    ? `${parts.join(" · ")} (${unique} unique)`
+    : unique === 1
+      ? "1 unique Stake slot"
+      : `${unique} unique Stake slots`;
+
+  if (slotCatalogSyncInfo?.groupLabel) {
+    const offset = Number(slotCatalogSyncInfo.offset) || 0;
+    summary += ` · syncing ${slotCatalogSyncInfo.groupLabel} @ ${offset}`;
   }
 
-  return `${parts.join(" · ")} (${unique} unique)`;
+  if (slotCatalogUpdatedAt) {
+    const updatedMs = Date.parse(slotCatalogUpdatedAt);
+    if (Number.isFinite(updatedMs)) {
+      const secondsAgo = Math.max(0, Math.round((Date.now() - updatedMs) / 1000));
+      summary +=
+        secondsAgo < 5
+          ? " · updated just now"
+          : ` · updated ${secondsAgo}s ago`;
+    }
+  }
+
+  return summary;
 }
 
 function updateHuntAddSlotMeta() {
