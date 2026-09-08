@@ -8301,3 +8301,41 @@ a.feature-card:focus-visible {
     font-size: 1.2rem;
   }
 }
+
+/* Commands admin — bot reply editor */
+.commands-admin {
+  margin-top: 2.5rem;
+}
+
+.commands-admin-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.commands-replies-fields {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.commands-replies-group {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.commands-reply-input {
+  min-height: 4.25rem;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.commands-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.25rem;
+}

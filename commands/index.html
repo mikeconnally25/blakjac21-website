@@ -88,6 +88,31 @@
             <a class="menu-card-cta" href="/giveaways/">Open Giveaways <span aria-hidden="true">→</span></a>
           </article>
         </div>
+
+        <section class="admin-panel commands-admin is-hidden" id="commands-admin-panel" aria-label="Bot reply settings">
+          <div class="commands-admin-top">
+            <div>
+              <p class="admin-panel-label">Admin — bot replies</p>
+              <p class="admin-panel-text">
+                Edit what the Kick bot says for each command. Use tokens like
+                <code>{slot}</code>, <code>{group}</code>, <code>{username}</code> where noted.
+              </p>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline" id="commands-replies-reset">
+              Reset defaults
+            </button>
+          </div>
+
+          <form id="commands-replies-form" class="commands-replies-form">
+            <div id="commands-replies-fields" class="commands-replies-fields"></div>
+            <div class="commands-admin-actions">
+              <button type="submit" class="btn btn-sm btn-primary" id="commands-replies-save">
+                Save replies
+              </button>
+              <p class="guess-status is-hidden" id="commands-replies-status" role="status" aria-live="polite"></p>
+            </div>
+          </form>
+        </section>
       </div>
     </section>
   </main>
@@ -109,5 +134,6 @@
 
   <script src="/js/main.js"></script>
   <script src="/js/auth.js"></script>
+  <script src="/js/commands-admin.js"></script>
 </body>
 </html>

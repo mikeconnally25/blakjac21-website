@@ -69,6 +69,10 @@ import {
   handleChatSend,
 } from "./lib/chat-handlers.js";
 import {
+  handleBotRepliesGet,
+  handleBotRepliesSave,
+} from "./lib/bot-replies-handlers.js";
+import {
   handlePointsAward,
   handlePointsAwardChat,
   handlePointsCatalogGet,
@@ -280,6 +284,8 @@ app.post("/api/giveaways/reveal", (req, res) => handleGiveawayReveal(req, res));
 app.get("/api/chat", (req, res) => handleChatList(req, res));
 app.post("/api/chat", (req, res) => handleChatSend(req, res));
 app.post("/api/chat/remove", (req, res) => handleChatRemove(req, res));
+app.get("/api/commands/replies", (req, res) => handleBotRepliesGet(req, res));
+app.post("/api/commands/replies", (req, res) => handleBotRepliesSave(req, res));
 
 app.listen(PORT, () => {
   console.log(`BLAKJAC21 site running at http://localhost:${PORT}`);
