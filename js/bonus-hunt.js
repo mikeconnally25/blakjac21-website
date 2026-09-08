@@ -423,6 +423,7 @@ function renderBonusList(bonuses) {
     index.textContent = `#${bonus.number}`;
 
     const catalogSlot = findCatalogSlot({ slotName: bonus.slot, slotSlug: bonus.slotSlug });
+    const displayName = getBonusSlotDisplayName(bonus, catalogSlot);
     const thumbnailUrl = getSlotRequestThumbnail(
       {
         thumbnailUrl: bonus.thumbnailUrl,
@@ -431,7 +432,7 @@ function renderBonusList(bonuses) {
       },
       catalogSlot
     );
-    const avatar = createSlotThumb(bonus.slot, thumbnailUrl, {
+    const avatar = createSlotThumb(displayName, thumbnailUrl, {
       rootClass: "hunt-bonus-avatar",
       imageClass: "hunt-bonus-avatar-image",
     });
@@ -441,7 +442,7 @@ function renderBonusList(bonuses) {
 
     const slot = document.createElement("p");
     slot.className = "hunt-bonus-slot";
-    slot.textContent = bonus.slot;
+    slot.textContent = displayName;
 
     const provider = document.createElement("p");
     provider.className = "hunt-bonus-provider";
@@ -757,9 +758,14 @@ function renderPastHunts(hunts) {
       const tags = [];
       if (bonus.superBonus) tags.push("Super");
       if (bonus.epicBonus) tags.push("Epic");
+      const pastCatalogSlot = findCatalogSlot({
+        slotName: bonus.slot,
+        slotSlug: bonus.slotSlug,
+      });
+      const pastName = getBonusSlotDisplayName(bonus, pastCatalogSlot);
       slot.textContent = tags.length
-        ? `${bonus.slot} · ${tags.join(" · ")}`
-        : bonus.slot;
+        ? `${pastName} · ${tags.join(" · ")}`
+        : pastName;
 
       const result = document.createElement("span");
       result.className = "past-hunt-bonus-result";
@@ -859,6 +865,65 @@ async function loadBonusHunt() {
   } catch {
     // Keep the last known state.
   }
+}
+
+function stripProviderFromSlotName(slotName, provider) {
+  let name = String(slotName || "")
+    .trim()
+    .replace(/\s+/g, " ");
+  const prov = String(provider || "")
+    .trim()
+    .replace(/\s+/g, " ");
+
+  if (!name || !prov) {
+    return name;
+  }
+
+  const lower = name.toLowerCase();
+  const provLower = prov.toLowerCase();
+  if (lower === provLower) {
+    return name;
+  }
+
+  if (lower.endsWith(` ${provLower}`)) {
+    return name.slice(0, -(prov.length + 1)).trim();
+  }
+
+  return name;
+}
+
+function getBonusSlotDisplayName(bonus, catalogSlot) {
+  const provider = bonus?.provider || catalogSlot?.provider || "";
+  if (catalogSlot?.name) {
+    const fromCatalog =
+      stripProviderFromSlotName(catalogSlot.name, catalogSlot.provider) ||
+      catalogSlot.name;
+    // Prefer catalog title when we matched by slug, even if stored bonus name is dirty.
+    if (bonus?.slotSlug && catalogSlot.slug === bonus.slotSlug) {
+      return fromCatalog;
+    }
+    if (
+      stripProviderFromSlotName(bonus?.slot, provider) === fromCatalog ||
+      !provider
+    ) {
+      return fromCatalog;
+    }
+  }
+
+  let name = stripProviderFromSlotName(bonus?.slot, provider) || bonus?.slot || "";
+
+  // Fall back: try stripping any known catalog provider suffix from a dirty bonus name.
+  if (name && name === bonus?.slot) {
+    for (const slot of slotCatalog) {
+      if (!slot?.provider) continue;
+      const cleaned = stripProviderFromSlotName(name, slot.provider);
+      if (cleaned && cleaned !== name) {
+        return cleaned;
+      }
+    }
+  }
+
+  return name;
 }
 
 function groupLabelForSlot(slot) {
@@ -1764,6 +1829,13 @@ function findCatalogSlot(request) {
   return (
     slotCatalog.find((slot) => slug && slot.slug === slug) ||
     slotCatalog.find((slot) => slot.name.toLowerCase() === name) ||
+    slotCatalog.find((slot) => {
+      const slotName = String(slot.name || "").toLowerCase();
+      const provider = String(slot.provider || "").toLowerCase();
+      if (!slotName || !name) return false;
+      if (provider && name === `${slotName} ${provider}`) return true;
+      return name.startsWith(`${slotName} `);
+    }) ||
     null
   );
 }
