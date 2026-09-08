@@ -927,26 +927,12 @@ function formatCatalogCountSummary() {
   return summary;
 }
 
-function updateSlotCatalogAutoNote() {
-  const note = document.getElementById("slot-catalog-auto-note");
-  if (!note || !currentUser?.isAdmin) return;
-
-  if (!slotCatalog.length) {
-    note.textContent =
-      "No slots imported yet. Copy a script above, run it on stake.com, then paste JSON here.";
-    return;
-  }
-
-  note.textContent = formatCatalogCountSummary();
-}
-
 function updateHuntAddSlotMeta() {
   const meta = document.getElementById("hunt-add-slot-meta");
   if (!meta) return;
 
   if (!slotCatalog.length) {
-    meta.textContent =
-      "No slots loaded. Import New Releases / Only on Stake from Requests admin.";
+    meta.textContent = "No slots loaded in the catalog yet.";
     return;
   }
 
@@ -1037,8 +1023,7 @@ function renderHuntAddSlotResults() {
   if (!slotCatalog.length) {
     results.classList.add("is-hidden");
     empty.classList.remove("is-hidden");
-    empty.textContent =
-      "Slot catalog is empty. Import New Releases / Only on Stake from Requests admin.";
+    empty.textContent = "Slot catalog is empty.";
     return;
   }
 
@@ -2003,12 +1988,11 @@ async function loadSlotCatalog() {
     const selectedSlug = select?.value || "";
     renderSlotCatalogSelect(selectedSlug);
     updateHuntAddSlotMeta();
-    updateSlotCatalogAutoNote();
     renderHuntAddSlotResults();
 
     if (currentUser?.isAdmin && data.total > 0 && !data.withThumbnails) {
       setStatus(
-        "Slot list is loaded, but logos are missing. Re-import GraphQL JSON that includes thumbnailUrl.",
+        "Slot list is loaded, but logos are missing.",
         "error"
       );
     }
@@ -2067,7 +2051,7 @@ async function loadSlotRequests({ forceRender = false } = {}) {
         catalogCount.textContent = formatCatalogCountSummary();
       } else if (currentUser?.isAdmin) {
         catalogCount.textContent =
-          "Slot list empty · import slots in Requests admin";
+          "Slot list empty";
       } else {
         catalogCount.textContent = "Slot list is loading...";
       }
@@ -2703,7 +2687,7 @@ function initAdminForm() {
       const slotMessage =
         refreshedCount > 0
           ? `Kick chat !s enabled. ${refreshedCount} slots loaded.`
-          : "Kick chat !s enabled. Import slots in Requests admin to load the catalog.";
+          : "Kick chat !s enabled. Slot catalog is empty.";
       setStatus(slotMessage, refreshedCount > 0 ? "success" : "error");
       await loadKickChatStatus();
     } catch {
@@ -2861,218 +2845,6 @@ function initAdminForm() {
       setStatus(error.message || "Could not update SUB-only setting.", "error");
     } finally {
       toggle.disabled = false;
-    }
-  });
-
-  function buildStakeScrapeScript(groupSlug) {
-    const label =
-      groupSlug === "only-on-stake" ? "Only on Stake" : "New Releases";
-    return `(async () => {
-  const groupSlug = ${JSON.stringify(groupSlug)};
-  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-  const countGames = () =>
-    document.querySelectorAll('a[href*="/casino/games/"]').length;
-
-  const findLoadMore = () =>
-    [...document.querySelectorAll("button")].find((b) => {
-      if (b.disabled) return false;
-      return /^\\s*Load More\\s*$/i.test((b.innerText || b.textContent || "").trim());
-    });
-
-  const scrollables = () => {
-    const list = [
-      document.scrollingElement,
-      document.documentElement,
-      document.body,
-      ...document.querySelectorAll("main, [class*='scroll'], [style*='overflow']"),
-    ].filter(Boolean);
-    return [...new Set(list)];
-  };
-
-  const scrollToBottom = () => {
-    for (const el of scrollables()) {
-      try {
-        if (el === document.scrollingElement || el === document.documentElement || el === document.body) {
-          window.scrollTo(0, Math.max(document.body.scrollHeight, document.documentElement.scrollHeight));
-          el.scrollTop = el.scrollHeight;
-        } else if (el.scrollHeight > el.clientHeight + 40) {
-          el.scrollTop = el.scrollHeight;
-        }
-      } catch {}
-    }
-    const btn = findLoadMore();
-    if (btn) btn.scrollIntoView({ block: "center", behavior: "auto" });
-  };
-
-  console.log("Loading all ${label} slots — scrolling + Load More...");
-  let lastCount = 0;
-  let stable = 0;
-
-  for (let i = 0; i < 400; i++) {
-    scrollToBottom();
-    await sleep(400);
-    scrollToBottom();
-
-    const btn = findLoadMore();
-    if (btn) {
-      btn.click();
-      await sleep(1100);
-      scrollToBottom();
-    } else {
-      await sleep(700);
-    }
-
-    const count = countGames();
-    if (i % 3 === 0 || !btn) {
-      console.log("Pass " + (i + 1) + ": " + count + " links" + (btn ? " (Load More)" : " (scrolling)"));
-    }
-
-    if (count === lastCount) {
-      stable += 1;
-      if (stable >= 8 && !findLoadMore()) break;
-      if (stable >= 12) break;
-    } else {
-      stable = 0;
-      lastCount = count;
-    }
-  }
-
-  scrollToBottom();
-  await sleep(500);
-
-  const skip = new Set(["poker", "roulette", "blackjack", "baccarat", "dice", "mines", "plinko", "limbo", "keno", "wheel", "hilo", "crash"]);
-  const seen = new Set();
-  const slots = [];
-
-  for (const a of document.querySelectorAll('a[href*="/casino/games/"]')) {
-    const slug = a.pathname.split("/").filter(Boolean).pop();
-    if (!slug || skip.has(slug) || seen.has(slug)) continue;
-    seen.add(slug);
-
-    const raw = (a.textContent || "").replace(/\\s+/g, " ").trim();
-    const name = raw.replace(/\\s+\\d+\\s*playing.*$/i, "").trim() || slug;
-    slots.push({ name, slug, groupSlug });
-  }
-
-  const json = JSON.stringify({ slots });
-  try {
-    if (typeof copy === "function") copy(json);
-    else if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(json);
-    else {
-      const ta = document.createElement("textarea");
-      ta.value = json;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      ta.remove();
-    }
-    console.log("Done. Copied " + slots.length + " ${label} slots. Paste into Bonus Hunt (Ctrl+V).");
-  } catch (err) {
-    console.log("Built " + slots.length + " slots, but clipboard failed. Copy JSON below:");
-    console.log(json);
-  }
-})();`;
-  }
-
-  async function copyTextToClipboard(text) {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
-      return;
-    }
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    ta.remove();
-  }
-
-  document.getElementById("slot-copy-new-releases-script")?.addEventListener("click", async () => {
-    try {
-      await copyTextToClipboard(buildStakeScrapeScript("new-releases"));
-      setStatus("New Releases script copied. Paste it into the stake.com Console.", "success");
-    } catch {
-      setStatus("Could not copy script. Try again.", "error");
-    }
-  });
-
-  document.getElementById("slot-copy-only-on-stake-script")?.addEventListener("click", async () => {
-    try {
-      await copyTextToClipboard(buildStakeScrapeScript("only-on-stake"));
-      setStatus("Only on Stake script copied. Paste it into the stake.com Console.", "success");
-    } catch {
-      setStatus("Could not copy script. Try again.", "error");
-    }
-  });
-
-  document.getElementById("slot-import-submit")?.addEventListener("click", async (event) => {
-    const button = event.currentTarget;
-    const textarea = document.getElementById("slot-import-payload");
-    const importStatus = document.getElementById("slot-import-status");
-
-    const setImportStatus = (message, tone = "") => {
-      if (importStatus) {
-        importStatus.textContent = message;
-        importStatus.classList.toggle("is-hidden", !message);
-        importStatus.classList.toggle("is-error", tone === "error");
-        importStatus.classList.toggle("is-success", tone === "success");
-      }
-      setStatus(message, tone);
-    };
-
-    const raw = String(textarea?.value || "").trim();
-    if (!raw) {
-      setImportStatus("Paste the copied JSON from stake.com first (not the console script).", "error");
-      return;
-    }
-
-    if (
-      /querySelectorAll|groupSlug\s*:|copy\s*\(/.test(raw) &&
-      !/"slots"\s*:\s*\[/.test(raw)
-    ) {
-      setImportStatus(
-        "That looks like the console script. Run it on stake.com Console first, then paste the copied {\"slots\":[...]} JSON here.",
-        "error"
-      );
-      return;
-    }
-
-    let payload = raw;
-    try {
-      payload = JSON.parse(raw);
-    } catch {
-      // Import API also accepts raw strings / line lists.
-    }
-
-    button.disabled = true;
-    setImportStatus("Importing Stake slots...");
-
-    try {
-      const response = await fetch("/api/bonus-hunt/slots/import", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payload }),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        setImportStatus(data.error || "Could not import slots.", "error");
-        return;
-      }
-
-      if (textarea) {
-        textarea.value = "";
-      }
-      await loadSlotCatalog();
-      setImportStatus(
-        `Imported slots. Catalog now has ${data.unique || data.count} unique slots.`,
-        "success"
-      );
-    } catch {
-      setImportStatus("Could not import slots. Try again.", "error");
-    } finally {
-      button.disabled = false;
     }
   });
 
