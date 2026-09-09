@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Kick chat commands for BLAKJAC21 streams — slot requests, giveaways, and more." />
+  <title>Commands | BLAKJAC21</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <header class="header" id="top">
+    <nav class="nav container">
+      <a href="/" class="logo">
+        <img src="/images/logo.png" alt="" class="logo-image" width="50" height="50" />
+        <span class="logo-text">Blakjac<span class="accent">21</span></span>
+      </a>
+
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="nav-links">
+        <li><a href="/#watch">Watch</a></li>
+        <li><a href="/commands/">Commands</a></li>
+        <li><a href="/#menu">Menu</a></li>
+        <li><a href="/#about">About</a></li>
+        <li><a href="/#links">Links</a></li>
+        <li class="is-hidden" id="admin-nav-accounts">
+          <a href="/accounts/">Accounts</a>
+        </li>
+        <li>
+          <div class="auth-panel" id="auth-panel">
+            <div class="auth-guest" id="auth-guest">
+              <a href="/api/auth/login" class="btn btn-sm btn-kick">Sign in with Kick</a>
+            </div>
+            <div class="auth-member is-hidden" id="auth-member">
+              <div class="auth-user">
+                <img id="auth-avatar" class="auth-avatar is-hidden" alt="" width="32" height="32" />
+                <span id="auth-username" class="auth-username"></span>
+                <span id="auth-admin-badge" class="auth-admin-badge is-hidden">Admin</span>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline" id="auth-logout">Sign out</button>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
+
+    <section class="section page-section commands-page">
+      <div class="section-atmosphere" aria-hidden="true"></div>
+      <div class="container page-content">
+        <a href="/#menu" class="back-link">← Back to menu</a>
+
+        <header class="section-header">
+          <p class="section-eyebrow">Kick chat</p>
+          <h1>Commands</h1>
+          <p>Type these in Kick chat during stream.</p>
+        </header>
+
+        <div class="link-grid">
+          <article class="link-card theme-surface">
+            <span class="menu-label">Bonus Hunt</span>
+            <span class="link-platform"><code>!r &lt;slot name&gt;</code></span>
+            <span class="link-handle">
+              Request a slot from New Releases or Only on Stake when requests are open.
+              Example: <strong>!r Gates of Olympus</strong>
+            </span>
+            <a class="menu-card-cta" href="/bonus-hunt/">Open Bonus Hunt <span aria-hidden="true">→</span></a>
+          </article>
+
+          <article class="link-card theme-surface">
+            <span class="menu-label">Giveaways</span>
+            <span class="link-platform">Live keyword</span>
+            <span class="link-handle">
+              When a giveaway is open, type the keyword shown on stream / the giveaways page to enter.
+            </span>
+            <a class="menu-card-cta" href="/giveaways/">Open Giveaways <span aria-hidden="true">→</span></a>
+          </article>
+        </div>
+
+        <section class="admin-panel commands-admin is-hidden" id="commands-admin-panel" aria-label="Bot command settings">
+          <div class="commands-admin-top">
+            <div>
+              <p class="admin-panel-label">Admin — bot commands</p>
+              <p class="admin-panel-text">
+                Edit command triggers (including the <code>!</code>), reply text, and add custom commands.
+                Tokens: <code>{slot}</code>, <code>{group}</code>, <code>{username}</code>, <code>{args}</code>.
+              </p>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline" id="commands-replies-reset">
+              Reset defaults
+            </button>
+          </div>
+
+          <form id="commands-replies-form" class="commands-replies-form">
+            <div class="commands-admin-scroll">
+              <div class="commands-replies-group">
+                <p class="admin-panel-label">Built-in triggers</p>
+                <p class="admin-panel-text">Comma-separated. Example: <code>!r, !s, !slot</code></p>
+                <div id="commands-trigger-fields" class="commands-replies-fields"></div>
+              </div>
+
+              <div class="commands-replies-group">
+                <div class="commands-admin-top">
+                  <div>
+                    <p class="admin-panel-label">Custom commands</p>
+                    <p class="admin-panel-text">Add your own chat commands with a fixed reply.</p>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline" id="commands-custom-add">
+                    Add command
+                  </button>
+                </div>
+                <div id="commands-custom-fields" class="commands-custom-fields"></div>
+              </div>
+
+              <div id="commands-replies-fields" class="commands-replies-fields"></div>
+            </div>
+            <div class="commands-admin-actions">
+              <button type="submit" class="btn btn-sm btn-primary" id="commands-replies-save">
+                Save commands
+              </button>
+              <p class="guess-status is-hidden" id="commands-replies-status" role="status" aria-live="polite"></p>
+            </div>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo-text">BLAKJAC<span class="accent">21</span></span>
+        <p>Gambling entertainment stream. 18+ only.</p>
+      </div>
+      <p class="disclaimer">
+        Gambling can be addictive. Please play responsibly. This channel is for entertainment purposes only.
+        If you or someone you know has a gambling problem, call <strong>1-800-GAMBLER</strong> or visit
+        <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer">BeGambleAware.org</a>.
+      </p>
+      <p class="copyright">&copy; <span id="year"></span> BLAKJAC21. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/commands-admin.js"></script>
+</body>
+</html>
