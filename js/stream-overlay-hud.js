@@ -26,12 +26,14 @@
 
   startConfigPolling((config) => {
     const hud = config?.hud || {};
-    setText("so-hud-brand", config?.brandName || "BLAKJAC21");
+    const brand = config?.brandName || "BLAKJAC21";
+    setText("so-hud-brand", brand);
+    setText("so-hud-promo-name", brand);
+    setText("so-hud-watermark", brand);
 
     const ticker = document.getElementById("so-hud-ticker");
     const tickerText = hud.tickerText || "";
     if (ticker) {
-      // Duplicate text so the marquee feels continuous when long enough.
       const loopText =
         tickerText.length > 0
           ? `${tickerText}   ·   ${tickerText}   ·   ${tickerText}`
@@ -44,10 +46,11 @@
       socials.innerHTML = renderSocialChips(config?.socials);
     }
 
-    toggleHidden("so-hud-live", hud.showLiveBadge === false);
-    toggleHidden("so-hud-socials", hud.showSocials === false);
+    // LIVE / socials / ticker stay optional extras; frames follow showCorners.
+    toggleHidden("so-hud-live", hud.showLiveBadge !== true);
+    toggleHidden("so-hud-socials", hud.showSocials !== true);
     toggleHidden("so-hud-ticker-wrap", !hud.tickerText);
-    toggleHidden("so-corners", hud.showCorners === false);
+    toggleHidden("so-hud-main", hud.showCorners === false);
     toggleHidden("so-hud-cam", hud.showCorners === false);
   });
 })();

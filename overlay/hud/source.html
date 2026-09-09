@@ -7,59 +7,74 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&family=Pacifico&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/css/stream-overlay.css" />
   </head>
   <body>
-    <div class="so-hud">
-      <div class="so-hud-frame" id="so-corners" aria-hidden="true">
-        <span class="so-hud-frame-edge so-hud-frame-top"></span>
-        <span class="so-hud-frame-edge so-hud-frame-left"></span>
-        <span class="so-hud-frame-glow"></span>
+    <div class="so-hud" id="so-hud">
+      <div class="so-hud-bg" aria-hidden="true"></div>
+      <p class="so-hud-watermark" id="so-hud-watermark" aria-hidden="true">BLAKJAC21</p>
+
+      <div class="so-hud-layout">
+        <div class="so-hud-main" id="so-hud-main" aria-hidden="true"></div>
+
+        <div class="so-hud-side">
+          <aside class="so-hud-cam" id="so-hud-cam" aria-hidden="true"></aside>
+
+          <div class="so-hud-side-brand">
+            <img
+              class="so-hud-side-logo"
+              src="/images/logo.png"
+              alt=""
+              width="36"
+              height="36"
+            />
+            <p class="so-hud-side-name" id="so-hud-brand">BLAKJAC21</p>
+          </div>
+        </div>
+
+        <footer class="so-hud-promo" id="so-hud-promo">
+          <div class="so-hud-promo-stake" aria-label="Stake">
+            <span class="so-hud-promo-stake-mark">Stake</span>
+          </div>
+          <span class="so-hud-promo-divider" aria-hidden="true"></span>
+          <div class="so-hud-promo-code">
+            <img
+              class="so-hud-promo-logo"
+              src="/images/logo.png"
+              alt=""
+              width="28"
+              height="28"
+            />
+            <div class="so-hud-promo-copy">
+              <p class="so-hud-promo-name" id="so-hud-promo-name">BLAKJAC21</p>
+              <p class="so-hud-promo-tag" id="so-hud-promo-tag">
+                USE MY CODE AND CLAIM EXCLUSIVE BONUSES
+              </p>
+            </div>
+          </div>
+        </footer>
       </div>
 
-      <header class="so-hud-header">
-        <div class="so-hud-brand-block">
-          <img
-            class="so-hud-logo"
-            src="/images/logo.png"
-            alt=""
-            width="44"
-            height="44"
-          />
-          <div class="so-hud-brand-copy">
-            <p class="so-hud-kicker">Kick · Gambling</p>
-            <p class="so-hud-brand" id="so-hud-brand">BLAKJAC21</p>
-          </div>
+      <div class="so-hud-live is-hidden" id="so-hud-live">
+        <span class="so-hud-live-ring" aria-hidden="true">
+          <span class="so-hud-live-dot"></span>
+        </span>
+        <div class="so-hud-live-copy">
+          <span class="so-hud-live-label">On air</span>
+          <span class="so-hud-live-title">LIVE</span>
         </div>
+      </div>
 
-        <div class="so-hud-live" id="so-hud-live">
-          <span class="so-hud-live-ring" aria-hidden="true">
-            <span class="so-hud-live-dot"></span>
-          </span>
-          <div class="so-hud-live-copy">
-            <span class="so-hud-live-label">On air</span>
-            <span class="so-hud-live-title">LIVE</span>
-          </div>
+      <div class="so-hud-socials is-hidden" id="so-hud-socials"></div>
+      <div class="so-hud-ticker-wrap is-hidden" id="so-hud-ticker-wrap">
+        <span class="so-hud-ticker-label">Now</span>
+        <div class="so-hud-ticker-track">
+          <p class="so-hud-ticker" id="so-hud-ticker"></p>
         </div>
-      </header>
-
-      <aside class="so-hud-cam" id="so-hud-cam" aria-hidden="true">
-        <span class="so-hud-cam-label">Cam</span>
-      </aside>
-
-      <footer class="so-hud-bar">
-        <div class="so-hud-bar-accent" aria-hidden="true"></div>
-        <div class="so-hud-socials" id="so-hud-socials"></div>
-        <div class="so-hud-ticker-wrap" id="so-hud-ticker-wrap">
-          <span class="so-hud-ticker-label">Now</span>
-          <div class="so-hud-ticker-track">
-            <p class="so-hud-ticker" id="so-hud-ticker"></p>
-          </div>
-        </div>
-      </footer>
+      </div>
     </div>
     <script src="/js/stream-overlay-shared.js"></script>
     <script src="/js/stream-overlay-hud.js"></script>

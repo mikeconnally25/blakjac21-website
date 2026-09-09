@@ -128,8 +128,8 @@
     $("field-inter-sub").value = next.intermission?.subheadline || "";
 
     $("field-hud-ticker").value = next.hud?.tickerText || "";
-    $("field-hud-live").checked = next.hud?.showLiveBadge !== false;
-    $("field-hud-socials").checked = next.hud?.showSocials !== false;
+    $("field-hud-live").checked = next.hud?.showLiveBadge === true;
+    $("field-hud-socials").checked = next.hud?.showSocials === true;
     $("field-hud-corners").checked = next.hud?.showCorners !== false;
 
     $("field-alerts-enabled").checked = next.alerts?.enabled !== false;
