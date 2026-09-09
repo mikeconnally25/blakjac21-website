@@ -73,6 +73,13 @@ import {
   handleBotRepliesSave,
 } from "./lib/bot-replies-handlers.js";
 import {
+  handleStreamOverlayAlertsAck,
+  handleStreamOverlayAlertsGet,
+  handleStreamOverlayAlertsTest,
+  handleStreamOverlayGet,
+  handleStreamOverlaySave,
+} from "./lib/stream-overlay-handlers.js";
+import {
   handlePointsAward,
   handlePointsAwardChat,
   handlePointsCatalogGet,
@@ -286,6 +293,19 @@ app.post("/api/chat", (req, res) => handleChatSend(req, res));
 app.post("/api/chat/remove", (req, res) => handleChatRemove(req, res));
 app.get("/api/commands/replies", (req, res) => handleBotRepliesGet(req, res));
 app.post("/api/commands/replies", (req, res) => handleBotRepliesSave(req, res));
+app.get("/api/stream-overlay", (req, res) => handleStreamOverlayGet(req, res));
+app.post("/api/stream-overlay/save", (req, res) =>
+  handleStreamOverlaySave(req, res)
+);
+app.get("/api/stream-overlay/alerts", (req, res) =>
+  handleStreamOverlayAlertsGet(req, res)
+);
+app.post("/api/stream-overlay/alerts/ack", (req, res) =>
+  handleStreamOverlayAlertsAck(req, res)
+);
+app.post("/api/stream-overlay/alerts/test", (req, res) =>
+  handleStreamOverlayAlertsTest(req, res)
+);
 
 app.listen(PORT, () => {
   console.log(`BLAKJAC21 site running at http://localhost:${PORT}`);
