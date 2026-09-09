@@ -312,6 +312,23 @@
       setStatus("Paste a clip URL first.", true);
       return;
     }
+
+    let host = "";
+    try {
+      host = new URL(url).hostname.replace(/^www\./, "").toLowerCase();
+    } catch {
+      setStatus("That doesn’t look like a valid URL.", true);
+      return;
+    }
+
+    if (host === "kick.com" || host.endsWith(".kick.com")) {
+      setStatus(
+        "Kick clip links can’t autoplay in OBS. Use a YouTube, Streamable, or direct .mp4 URL.",
+        true
+      );
+      return;
+    }
+
     clips.push({
       id: crypto.randomUUID(),
       url,

@@ -77,15 +77,16 @@ body {
   height: 100%;
   padding: 2rem;
   text-align: center;
-  color: var(--text-muted);
+  color: #c5d7e4;
   font-size: 0.95rem;
+  background: rgba(4, 10, 16, 0.55);
 }
 
 .so-scene-scrim {
   z-index: 2;
   background:
-    linear-gradient(180deg, rgba(3, 8, 13, 0.35) 0%, rgba(3, 8, 13, 0.55) 45%, rgba(3, 8, 13, 0.92) 100%),
-    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(0, 0, 0, 0.55), transparent 70%);
+    linear-gradient(180deg, rgba(3, 8, 13, 0.18) 0%, rgba(3, 8, 13, 0.28) 40%, rgba(3, 8, 13, 0.78) 100%),
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(0, 0, 0, 0.45), transparent 70%);
   pointer-events: none;
 }
 

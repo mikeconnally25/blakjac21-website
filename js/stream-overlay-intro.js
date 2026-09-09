@@ -46,15 +46,21 @@
   function showFallback(message) {
     if (!mediaRoot) return;
     mediaRoot.innerHTML = `<div class="so-scene-media-fallback">${message}</div>`;
+    mediaRoot.classList.add("is-fallback");
+  }
+
+  function clearFallbackState() {
+    mediaRoot?.classList.remove("is-fallback");
   }
 
   function playVideoClip(clip) {
     if (!mediaRoot) return;
+    clearFallbackState();
     mediaRoot.innerHTML = "";
     const video = document.createElement("video");
     video.src = clip.url;
     video.autoplay = true;
-    video.muted = false;
+    video.muted = true;
     video.playsInline = true;
     video.controls = false;
     video.addEventListener("ended", () => {
@@ -65,10 +71,14 @@
       scheduleAdvance(2500);
     });
     mediaRoot.appendChild(video);
-    video.play().catch(() => {
-      video.muted = true;
-      video.play().catch(() => scheduleAdvance(2500));
-    });
+    video.play()
+      .then(() => {
+        video.muted = false;
+      })
+      .catch(() => {
+        video.muted = true;
+        video.play().catch(() => scheduleAdvance(2500));
+      });
     scheduleAdvance(clipDurationSec * 1000);
   }
 
@@ -80,6 +90,7 @@
     }
 
     await loadYouTubeApi();
+    clearFallbackState();
     mediaRoot.innerHTML = "";
     const host = document.createElement("div");
     host.id = "so-yt-player";
@@ -107,9 +118,15 @@
       events: {
         onReady(event) {
           try {
-            event.target.unMute();
+            // Browsers block unmuted autoplay — start muted so the clip actually appears.
+            event.target.mute();
             event.target.setVolume(85);
             event.target.playVideo();
+            try {
+              event.target.unMute();
+            } catch {
+              // Stay muted if OBS/browser blocks it.
+            }
           } catch {
             // Ignore autoplay restrictions; timer still advances.
           }
@@ -133,7 +150,8 @@
       scheduleAdvance(2500);
       return;
     }
-    mediaRoot.innerHTML = `<iframe src="https://streamable.com/e/${clip.videoId}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen title="Streamable clip"></iframe>`;
+    clearFallbackState();
+    mediaRoot.innerHTML = `<iframe src="https://streamable.com/e/${clip.videoId}?autoplay=1&muted=1" allow="autoplay; fullscreen" allowfullscreen title="Streamable clip"></iframe>`;
     scheduleAdvance(clipDurationSec * 1000);
   }
 
