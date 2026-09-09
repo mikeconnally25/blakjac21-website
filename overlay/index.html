@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="BLAKJAC21 stream overlays for OBS — intro, HUD, scenes, and alerts." />
+  <title>Stream Overlays | BLAKJAC21</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+  <link rel="stylesheet" href="/css/stream-overlay-admin.css" />
+</head>
+<body class="stream-overlay-page">
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <header class="header" id="top">
+    <nav class="nav container">
+      <a href="/" class="logo">
+        <img src="/images/logo.png" alt="" class="logo-image" width="50" height="50" />
+        <span class="logo-text">Blakjac<span class="accent">21</span></span>
+      </a>
+
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="nav-links">
+        <li><a href="/#watch">Watch</a></li>
+        <li><a href="/commands/">Commands</a></li>
+        <li><a href="/#menu">Menu</a></li>
+        <li><a href="/overlay/" aria-current="page">Overlays</a></li>
+        <li class="is-hidden" id="admin-nav-accounts">
+          <a href="/accounts/">Accounts</a>
+        </li>
+        <li>
+          <div class="auth-panel" id="auth-panel">
+            <div class="auth-guest" id="auth-guest">
+              <a href="/api/auth/login" class="btn btn-sm btn-kick">Sign in with Kick</a>
+            </div>
+            <div class="auth-member is-hidden" id="auth-member">
+              <div class="auth-user">
+                <img id="auth-avatar" class="auth-avatar is-hidden" alt="" width="32" height="32" />
+                <span id="auth-username" class="auth-username"></span>
+                <span id="auth-admin-badge" class="auth-admin-badge is-hidden">Admin</span>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline" id="auth-logout">Sign out</button>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
+
+    <div class="stream-overlay-shell">
+      <a href="/#menu" class="back-link">← Back to menu</a>
+
+      <header class="stream-overlay-hero">
+        <p class="stream-overlay-hero-brand">BLAKJAC<span class="accent">21</span></p>
+        <h1>Stream Overlays</h1>
+        <p>
+          OBS browser sources for Starting Soon (clip montage), BRB, Ending, Intermission,
+          in-stream HUD, and sub/gift alerts. Preview below, then copy URLs into OBS.
+        </p>
+      </header>
+
+      <div class="stream-overlay-denied is-hidden" id="overlay-denied">
+        <p class="stream-overlay-denied-label">Admin only to edit</p>
+        <p><strong>Anyone can open the OBS source URLs.</strong> Sign in with an admin Kick account to edit clip URLs, headlines, and alert text.</p>
+      </div>
+
+      <div class="stream-overlay-grid">
+        <section class="stream-overlay-panel">
+          <h2>Live preview</h2>
+          <p class="stream-overlay-panel-lead">Click a scene tab to preview what OBS will show.</p>
+          <div class="stream-overlay-preview-tabs" id="overlay-preview-tabs"></div>
+          <iframe
+            class="stream-overlay-preview-frame"
+            id="overlay-preview-frame"
+            title="Overlay preview"
+            src="/overlay/starting-soon/source.html"
+          ></iframe>
+        </section>
+
+        <aside class="stream-overlay-panel">
+          <h2>OBS browser sources</h2>
+          <p class="stream-overlay-panel-lead">
+            Add a Browser Source in OBS, paste the URL, set size to 1920×1080, and enable
+            “Control audio via OBS” for Starting Soon if you want clip sound.
+          </p>
+          <div class="stream-overlay-sources" id="overlay-sources"></div>
+        </aside>
+      </div>
+
+      <section class="stream-overlay-panel is-hidden" id="overlay-admin" style="margin-top: 1.25rem">
+        <h2>Admin settings</h2>
+        <p class="stream-overlay-panel-lead">
+          Paste YouTube / Streamable / direct .mp4 URLs for the Starting Soon montage.
+          Kick clip pages don’t autoplay reliably in OBS — reupload those to YouTube or use an .mp4.
+        </p>
+
+        <div class="stream-overlay-fields">
+          <div class="stream-overlay-row">
+            <label>Brand name<input id="field-brand" type="text" maxlength="40" /></label>
+            <label>Tagline<input id="field-tagline" type="text" maxlength="120" /></label>
+          </div>
+          <div class="stream-overlay-row">
+            <label>Kick username<input id="field-kick" type="text" maxlength="64" /></label>
+            <label>X / Twitter<input id="field-twitter" type="text" maxlength="64" /></label>
+          </div>
+          <div class="stream-overlay-row">
+            <label>YouTube<input id="field-youtube" type="text" maxlength="64" /></label>
+            <label>Discord<input id="field-discord" type="text" maxlength="160" /></label>
+          </div>
+
+          <h3 style="margin: 0.5rem 0 0; font-family: var(--font-display); font-size: 1.35rem">Starting Soon</h3>
+          <div class="stream-overlay-row">
+            <label>Headline<input id="field-ss-headline" type="text" maxlength="80" /></label>
+            <label>Subheadline<input id="field-ss-sub" type="text" maxlength="160" /></label>
+          </div>
+          <div class="stream-overlay-row">
+            <label>Seconds per clip<input id="field-ss-duration" type="number" min="5" max="60" /></label>
+            <label>Go-live countdown (local)<input id="field-ss-golive" type="datetime-local" /></label>
+          </div>
+
+          <label>Add clip URL
+            <div class="stream-overlay-source-row">
+              <input id="field-clip-url" type="url" placeholder="https://youtu.be/... or https://.../win.mp4" />
+              <button type="button" class="btn btn-sm btn-primary" id="overlay-add-clip">Add</button>
+            </div>
+          </label>
+          <div class="stream-overlay-clip-list" id="overlay-clip-list"></div>
+
+          <h3 style="margin: 0.5rem 0 0; font-family: var(--font-display); font-size: 1.35rem">Scene copy</h3>
+          <div class="stream-overlay-row">
+            <label>BRB headline<input id="field-brb-headline" type="text" maxlength="80" /></label>
+            <label>BRB subheadline<input id="field-brb-sub" type="text" maxlength="160" /></label>
+          </div>
+          <div class="stream-overlay-row">
+            <label>Ending headline<input id="field-ending-headline" type="text" maxlength="80" /></label>
+            <label>Ending subheadline<input id="field-ending-sub" type="text" maxlength="160" /></label>
+          </div>
+          <div class="stream-overlay-row">
+            <label>Intermission headline<input id="field-inter-headline" type="text" maxlength="80" /></label>
+            <label>Intermission subheadline<input id="field-inter-sub" type="text" maxlength="160" /></label>
+          </div>
+
+          <h3 style="margin: 0.5rem 0 0; font-family: var(--font-display); font-size: 1.35rem">HUD</h3>
+          <label>Ticker text<input id="field-hud-ticker" type="text" maxlength="160" /></label>
+          <label class="stream-overlay-check"><input id="field-hud-live" type="checkbox" /> Show LIVE badge</label>
+          <label class="stream-overlay-check"><input id="field-hud-socials" type="checkbox" /> Show socials</label>
+          <label class="stream-overlay-check"><input id="field-hud-corners" type="checkbox" /> Show corner brackets</label>
+
+          <h3 style="margin: 0.5rem 0 0; font-family: var(--font-display); font-size: 1.35rem">Alerts</h3>
+          <label class="stream-overlay-check"><input id="field-alerts-enabled" type="checkbox" /> Enable Kick sub/gift alerts</label>
+          <label>Alert duration (ms)<input id="field-alerts-duration" type="number" min="2500" max="20000" /></label>
+          <label>New sub message<input id="field-alerts-sub" type="text" maxlength="120" /></label>
+          <label>Resub message<input id="field-alerts-resub" type="text" maxlength="120" /></label>
+          <label>Gift message<input id="field-alerts-gift" type="text" maxlength="120" /></label>
+        </div>
+
+        <div class="stream-overlay-actions">
+          <button type="button" class="btn btn-primary" id="overlay-save">Save settings</button>
+          <button type="button" class="btn btn-outline" id="overlay-test-sub">Test sub alert</button>
+          <button type="button" class="btn btn-outline" id="overlay-test-gift">Test gift alert</button>
+        </div>
+        <p class="stream-overlay-status" id="overlay-status" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+  </main>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/stream-overlay-admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stream HUD Overlay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/stream-overlay.css" />
+  </head>
+  <body>
+    <div class="so-hud">
+      <div class="so-corners" id="so-corners" aria-hidden="true">
+        <span class="so-corner so-corner-tl"></span>
+        <span class="so-corner so-corner-tr"></span>
+        <span class="so-corner so-corner-bl"></span>
+        <span class="so-corner so-corner-br"></span>
+      </div>
+
+      <div class="so-hud-top">
+        <div class="so-hud-live" id="so-hud-live">
+          <span class="so-hud-live-dot" aria-hidden="true"></span>
+          LIVE
+        </div>
+        <p class="so-hud-brand" id="so-hud-brand">BLAKJAC21</p>
+      </div>
+
+      <div class="so-hud-bottom">
+        <div class="so-hud-socials" id="so-hud-socials"></div>
+        <div class="so-hud-ticker" id="so-hud-ticker"></div>
+      </div>
+    </div>
+    <script src="/js/stream-overlay-shared.js"></script>
+    <script src="/js/stream-overlay-hud.js"></script>
+  </body>
+</html>

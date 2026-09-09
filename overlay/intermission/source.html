@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Intermission Overlay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/stream-overlay.css" />
+  </head>
+  <body data-scene="intermission">
+    <div class="so-scene">
+      <div class="so-scene-scrim" aria-hidden="true"></div>
+      <div class="so-scene-content">
+        <div class="so-scene-stack">
+          <div class="so-brand">
+            <img class="so-brand-logo" src="/images/logo.png" alt="" width="64" height="64" />
+            <p class="so-brand-name" id="so-brand-name">BLAKJAC21</p>
+          </div>
+          <h1 class="so-headline" id="so-headline">INTERMISSION</h1>
+          <p class="so-subheadline" id="so-subheadline">Back in a few</p>
+          <div class="so-socials" id="so-socials"></div>
+        </div>
+      </div>
+    </div>
+    <script src="/js/stream-overlay-shared.js"></script>
+    <script src="/js/stream-overlay-scene.js"></script>
+  </body>
+</html>
