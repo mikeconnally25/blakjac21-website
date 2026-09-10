@@ -310,6 +310,14 @@ function isEditingBonusPayout() {
   return active?.classList?.contains("bonus-payout-input") ?? false;
 }
 
+function sortBonusesByBetAsc(bonuses) {
+  return [...(bonuses || [])].sort((a, b) => {
+    const betDiff = (Number(a.bet) || 0) - (Number(b.bet) || 0);
+    if (betDiff !== 0) return betDiff;
+    return (Number(a.number) || 0) - (Number(b.number) || 0);
+  });
+}
+
 function updateBonusList(bonuses, { force = false, previous = huntBonuses } = {}) {
   const asAdmin = Boolean(currentUser?.isAdmin);
 
@@ -350,14 +358,15 @@ function syncBonusListViewport() {
 }
 
 function getNextPendingBonusId(currentId) {
-  const index = huntBonuses.findIndex((bonus) => bonus.id === currentId);
+  const ordered = sortBonusesByBetAsc(huntBonuses);
+  const index = ordered.findIndex((bonus) => bonus.id === currentId);
   if (index < 0) {
     return null;
   }
 
-  for (let offset = index + 1; offset < huntBonuses.length; offset += 1) {
-    if (huntBonuses[offset].status === "pending") {
-      return huntBonuses[offset].id;
+  for (let offset = index + 1; offset < ordered.length; offset += 1) {
+    if (ordered[offset].status === "pending") {
+      return ordered[offset].id;
     }
   }
 
@@ -386,7 +395,8 @@ function renderBonusList(bonuses) {
 
   if (!list || !empty) return;
 
-  const total = bonuses.length;
+  const ordered = sortBonusesByBetAsc(bonuses);
+  const total = ordered.length;
   empty.classList.toggle("is-hidden", total > 0);
   list.classList.toggle("is-hidden", total === 0);
   const existingIds = new Set(
@@ -394,9 +404,9 @@ function renderBonusList(bonuses) {
   );
   list.replaceChildren();
 
-  const openingId = bonuses.find((bonus) => bonus.status === "pending")?.id;
+  const openingId = ordered.find((bonus) => bonus.status === "pending")?.id;
 
-  bonuses.forEach((bonus) => {
+  ordered.forEach((bonus) => {
     const item = document.createElement("li");
     item.className = "hunt-bonus-card";
     item.dataset.id = bonus.id;
@@ -751,7 +761,7 @@ function renderPastHunts(hunts) {
     const bonusList = document.createElement("ul");
     bonusList.className = "past-hunt-bonus-list";
 
-    (hunt.bonuses || []).forEach((bonus) => {
+    sortBonusesByBetAsc(hunt.bonuses).forEach((bonus) => {
       const bonusItem = document.createElement("li");
       bonusItem.className = "past-hunt-bonus-item";
 
