@@ -125,11 +125,11 @@ app.post(
   (req, res) => handleKickWebhook(req, res)
 );
 
-app.get("/api/stream-overlay/clips/upload", (req, res) =>
+app.get("/api/stream-overlay/clip-upload", (req, res) =>
   handleStreamOverlayClipUploadMode(req, res)
 );
 
-app.post("/api/stream-overlay/clips/upload", (req, res, next) => {
+app.post("/api/stream-overlay/clip-upload", (req, res, next) => {
   const contentType = String(req.headers["content-type"] || "");
   if (contentType.includes("application/json")) {
     return express.json({ limit: "1mb" })(req, res, (err) => {

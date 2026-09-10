@@ -1,7 +1,7 @@
 import {
   handleStreamOverlayClipUpload,
   handleStreamOverlayClipUploadMode,
-} from "../../../lib/stream-overlay-handlers.js";
+} from "../../lib/stream-overlay-handlers.js";
 
 export default async function handler(req, res) {
   if (req.method === "GET") {

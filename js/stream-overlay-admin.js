@@ -103,7 +103,7 @@
 
   async function refreshUploadMode() {
     try {
-      const response = await fetch("/api/stream-overlay/clips/upload", {
+      const response = await fetch("/api/stream-overlay/clip-upload", {
         credentials: "same-origin",
         cache: "no-store",
       });
@@ -117,7 +117,7 @@
 
   async function uploadLocalFile(file) {
     const response = await fetch(
-      `/api/stream-overlay/clips/upload?filename=${encodeURIComponent(file.name || "clip.mp4")}`,
+      `/api/stream-overlay/clip-upload?filename=${encodeURIComponent(file.name || "clip.mp4")}`,
       {
         method: "POST",
         credentials: "same-origin",
@@ -139,7 +139,7 @@
     const pathname = `starting-soon/${Date.now()}-${sanitizeUploadName(file.name)}`;
     const result = await upload(pathname, file, {
       access: "public",
-      handleUploadUrl: "/api/stream-overlay/clips/upload",
+      handleUploadUrl: "/api/stream-overlay/clip-upload",
       multipart: file.size > 8 * 1024 * 1024,
       contentType: file.type || "video/mp4",
     });
