@@ -2095,6 +2095,36 @@ ul {
   text-transform: uppercase;
 }
 
+.accounts-ban-toggle,
+.accounts-remove-btn {
+  min-height: 1.55rem;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.accounts-banned-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.16rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 93, 106, 0.35);
+  background: rgba(255, 93, 106, 0.14);
+  color: #ff8f98;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.accounts-entry.is-banned {
+  border-color: rgba(255, 93, 106, 0.22);
+  opacity: 0.88;
+}
+
 .accounts-sub-badge {
   display: inline-flex;
   align-items: center;

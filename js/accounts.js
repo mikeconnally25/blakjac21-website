@@ -251,7 +251,9 @@ function renderAccounts(users) {
 
   users.forEach((user, index) => {
     const item = document.createElement("li");
-    item.className = "accounts-entry";
+    item.className = user.banned
+      ? "accounts-entry is-banned"
+      : "accounts-entry";
 
     const rank = document.createElement("span");
     rank.className = "accounts-entry-rank";
@@ -277,6 +279,16 @@ function renderAccounts(users) {
 
     const badges = document.createElement("span");
     badges.className = "accounts-badges";
+
+    if (Boolean(user.banned)) {
+      const bannedBadge = document.createElement("span");
+      bannedBadge.className = "accounts-banned-badge";
+      bannedBadge.textContent = "BANNED";
+      bannedBadge.title = user.bannedAt
+        ? `Banned ${formatDateTime(user.bannedAt)}`
+        : "This account is banned";
+      badges.append(bannedBadge);
+    }
 
     if (Boolean(user.stakeCodeVerified)) {
       const affBadge = document.createElement("span");
@@ -333,6 +345,34 @@ function renderAccounts(users) {
         void setAccountAffGranted(user.kickUserId, !user.affGranted, affToggle);
       });
       nameRow.append(affToggle);
+    }
+
+    const isSelf =
+      String(currentUser?.kickUserId || "") === String(user.kickUserId || "");
+    if (!isSelf) {
+      const banToggle = document.createElement("button");
+      banToggle.type = "button";
+      banToggle.className = user.banned
+        ? "btn btn-sm btn-primary accounts-ban-toggle"
+        : "btn btn-sm btn-outline accounts-ban-toggle";
+      banToggle.textContent = user.banned ? "Unban" : "Ban";
+      banToggle.title = user.banned
+        ? "Allow this account to sign in again"
+        : "Block this account from signing in";
+      banToggle.addEventListener("click", () => {
+        void setAccountBanned(user.kickUserId, !user.banned, banToggle);
+      });
+      nameRow.append(banToggle);
+
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "btn btn-sm btn-outline accounts-remove-btn";
+      removeBtn.textContent = "Remove";
+      removeBtn.title = "Permanently delete this account record";
+      removeBtn.addEventListener("click", () => {
+        void removeAccount(user.kickUserId, user.username, removeBtn);
+      });
+      nameRow.append(removeBtn);
     }
 
     copy.append(nameRow);
@@ -613,6 +653,97 @@ async function setAccountAffGranted(kickUserId, granted, button) {
     renderFilteredAccounts();
   } catch {
     setAccountsStatus("Could not update AFF status.", "error");
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+async function setAccountBanned(kickUserId, banned, button) {
+  if (button) button.disabled = true;
+  setAccountsStatus(banned ? "Banning account..." : "Unbanning account...");
+
+  try {
+    const response = await fetch("/api/users/ban", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kickUserId, banned }),
+    });
+
+    let data = {};
+    try {
+      data = await response.json();
+    } catch {
+      setAccountsStatus(
+        response.ok
+          ? "Could not update ban status."
+          : `Could not update ban status (${response.status}).`,
+        "error"
+      );
+      return;
+    }
+
+    if (!response.ok) {
+      setAccountsStatus(data.error || "Could not update ban status.", "error");
+      return;
+    }
+
+    allUsers = data.users || [];
+    altClusters = data.altClusters || [];
+    setAccountsStatus(banned ? "Account banned." : "Account unbanned.", "success");
+    renderFilteredAccounts();
+  } catch {
+    setAccountsStatus("Could not update ban status.", "error");
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+async function removeAccount(kickUserId, username, button) {
+  const label = username || "this account";
+  if (
+    !window.confirm(
+      `Remove ${label}? This deletes their site account record. They can create a new one if they sign in again.`
+    )
+  ) {
+    return;
+  }
+
+  if (button) button.disabled = true;
+  setAccountsStatus("Removing account...");
+
+  try {
+    const response = await fetch("/api/users/remove", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kickUserId }),
+    });
+
+    let data = {};
+    try {
+      data = await response.json();
+    } catch {
+      setAccountsStatus(
+        response.ok
+          ? "Could not remove account."
+          : `Could not remove account (${response.status}).`,
+        "error"
+      );
+      return;
+    }
+
+    if (!response.ok) {
+      setAccountsStatus(data.error || "Could not remove account.", "error");
+      return;
+    }
+
+    allUsers = data.users || [];
+    altClusters = data.altClusters || [];
+    setAccountsStatus(`Removed ${label}.`, "success");
+    renderFilteredAccounts();
+  } catch {
+    setAccountsStatus("Could not remove account.", "error");
   } finally {
     if (button) button.disabled = false;
   }
