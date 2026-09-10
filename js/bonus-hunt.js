@@ -310,8 +310,16 @@ function isEditingBonusPayout() {
   return active?.classList?.contains("bonus-payout-input") ?? false;
 }
 
-function sortBonusesByBetAsc(bonuses) {
+function bonusDisplayTier(bonus) {
+  if (bonus?.epicBonus) return 2;
+  if (bonus?.superBonus) return 1;
+  return 0;
+}
+
+function sortBonusesForDisplay(bonuses) {
   return [...(bonuses || [])].sort((a, b) => {
+    const tierDiff = bonusDisplayTier(a) - bonusDisplayTier(b);
+    if (tierDiff !== 0) return tierDiff;
     const betDiff = (Number(a.bet) || 0) - (Number(b.bet) || 0);
     if (betDiff !== 0) return betDiff;
     return (Number(a.number) || 0) - (Number(b.number) || 0);
@@ -358,7 +366,7 @@ function syncBonusListViewport() {
 }
 
 function getNextPendingBonusId(currentId) {
-  const ordered = sortBonusesByBetAsc(huntBonuses);
+  const ordered = sortBonusesForDisplay(huntBonuses);
   const index = ordered.findIndex((bonus) => bonus.id === currentId);
   if (index < 0) {
     return null;
@@ -395,7 +403,7 @@ function renderBonusList(bonuses) {
 
   if (!list || !empty) return;
 
-  const ordered = sortBonusesByBetAsc(bonuses);
+  const ordered = sortBonusesForDisplay(bonuses);
   const total = ordered.length;
   empty.classList.toggle("is-hidden", total > 0);
   list.classList.toggle("is-hidden", total === 0);
@@ -761,7 +769,7 @@ function renderPastHunts(hunts) {
     const bonusList = document.createElement("ul");
     bonusList.className = "past-hunt-bonus-list";
 
-    sortBonusesByBetAsc(hunt.bonuses).forEach((bonus) => {
+    sortBonusesForDisplay(hunt.bonuses).forEach((bonus) => {
       const bonusItem = document.createElement("li");
       bonusItem.className = "past-hunt-bonus-item";
 
