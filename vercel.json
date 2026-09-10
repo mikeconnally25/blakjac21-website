@@ -3,9 +3,6 @@
   "functions": {
     "api/**/*.js": {
       "maxDuration": 10
-    },
-    "api/stream-overlay/clips/upload.js": {
-      "maxDuration": 60
     }
   },
   "redirects": [
