@@ -10,6 +10,7 @@
     "diagnose:kick": "node scripts/diagnose-kick-chat.mjs"
   },
   "dependencies": {
+    "@vercel/blob": "^2.8.0",
     "@vercel/speed-insights": "^2.0.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",

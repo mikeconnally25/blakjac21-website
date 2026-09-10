@@ -78,6 +78,8 @@ import {
   handleStreamOverlayAlertsAck,
   handleStreamOverlayAlertsGet,
   handleStreamOverlayAlertsTest,
+  handleStreamOverlayClipUpload,
+  handleStreamOverlayClipUploadMode,
   handleStreamOverlayGet,
   handleStreamOverlaySave,
 } from "./lib/stream-overlay-handlers.js";
@@ -122,6 +124,28 @@ app.post(
   express.raw({ type: "application/json" }),
   (req, res) => handleKickWebhook(req, res)
 );
+
+app.get("/api/stream-overlay/clips/upload", (req, res) =>
+  handleStreamOverlayClipUploadMode(req, res)
+);
+
+app.post("/api/stream-overlay/clips/upload", (req, res, next) => {
+  const contentType = String(req.headers["content-type"] || "");
+  if (contentType.includes("application/json")) {
+    return express.json({ limit: "1mb" })(req, res, (err) => {
+      if (err) return next(err);
+      return handleStreamOverlayClipUpload(req, res);
+    });
+  }
+
+  return express.raw({
+    type: () => true,
+    limit: "200mb",
+  })(req, res, (err) => {
+    if (err) return next(err);
+    return handleStreamOverlayClipUpload(req, res);
+  });
+});
 
 app.use(express.json());
 app.use(express.static(__dirname));

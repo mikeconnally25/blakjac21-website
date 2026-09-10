@@ -18,5 +18,8 @@ data/kick-chat-archive/
 data/kick-chat-recent.json
 data/points.json
 data/slot-tournament-predictions.json
+data/stream-overlay.json
+clips/*
+!clips/.gitkeep
 .vercel
 .env*
