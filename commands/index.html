@@ -28,7 +28,9 @@
 
       <ul class="nav-links">
         <li><a href="/#watch">Watch</a></li>
-        <li><a href="/commands/">Commands</a></li>
+        <li class="is-hidden" id="admin-nav-commands">
+        <a href="/commands/">Commands</a>
+      </li>
         <li><a href="/#menu">Menu</a></li>
         <li><a href="/#about">About</a></li>
         <li><a href="/#links">Links</a></li>
@@ -62,6 +64,15 @@
       <div class="container page-content">
         <a href="/#menu" class="back-link">← Back to menu</a>
 
+        <div class="accounts-denied-card is-hidden" id="commands-denied">
+          <p class="accounts-denied-label">Admin only</p>
+          <p class="accounts-denied-title">Access restricted</p>
+          <p class="accounts-denied-copy">
+            Sign in with an admin Kick account to view and edit chat commands.
+          </p>
+        </div>
+
+        <div class="is-hidden" id="commands-content">
         <header class="section-header">
           <p class="section-eyebrow">Kick chat</p>
           <h1>Commands</h1>
@@ -134,6 +145,7 @@
             </div>
           </form>
         </section>
+        </div>
       </div>
     </section>
   </main>

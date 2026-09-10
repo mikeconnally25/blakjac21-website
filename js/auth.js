@@ -190,6 +190,9 @@ function renderAuthState(user) {
   const usernameEl = document.getElementById("auth-username");
   const adminBadge = document.getElementById("auth-admin-badge");
   const adminAccountsNav = document.getElementById("admin-nav-accounts");
+  const adminCommandsNav = document.getElementById("admin-nav-commands");
+  const adminOverlaysNav = document.getElementById("admin-nav-overlays");
+  const adminOverlaysMenu = document.getElementById("admin-menu-overlays");
   const stakeBadge = document.getElementById("auth-stake-badge");
   const avatarEl = document.getElementById("auth-avatar");
   const toast = document.getElementById("auth-toast");
@@ -206,6 +209,15 @@ function renderAuthState(user) {
     if (adminBadge) adminBadge.classList.toggle("is-hidden", !user.isAdmin);
     if (adminAccountsNav) {
       adminAccountsNav.classList.toggle("is-hidden", !user.isAdmin);
+    }
+    if (adminCommandsNav) {
+      adminCommandsNav.classList.toggle("is-hidden", !user.isAdmin);
+    }
+    if (adminOverlaysNav) {
+      adminOverlaysNav.classList.toggle("is-hidden", !user.isAdmin);
+    }
+    if (adminOverlaysMenu) {
+      adminOverlaysMenu.classList.toggle("is-hidden", !user.isAdmin);
     }
     if (stakeBadge) {
       const isVerified = Boolean(
@@ -237,6 +249,9 @@ function renderAuthState(user) {
     guest.classList.remove("is-hidden");
     member.classList.add("is-hidden");
     if (adminAccountsNav) adminAccountsNav.classList.add("is-hidden");
+    if (adminCommandsNav) adminCommandsNav.classList.add("is-hidden");
+    if (adminOverlaysNav) adminOverlaysNav.classList.add("is-hidden");
+    if (adminOverlaysMenu) adminOverlaysMenu.classList.add("is-hidden");
     if (stakeBadge) stakeBadge.classList.add("is-hidden");
     hideStakeLinkModal();
   }

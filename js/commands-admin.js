@@ -246,7 +246,8 @@
   }
 
   async function initAdmin() {
-    if (!panel) return;
+    const content = document.getElementById("commands-content");
+    const denied = document.getElementById("commands-denied");
 
     try {
       const me = await fetch("/api/auth/me", {
@@ -254,15 +255,21 @@
         cache: "no-store",
       }).then((r) => r.json());
 
-      if (!me?.user?.isAdmin) {
-        panel.classList.add("is-hidden");
+      const isAdmin = Boolean(me?.user?.isAdmin);
+      denied?.classList.toggle("is-hidden", isAdmin);
+      content?.classList.toggle("is-hidden", !isAdmin);
+
+      if (!isAdmin) {
+        panel?.classList.add("is-hidden");
         return;
       }
 
-      panel.classList.remove("is-hidden");
+      if (panel) panel.classList.remove("is-hidden");
       await loadReplies();
     } catch (error) {
-      panel.classList.add("is-hidden");
+      denied?.classList.remove("is-hidden");
+      content?.classList.add("is-hidden");
+      panel?.classList.add("is-hidden");
       console.error(error);
     }
   }

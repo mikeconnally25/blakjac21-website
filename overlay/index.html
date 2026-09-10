@@ -29,9 +29,13 @@
 
       <ul class="nav-links">
         <li><a href="/#watch">Watch</a></li>
-        <li><a href="/commands/">Commands</a></li>
+        <li class="is-hidden" id="admin-nav-commands">
+        <a href="/commands/">Commands</a>
+      </li>
         <li><a href="/#menu">Menu</a></li>
-        <li><a href="/overlay/" aria-current="page">Overlays</a></li>
+        <li class="is-hidden" id="admin-nav-overlays">
+        <a href="/overlay/" aria-current="page">Overlays</a>
+      </li>
         <li class="is-hidden" id="admin-nav-accounts">
           <a href="/accounts/">Accounts</a>
         </li>
@@ -70,11 +74,11 @@
       </header>
 
       <div class="stream-overlay-denied is-hidden" id="overlay-denied">
-        <p class="stream-overlay-denied-label">Admin only to edit</p>
-        <p><strong>Anyone can open the OBS source URLs.</strong> Sign in with an admin Kick account to edit clip URLs, headlines, and alert text.</p>
+        <p class="stream-overlay-denied-label">Admin only</p>
+        <p><strong>Access restricted.</strong> Sign in with an admin Kick account to manage stream overlays.</p>
       </div>
 
-      <div class="stream-overlay-grid">
+      <div class="stream-overlay-grid is-hidden" id="overlay-content">
         <section class="stream-overlay-panel">
           <h2>Live preview</h2>
           <p class="stream-overlay-panel-lead">Click a scene tab to preview what OBS will show.</p>

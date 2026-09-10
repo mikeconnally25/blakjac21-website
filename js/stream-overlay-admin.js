@@ -259,6 +259,7 @@
   function updateAccess() {
     const isAdmin = Boolean(currentUser?.isAdmin);
     $("overlay-denied")?.classList.toggle("is-hidden", isAdmin);
+    $("overlay-content")?.classList.toggle("is-hidden", !isAdmin);
     $("overlay-admin")?.classList.toggle("is-hidden", !isAdmin);
   }
 

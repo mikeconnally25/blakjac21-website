@@ -31,7 +31,9 @@
           <ul class="nav-links">
             <li><a href="#menu">Menu</a></li>
             <li><a href="#watch">Watch</a></li>
-            <li><a href="/commands/">Commands</a></li>
+            <li class="is-hidden" id="admin-nav-commands">
+        <a href="/commands/">Commands</a>
+      </li>
             <li><a href="#about">About</a></li>
             <li><a href="#links">Links</a></li>
             <li class="is-hidden" id="admin-nav-accounts">
@@ -131,7 +133,7 @@
                 <span class="menu-blurb">Spend channel points on rewards awarded by admins.</span>
                 <span class="menu-card-cta">Browse store <span aria-hidden="true">→</span></span>
               </a>
-              <a href="/overlay/" class="menu-card" style="--menu-delay: 420ms">
+              <a href="/overlay/" class="menu-card is-hidden" id="admin-menu-overlays" style="--menu-delay: 420ms">
                 <span class="menu-card-glow" aria-hidden="true"></span>
                 <span class="menu-card-top">
                   <span class="menu-card-index">07</span>

@@ -52,6 +52,8 @@ import {
   handleUsersList,
   handleStakeLink,
   handleUserAffGrant,
+  handleUserBan,
+  handleUserRemove,
   handleUserSetStake,
 } from "./lib/user-handlers.js";
 import {
@@ -202,6 +204,8 @@ app.get("/api/leaderboard", (req, res) => handleLeaderboardGet(req, res));
 app.get("/api/users", (req, res) => handleUsersList(req, res));
 app.post("/api/users/link-stake", (req, res) => handleStakeLink(req, res));
 app.post("/api/users/aff-grant", (req, res) => handleUserAffGrant(req, res));
+app.post("/api/users/ban", (req, res) => handleUserBan(req, res));
+app.post("/api/users/remove", (req, res) => handleUserRemove(req, res));
 app.post("/api/users/set-stake", (req, res) => handleUserSetStake(req, res));
 app.get("/api/points/me", (req, res) => handlePointsMe(req, res));
 app.get("/api/points/catalog", (req, res) => handlePointsCatalogGet(req, res));
