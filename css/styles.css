@@ -8014,6 +8014,183 @@ a.feature-card:focus-visible {
   gap: 0.55rem;
 }
 
+.store-reward-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+  gap: 0.85rem;
+  align-items: stretch;
+}
+
+.store-reward-card {
+  --reward-delay: 0ms;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 0.85rem;
+  min-height: 12.5rem;
+  padding: 1.05rem 1.05rem 1rem;
+  border-radius: calc(var(--radius-sm) + 6px);
+  border: 1px solid rgba(126, 216, 255, 0.18);
+  background:
+    linear-gradient(165deg, rgba(18, 32, 44, 0.96), rgba(6, 12, 18, 0.92));
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  animation: store-reward-in 0.45s ease both;
+  animation-delay: var(--reward-delay);
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.store-reward-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #7ed8ff, rgba(88, 201, 243, 0.15), #f0c98e);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.store-reward-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(126, 216, 255, 0.38);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.34),
+    0 0 0 1px rgba(88, 201, 243, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.store-reward-card.is-locked {
+  opacity: 0.72;
+}
+
+.store-reward-card-glow {
+  position: absolute;
+  inset: auto -20% -35% auto;
+  width: 11rem;
+  height: 11rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(88, 201, 243, 0.22), transparent 68%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.store-reward-card-body {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.45rem;
+  align-content: start;
+  min-width: 0;
+}
+
+.store-reward-card-eyebrow {
+  margin: 0;
+  color: rgba(126, 216, 255, 0.78);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.store-reward-card-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 2.4vw, 1.7rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  background: var(--heading-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  overflow-wrap: anywhere;
+}
+
+.store-reward-card-cost {
+  margin: 0.15rem 0 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  width: fit-content;
+  padding: 0.28rem 0.55rem 0.22rem;
+  border-radius: 999px;
+  border: 1px solid rgba(157, 255, 115, 0.28);
+  background: rgba(157, 255, 115, 0.08);
+  color: #9dff73;
+  line-height: 1;
+}
+
+.store-reward-card-cost strong {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.store-reward-card-cost span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.store-reward-card-description {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.store-reward-card-cta {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  justify-self: stretch;
+  min-height: 2.45rem;
+  box-shadow: 0 0 22px rgba(88, 201, 243, 0.22);
+}
+
+.store-reward-card-cta:disabled {
+  box-shadow: none;
+}
+
+@keyframes store-reward-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.55rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .store-reward-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .store-reward-card {
+    animation: none;
+  }
+
+  .store-reward-card:hover {
+    transform: none;
+  }
+}
+
 .store-list-scroll {
   max-height: min(18rem, 42vh);
   overflow-y: auto;

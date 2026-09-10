@@ -81,40 +81,55 @@ function renderCatalog() {
   empty.classList.add("is-hidden");
   list.classList.remove("is-hidden");
 
-  activeItems.forEach((item) => {
+  activeItems.forEach((item, index) => {
     const row = document.createElement("li");
-    row.className = "store-catalog-item";
+    row.className = "store-reward-card";
+    row.style.setProperty("--reward-delay", `${Math.min(index, 8) * 45}ms`);
 
-    const copy = document.createElement("div");
-    copy.className = "store-catalog-copy";
+    const glow = document.createElement("span");
+    glow.className = "store-reward-card-glow";
+    glow.setAttribute("aria-hidden", "true");
+
+    const body = document.createElement("div");
+    body.className = "store-reward-card-body";
+
+    const eyebrow = document.createElement("p");
+    eyebrow.className = "store-reward-card-eyebrow";
+    eyebrow.textContent = "Reward";
 
     const title = document.createElement("h3");
-    title.className = "store-catalog-title";
+    title.className = "store-reward-card-title";
     title.textContent = item.title;
 
     const cost = document.createElement("p");
-    cost.className = "store-catalog-cost";
-    cost.textContent = formatPoints(item.cost);
+    cost.className = "store-reward-card-cost";
+    cost.innerHTML = `<strong>${Number(item.cost) || 0}</strong> <span>pts</span>`;
 
-    copy.append(title, cost);
+    body.append(eyebrow, title, cost);
 
     if (item.description) {
       const description = document.createElement("p");
-      description.className = "store-catalog-description";
+      description.className = "store-reward-card-description";
       description.textContent = item.description;
-      copy.append(description);
+      body.append(description);
     }
 
     const redeem = document.createElement("button");
     redeem.type = "button";
-    redeem.className = "btn btn-sm btn-primary";
+    redeem.className = "btn btn-primary store-reward-card-cta";
     redeem.textContent = "Redeem";
     redeem.disabled = !currentUser || pointsBalance < item.cost;
+    if (!currentUser) {
+      redeem.title = "Sign in with Kick to redeem";
+    } else if (pointsBalance < item.cost) {
+      redeem.title = "Not enough points";
+      row.classList.add("is-locked");
+    }
     redeem.addEventListener("click", () => {
       void redeemItem(item.id, redeem);
     });
 
-    row.append(copy, redeem);
+    row.append(glow, body, redeem);
     list.append(row);
   });
 }
