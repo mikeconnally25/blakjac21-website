@@ -2210,10 +2210,22 @@ ul {
 
 .accounts-alts-list {
   margin: 0;
-  padding: 0;
+  padding: 0 0.15rem 0 0;
   list-style: none;
   display: grid;
   gap: 0.55rem;
+  max-height: min(16rem, 38vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.accounts-alts-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.accounts-alts-list::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
 }
 
 .accounts-alts-entry {
