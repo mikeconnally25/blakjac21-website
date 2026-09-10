@@ -2,9 +2,6 @@
   let currentUser = null;
   let config = null;
   let clips = [];
-  let uploadMode = "local";
-  let uploadBusy = false;
-  let blobUploadFn = null;
 
   const SOURCES = [
     {
@@ -51,9 +48,6 @@
     },
   ];
 
-  const VIDEO_EXTENSIONS = /\.(mp4|webm|mov|m4v)$/i;
-  const MAX_UPLOAD_BYTES = 150 * 1024 * 1024;
-
   function $(id) {
     return document.getElementById(id);
   }
@@ -67,164 +61,6 @@
 
   function absoluteUrl(path) {
     return new URL(path, window.location.origin).href;
-  }
-
-  function sanitizeUploadName(name) {
-    const base = String(name || "clip.mp4").split(/[/\\]/).pop() || "clip.mp4";
-    return base.replace(/[^\w.\-()+ ]+/g, "_").replace(/\s+/g, "-").slice(0, 80) || "clip.mp4";
-  }
-
-  function isVideoFile(file) {
-    if (!file) return false;
-    if (file.type && file.type.startsWith("video/")) return true;
-    return VIDEO_EXTENSIONS.test(file.name || "");
-  }
-
-  function addClipUrl(url, label = "") {
-    clips.push({
-      id: crypto.randomUUID(),
-      url,
-      type: "video",
-      label,
-      enabled: true,
-    });
-    renderClips();
-  }
-
-  async function loadBlobUpload() {
-    if (blobUploadFn) return blobUploadFn;
-    const mod = await import("https://esm.sh/@vercel/blob@2.8.0/client");
-    if (typeof mod.upload !== "function") {
-      throw new Error("Could not load Blob uploader.");
-    }
-    blobUploadFn = mod.upload;
-    return blobUploadFn;
-  }
-
-  async function refreshUploadMode() {
-    try {
-      const response = await fetch("/api/stream-overlay/clip-upload", {
-        credentials: "same-origin",
-        cache: "no-store",
-      });
-      if (!response.ok) return;
-      const data = await response.json();
-      uploadMode = data.mode || "local";
-    } catch {
-      uploadMode = "local";
-    }
-  }
-
-  async function uploadLocalFile(file) {
-    const response = await fetch(
-      `/api/stream-overlay/clip-upload?filename=${encodeURIComponent(file.name || "clip.mp4")}`,
-      {
-        method: "POST",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": file.type || "video/mp4",
-        },
-        body: file,
-      }
-    );
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      throw new Error(data.error || "Upload failed.");
-    }
-    return data.url;
-  }
-
-  async function uploadBlobFile(file) {
-    const upload = await loadBlobUpload();
-    const pathname = `starting-soon/${Date.now()}-${sanitizeUploadName(file.name)}`;
-    const result = await upload(pathname, file, {
-      access: "public",
-      handleUploadUrl: "/api/stream-overlay/clip-upload",
-      multipart: file.size > 8 * 1024 * 1024,
-      contentType: file.type || "video/mp4",
-    });
-    return result.url;
-  }
-
-  async function uploadClipFiles(fileList) {
-    const files = [...(fileList || [])].filter(Boolean);
-    if (!files.length) return;
-
-    if (uploadMode === "unavailable") {
-      setStatus(
-        "Connect Vercel Blob in the Vercel dashboard (BLOB_READ_WRITE_TOKEN) to upload clips.",
-        true
-      );
-      return;
-    }
-
-    const videos = files.filter(isVideoFile);
-    if (!videos.length) {
-      setStatus("Drop MP4 / WebM / MOV video files only.", true);
-      return;
-    }
-
-    const tooBig = videos.find((file) => file.size > MAX_UPLOAD_BYTES);
-    if (tooBig) {
-      setStatus(`${tooBig.name} is over 150MB.`, true);
-      return;
-    }
-
-    uploadBusy = true;
-    $("overlay-clip-dropzone")?.classList.add("is-uploading");
-
-    try {
-      for (let index = 0; index < videos.length; index += 1) {
-        const file = videos[index];
-        setStatus(`Uploading ${file.name} (${index + 1}/${videos.length})…`);
-        const url =
-          uploadMode === "blob" ? await uploadBlobFile(file) : await uploadLocalFile(file);
-        addClipUrl(url, file.name);
-      }
-      setStatus(
-        videos.length === 1
-          ? "Clip uploaded — hit Save to push it live."
-          : `${videos.length} clips uploaded — hit Save to push them live.`
-      );
-    } catch (error) {
-      setStatus(error.message || "Upload failed.", true);
-    } finally {
-      uploadBusy = false;
-      $("overlay-clip-dropzone")?.classList.remove("is-uploading");
-      const input = $("field-clip-file");
-      if (input) input.value = "";
-    }
-  }
-
-  function bindDropzone() {
-    const zone = $("overlay-clip-dropzone");
-    const input = $("field-clip-file");
-    if (!zone || !input) return;
-
-    const setDragging = (on) => zone.classList.toggle("is-dragging", on);
-
-    zone.addEventListener("dragenter", (event) => {
-      event.preventDefault();
-      setDragging(true);
-    });
-    zone.addEventListener("dragover", (event) => {
-      event.preventDefault();
-      setDragging(true);
-    });
-    zone.addEventListener("dragleave", (event) => {
-      if (event.target === zone) setDragging(false);
-    });
-    zone.addEventListener("drop", (event) => {
-      event.preventDefault();
-      setDragging(false);
-      if (uploadBusy) return;
-      void uploadClipFiles(event.dataTransfer?.files);
-    });
-
-    input.addEventListener("change", () => {
-      if (uploadBusy) return;
-      void uploadClipFiles(input.files);
-    });
   }
 
   function renderSources() {
@@ -311,7 +147,7 @@
 
     if (!clips.length) {
       list.innerHTML =
-        '<p class="stream-overlay-panel-lead">No clips yet. Drop an MP4 above or paste a YouTube / Streamable / .mp4 URL.</p>';
+        '<p class="stream-overlay-panel-lead">No clips yet. Paste a YouTube, Streamable, or direct .mp4 URL below.</p>';
       return;
     }
 
@@ -327,7 +163,7 @@
           </label>
           <button type="button" class="btn btn-sm btn-outline" data-clip-remove="${index}">Remove</button>
         </div>
-        <div class="stream-overlay-clip-url">${clip.label ? `${clip.label} · ` : ""}${clip.url}</div>
+        <div class="stream-overlay-clip-url">${clip.url}</div>
       </article>
     `
       )
@@ -425,9 +261,6 @@
     $("overlay-denied")?.classList.toggle("is-hidden", isAdmin);
     $("overlay-content")?.classList.toggle("is-hidden", !isAdmin);
     $("overlay-admin")?.classList.toggle("is-hidden", !isAdmin);
-    if (isAdmin) {
-      void refreshUploadMode();
-    }
   }
 
   function onAuthChange(event) {
@@ -491,7 +324,7 @@
 
     if (host === "kick.com" || host.endsWith(".kick.com")) {
       setStatus(
-        "Kick clip links can’t autoplay in OBS. Drop an MP4 instead, or use YouTube / Streamable.",
+        "Kick clip links can’t autoplay in OBS. Use a YouTube, Streamable, or direct .mp4 URL.",
         true
       );
       return;
@@ -532,7 +365,6 @@
     }
   });
 
-  bindDropzone();
   renderSources();
   renderPreviewTabs();
   setPreview(SOURCES[0].path);

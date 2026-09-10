@@ -106,8 +106,8 @@
       <section class="stream-overlay-panel is-hidden" id="overlay-admin" style="margin-top: 1.25rem">
         <h2>Admin settings</h2>
         <p class="stream-overlay-panel-lead">
-          Paste YouTube / Streamable / direct .mp4 URLs, or drag MP4 files into the dropzone.
-          Kick clip pages don’t autoplay reliably in OBS — download them as .mp4 first.
+          Paste YouTube / Streamable / direct .mp4 URLs for the Starting Soon montage.
+          Kick clip pages don’t autoplay reliably in OBS — reupload those to YouTube or use an .mp4.
         </p>
 
         <div class="stream-overlay-fields">
@@ -132,26 +132,6 @@
           <div class="stream-overlay-row">
             <label>Seconds per clip<input id="field-ss-duration" type="number" min="5" max="60" /></label>
             <label>Go-live countdown (local)<input id="field-ss-golive" type="datetime-local" /></label>
-          </div>
-
-          <div
-            class="stream-overlay-dropzone"
-            id="overlay-clip-dropzone"
-            tabindex="0"
-            role="button"
-            aria-label="Upload MP4 clips"
-          >
-            <input
-              id="field-clip-file"
-              class="stream-overlay-dropzone-input"
-              type="file"
-              accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v"
-              multiple
-            />
-            <p class="stream-overlay-dropzone-title">Drop MP4 clips here</p>
-            <p class="stream-overlay-dropzone-copy">
-              Or click to browse. Max 150MB each. Then hit Save to push live.
-            </p>
           </div>
 
           <label>Add clip URL
