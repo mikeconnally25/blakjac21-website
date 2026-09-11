@@ -3101,15 +3101,18 @@ function initAdminForm() {
     }
   });
 
-  function buildDirectSyncScript({ groupSlug, token, apiBase, openerOrigin }) {
+  function buildDirectSyncScript({ groupSlug, token, apiBase, openerOrigins }) {
     const label =
       groupSlug === "only-on-stake" ? "Only on Stake" : "New Releases";
     const importUrl = `${apiBase}/api/bonus-hunt/slots/import-sync`;
+    const allowedOpeners = Array.isArray(openerOrigins)
+      ? openerOrigins
+      : [openerOrigins].filter(Boolean);
     return `(async () => {
   const groupSlug = ${JSON.stringify(groupSlug)};
   const token = ${JSON.stringify(token)};
   const importUrl = ${JSON.stringify(importUrl)};
-  const openerOrigin = ${JSON.stringify(openerOrigin)};
+  const openerOrigins = ${JSON.stringify(allowedOpeners)};
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const lockKey = "__bhSlotSyncLock_" + groupSlug + "_" + token.slice(0, 12);
   if (window[lockKey]) {
@@ -3118,17 +3121,45 @@ function initAdminForm() {
   }
   window[lockKey] = true;
 
-  const countGames = () =>
-    document.querySelectorAll('a[href*="/casino/games/"]').length;
+  const gameAnchors = () =>
+    [...document.querySelectorAll('a[href*="/casino/games/"], a[href*="casino/games/"]')];
 
-  const findLoadMore = () =>
-    [...document.querySelectorAll("button")].find((b) => {
-      if (b.disabled) return false;
-      return /^\\s*Load More\\s*$/i.test((b.innerText || b.textContent || "").trim());
+  const countGames = () => {
+    const seen = new Set();
+    for (const a of gameAnchors()) {
+      try {
+        const slug = new URL(a.href, location.origin).pathname.split("/").filter(Boolean).pop();
+        if (slug) seen.add(slug);
+      } catch {
+        /* ignore bad href */
+      }
+    }
+    return seen.size;
+  };
+
+  const buttonLabel = (el) =>
+    (el.innerText || el.textContent || el.getAttribute("aria-label") || "")
+      .replace(/\\s+/g, " ")
+      .trim();
+
+  const findLoadMore = () => {
+    const nodes = [
+      ...document.querySelectorAll("button, a[role='button'], [role='button'], a.button"),
+    ];
+    return nodes.find((el) => {
+      if (el.disabled || el.getAttribute("aria-disabled") === "true") return false;
+      const text = buttonLabel(el);
+      return /^(load|show)\\s*more$/i.test(text);
     });
+  };
 
   const scrollToBottom = () => {
-    const top = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    const top = Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight,
+      document.body.offsetHeight,
+      document.documentElement.offsetHeight
+    );
     window.scrollTo(0, top);
     document.documentElement.scrollTop = top;
     document.body.scrollTop = top;
@@ -3155,6 +3186,11 @@ function initAdminForm() {
     return url;
   };
 
+  const pickOpenerTarget = () => {
+    if (!window.opener || window.opener.closed) return null;
+    return openerOrigins[0] || "*";
+  };
+
   const uploadViaOpener = (slots) =>
     new Promise((resolve, reject) => {
       if (!window.opener || window.opener.closed) {
@@ -3162,21 +3198,22 @@ function initAdminForm() {
         return;
       }
       const onAck = (event) => {
-        if (event.origin !== openerOrigin) return;
+        if (openerOrigins.length && !openerOrigins.includes(event.origin)) return;
         if (event.data?.source !== "bh-slot-sync-ack" || event.data.token !== token) return;
         window.removeEventListener("message", onAck);
         if (event.data.ok) resolve(event.data);
         else reject(new Error(event.data.error || "Upload failed"));
       };
       window.addEventListener("message", onAck);
+      const target = pickOpenerTarget();
       window.opener.postMessage(
         { source: "bh-slot-sync", token, groupSlug, slots },
-        openerOrigin
+        target
       );
       setTimeout(() => {
         window.removeEventListener("message", onAck);
         reject(new Error("Bonus Hunt did not acknowledge upload (keep the Bonus Hunt tab open)."));
-      }, 90000);
+      }, 120000);
     });
 
   const uploadViaFetch = async (slots) => {
@@ -3196,25 +3233,25 @@ function initAdminForm() {
   let lastCount = 0;
   let stable = 0;
   let missingBtnStreak = 0;
+  let sawLoadMore = false;
 
-  for (let i = 0; i < 400; i++) {
+  for (let i = 0; i < 500; i++) {
     scrollToBottom();
     const btn = findLoadMore();
     if (btn) {
+      sawLoadMore = true;
       missingBtnStreak = 0;
       btn.click();
-      // Stake hides Load More while the next page loads — wait for it.
-      await sleep(850);
+      await sleep(900);
       scrollToBottom();
       const again = findLoadMore();
       if (again) {
         again.click();
-        await sleep(500);
+        await sleep(550);
       }
     } else {
       missingBtnStreak += 1;
-      // Keep scrolling; button often reappears after the request finishes.
-      await sleep(650);
+      await sleep(700);
       scrollToBottom();
     }
 
@@ -3225,16 +3262,15 @@ function initAdminForm() {
           (i + 1) +
           ": " +
           count +
-          " links" +
-          (btn ? " (Load More)" : " (waiting for Load More)")
+          " games" +
+          (btn ? " (Load More)" : " (scrolling)")
       );
     }
 
     if (count === lastCount) {
       stable += 1;
-      // Only finish after a long quiet stretch with no Load More.
-      // Early "no button" gaps are normal mid-load and must not stop the sync.
-      if (stable >= 12 && missingBtnStreak >= 8) break;
+      const quietEnough = sawLoadMore ? missingBtnStreak >= 8 : missingBtnStreak >= 15;
+      if (stable >= 12 && quietEnough) break;
     } else {
       stable = 0;
       lastCount = count;
@@ -3243,12 +3279,11 @@ function initAdminForm() {
 
   scrollToBottom();
   await sleep(800);
-  // One last sweep in case a final page landed after the last click.
-  for (let j = 0; j < 6; j++) {
+  for (let j = 0; j < 8; j++) {
     const btn = findLoadMore();
     if (!btn) break;
     btn.click();
-    await sleep(900);
+    await sleep(950);
     scrollToBottom();
   }
   await sleep(500);
@@ -3258,15 +3293,24 @@ function initAdminForm() {
   const slots = [];
   let withLogos = 0;
 
-  for (const a of document.querySelectorAll('a[href*="/casino/games/"]')) {
-    const slug = a.pathname.split("/").filter(Boolean).pop();
+  for (const a of gameAnchors()) {
+    let slug = "";
+    try {
+      slug = new URL(a.href, location.origin).pathname.split("/").filter(Boolean).pop() || "";
+    } catch {
+      slug = String(a.getAttribute("href") || "").split("/").filter(Boolean).pop() || "";
+    }
     if (!slug || skip.has(slug) || seen.has(slug)) continue;
     seen.add(slug);
     const nameEl =
       a.querySelector(".edge-typography-body-md-strong") ||
+      a.querySelector("[class*='typography'][class*='strong']") ||
       a.querySelector(".game-info-wrap:not(.game-group) span") ||
       a.querySelector("img[alt]");
-    const providerEl = a.querySelector(".game-group");
+    const providerEl =
+      a.querySelector(".game-group") ||
+      a.querySelector("[class*='provider']") ||
+      a.querySelector("[class*='game-group']");
     let name = (nameEl?.alt || nameEl?.textContent || "")
       .replace(/\\s+/g, " ")
       .trim();
@@ -3288,6 +3332,12 @@ function initAdminForm() {
       provider,
       thumbnailUrl: thumbnailUrl || undefined,
     });
+  }
+
+  if (!slots.length) {
+    throw new Error(
+      "No games found on this page. Wait for Stake to finish loading (pass Cloudflare if shown), then paste the script again."
+    );
   }
 
   console.log("Uploading " + slots.length + " ${label} slots (" + withLogos + " with logos)...");
@@ -3312,18 +3362,38 @@ function initAdminForm() {
 
   function isStakeMessageOrigin(origin) {
     try {
-      const host = new URL(origin).hostname.toLowerCase();
+      const host = new URL(origin).hostname.toLowerCase().replace(/^www\./, "");
       return (
         host === "stake.com" ||
         host.endsWith(".stake.com") ||
         host === "stake.bet" ||
         host.endsWith(".stake.bet") ||
         host === "stake.us" ||
-        host.endsWith(".stake.us")
+        host.endsWith(".stake.us") ||
+        host === "stake.ac" ||
+        host.endsWith(".stake.ac") ||
+        host === "stake.games" ||
+        host.endsWith(".stake.games")
       );
     } catch {
       return false;
     }
+  }
+
+  function resolveOpenerOrigins() {
+    const origin = window.location.origin;
+    const origins = new Set([origin]);
+    try {
+      const url = new URL(origin);
+      if (url.hostname.startsWith("www.")) {
+        origins.add(`${url.protocol}//${url.hostname.slice(4)}`);
+      } else if (url.hostname.includes(".")) {
+        origins.add(`${url.protocol}//www.${url.hostname}`);
+      }
+    } catch {
+      /* ignore */
+    }
+    return [...origins];
   }
 
   let stakeSyncMessageBound = false;
@@ -3375,6 +3445,7 @@ function initAdminForm() {
 
           // Refresh Allowed slots immediately — don't wait for the poll loop.
           await loadSlotCatalog();
+          hideSyncScriptFallback();
           setCatalogSyncStatus(
             `Imported ${data.slots.length} slots. ${formatCatalogCountSummary()}`,
             "success"
@@ -3428,8 +3499,45 @@ function initAdminForm() {
     ta.value = text;
     document.body.appendChild(ta);
     ta.select();
-    document.execCommand("copy");
+    const ok = document.execCommand("copy");
     ta.remove();
+    if (!ok) {
+      throw new Error("Clipboard copy failed.");
+    }
+  }
+
+  function hideSyncScriptFallback() {
+    document.getElementById("slot-sync-script-fallback")?.classList.add("is-hidden");
+  }
+
+  function showSyncScriptFallback(script, label) {
+    let panel = document.getElementById("slot-sync-script-fallback");
+    if (!panel) {
+      panel = document.createElement("div");
+      panel.id = "slot-sync-script-fallback";
+      panel.className = "slot-sync-script-fallback";
+      panel.innerHTML = `
+        <p class="admin-panel-text"><strong id="slot-sync-fallback-title">Sync script</strong> — select all, copy, then paste in the Stake console.</p>
+        <textarea id="slot-sync-script-text" readonly rows="8" spellcheck="false"></textarea>
+        <button type="button" class="btn btn-sm btn-outline" id="slot-sync-script-select">Select script</button>
+      `;
+      const actions = document.querySelector(".slot-catalog-script-actions");
+      actions?.insertAdjacentElement("afterend", panel);
+      panel.querySelector("#slot-sync-script-select")?.addEventListener("click", () => {
+        const area = panel.querySelector("#slot-sync-script-text");
+        area?.focus();
+        area?.select();
+      });
+    }
+    panel.classList.remove("is-hidden");
+    const title = panel.querySelector("#slot-sync-fallback-title");
+    if (title) title.textContent = `${label} sync script`;
+    const area = panel.querySelector("#slot-sync-script-text");
+    if (area) {
+      area.value = script;
+      area.focus();
+      area.select();
+    }
   }
 
   function setCatalogSyncStatus(message, tone = "") {
@@ -3443,7 +3551,7 @@ function initAdminForm() {
     setStatus(message, tone);
   }
 
-  async function pollSyncToken(token, { timeoutMs = 10 * 60 * 1000 } = {}) {
+  async function pollSyncToken(token, { timeoutMs = 15 * 60 * 1000 } = {}) {
     const started = Date.now();
     while (Date.now() - started < timeoutMs) {
       const response = await fetch(
@@ -3463,9 +3571,11 @@ function initAdminForm() {
       if (data.progress) {
         setCatalogSyncStatus(`Syncing… ${data.progress}`);
       }
-      await new Promise((r) => setTimeout(r, 750));
+      await new Promise((r) => setTimeout(r, 1000));
     }
-    throw new Error("Timed out waiting for Stake sync. Run the console script, then try again.");
+    throw new Error(
+      "Timed out waiting for Stake sync. On the Stake tab: F12 → Console → paste the copied script → Enter. Keep this Bonus Hunt tab open."
+    );
   }
 
   async function startDirectGroupSync(groupSlug) {
@@ -3477,6 +3587,7 @@ function initAdminForm() {
         : "https://stake.com/casino/group/new-releases";
 
     ensureStakeSyncMessageListener();
+    hideSyncScriptFallback();
     setCatalogSyncStatus(`Preparing ${label} sync…`);
 
     const tokenResponse = await fetch("/api/bonus-hunt/slots/sync-token", {
@@ -3485,30 +3596,52 @@ function initAdminForm() {
     });
     const tokenData = await tokenResponse.json().catch(() => ({}));
     if (!tokenResponse.ok || !tokenData.token) {
-      throw new Error(tokenData.error || "Could not start sync.");
+      throw new Error(
+        tokenData.error ||
+          "Could not start sync. Sign in as admin and try again."
+      );
     }
 
     const script = buildDirectSyncScript({
       groupSlug,
       token: tokenData.token,
       apiBase: resolveSyncApiBase(),
-      openerOrigin: window.location.origin,
+      openerOrigins: resolveOpenerOrigins(),
     });
-    await copyTextToClipboard(script);
-    // Keep window.opener so Stake can postMessage back (avoids Stake CSP blocking fetch).
-    window.open(stakeUrl, "_blank");
+
+    // Open during the click gesture so the popup is less likely to be blocked.
+    const stakeWindow = window.open(stakeUrl, "_blank");
+    if (!stakeWindow) {
+      showSyncScriptFallback(script, label);
+      throw new Error(
+        "Popup blocked. Allow popups for this site, open Stake manually, then copy the script below into the Stake console."
+      );
+    }
+
+    let copied = false;
+    try {
+      await copyTextToClipboard(script);
+      copied = true;
+    } catch {
+      showSyncScriptFallback(script, label);
+    }
 
     setCatalogSyncStatus(
-      `${label} script copied. Keep this Bonus Hunt tab open. On Stake: F12 → Console → paste → Enter. Large groups can take 1–2 minutes while Load More finishes…`
+      copied
+        ? `${label} script copied. Keep this Bonus Hunt tab open. On Stake: wait for the page to load, then F12 → Console → paste → Enter.`
+        : `${label}: clipboard blocked — copy the script from the box below, then paste in the Stake console.`
     );
 
+    const timeoutMs =
+      groupSlug === "only-on-stake" ? 20 * 60 * 1000 : 12 * 60 * 1000;
     const status = await Promise.race([
-      pollSyncToken(tokenData.token),
+      pollSyncToken(tokenData.token, { timeoutMs }),
       waitForSyncCompletion(tokenData.token),
     ]);
     syncCompletionWaiters.delete(tokenData.token);
 
     await loadSlotCatalog();
+    hideSyncScriptFallback();
     const logoNote =
       status.withThumbnails > 0
         ? ` · ${status.withThumbnails} with logos`
