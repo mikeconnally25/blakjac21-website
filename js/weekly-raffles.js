@@ -1,6 +1,7 @@
 (() => {
   let currentUser = null;
   let pollTimer = null;
+  let countdownTimer = null;
   let lastPayload = null;
 
   function $(id) {
@@ -45,9 +46,54 @@
     });
   }
 
+  function formatCountdown(ms) {
+    const total = Math.max(0, Math.floor(ms / 1000));
+    const days = Math.floor(total / 86400);
+    const hours = Math.floor((total % 86400) / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+    if (days > 0) {
+      return `${days}d ${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    }
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  }
+
   function updateAccess() {
     const isAdmin = Boolean(currentUser?.isAdmin);
     $("raffle-admin-panel")?.classList.toggle("is-hidden", !isAdmin);
+  }
+
+  function renderTimer(week) {
+    const el = $("raffle-timer");
+    if (!el) return;
+
+    if (!week?.started) {
+      el.textContent = "Week not started — tickets are paused";
+      el.classList.remove("is-active", "is-ended");
+      return;
+    }
+
+    const endsAt = Date.parse(week.endsAt || "");
+    const remaining = Number.isFinite(endsAt) ? endsAt - Date.now() : 0;
+
+    if (remaining <= 0 || week.ended) {
+      el.textContent = `Week ended ${formatWhen(week.endsAt)} — reset to start next week`;
+      el.classList.remove("is-active");
+      el.classList.add("is-ended");
+      return;
+    }
+
+    el.textContent = `Time left: ${formatCountdown(remaining)}`;
+    el.classList.add("is-active");
+    el.classList.remove("is-ended");
+  }
+
+  function scheduleCountdown() {
+    if (countdownTimer) clearInterval(countdownTimer);
+    countdownTimer = setInterval(() => {
+      if (!lastPayload?.week) return;
+      renderTimer(lastPayload.week);
+    }, 1000);
   }
 
   function renderWinner(winner) {
@@ -86,13 +132,23 @@
     const footnote = $("raffle-footnote");
     const period = $("raffle-period");
     const entries = payload?.entries || [];
+    const weekStarted = Boolean(payload?.week?.started);
 
     if (period) {
+      const parts = [];
+      if (payload?.week?.startedAt && payload?.week?.endsAt) {
+        parts.push(
+          `Raffle window ${formatWhen(payload.week.startedAt)} → ${formatWhen(payload.week.endsAt)}`
+        );
+      }
       if (payload?.periodStart || payload?.periodEnd) {
+        parts.push(
+          `Sheet ${[payload.periodStart, payload.periodEnd].filter(Boolean).join(" → ")}`
+        );
+      }
+      if (parts.length) {
         period.classList.remove("is-hidden");
-        period.textContent = [payload.periodStart, payload.periodEnd]
-          .filter(Boolean)
-          .join(" → ");
+        period.textContent = parts.join(" · ");
       } else {
         period.classList.add("is-hidden");
         period.textContent = "";
@@ -106,10 +162,19 @@
       `;
     }
 
-    if (!entries.length) {
+    if (!weekStarted) {
       empty?.classList.remove("is-hidden");
       if (empty) {
-        empty.textContent = "No ticket holders yet. Wager on code BLAKJAC21 to earn tickets.";
+        empty.textContent =
+          "Admin has not started this week yet. Tickets stay at 0 until the 7-day timer begins.";
+      }
+      list?.classList.add("is-hidden");
+      list?.replaceChildren();
+    } else if (!entries.length) {
+      empty?.classList.remove("is-hidden");
+      if (empty) {
+        empty.textContent =
+          "No ticket holders yet. Wager on code BLAKJAC21 during this week to earn tickets.";
       }
       list?.classList.add("is-hidden");
       list?.replaceChildren();
@@ -144,7 +209,7 @@
       const rate = payload?.ticketsPerDollars || 50;
       const updated = payload?.updatedAt ? formatWhen(payload.updatedAt) : "";
       footnote.textContent = [
-        `1 ticket per $${rate} wagered`,
+        `1 ticket per $${rate} wagered this week`,
         `${payload?.eligibleTickets || 0} eligible tickets in the draw pool`,
         updated ? `sheet synced ${updated}` : "",
       ]
@@ -155,6 +220,7 @@
 
   function applyPayload(payload) {
     lastPayload = payload;
+    renderTimer(payload.week);
     renderWinner(payload.winner);
     renderBoard(payload);
   }
@@ -172,37 +238,18 @@
     setPageStatus("");
   }
 
-  async function drawWinner() {
-    setAdminStatus("Drawing…");
-    const response = await fetch("/api/weekly-raffles/reveal", {
+  async function postAction(url, label) {
+    setAdminStatus(label);
+    const response = await fetch(url, {
       method: "POST",
       credentials: "same-origin",
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(data.error || "Draw failed.");
+      throw new Error(data.error || "Request failed.");
     }
     applyPayload(data);
-    setAdminStatus(
-      data.winner
-        ? `Winner: ${data.winner.kickUsername || data.winner.stakeUsername}`
-        : "Draw complete.",
-      "success"
-    );
-  }
-
-  async function clearWinner() {
-    setAdminStatus("Clearing…");
-    const response = await fetch("/api/weekly-raffles/clear-winner", {
-      method: "POST",
-      credentials: "same-origin",
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      throw new Error(data.error || "Could not clear winner.");
-    }
-    applyPayload(data);
-    setAdminStatus("Winner cleared.", "success");
+    return data;
   }
 
   function schedulePoll() {
@@ -217,11 +264,58 @@
     updateAccess();
   });
 
+  $("raffle-start-week-btn")?.addEventListener("click", async () => {
+    if (
+      lastPayload?.week?.started &&
+      !window.confirm(
+        "Start a new 7-day week? This snapshots new baselines and clears the current winner."
+      )
+    ) {
+      return;
+    }
+    const button = $("raffle-start-week-btn");
+    button.disabled = true;
+    try {
+      await postAction("/api/weekly-raffles/start-week", "Starting week…");
+      setAdminStatus("7-day week started. Tickets now track new wagering.", "success");
+    } catch (error) {
+      setAdminStatus(error.message || "Could not start week.", "error");
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $("raffle-reset-week-btn")?.addEventListener("click", async () => {
+    if (
+      !window.confirm(
+        "Reset this week? Clears the timer, ticket baselines, and current winner."
+      )
+    ) {
+      return;
+    }
+    const button = $("raffle-reset-week-btn");
+    button.disabled = true;
+    try {
+      await postAction("/api/weekly-raffles/reset-week", "Resetting week…");
+      setAdminStatus("Week reset. Start again when ready.", "success");
+    } catch (error) {
+      setAdminStatus(error.message || "Could not reset week.", "error");
+    } finally {
+      button.disabled = false;
+    }
+  });
+
   $("raffle-draw-btn")?.addEventListener("click", async () => {
     const button = $("raffle-draw-btn");
     button.disabled = true;
     try {
-      await drawWinner();
+      const data = await postAction("/api/weekly-raffles/reveal", "Drawing…");
+      setAdminStatus(
+        data.winner
+          ? `Winner: ${data.winner.kickUsername || data.winner.stakeUsername}`
+          : "Draw complete.",
+        "success"
+      );
     } catch (error) {
       setAdminStatus(error.message || "Draw failed.", "error");
     } finally {
@@ -234,7 +328,8 @@
     const button = $("raffle-clear-btn");
     button.disabled = true;
     try {
-      await clearWinner();
+      await postAction("/api/weekly-raffles/clear-winner", "Clearing…");
+      setAdminStatus("Winner cleared.", "success");
     } catch (error) {
       setAdminStatus(error.message || "Could not clear winner.", "error");
     } finally {
@@ -254,9 +349,13 @@
     });
 
   loadStatus()
-    .then(() => schedulePoll())
+    .then(() => {
+      schedulePoll();
+      scheduleCountdown();
+    })
     .catch((error) => {
       setPageStatus(error.message || "Could not load weekly raffle.", "error");
       schedulePoll();
+      scheduleCountdown();
     });
 })();

@@ -8793,6 +8793,23 @@ a.feature-card:focus-visible {
   letter-spacing: 0.04em;
 }
 
+.weekly-raffle-timer {
+  margin: 0.9rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 3vw, 1.85rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.weekly-raffle-timer.is-active {
+  color: var(--accent);
+}
+
+.weekly-raffle-timer.is-ended {
+  color: #f0a070;
+}
+
 .weekly-raffle-admin {
   display: grid;
   gap: 0.75rem;

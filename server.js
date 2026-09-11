@@ -67,7 +67,9 @@ import {
 } from "./lib/giveaway-handlers.js";
 import {
   handleWeeklyRaffleClearWinner,
+  handleWeeklyRaffleResetWeek,
   handleWeeklyRaffleReveal,
+  handleWeeklyRaffleStartWeek,
   handleWeeklyRaffleStatus,
 } from "./lib/weekly-raffle-handlers.js";
 import {
@@ -299,6 +301,12 @@ app.post("/api/giveaways/entries/clear", (req, res) =>
 app.post("/api/giveaways/reveal", (req, res) => handleGiveawayReveal(req, res));
 app.get("/api/weekly-raffles/status", (req, res) =>
   handleWeeklyRaffleStatus(req, res)
+);
+app.post("/api/weekly-raffles/start-week", (req, res) =>
+  handleWeeklyRaffleStartWeek(req, res)
+);
+app.post("/api/weekly-raffles/reset-week", (req, res) =>
+  handleWeeklyRaffleResetWeek(req, res)
 );
 app.post("/api/weekly-raffles/reveal", (req, res) =>
   handleWeeklyRaffleReveal(req, res)

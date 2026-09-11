@@ -67,18 +67,26 @@
           <p class="weekly-raffle-brand">BLAKJAC<span class="accent">21</span></p>
           <h1 class="weekly-raffle-title">Weekly Raffles</h1>
           <p class="weekly-raffle-subtitle">
-            Wager on code <strong>BLAKJAC21</strong> — earn <strong>1 ticket per $50</strong> wagered.
-            Tickets pull live from the affiliate leaderboard sheet. Admin draws are weighted by tickets.
+            Wager on code <strong>BLAKJAC21</strong> — earn <strong>1 ticket per $50</strong> wagered
+            during the active 7-day window. Admin starts each week; tickets only count wagering after the timer begins.
           </p>
+          <p class="weekly-raffle-timer" id="raffle-timer">Week not started</p>
           <p class="weekly-raffle-period is-hidden" id="raffle-period"></p>
         </header>
 
         <div class="admin-panel weekly-raffle-admin is-hidden" id="raffle-admin-panel">
-          <p class="admin-panel-label">Admin draw</p>
+          <p class="admin-panel-label">Admin week + draw</p>
           <p class="admin-panel-text">
-            Weighted random pick among linked Kick accounts with 1+ tickets. Soft-blocked alts are excluded.
+            Start a 7-day week to snapshot baselines from the raffle sheet. Only wagering after start counts.
+            Reset clears the timer and tickets before the next week. Soft-blocked alts are excluded from draws.
           </p>
           <div class="weekly-raffle-admin-actions">
+            <button type="button" class="btn btn-sm btn-primary" id="raffle-start-week-btn">
+              Start 7-day week
+            </button>
+            <button type="button" class="btn btn-sm btn-outline" id="raffle-reset-week-btn">
+              Reset week
+            </button>
             <button type="button" class="btn btn-sm btn-primary" id="raffle-draw-btn">
               Draw winner
             </button>
