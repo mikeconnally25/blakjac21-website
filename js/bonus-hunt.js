@@ -982,6 +982,19 @@ function getCatalogSectionCounts() {
   return { counts, unique };
 }
 
+function formatCatalogUpdatedAt(value) {
+  const at = Date.parse(value || "");
+  if (!Number.isFinite(at)) return "";
+  return new Date(at).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
 function formatCatalogCountSummary() {
   const sections = slotCatalogSectionStats?.sections;
   const uniqueFromApi = slotCatalogSectionStats?.unique;
@@ -1015,17 +1028,9 @@ function formatCatalogCountSummary() {
       ? "1 unique Stake slot"
       : `${unique} unique Stake slots`;
 
-  if (slotCatalogUpdatedAt) {
-    const updatedMs = Date.parse(slotCatalogUpdatedAt);
-    if (Number.isFinite(updatedMs)) {
-      const secondsAgo = Math.max(0, Math.round((Date.now() - updatedMs) / 1000));
-      summary +=
-        secondsAgo < 5
-          ? " · updated just now"
-          : secondsAgo < 60
-            ? ` · updated ${secondsAgo}s ago`
-            : ` · updated ${Math.round(secondsAgo / 60)}m ago`;
-    }
+  const updatedLabel = formatCatalogUpdatedAt(slotCatalogUpdatedAt);
+  if (updatedLabel) {
+    summary += ` · last updated ${updatedLabel}`;
   }
 
   return summary;
@@ -1039,6 +1044,9 @@ function updateSlotCatalogNote() {
 
   if (note && currentUser?.isAdmin) {
     note.textContent = summary;
+    note.title = slotCatalogUpdatedAt
+      ? `Catalog updatedAt: ${slotCatalogUpdatedAt}`
+      : "";
   }
 
   const count = document.getElementById("slot-catalog-count");
