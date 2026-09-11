@@ -3,9 +3,18 @@
   let pollTimer = null;
   let countdownTimer = null;
   let lastPayload = null;
+  let lastWinnerId = null;
 
   function $(id) {
     return document.getElementById(id);
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 
   function setAdminStatus(message, tone = "") {
@@ -46,16 +55,24 @@
     });
   }
 
-  function formatCountdown(ms) {
-    const total = Math.max(0, Math.floor(ms / 1000));
+  function pad2(value) {
+    return String(Math.max(0, value)).padStart(2, "0");
+  }
+
+  function setDigits(remainingMs) {
+    const total = Math.max(0, Math.floor(remainingMs / 1000));
     const days = Math.floor(total / 86400);
     const hours = Math.floor((total % 86400) / 3600);
     const minutes = Math.floor((total % 3600) / 60);
     const seconds = total % 60;
-    if (days > 0) {
-      return `${days}d ${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-    }
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    const d = $("raffle-d");
+    const h = $("raffle-h");
+    const m = $("raffle-m");
+    const s = $("raffle-s");
+    if (d) d.textContent = pad2(days);
+    if (h) h.textContent = pad2(hours);
+    if (m) m.textContent = pad2(minutes);
+    if (s) s.textContent = pad2(seconds);
   }
 
   function updateAccess() {
@@ -64,12 +81,16 @@
   }
 
   function renderTimer(week) {
-    const el = $("raffle-timer");
-    if (!el) return;
+    const shell = $("raffle-timer");
+    const label = $("raffle-timer-label");
+    const note = $("raffle-timer-note");
+    if (!shell) return;
 
     if (!week?.started) {
-      el.textContent = "Week not started — tickets are paused";
-      el.classList.remove("is-active", "is-ended");
+      shell.dataset.state = "idle";
+      if (label) label.textContent = "Week paused";
+      if (note) note.textContent = "Tickets stay locked until admin starts the 7-day window";
+      setDigits(0);
       return;
     }
 
@@ -77,15 +98,25 @@
     const remaining = Number.isFinite(endsAt) ? endsAt - Date.now() : 0;
 
     if (remaining <= 0 || week.ended) {
-      el.textContent = `Week ended ${formatWhen(week.endsAt)} — reset to start next week`;
-      el.classList.remove("is-active");
-      el.classList.add("is-ended");
+      shell.dataset.state = "ended";
+      if (label) label.textContent = "Week complete";
+      if (note) {
+        note.textContent = week.endsAt
+          ? `Ended ${formatWhen(week.endsAt)} — draw when ready, then reset for next week`
+          : "Week ended — reset to open the next raffle";
+      }
+      setDigits(0);
       return;
     }
 
-    el.textContent = `Time left: ${formatCountdown(remaining)}`;
-    el.classList.add("is-active");
-    el.classList.remove("is-ended");
+    shell.dataset.state = "active";
+    if (label) label.textContent = "Live countdown";
+    if (note) {
+      note.textContent = week.endsAt
+        ? `Closes ${formatWhen(week.endsAt)} · keep wagering on BLAKJAC21`
+        : "Keep wagering on BLAKJAC21 to stack tickets";
+    }
+    setDigits(remaining);
   }
 
   function scheduleCountdown() {
@@ -102,20 +133,32 @@
 
     if (!winner) {
       card.classList.add("is-hidden");
+      card.classList.remove("is-celebrate");
+      lastWinnerId = null;
       return;
     }
 
+    const isNew = winner.id && winner.id !== lastWinnerId;
+    lastWinnerId = winner.id || lastWinnerId;
     card.classList.remove("is-hidden");
+
     const name = $("raffle-winner-name");
+    const sub = $("raffle-winner-sub");
     const meta = $("raffle-winner-meta");
+
     if (name) {
-      name.textContent = winner.kickUsername
-        ? `${winner.kickUsername} (${winner.stakeUsername})`
-        : winner.stakeUsername;
+      name.textContent = winner.kickUsername || winner.stakeUsername || "Winner";
+    }
+    if (sub) {
+      if (winner.kickUsername && winner.stakeUsername) {
+        sub.textContent = `Stake · ${winner.stakeUsername}`;
+      } else {
+        sub.textContent = "This week’s raffle champion";
+      }
     }
     if (meta) {
       const parts = [
-        `${winner.tickets || 0} tickets`,
+        `${winner.tickets || 0} tickets in the pool`,
         formatMoney(winner.wagered),
       ];
       if (winner.revealedAt) {
@@ -123,12 +166,17 @@
       }
       meta.textContent = parts.join(" · ");
     }
+
+    if (isNew) {
+      card.classList.remove("is-celebrate");
+      void card.offsetWidth;
+      card.classList.add("is-celebrate");
+    }
   }
 
   function renderBoard(payload) {
     const list = $("raffle-list");
     const empty = $("raffle-empty");
-    const stats = $("raffle-stats");
     const footnote = $("raffle-footnote");
     const period = $("raffle-period");
     const entries = payload?.entries || [];
@@ -138,7 +186,7 @@
       const parts = [];
       if (payload?.week?.startedAt && payload?.week?.endsAt) {
         parts.push(
-          `Raffle window ${formatWhen(payload.week.startedAt)} → ${formatWhen(payload.week.endsAt)}`
+          `Raffle ${formatWhen(payload.week.startedAt)} → ${formatWhen(payload.week.endsAt)}`
         );
       }
       if (payload?.periodStart || payload?.periodEnd) {
@@ -155,18 +203,16 @@
       }
     }
 
-    if (stats) {
-      stats.innerHTML = `
-        <span>${payload?.totalTickets || 0} tickets</span>
-        <span>${payload?.eligibleCount || 0} eligible</span>
-      `;
-    }
+    const ticketsEl = $("raffle-stat-tickets");
+    const eligibleEl = $("raffle-stat-eligible");
+    if (ticketsEl) ticketsEl.textContent = String(payload?.totalTickets || 0);
+    if (eligibleEl) eligibleEl.textContent = String(payload?.eligibleCount || 0);
 
     if (!weekStarted) {
       empty?.classList.remove("is-hidden");
       if (empty) {
         empty.textContent =
-          "Admin has not started this week yet. Tickets stay at 0 until the 7-day timer begins.";
+          "The week hasn’t opened yet. Once the countdown starts, tickets will stack here live.";
       }
       list?.classList.add("is-hidden");
       list?.replaceChildren();
@@ -174,7 +220,7 @@
       empty?.classList.remove("is-hidden");
       if (empty) {
         empty.textContent =
-          "No ticket holders yet. Wager on code BLAKJAC21 during this week to earn tickets.";
+          "No tickets yet — be the first on the board with $50 wagered this week.";
       }
       list?.classList.add("is-hidden");
       list?.replaceChildren();
@@ -183,10 +229,11 @@
       list?.classList.remove("is-hidden");
       list.replaceChildren();
 
-      for (const entry of entries) {
+      entries.forEach((entry, index) => {
         const item = document.createElement("li");
         item.className = "weekly-raffle-row";
         if (!entry.eligible) item.classList.add("is-ineligible");
+        if (index < 3) item.classList.add(`is-top-${index + 1}`);
         if (
           payload?.winner &&
           entry.stakeUsername?.toLowerCase() ===
@@ -195,14 +242,16 @@
           item.classList.add("is-winner");
         }
 
+        const place = index + 1;
         item.innerHTML = `
-          <span class="weekly-raffle-stake">${entry.stakeUsername}</span>
-          <span class="weekly-raffle-kick">${entry.kickUsername || "—"}</span>
-          <span class="weekly-raffle-wagered">${formatMoney(entry.wagered, entry.wageredLabel)}</span>
-          <span class="weekly-raffle-tickets">${entry.tickets}</span>
+          <span class="weekly-raffle-place">${place}</span>
+          <span class="weekly-raffle-stake">${escapeHtml(entry.stakeUsername)}</span>
+          <span class="weekly-raffle-kick">${escapeHtml(entry.kickUsername || "—")}</span>
+          <span class="weekly-raffle-wagered">${escapeHtml(formatMoney(entry.wagered, entry.wageredLabel))}</span>
+          <span class="weekly-raffle-tickets">${escapeHtml(entry.tickets)}</span>
         `;
         list.append(item);
-      }
+      });
     }
 
     if (footnote) {
@@ -210,8 +259,8 @@
       const updated = payload?.updatedAt ? formatWhen(payload.updatedAt) : "";
       footnote.textContent = [
         `1 ticket per $${rate} wagered this week`,
-        `${payload?.eligibleTickets || 0} eligible tickets in the draw pool`,
-        updated ? `sheet synced ${updated}` : "",
+        `${payload?.eligibleTickets || 0} eligible tickets in the draw`,
+        updated ? `synced ${updated}` : "",
       ]
         .filter(Boolean)
         .join(" · ");

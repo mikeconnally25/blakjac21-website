@@ -10,8 +10,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/styles.css" />
 </head>
-<body>
+<body class="weekly-raffle-body">
   <div class="bg-glow" aria-hidden="true"></div>
+  <div class="weekly-raffle-atmosphere" aria-hidden="true"></div>
 
   <header class="header" id="top">
     <nav class="nav container">
@@ -64,13 +65,40 @@
         <a href="/#menu" class="back-link">← Back to menu</a>
 
         <header class="weekly-raffle-hero">
-          <p class="weekly-raffle-brand">BLAKJAC<span class="accent">21</span></p>
-          <h1 class="weekly-raffle-title">Weekly Raffles</h1>
-          <p class="weekly-raffle-subtitle">
-            Wager on code <strong>BLAKJAC21</strong> — earn <strong>1 ticket per $50</strong> wagered
-            during the active 7-day window. Admin starts each week; tickets only count wagering after the timer begins.
-          </p>
-          <p class="weekly-raffle-timer" id="raffle-timer">Week not started</p>
+          <div class="weekly-raffle-hero-copy">
+            <p class="weekly-raffle-brand">BLAKJAC<span class="accent">21</span></p>
+            <h1 class="weekly-raffle-title">Weekly Raffles</h1>
+            <p class="weekly-raffle-subtitle">
+              One ticket per $50 wagered on code <strong>BLAKJAC21</strong> during the live 7-day week.
+            </p>
+          </div>
+
+          <div class="weekly-raffle-countdown" id="raffle-timer" data-state="idle">
+            <p class="weekly-raffle-countdown-label" id="raffle-timer-label">Week status</p>
+            <div class="weekly-raffle-countdown-digits" id="raffle-timer-digits" aria-live="polite">
+              <span class="weekly-raffle-digit-block">
+                <span class="weekly-raffle-digit" id="raffle-d">00</span>
+                <span class="weekly-raffle-digit-unit">Days</span>
+              </span>
+              <span class="weekly-raffle-digit-sep" aria-hidden="true">:</span>
+              <span class="weekly-raffle-digit-block">
+                <span class="weekly-raffle-digit" id="raffle-h">00</span>
+                <span class="weekly-raffle-digit-unit">Hrs</span>
+              </span>
+              <span class="weekly-raffle-digit-sep" aria-hidden="true">:</span>
+              <span class="weekly-raffle-digit-block">
+                <span class="weekly-raffle-digit" id="raffle-m">00</span>
+                <span class="weekly-raffle-digit-unit">Min</span>
+              </span>
+              <span class="weekly-raffle-digit-sep" aria-hidden="true">:</span>
+              <span class="weekly-raffle-digit-block">
+                <span class="weekly-raffle-digit" id="raffle-s">00</span>
+                <span class="weekly-raffle-digit-unit">Sec</span>
+              </span>
+            </div>
+            <p class="weekly-raffle-countdown-note" id="raffle-timer-note">Waiting for the next week to open</p>
+          </div>
+
           <p class="weekly-raffle-period is-hidden" id="raffle-period"></p>
         </header>
 
@@ -99,26 +127,34 @@
 
         <p class="guess-status is-hidden" id="raffle-status" role="status" aria-live="polite"></p>
 
-        <section class="weekly-raffle-winner-card bj21-panel is-hidden" id="raffle-winner-card" aria-live="polite">
-          <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <p class="section-eyebrow">Latest draw</p>
+        <section class="weekly-raffle-winner-stage is-hidden" id="raffle-winner-card" aria-live="polite">
+          <div class="weekly-raffle-winner-burst" aria-hidden="true"></div>
+          <p class="weekly-raffle-winner-kicker">Congratulations</p>
           <h2 class="weekly-raffle-winner-title" id="raffle-winner-name">—</h2>
+          <p class="weekly-raffle-winner-sub" id="raffle-winner-sub"></p>
           <p class="weekly-raffle-winner-meta" id="raffle-winner-meta"></p>
         </section>
 
-        <section class="weekly-raffle-board bj21-panel">
-          <span class="bj21-panel-glow" aria-hidden="true"></span>
+        <section class="weekly-raffle-board">
           <div class="weekly-raffle-board-header">
             <div>
-              <p class="section-eyebrow">Ticket pool</p>
-              <h2 class="weekly-raffle-board-title">Entrants</h2>
+              <p class="section-eyebrow">This week’s pool</p>
+              <h2 class="weekly-raffle-board-title">Ticket board</h2>
             </div>
             <div class="weekly-raffle-stats" id="raffle-stats">
-              <span>0 tickets</span>
+              <div class="weekly-raffle-stat">
+                <span class="weekly-raffle-stat-value" id="raffle-stat-tickets">0</span>
+                <span class="weekly-raffle-stat-label">Tickets</span>
+              </div>
+              <div class="weekly-raffle-stat">
+                <span class="weekly-raffle-stat-value" id="raffle-stat-eligible">0</span>
+                <span class="weekly-raffle-stat-label">Eligible</span>
+              </div>
             </div>
           </div>
 
           <div class="weekly-raffle-table-head">
+            <span>#</span>
             <span>Stake</span>
             <span>Kick</span>
             <span>Wagered</span>
