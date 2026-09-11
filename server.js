@@ -66,6 +66,11 @@ import {
   handleGiveawayToggle,
 } from "./lib/giveaway-handlers.js";
 import {
+  handleWeeklyRaffleClearWinner,
+  handleWeeklyRaffleReveal,
+  handleWeeklyRaffleStatus,
+} from "./lib/weekly-raffle-handlers.js";
+import {
   handleChatList,
   handleChatRemove,
   handleChatSend,
@@ -292,6 +297,15 @@ app.post("/api/giveaways/entries/clear", (req, res) =>
   handleGiveawayEntriesClear(req, res)
 );
 app.post("/api/giveaways/reveal", (req, res) => handleGiveawayReveal(req, res));
+app.get("/api/weekly-raffles/status", (req, res) =>
+  handleWeeklyRaffleStatus(req, res)
+);
+app.post("/api/weekly-raffles/reveal", (req, res) =>
+  handleWeeklyRaffleReveal(req, res)
+);
+app.post("/api/weekly-raffles/clear-winner", (req, res) =>
+  handleWeeklyRaffleClearWinner(req, res)
+);
 app.get("/api/chat", (req, res) => handleChatList(req, res));
 app.post("/api/chat", (req, res) => handleChatSend(req, res));
 app.post("/api/chat/remove", (req, res) => handleChatRemove(req, res));
