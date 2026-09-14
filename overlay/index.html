@@ -68,8 +68,8 @@
         <p class="stream-overlay-hero-brand">BLAKJAC<span class="accent">21</span></p>
         <h1>Stream Overlays</h1>
         <p>
-          OBS browser sources for Starting Soon (clip montage), BRB, Ending, Intermission,
-          in-stream HUD, and sub/gift alerts. Preview below, then copy URLs into OBS.
+          OBS browser sources for Starting Soon, BRB, Ending, Intermission,
+          in-stream HUD, and live alerts (subs, gifts, and points awards).
         </p>
       </header>
 
@@ -163,17 +163,19 @@
           <label class="stream-overlay-check"><input id="field-hud-corners" type="checkbox" /> Show game + cam frames</label>
 
           <h3 style="margin: 0.5rem 0 0; font-family: var(--font-display); font-size: 1.35rem">Alerts</h3>
-          <label class="stream-overlay-check"><input id="field-alerts-enabled" type="checkbox" /> Enable Kick sub/gift alerts</label>
+          <label class="stream-overlay-check"><input id="field-alerts-enabled" type="checkbox" /> Enable stream alerts (subs, gifts, points)</label>
           <label>Alert duration (ms)<input id="field-alerts-duration" type="number" min="2500" max="20000" /></label>
           <label>New sub message<input id="field-alerts-sub" type="text" maxlength="120" /></label>
           <label>Resub message<input id="field-alerts-resub" type="text" maxlength="120" /></label>
           <label>Gift message<input id="field-alerts-gift" type="text" maxlength="120" /></label>
+          <label>Points message<input id="field-alerts-points" type="text" maxlength="120" placeholder="{user} earned {amount} points!" /></label>
         </div>
 
         <div class="stream-overlay-actions">
           <button type="button" class="btn btn-primary" id="overlay-save">Save settings</button>
-          <button type="button" class="btn btn-outline" id="overlay-test-sub">Test sub alert</button>
-          <button type="button" class="btn btn-outline" id="overlay-test-gift">Test gift alert</button>
+          <button type="button" class="btn btn-outline" id="overlay-test-sub">Test sub</button>
+          <button type="button" class="btn btn-outline" id="overlay-test-gift">Test gift</button>
+          <button type="button" class="btn btn-outline" id="overlay-test-points">Test points</button>
         </div>
         <p class="stream-overlay-status" id="overlay-status" role="status" aria-live="polite"></p>
       </section>

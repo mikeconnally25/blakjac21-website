@@ -662,6 +662,24 @@ body {
   color: #eef6fb;
 }
 
+.so-alert.is-points {
+  border-color: rgba(240, 195, 106, 0.45);
+  background:
+    linear-gradient(155deg, rgba(36, 28, 14, 0.96), rgba(8, 12, 18, 0.94));
+}
+
+.so-alert.is-points .so-alert-eyebrow {
+  color: #f0c36a;
+}
+
+.so-alert.is-gift {
+  border-color: rgba(126, 216, 255, 0.5);
+}
+
+.so-alert.is-sub {
+  border-color: rgba(88, 201, 243, 0.45);
+}
+
 @keyframes so-rise {
   from {
     opacity: 0;

@@ -44,7 +44,7 @@
       title: "Alerts",
       path: "/overlay/alerts/source.html",
       size: "1920 × 1080",
-      note: "Sub / resub / gift popups (transparent).",
+      note: "Sub / resub / gift / points popups (transparent).",
     },
   ];
 
@@ -137,6 +137,7 @@
     $("field-alerts-sub").value = next.alerts?.subMessage || "";
     $("field-alerts-resub").value = next.alerts?.resubMessage || "";
     $("field-alerts-gift").value = next.alerts?.giftMessage || "";
+    $("field-alerts-points").value = next.alerts?.pointsMessage || "";
 
     renderClips();
   }
@@ -212,6 +213,7 @@
         subMessage: $("field-alerts-sub").value,
         resubMessage: $("field-alerts-resub").value,
         giftMessage: $("field-alerts-gift").value,
+        pointsMessage: $("field-alerts-points").value,
       },
     };
   }
@@ -360,6 +362,14 @@
   $("overlay-test-gift")?.addEventListener("click", async () => {
     try {
       await testAlert("gift");
+    } catch (error) {
+      setStatus(error.message || "Test failed.", true);
+    }
+  });
+
+  $("overlay-test-points")?.addEventListener("click", async () => {
+    try {
+      await testAlert("points");
     } catch (error) {
       setStatus(error.message || "Test failed.", true);
     }

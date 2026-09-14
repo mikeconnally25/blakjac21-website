@@ -13,6 +13,7 @@
     if (type === "gift") return "Gift subs";
     if (type === "resub") return "Resubscription";
     if (type === "sub") return "New subscriber";
+    if (type === "points") return "Points awarded";
     if (type === "test") return "Test alert";
     return "Alert";
   }
@@ -34,7 +35,7 @@
     root.classList.add("is-out");
     setTimeout(() => {
       root.classList.add("is-hidden");
-      root.classList.remove("is-out");
+      root.classList.remove("is-out", "is-points", "is-gift", "is-sub");
       showing = false;
       maybeShowNext();
     }, 320);
@@ -45,7 +46,10 @@
     showing = true;
     eyebrow.textContent = labelForType(alert.type);
     message.textContent = alert.message;
-    root.classList.remove("is-hidden", "is-out");
+    root.classList.remove("is-hidden", "is-out", "is-points", "is-gift", "is-sub");
+    if (alert.type === "points") root.classList.add("is-points");
+    else if (alert.type === "gift") root.classList.add("is-gift");
+    else if (alert.type === "sub" || alert.type === "resub") root.classList.add("is-sub");
     ack(alert.id);
     setTimeout(hideAlert, durationMs);
   }
