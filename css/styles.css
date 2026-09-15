@@ -8766,6 +8766,53 @@ a.feature-card:focus-visible {
   }
 }
 
+@keyframes weekly-raffle-draw-tick {
+  0% {
+    opacity: 0.35;
+    transform: translateY(12px) scale(0.96);
+    filter: blur(2px);
+  }
+  40% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0.7;
+    transform: translateY(-8px) scale(1.02);
+    filter: blur(1px);
+  }
+}
+
+@keyframes weekly-raffle-stake-reveal {
+  0% {
+    opacity: 0;
+    letter-spacing: 0.28em;
+    transform: scale(0.88);
+    filter: blur(8px);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    letter-spacing: 0.04em;
+    transform: scale(1);
+  }
+}
+
+@keyframes weekly-raffle-sub-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes weekly-raffle-burst {
   0% {
     opacity: 0;
@@ -8996,6 +9043,30 @@ a.feature-card:focus-visible {
   animation: weekly-raffle-celebrate 0.85s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+.weekly-raffle-winner-stage.is-drawing {
+  border-color: rgba(88, 201, 243, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(88, 201, 243, 0.18),
+    0 28px 70px rgba(0, 0, 0, 0.35);
+}
+
+.weekly-raffle-winner-stage.is-drawing .weekly-raffle-winner-title {
+  animation: none;
+}
+
+.weekly-raffle-winner-title.is-draw-tick {
+  animation: weekly-raffle-draw-tick 0.16s ease-out;
+}
+
+.weekly-raffle-winner-stage.is-drawing .weekly-raffle-winner-kicker {
+  color: var(--accent, #58c9f3);
+}
+
+.weekly-raffle-winner-stage.is-drawing .weekly-raffle-winner-burst {
+  opacity: 0.7;
+  animation: weekly-raffle-pulse 1.2s ease-in-out infinite;
+}
+
 .weekly-raffle-winner-burst {
   position: absolute;
   inset: -20% -10% auto;
@@ -9036,11 +9107,19 @@ a.feature-card:focus-visible {
   color: transparent;
 }
 
+.weekly-raffle-winner-title.is-stake-reveal {
+  animation: weekly-raffle-stake-reveal 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
 .weekly-raffle-winner-sub {
   position: relative;
   margin: 0.55rem 0 0;
   color: var(--text);
   font-size: 1.05rem;
+}
+
+.weekly-raffle-winner-sub.is-revealed {
+  animation: weekly-raffle-sub-reveal 0.55s ease-out 0.15s both;
 }
 
 .weekly-raffle-winner-meta {

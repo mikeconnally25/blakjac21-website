@@ -4,6 +4,7 @@
   let countdownTimer = null;
   let lastPayload = null;
   let lastWinnerId = null;
+  let drawAnimating = false;
 
   function $(id) {
     return document.getElementById(id);
@@ -148,37 +149,37 @@
     }, 1000);
   }
 
-  function renderWinner(winner) {
+  function fillWinnerCard(winner, { celebrate = false } = {}) {
     const card = $("raffle-winner-card");
-    if (!card) return;
-
-    if (!winner) {
-      card.classList.add("is-hidden");
-      card.classList.remove("is-celebrate");
-      lastWinnerId = null;
-      return;
-    }
-
-    const isNew = winner.id && winner.id !== lastWinnerId;
-    lastWinnerId = winner.id || lastWinnerId;
-    card.classList.remove("is-hidden");
-
     const name = $("raffle-winner-name");
     const sub = $("raffle-winner-sub");
     const meta = $("raffle-winner-meta");
+    if (!card || !winner) return;
+
+    const stakeName = String(winner.stakeUsername || "").trim();
+    const kickName = String(winner.kickUsername || "").trim();
+
+    card.classList.remove("is-hidden", "is-drawing");
 
     if (name) {
-      name.textContent = maskUsername(
-        winner.kickUsername || winner.stakeUsername || "Winner"
-      );
+      // Stake is the raffle identity — show it as the hero name.
+      name.textContent = maskUsername(stakeName || kickName || "Winner");
+      name.classList.toggle("is-stake-reveal", Boolean(stakeName));
     }
+
     if (sub) {
-      if (winner.kickUsername && winner.stakeUsername) {
-        sub.textContent = `Stake · ${maskUsername(winner.stakeUsername)}`;
+      if (stakeName && kickName) {
+        sub.textContent = `Kick · ${maskUsername(kickName)}`;
+      } else if (stakeName) {
+        sub.textContent = "Stake raffle champion";
+      } else if (kickName) {
+        sub.textContent = `Kick · ${maskUsername(kickName)}`;
       } else {
         sub.textContent = "This week’s raffle champion";
       }
+      sub.classList.toggle("is-revealed", Boolean(stakeName || kickName));
     }
+
     if (meta) {
       const parts = [
         `${winner.tickets || 0} tickets in the pool`,
@@ -190,10 +191,139 @@
       meta.textContent = parts.join(" · ");
     }
 
-    if (isNew) {
+    if (celebrate) {
       card.classList.remove("is-celebrate");
       void card.offsetWidth;
       card.classList.add("is-celebrate");
+    }
+  }
+
+  function renderWinner(winner, { animate = false } = {}) {
+    const card = $("raffle-winner-card");
+    if (!card) return;
+
+    if (!winner) {
+      card.classList.add("is-hidden");
+      card.classList.remove("is-celebrate", "is-drawing");
+      $("raffle-winner-name")?.classList.remove("is-stake-reveal");
+      $("raffle-winner-sub")?.classList.remove("is-revealed");
+      lastWinnerId = null;
+      return;
+    }
+
+    if (drawAnimating) return;
+
+    const isNew = Boolean(winner.id && winner.id !== lastWinnerId);
+    lastWinnerId = winner.id || lastWinnerId;
+
+    if (animate && isNew) {
+      runDrawReveal(winner).catch(() => {
+        fillWinnerCard(winner, { celebrate: true });
+      });
+      return;
+    }
+
+    fillWinnerCard(winner, { celebrate: isNew });
+  }
+
+  function pickDrawPool(payload, winner) {
+    const entries = Array.isArray(payload?.entries) ? payload.entries : [];
+    const names = entries
+      .filter((entry) => entry?.eligible && Number(entry.tickets) > 0)
+      .map((entry) => String(entry.stakeUsername || "").trim())
+      .filter(Boolean);
+
+    const winnerStake = String(winner?.stakeUsername || "").trim();
+    if (
+      winnerStake &&
+      !names.some((n) => n.toLowerCase() === winnerStake.toLowerCase())
+    ) {
+      names.push(winnerStake);
+    }
+
+    if (!names.length && winnerStake) {
+      return [winnerStake];
+    }
+    return names;
+  }
+
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async function runDrawReveal(winner) {
+    const card = $("raffle-winner-card");
+    const name = $("raffle-winner-name");
+    const sub = $("raffle-winner-sub");
+    const meta = $("raffle-winner-meta");
+    const kicker = card?.querySelector(".weekly-raffle-winner-kicker");
+    if (!card || !name) {
+      fillWinnerCard(winner, { celebrate: true });
+      return;
+    }
+
+    drawAnimating = true;
+    try {
+      const pool = pickDrawPool(lastPayload, winner);
+      const finalStake = String(
+        winner.stakeUsername || winner.kickUsername || "Winner"
+      ).trim();
+      const reduceMotion = window.matchMedia?.(
+        "(prefers-reduced-motion: reduce)"
+      )?.matches;
+
+      card.classList.remove("is-hidden", "is-celebrate");
+      card.classList.add("is-drawing");
+      name.classList.remove("is-stake-reveal");
+      if (kicker) kicker.textContent = "Drawing";
+      if (sub) {
+        sub.textContent = "Picking a ticket from the pool…";
+        sub.classList.remove("is-revealed");
+      }
+      if (meta) {
+        meta.textContent = `${winner.tickets || 0} tickets in the pool · ${formatMoney(
+          winner.wagered
+        )}`;
+      }
+
+      if (reduceMotion) {
+        name.textContent = maskUsername(finalStake);
+        await sleep(200);
+      } else {
+        const durationMs = 2600;
+        const start = performance.now();
+        let index = 0;
+
+        while (performance.now() - start < durationMs) {
+          const elapsed = performance.now() - start;
+          const progress = elapsed / durationMs;
+          const stepMs = 45 + progress * progress * 220;
+          const label = pool.length ? pool[index % pool.length] : finalStake;
+          name.textContent = maskUsername(label);
+          name.classList.remove("is-draw-tick");
+          void name.offsetWidth;
+          name.classList.add("is-draw-tick");
+          index += 1;
+          await sleep(stepMs);
+        }
+
+        name.textContent = maskUsername(finalStake);
+        await sleep(180);
+      }
+
+      name.classList.remove("is-draw-tick");
+      card.classList.remove("is-drawing");
+      if (kicker) kicker.textContent = "Congratulations";
+      fillWinnerCard(winner, { celebrate: true });
+      lastWinnerId = winner.id || lastWinnerId;
+    } catch (error) {
+      card.classList.remove("is-drawing");
+      if (kicker) kicker.textContent = "Congratulations";
+      fillWinnerCard(winner, { celebrate: true });
+      lastWinnerId = winner.id || lastWinnerId;
+      throw error;
+    } finally {
+      drawAnimating = false;
     }
   }
 
@@ -292,10 +422,10 @@
     }
   }
 
-  function applyPayload(payload) {
+  function applyPayload(payload, { animateWinner = false } = {}) {
     lastPayload = payload;
     renderTimer(payload.week);
-    renderWinner(payload.winner);
+    renderWinner(payload.winner, { animate: animateWinner });
     renderBoard(payload);
   }
 
@@ -383,13 +513,35 @@
     const button = $("raffle-draw-btn");
     button.disabled = true;
     try {
-      const data = await postAction("/api/weekly-raffles/reveal", "Drawing…");
-      setAdminStatus(
-        data.winner
-          ? `Winner: ${data.winner.kickUsername || data.winner.stakeUsername}`
-          : "Draw complete.",
-        "success"
-      );
+      setAdminStatus("Drawing…");
+      const response = await fetch("/api/weekly-raffles/reveal", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "Request failed.");
+      }
+
+      // Keep current board pool for the shuffle, then animate into the winner.
+      const poolSnapshot = lastPayload;
+      lastPayload = {
+        ...data,
+        entries: data.entries?.length ? data.entries : poolSnapshot?.entries || [],
+      };
+      renderTimer(data.week);
+      renderBoard(lastPayload);
+
+      if (data.winner) {
+        await runDrawReveal(data.winner);
+        setAdminStatus(
+          `Winner: ${data.winner.stakeUsername || data.winner.kickUsername}`,
+          "success"
+        );
+      } else {
+        applyPayload(data);
+        setAdminStatus("Draw complete.", "success");
+      }
     } catch (error) {
       setAdminStatus(error.message || "Draw failed.", "error");
     } finally {
