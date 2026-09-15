@@ -55,6 +55,27 @@
     });
   }
 
+  function maskUsername(username) {
+    const name = String(username || "").trim();
+    if (!name) {
+      return "—";
+    }
+
+    if (name.length <= 6) {
+      if (name.length <= 2) {
+        return "*".repeat(name.length);
+      }
+
+      const head = name.slice(0, 1);
+      const tail = name.slice(-1);
+      return `${head}${"*".repeat(name.length - 2)}${tail}`;
+    }
+
+    const head = name.slice(0, 3);
+    const tail = name.slice(-3);
+    return `${head}${"*".repeat(name.length - 6)}${tail}`;
+  }
+
   function pad2(value) {
     return String(Math.max(0, value)).padStart(2, "0");
   }
@@ -147,11 +168,13 @@
     const meta = $("raffle-winner-meta");
 
     if (name) {
-      name.textContent = winner.kickUsername || winner.stakeUsername || "Winner";
+      name.textContent = maskUsername(
+        winner.kickUsername || winner.stakeUsername || "Winner"
+      );
     }
     if (sub) {
       if (winner.kickUsername && winner.stakeUsername) {
-        sub.textContent = `Stake · ${winner.stakeUsername}`;
+        sub.textContent = `Stake · ${maskUsername(winner.stakeUsername)}`;
       } else {
         sub.textContent = "This week’s raffle champion";
       }
@@ -245,8 +268,10 @@
         const place = index + 1;
         item.innerHTML = `
           <span class="weekly-raffle-place">${place}</span>
-          <span class="weekly-raffle-stake">${escapeHtml(entry.stakeUsername)}</span>
-          <span class="weekly-raffle-kick">${escapeHtml(entry.kickUsername || "—")}</span>
+          <span class="weekly-raffle-stake">${escapeHtml(maskUsername(entry.stakeUsername))}</span>
+          <span class="weekly-raffle-kick">${escapeHtml(
+            entry.kickUsername ? maskUsername(entry.kickUsername) : "—"
+          )}</span>
           <span class="weekly-raffle-wagered">${escapeHtml(formatMoney(entry.wagered, entry.wageredLabel))}</span>
           <span class="weekly-raffle-tickets">${escapeHtml(entry.tickets)}</span>
         `;
