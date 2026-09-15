@@ -162,18 +162,18 @@
     card.classList.remove("is-hidden", "is-drawing");
 
     if (name) {
-      // Stake is the raffle identity — show it as the hero name.
-      name.textContent = maskUsername(stakeName || kickName || "Winner");
+      // Show full Stake (or Kick) name in the congrats hero.
+      name.textContent = stakeName || kickName || "Winner";
       name.classList.toggle("is-stake-reveal", Boolean(stakeName));
     }
 
     if (sub) {
       if (stakeName && kickName) {
-        sub.textContent = `Kick · ${maskUsername(kickName)}`;
+        sub.textContent = `Kick · ${kickName}`;
       } else if (stakeName) {
         sub.textContent = "Stake raffle champion";
       } else if (kickName) {
-        sub.textContent = `Kick · ${maskUsername(kickName)}`;
+        sub.textContent = `Kick · ${kickName}`;
       } else {
         sub.textContent = "This week’s raffle champion";
       }
@@ -287,7 +287,7 @@
       }
 
       if (reduceMotion) {
-        name.textContent = maskUsername(finalStake);
+        name.textContent = finalStake;
         await sleep(200);
       } else {
         const durationMs = 2600;
@@ -299,7 +299,8 @@
           const progress = elapsed / durationMs;
           const stepMs = 45 + progress * progress * 220;
           const label = pool.length ? pool[index % pool.length] : finalStake;
-          name.textContent = maskUsername(label);
+          // Shuffle shows Stake names unmasked; final land uses the winner Stake.
+          name.textContent = label;
           name.classList.remove("is-draw-tick");
           void name.offsetWidth;
           name.classList.add("is-draw-tick");
@@ -307,7 +308,7 @@
           await sleep(stepMs);
         }
 
-        name.textContent = maskUsername(finalStake);
+        name.textContent = finalStake;
         await sleep(180);
       }
 
