@@ -249,6 +249,8 @@
     const content = document.getElementById("commands-content");
     const denied = document.getElementById("commands-denied");
 
+    content?.classList.remove("is-hidden");
+
     try {
       const me = await fetch("/api/auth/me", {
         credentials: "same-origin",
@@ -256,8 +258,7 @@
       }).then((r) => r.json());
 
       const isAdmin = Boolean(me?.user?.isAdmin);
-      denied?.classList.toggle("is-hidden", isAdmin);
-      content?.classList.toggle("is-hidden", !isAdmin);
+      denied?.classList.add("is-hidden");
 
       if (!isAdmin) {
         panel?.classList.add("is-hidden");
@@ -267,8 +268,6 @@
       if (panel) panel.classList.remove("is-hidden");
       await loadReplies();
     } catch (error) {
-      denied?.classList.remove("is-hidden");
-      content?.classList.add("is-hidden");
       panel?.classList.add("is-hidden");
       console.error(error);
     }

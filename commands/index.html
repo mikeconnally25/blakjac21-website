@@ -66,13 +66,13 @@
 
         <div class="accounts-denied-card is-hidden" id="commands-denied">
           <p class="accounts-denied-label">Admin only</p>
-          <p class="accounts-denied-title">Access restricted</p>
+          <p class="accounts-denied-title">Editor restricted</p>
           <p class="accounts-denied-copy">
-            Sign in with an admin Kick account to view and edit chat commands.
+            Sign in with an admin Kick account to edit chat command replies.
           </p>
         </div>
 
-        <div class="is-hidden" id="commands-content">
+        <div id="commands-content">
         <header class="section-header">
           <p class="section-eyebrow">Kick chat</p>
           <h1>Commands</h1>
@@ -98,6 +98,49 @@
             </span>
             <a class="menu-card-cta" href="/giveaways/">Open Giveaways <span aria-hidden="true">→</span></a>
           </article>
+
+          <article class="link-card theme-surface">
+            <span class="menu-label">Points</span>
+            <span class="link-platform"><code>!points</code></span>
+            <span class="link-handle">
+              Check your channel points balance. Admins can award with
+              <strong>!points @user 100</strong>.
+            </span>
+            <a class="menu-card-cta" href="/store/">Open Store <span aria-hidden="true">→</span></a>
+          </article>
+
+          <article class="link-card theme-surface">
+            <span class="menu-label">Shop / Top</span>
+            <span class="link-platform"><code>!shop</code> · <code>!top</code></span>
+            <span class="link-handle">
+              Links to the channel store and monthly supporters leaderboard.
+            </span>
+            <a class="menu-card-cta" href="/leaderboard/">Open Leaderboard <span aria-hidden="true">→</span></a>
+          </article>
+
+          <article class="link-card theme-surface">
+            <span class="menu-label">Stream info</span>
+            <span class="link-platform"><code>!uptime</code> · <code>!followage</code> · <code>!watchtime</code></span>
+            <span class="link-handle">
+              Stream uptime, how long you’ve followed (tracked going forward), and chat watchtime while live.
+            </span>
+          </article>
+
+          <article class="link-card theme-surface">
+            <span class="menu-label">Level / XP</span>
+            <span class="link-platform"><code>!level</code> · <code>!xp</code></span>
+            <span class="link-handle">
+              Chat while the stream is live to earn watchtime XP and level up.
+            </span>
+          </article>
+
+          <article class="link-card theme-surface">
+            <span class="menu-label">Commands list</span>
+            <span class="link-platform"><code>!commands</code></span>
+            <span class="link-handle">
+              Posts a link to this commands page in chat.
+            </span>
+          </article>
         </div>
 
         <section class="admin-panel commands-admin is-hidden" id="commands-admin-panel" aria-label="Bot command settings">
@@ -106,7 +149,11 @@
               <p class="admin-panel-label">Admin — bot commands</p>
               <p class="admin-panel-text">
                 Edit command triggers (including the <code>!</code>), reply text, and add custom commands.
-                Tokens: <code>{slot}</code>, <code>{group}</code>, <code>{username}</code>, <code>{args}</code>.
+                Tokens: <code>{slot}</code>, <code>{group}</code>, <code>{username}</code>, <code>{args}</code>,
+                <code>{time}</code>, <code>{points}</code>, <code>{level}</code>, <code>{xp}</code>,
+                <code>{nextlvl}</code>, <code>{name}</code>, <code>{url}</code>, <code>{trigger}</code>.
+                Admins can also use <code>!addcom</code> / <code>!delcom</code> / <code>!editcom</code> and
+                <code>!so</code> in Kick chat.
               </p>
             </div>
             <button type="button" class="btn btn-sm btn-outline" id="commands-replies-reset">
