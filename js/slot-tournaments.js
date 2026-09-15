@@ -160,6 +160,46 @@ function findCatalogSlot(nameOrSlot) {
   );
 }
 
+const CLAIM_SLOT_GROUPS = [
+  { slug: "new-releases", label: "New Releases" },
+  { slug: "only-on-stake", label: "Only on Stake" },
+];
+
+function slotBelongsToGroup(slot, groupSlug) {
+  if (!slot || !groupSlug) return false;
+  if (String(slot.groupSlug || "") === groupSlug) return true;
+  return (
+    Array.isArray(slot.groupSlugs) && slot.groupSlugs.includes(groupSlug)
+  );
+}
+
+function getPickerGroups() {
+  const allowed = new Set(CLAIM_SLOT_GROUPS.map((group) => group.slug));
+  const fromCatalog = (slotGroups || []).filter((group) =>
+    allowed.has(String(group.slug || ""))
+  );
+  return fromCatalog.length ? fromCatalog : CLAIM_SLOT_GROUPS;
+}
+
+function catalogSlotsForGroup(group, query = "") {
+  const needle = String(query || "").trim().toLowerCase();
+  return slotCatalog
+    .filter((slot) => slotBelongsToGroup(slot, group.slug))
+    .filter((slot) => {
+      if (!needle) return true;
+      const haystack = [slot.name, slot.provider, group.label]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(needle);
+    })
+    .sort((a, b) =>
+      String(a.name || "").localeCompare(String(b.name || ""), undefined, {
+        sensitivity: "base",
+      })
+    );
+}
+
 function assignedSlotForEntry(entryId) {
   const id = String(entryId || "").trim();
   if (!id) return null;
@@ -1272,32 +1312,12 @@ function renderSlotPickerOptions() {
     state.slots.map((slot) => String(slot.slug || "").toLowerCase()).filter(Boolean)
   );
 
-  const groups =
-    slotGroups.length > 0
-      ? slotGroups
-      : [
-          { slug: "new-releases", label: "New Releases" },
-          { slug: "only-on-stake", label: "Only on Stake" },
-        ];
+  const groups = getPickerGroups();
 
   let visibleCount = 0;
 
   for (const group of groups) {
-    const slots = slotCatalog
-      .filter((slot) => String(slot.groupSlug || "") === group.slug)
-      .filter((slot) => {
-        if (!query) return true;
-        const haystack = [slot.name, slot.provider, group.label]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-        return haystack.includes(query);
-      })
-      .sort((a, b) =>
-        String(a.name || "").localeCompare(String(b.name || ""), undefined, {
-          sensitivity: "base",
-        })
-      );
+    const slots = catalogSlotsForGroup(group, query);
 
     if (!slots.length) continue;
 
@@ -1365,7 +1385,11 @@ function renderSlotPickerOptions() {
       meta.textContent =
         "Loading catalog… If this stays empty, sync slots from Bonus Hunt.";
     } else {
-      meta.textContent = `${slotCatalog.length} Stake slots loaded`;
+      const sectionCount = CLAIM_SLOT_GROUPS.reduce(
+        (total, group) => total + catalogSlotsForGroup(group).length,
+        0
+      );
+      meta.textContent = `${sectionCount} New Releases / Only on Stake slots`;
     }
   }
 }
@@ -1522,8 +1546,17 @@ async function loadSlotCatalog({ force = false } = {}) {
         throw new Error(data.error || "Could not load slot catalog.");
       }
       const data = await response.json();
-      slotCatalog = Array.isArray(data.slots) ? data.slots : [];
-      slotGroups = Array.isArray(data.groups) ? data.groups : [];
+      const rawSlots = Array.isArray(data.slots) ? data.slots : [];
+      slotCatalog = rawSlots.filter((slot) =>
+        CLAIM_SLOT_GROUPS.some((group) => slotBelongsToGroup(slot, group.slug))
+      );
+      slotGroups = (Array.isArray(data.groups) ? data.groups : []).filter(
+        (group) =>
+          CLAIM_SLOT_GROUPS.some((allowed) => allowed.slug === group.slug)
+      );
+      if (!slotGroups.length) {
+        slotGroups = [...CLAIM_SLOT_GROUPS];
+      }
       renderSlotPickerOptions();
       renderClaimSlotPickerOptions();
       if (currentUser?.isAdmin) {
@@ -1714,32 +1747,12 @@ function renderClaimSlotPickerOptions() {
   const query = claimPickerFilter.trim().toLowerCase();
   const exceptEntryId = viewerNeedsSlot() ? state.viewerEntryId : null;
 
-  const groups =
-    slotGroups.length > 0
-      ? slotGroups
-      : [
-          { slug: "new-releases", label: "New Releases" },
-          { slug: "only-on-stake", label: "Only on Stake" },
-        ];
+  const groups = getPickerGroups();
 
   let visibleCount = 0;
 
   for (const group of groups) {
-    const slots = slotCatalog
-      .filter((slot) => String(slot.groupSlug || "") === group.slug)
-      .filter((slot) => {
-        if (!query) return true;
-        const haystack = [slot.name, slot.provider, group.label]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-        return haystack.includes(query);
-      })
-      .sort((a, b) =>
-        String(a.name || "").localeCompare(String(b.name || ""), undefined, {
-          sensitivity: "base",
-        })
-      );
+    const slots = catalogSlotsForGroup(group, query);
 
     if (!slots.length) continue;
 
