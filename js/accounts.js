@@ -283,10 +283,17 @@ function renderAccounts(users) {
     if (Boolean(user.banned)) {
       const bannedBadge = document.createElement("span");
       bannedBadge.className = "accounts-banned-badge";
-      bannedBadge.textContent = "BANNED";
+      bannedBadge.textContent =
+        String(user.banReason || "") === "alt" ? "ALT BANNED" : "BANNED";
       bannedBadge.title = user.bannedAt
-        ? `Banned ${formatDateTime(user.bannedAt)}`
-        : "This account is banned";
+        ? `${
+            String(user.banReason || "") === "alt"
+              ? "Permanently banned as an alt"
+              : "Banned"
+          } ${formatDateTime(user.bannedAt)}`
+        : String(user.banReason || "") === "alt"
+          ? "Permanently banned as an alt"
+          : "This account is banned";
       badges.append(bannedBadge);
     }
 
@@ -355,24 +362,29 @@ function renderAccounts(users) {
       banToggle.className = user.banned
         ? "btn btn-sm btn-primary accounts-ban-toggle"
         : "btn btn-sm btn-outline accounts-ban-toggle";
+      const isAltBan = user.banned && String(user.banReason || "") === "alt";
       banToggle.textContent = user.banned ? "Unban" : "Ban";
-      banToggle.title = user.banned
-        ? "Allow this account to sign in again"
-        : "Block this account from signing in";
+      banToggle.title = isAltBan
+        ? "Alt bans re-apply automatically while accounts still share an IP"
+        : user.banned
+          ? "Allow this account to sign in again"
+          : "Block this account from signing in";
       banToggle.addEventListener("click", () => {
         void setAccountBanned(user.kickUserId, !user.banned, banToggle);
       });
       nameRow.append(banToggle);
 
-      const removeBtn = document.createElement("button");
-      removeBtn.type = "button";
-      removeBtn.className = "btn btn-sm btn-outline accounts-remove-btn";
-      removeBtn.textContent = "Remove";
-      removeBtn.title = "Permanently delete this account record";
-      removeBtn.addEventListener("click", () => {
-        void removeAccount(user.kickUserId, user.username, removeBtn);
-      });
-      nameRow.append(removeBtn);
+      if (!user.banned) {
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "btn btn-sm btn-outline accounts-remove-btn";
+        removeBtn.textContent = "Remove";
+        removeBtn.title = "Permanently delete this account record";
+        removeBtn.addEventListener("click", () => {
+          void removeAccount(user.kickUserId, user.username, removeBtn);
+        });
+        nameRow.append(removeBtn);
+      }
     }
 
     copy.append(nameRow);
@@ -490,9 +502,14 @@ function renderAccounts(users) {
       const primaryName =
         allUsers.find((entry) => entry.kickUserId === user.altPrimaryKickUserId)
           ?.username || "oldest account";
-      const status = user.altSoftBlocked
-        ? `Soft-blocked — oldest eligible: ${primaryName}.`
-        : "Primary account — eligible to win giveaways and podium.";
+      let status;
+      if (user.banned && String(user.banReason || "") === "alt") {
+        status = `Permanently banned as an alt of ${primaryName}. Cannot sign in again.`;
+      } else if (user.altSoftBlocked) {
+        status = `Alt of ${primaryName} — will be auto-banned.`;
+      } else {
+        status = "Primary account — eligible to win giveaways and podium.";
+      }
       alts.textContent = `${status} Possible alts: ${(user.possibleAlts || [])
         .map((alt) => `${alt.username} (${alt.sharedIps.join(", ")})`)
         .join(" · ")}`;
