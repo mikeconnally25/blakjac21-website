@@ -126,15 +126,42 @@
             <div>
               <h2 class="slot-tournaments-panel-title" id="st-signups-title">Signups</h2>
               <p class="slot-tournaments-panel-text" id="st-spots-display"></p>
+              <p class="slot-tournaments-panel-text" id="st-predictions-status">
+                Predictions closed
+              </p>
             </div>
-            <a
-              href="/slot-tournaments/bracket/"
-              class="btn btn-sm btn-outline is-hidden"
-              id="st-view-bracket"
-            >
-              View bracket
-            </a>
+            <div class="slot-tournaments-actions st-signups-actions">
+              <button
+                type="button"
+                class="btn btn-sm btn-primary is-hidden"
+                id="st-predictions-toggle"
+              >
+                Enable predictions
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-primary is-hidden"
+                id="st-predict-open"
+              >
+                Predict
+              </button>
+              <a
+                href="/api/auth/login"
+                class="btn btn-sm btn-outline is-hidden"
+                id="st-predictions-guest"
+              >
+                Sign in to predict
+              </a>
+              <a
+                href="/slot-tournaments/bracket/"
+                class="btn btn-sm btn-outline is-hidden"
+                id="st-view-bracket"
+              >
+                View bracket
+              </a>
+            </div>
           </div>
+          <p class="slot-tournaments-banner is-hidden" id="st-predictions-banner" role="status"></p>
           <p class="slot-tournaments-empty" id="st-entries-empty">No signups yet.</p>
           <div class="slot-tournaments-scroll">
             <ol class="slot-tournaments-entries is-hidden" id="st-entries"></ol>
@@ -162,37 +189,60 @@
           </div>
         </section>
 
-        <section class="slot-tournaments-panel bj21-panel theme-surface" aria-labelledby="st-predictions-title">
-          <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <div class="slot-tournaments-section-head">
-            <div>
-              <h2 class="slot-tournaments-panel-title" id="st-predictions-title">Predictions</h2>
-              <p class="slot-tournaments-panel-text" id="st-predictions-status">
-                Predictions closed
+        <div
+          class="st-predict-modal is-hidden"
+          id="st-predict-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="st-predict-modal-title"
+          hidden
+        >
+          <div class="st-predict-modal-backdrop" data-st-predict-close="true"></div>
+          <div class="st-predict-modal-dialog">
+            <div class="st-predict-modal-head">
+              <div>
+                <p class="section-eyebrow">Predictions</p>
+                <h2 class="st-predict-modal-title" id="st-predict-modal-title">Pick the bracket</h2>
+                <p class="slot-tournaments-panel-text" id="st-predict-modal-hint">
+                  Tap a player in each matchup to choose a winner.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline"
+                id="st-predict-close"
+                data-st-predict-close="true"
+              >
+                Close
+              </button>
+            </div>
+            <div class="st-predict-modal-body">
+              <p class="slot-tournaments-empty is-hidden" id="st-predict-empty">
+                Generate a bracket before predictions.
               </p>
+              <div class="st-bracket-board is-hidden" id="st-predict-bracket"></div>
             </div>
-            <div class="slot-tournaments-actions is-hidden" id="st-predictions-admin">
-              <button type="button" class="btn btn-sm btn-primary" id="st-predictions-toggle">
-                Enable predictions
-              </button>
+            <div class="st-predict-modal-foot">
+              <p class="slot-tournaments-panel-text" id="st-predict-modal-status"></p>
+              <div class="slot-tournaments-actions">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-primary is-hidden"
+                  id="st-predictions-save"
+                >
+                  Save picks
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline"
+                  data-st-predict-close="true"
+                >
+                  Done
+                </button>
+              </div>
             </div>
           </div>
-          <p class="slot-tournaments-banner is-hidden" id="st-predictions-banner" role="status"></p>
-          <p class="slot-tournaments-empty" id="st-predictions-empty">
-            Generate a bracket before predictions.
-          </p>
-          <div class="st-predictions-guest is-hidden" id="st-predictions-guest">
-            <a href="/api/auth/login" class="btn btn-sm btn-outline">Sign in with Kick to predict</a>
-          </div>
-          <div class="st-predictions-body is-hidden" id="st-predictions-body">
-            <div class="st-predictions-list" id="st-predictions-list"></div>
-            <div class="slot-tournaments-actions">
-              <button type="button" class="btn btn-sm btn-primary is-hidden" id="st-predictions-save">
-                Save picks
-              </button>
-            </div>
-          </div>
-        </section>
+        </div>
 
         <section class="slot-tournaments-panel bj21-panel theme-surface" aria-labelledby="st-results-title">
           <span class="bj21-panel-glow" aria-hidden="true"></span>

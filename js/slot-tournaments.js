@@ -167,127 +167,342 @@ function entryById(entryId) {
   return state.entries.find((entry) => entry.id === id) || null;
 }
 
+function entryLabel(entryId) {
+  return entryById(entryId)?.username || "Unknown";
+}
+
+function predictionRoundLabel(round, maxRound) {
+  if (round === maxRound) return "Final";
+  if (maxRound > 1 && round === maxRound - 1) return "Semis";
+  return `Round ${round}`;
+}
+
+function getBracketMatches() {
+  return Array.isArray(state.bracket?.matches) ? state.bracket.matches : [];
+}
+
+function resolvePredictedSides(match, picks = predictionDraft) {
+  let entryAId = match.entryAId || null;
+  let entryBId = match.entryBId || null;
+
+  if (match.round > 1) {
+    const matches = getBracketMatches();
+    const feederA = matches.find(
+      (entry) => entry.round === match.round - 1 && entry.index === match.index * 2
+    );
+    const feederB = matches.find(
+      (entry) =>
+        entry.round === match.round - 1 && entry.index === match.index * 2 + 1
+    );
+    if (!entryAId && feederA) {
+      entryAId = picks[feederA.id] || feederA.winnerEntryId || null;
+    }
+    if (!entryBId && feederB) {
+      entryBId = picks[feederB.id] || feederB.winnerEntryId || null;
+    }
+  }
+
+  return { entryAId, entryBId };
+}
+
+function pruneInvalidPredictionPicks(picks) {
+  const matches = [...getBracketMatches()].sort(
+    (a, b) => a.round - b.round || a.index - b.index
+  );
+  const next = { ...picks };
+
+  for (const match of matches) {
+    const { entryAId, entryBId } = resolvePredictedSides(match, next);
+    if (entryAId && !entryBId) {
+      next[match.id] = entryAId;
+      continue;
+    }
+    if (!entryAId && entryBId) {
+      next[match.id] = entryBId;
+      continue;
+    }
+    const pick = next[match.id];
+    if (pick && pick !== entryAId && pick !== entryBId) {
+      delete next[match.id];
+    }
+  }
+
+  return next;
+}
+
+function setPredictionStatus(message, tone = "") {
+  const status = document.getElementById("st-predictions-banner");
+  const modalStatus = document.getElementById("st-predict-modal-status");
+  if (status) {
+    status.textContent = message || "";
+    status.classList.toggle("is-hidden", !message);
+    status.classList.toggle("is-error", tone === "error");
+    status.classList.toggle("is-success", tone === "success");
+  }
+  if (modalStatus) {
+    modalStatus.textContent = message || "";
+    modalStatus.classList.toggle("is-error", tone === "error");
+    modalStatus.classList.toggle("is-success", tone === "success");
+  }
+  if (!status && message) {
+    setBanner(message, tone);
+  }
+}
+
 function renderPredictions() {
   const status = document.getElementById("st-predictions-status");
-  const admin = document.getElementById("st-predictions-admin");
   const toggle = document.getElementById("st-predictions-toggle");
-  const empty = document.getElementById("st-predictions-empty");
+  const openBtn = document.getElementById("st-predict-open");
   const guest = document.getElementById("st-predictions-guest");
-  const body = document.getElementById("st-predictions-body");
-  const list = document.getElementById("st-predictions-list");
   const saveBtn = document.getElementById("st-predictions-save");
   const isAdmin = Boolean(currentUser?.isAdmin);
   const signedIn = Boolean(currentUser?.kickUserId);
-  const matches = Array.isArray(state.bracket?.matches)
-    ? [...state.bracket.matches].sort(
-        (a, b) => a.round - b.round || a.index - b.index
-      )
-    : [];
+  const matches = getBracketMatches();
   const hasBracket = matches.length > 0;
+  const modalOpen = Boolean(
+    document.getElementById("st-predict-modal") &&
+      !document.getElementById("st-predict-modal").classList.contains("is-hidden")
+  );
 
   if (status) {
     if (!hasBracket) {
       status.textContent = "Generate a bracket before predictions.";
     } else if (state.predictionsOpen) {
       status.textContent = isAdmin
-        ? `Predictions open${state.predictionCount ? ` · ${state.predictionCount} sheets` : ""}`
-        : "Predictions open — pick a winner for each matchup.";
+        ? `Predictions open${
+            state.predictionCount ? ` · ${state.predictionCount} sheets` : ""
+          }`
+        : "Predictions open — tap Predict to fill out the bracket.";
     } else {
       status.textContent = "Predictions closed";
     }
   }
 
-  admin?.classList.toggle("is-hidden", !isAdmin);
   if (toggle) {
+    toggle.classList.toggle("is-hidden", !isAdmin);
     toggle.textContent = state.predictionsOpen
       ? "Close predictions"
       : "Enable predictions";
     toggle.disabled = !hasBracket && !state.predictionsOpen;
   }
 
-  empty?.classList.toggle("is-hidden", hasBracket);
-  if (empty && !hasBracket) {
-    empty.textContent = "Generate a bracket before predictions.";
+  const showPredict =
+    hasBracket && signedIn && (state.predictionsOpen || state.viewerPrediction);
+  openBtn?.classList.toggle("is-hidden", !showPredict);
+  if (openBtn) {
+    openBtn.textContent = state.predictionsOpen ? "Predict" : "View picks";
   }
 
-  guest?.classList.toggle("is-hidden", !hasBracket || signedIn);
-  body?.classList.toggle("is-hidden", !hasBracket || !signedIn);
-  if (!list || !hasBracket || !signedIn) {
-    saveBtn?.classList.add("is-hidden");
-    return;
-  }
-
-  const active = document.activeElement;
-  const activeMatchId = active?.closest?.("[data-match-id]")?.getAttribute(
-    "data-match-id"
+  guest?.classList.toggle(
+    "is-hidden",
+    !hasBracket || signedIn || !state.predictionsOpen
   );
 
-  list.replaceChildren();
-  matches.forEach((match) => {
-    const card = document.createElement("article");
-    card.className = "st-predictions-match";
-    card.dataset.matchId = match.id;
-
-    const heading = document.createElement("p");
-    heading.className = "slot-tournaments-panel-label";
-    heading.textContent = `R${match.round} · Match ${match.index + 1}`;
-    card.append(heading);
-
-    const canPick = Boolean(match.entryAId && match.entryBId);
-    if (!canPick) {
-      const note = document.createElement("p");
-      note.className = "st-predictions-note";
-      note.textContent = "Waiting for both players.";
-      card.append(note);
-      list.append(card);
-      return;
-    }
-
-    const choices = document.createElement("div");
-    choices.className = "st-predictions-choices";
-
-    ["A", "B"].forEach((side) => {
-      const entryId = side === "A" ? match.entryAId : match.entryBId;
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "st-predictions-choice";
-      button.dataset.matchId = match.id;
-      button.dataset.entryId = entryId;
-      button.disabled = !state.predictionsOpen;
-      if (predictionDraft[match.id] === entryId) {
-        button.classList.add("is-selected");
-      }
-
-      const slot = assignedSlotForEntry(entryId);
-      const primary = document.createElement("span");
-      primary.className = "st-predictions-choice-primary";
-      primary.textContent = slot?.name || entryById(entryId)?.username || "Unknown";
-
-      const secondary = document.createElement("span");
-      secondary.className = "st-predictions-choice-secondary";
-      secondary.textContent = slot?.name
-        ? entryById(entryId)?.username || ""
-        : "";
-
-      button.append(primary);
-      if (secondary.textContent) button.append(secondary);
-      choices.append(button);
-    });
-
-    card.append(choices);
-    list.append(card);
-  });
-
-  saveBtn?.classList.toggle("is-hidden", !state.predictionsOpen);
   if (saveBtn) {
+    saveBtn.classList.toggle("is-hidden", !state.predictionsOpen || !signedIn);
     saveBtn.disabled = !state.predictionsOpen;
   }
 
-  if (activeMatchId && state.predictionsOpen) {
-    const next = list.querySelector(
-      `.st-predictions-choice.is-selected[data-match-id="${activeMatchId}"]`
+  if (modalOpen) {
+    renderPredictBracket();
+  }
+}
+
+function openPredictModal() {
+  const modal = document.getElementById("st-predict-modal");
+  if (!modal) return;
+  modal.hidden = false;
+  modal.classList.remove("is-hidden");
+  document.body.classList.add("st-predict-modal-open");
+  const hint = document.getElementById("st-predict-modal-hint");
+  if (hint) {
+    hint.textContent = state.predictionsOpen
+      ? "Tap a player in each matchup to choose a winner. Later rounds fill from your earlier picks."
+      : "Predictions are closed — viewing your saved picks.";
+  }
+  renderPredictBracket();
+}
+
+function closePredictModal() {
+  const modal = document.getElementById("st-predict-modal");
+  if (!modal) return;
+  modal.classList.add("is-hidden");
+  modal.hidden = true;
+  document.body.classList.remove("st-predict-modal-open");
+}
+
+function renderPredictPlayerRow(match, side, entryId, canEdit) {
+  const assigned = assignedSlotForEntry(entryId);
+  const canPick = Boolean(canEdit && entryId);
+  const row = document.createElement(canPick ? "button" : "div");
+  row.className = "st-bracket-player";
+  if (canPick) {
+    row.type = "button";
+    row.classList.add("is-pickable");
+    row.dataset.matchId = match.id;
+    row.dataset.entryId = entryId;
+  }
+  if (entryId && predictionDraft[match.id] === entryId) {
+    row.classList.add("is-predicted");
+  }
+
+  const copy = document.createElement("div");
+  copy.className = "st-bracket-player-copy";
+
+  if (entryId && assigned?.name) {
+    const slot = document.createElement("span");
+    slot.className = "st-bracket-player-name";
+    slot.textContent = assigned.name;
+    slot.title = assigned.name;
+
+    const user = document.createElement("span");
+    user.className = "st-bracket-player-user";
+    user.textContent = entryLabel(entryId);
+    copy.append(slot, user);
+  } else {
+    const name = document.createElement("span");
+    name.className = "st-bracket-player-name";
+    name.textContent = entryId ? entryLabel(entryId) : "TBD";
+    if (!entryId) name.classList.add("is-empty");
+    copy.append(name);
+  }
+
+  row.append(copy);
+  return row;
+}
+
+function renderPredictMatchCard(match, canEdit) {
+  const { entryAId, entryBId } = resolvePredictedSides(match, predictionDraft);
+  const card = document.createElement("article");
+  card.className = "st-bracket-match bj21-panel theme-surface";
+  card.dataset.matchId = match.id;
+  if (predictionDraft[match.id]) {
+    card.classList.add("is-decided");
+  }
+
+  const glow = document.createElement("span");
+  glow.className = "bj21-panel-glow";
+  glow.setAttribute("aria-hidden", "true");
+  card.append(glow);
+
+  const label = document.createElement("p");
+  label.className = "slot-tournaments-panel-label";
+  label.textContent = `Match ${match.index + 1}`;
+  card.append(label);
+
+  card.append(renderPredictPlayerRow(match, "A", entryAId, canEdit && entryAId && entryBId));
+  card.append(renderPredictPlayerRow(match, "B", entryBId, canEdit && entryAId && entryBId));
+
+  const note = document.createElement("p");
+  note.className = "st-bracket-match-note";
+  if (entryAId && !entryBId) {
+    note.textContent = "Bye — auto advance";
+  } else if (!entryAId && entryBId) {
+    note.textContent = "Bye — auto advance";
+  } else if (!entryAId || !entryBId) {
+    note.textContent = "Pick earlier rounds first";
+  } else if (canEdit) {
+    note.textContent = "Tap a player to pick";
+  } else {
+    note.textContent = predictionDraft[match.id] ? "Your pick" : "No pick yet";
+  }
+  card.append(note);
+
+  return card;
+}
+
+function renderPredictRoundColumn(round, roundMatches, maxRound, canEdit, side) {
+  const column = document.createElement("div");
+  column.className = "st-bracket-round";
+  if (side) column.classList.add(`is-${side}`);
+
+  const heading = document.createElement("p");
+  heading.className = "st-bracket-round-label";
+  heading.textContent = predictionRoundLabel(round, maxRound);
+  column.append(heading);
+
+  const stack = document.createElement("div");
+  stack.className = "st-bracket-round-stack";
+  roundMatches.forEach((match) => {
+    stack.append(renderPredictMatchCard(match, canEdit));
+  });
+  column.append(stack);
+  return column;
+}
+
+function renderPredictBracket() {
+  const board = document.getElementById("st-predict-bracket");
+  const empty = document.getElementById("st-predict-empty");
+  if (!board || !empty) return;
+
+  const matches = getBracketMatches();
+  const canEdit = Boolean(state.predictionsOpen && currentUser?.kickUserId);
+
+  if (!matches.length) {
+    empty.classList.remove("is-hidden");
+    board.classList.add("is-hidden");
+    board.replaceChildren();
+    return;
+  }
+
+  empty.classList.add("is-hidden");
+  board.classList.remove("is-hidden");
+  board.replaceChildren();
+
+  const maxRound = matches.reduce((max, match) => Math.max(max, match.round || 1), 1);
+  const useSplit = maxRound >= 2 && matches.filter((match) => match.round === 1).length >= 4;
+
+  if (useSplit) {
+    board.classList.add("is-split");
+    const leftWing = document.createElement("div");
+    leftWing.className = "st-bracket-wing is-left";
+    const center = document.createElement("div");
+    center.className = "st-bracket-center";
+    const rightWing = document.createElement("div");
+    rightWing.className = "st-bracket-wing is-right";
+
+    for (let round = 1; round < maxRound; round += 1) {
+      const roundMatches = matches
+        .filter((match) => match.round === round)
+        .sort((a, b) => a.index - b.index);
+      const mid = Math.ceil(roundMatches.length / 2);
+      leftWing.append(
+        renderPredictRoundColumn(
+          round,
+          roundMatches.slice(0, mid),
+          maxRound,
+          canEdit,
+          "left"
+        )
+      );
+      rightWing.append(
+        renderPredictRoundColumn(
+          round,
+          roundMatches.slice(mid),
+          maxRound,
+          canEdit,
+          "right"
+        )
+      );
+    }
+
+    const finals = matches
+      .filter((match) => match.round === maxRound)
+      .sort((a, b) => a.index - b.index);
+    center.append(
+      renderPredictRoundColumn(maxRound, finals, maxRound, canEdit, "center")
     );
-    next?.focus();
+    board.append(leftWing, center, rightWing);
+  } else {
+    board.classList.remove("is-split");
+    for (let round = 1; round <= maxRound; round += 1) {
+      const roundMatches = matches
+        .filter((match) => match.round === round)
+        .sort((a, b) => a.index - b.index);
+      board.append(
+        renderPredictRoundColumn(round, roundMatches, maxRound, canEdit)
+      );
+    }
   }
 }
 
@@ -316,28 +531,45 @@ function initPredictions() {
     }
   );
 
-  document.getElementById("st-predictions-list")?.addEventListener(
-    "click",
-    (event) => {
-      const button = event.target.closest(".st-predictions-choice");
-      if (!button || button.disabled) return;
-      const matchId = button.dataset.matchId;
-      const entryId = button.dataset.entryId;
-      if (!matchId || !entryId) return;
-      predictionDraft = { ...predictionDraft, [matchId]: entryId };
-      predictionDirty = true;
-      renderPredictions();
+  document.getElementById("st-predict-open")?.addEventListener("click", () => {
+    openPredictModal();
+  });
+
+  document.getElementById("st-predict-modal")?.addEventListener("click", (event) => {
+    if (event.target.closest("[data-st-predict-close]")) {
+      closePredictModal();
+      return;
     }
-  );
+
+    const pick = event.target.closest(".st-bracket-player.is-pickable");
+    if (!pick || !state.predictionsOpen) return;
+    const matchId = pick.dataset.matchId;
+    const entryId = pick.dataset.entryId;
+    if (!matchId || !entryId) return;
+
+    predictionDraft = pruneInvalidPredictionPicks({
+      ...predictionDraft,
+      [matchId]: entryId,
+    });
+    predictionDirty = true;
+    renderPredictBracket();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    const modal = document.getElementById("st-predict-modal");
+    if (!modal || modal.classList.contains("is-hidden")) return;
+    closePredictModal();
+  });
 
   document.getElementById("st-predictions-save")?.addEventListener(
     "click",
     async () => {
       setPredictionStatus("Saving picks...");
       try {
-        await postJson("/api/slot-tournaments/predictions/save", {
-          picks: predictionDraft,
-        });
+        const picks = pruneInvalidPredictionPicks(predictionDraft);
+        predictionDraft = picks;
+        await postJson("/api/slot-tournaments/predictions/save", { picks });
         predictionDirty = false;
         setPredictionStatus("Picks saved.", "success");
       } catch (error) {
@@ -352,18 +584,6 @@ function resolveSlotThumbnail(slot) {
     normalizeSlotThumbnailUrl(slot?.thumbnailUrl) ||
     normalizeSlotThumbnailUrl(findCatalogSlot(slot)?.thumbnailUrl)
   );
-}
-
-function setPredictionStatus(message, tone = "") {
-  const status = document.getElementById("st-predictions-banner");
-  if (!status) {
-    setBanner(message, tone);
-    return;
-  }
-  status.textContent = message || "";
-  status.classList.toggle("is-hidden", !message);
-  status.classList.toggle("is-error", tone === "error");
-  status.classList.toggle("is-success", tone === "success");
 }
 
 function applyState(data) {
@@ -389,7 +609,9 @@ function applyState(data) {
       viewerEntered: Boolean(data.viewerEntered),
     };
     if (!predictionDirty) {
-      predictionDraft = { ...(state.viewerPrediction?.picks || {}) };
+      predictionDraft = pruneInvalidPredictionPicks({
+        ...(state.viewerPrediction?.picks || {}),
+      });
     }
     renderStatus();
     renderInfo();
@@ -421,7 +643,9 @@ function applyState(data) {
     viewerEntered: Boolean(data.viewerEntered),
   };
   if (!predictionDirty) {
-    predictionDraft = { ...(state.viewerPrediction?.picks || {}) };
+    predictionDraft = pruneInvalidPredictionPicks({
+      ...(state.viewerPrediction?.picks || {}),
+    });
   }
   renderAll();
 }
