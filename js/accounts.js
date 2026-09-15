@@ -586,7 +586,8 @@ function renderAccounts(users) {
         const place = [entry.city, entry.region, entry.country]
           .filter(Boolean)
           .join(", ");
-        historyItem.textContent = `${entry.ip}${
+        const ipLabel = entry.ip || "IP unavailable";
+        historyItem.textContent = `${ipLabel}${
           place ? ` · ${place}` : ""
         } · ${formatDateTime(entry.at)}`;
         historyList.append(historyItem);
