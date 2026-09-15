@@ -120,6 +120,59 @@
           </div>
         </section>
 
+        <div
+          class="st-predict-modal st-claim-modal is-hidden"
+          id="st-claim-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="st-claim-modal-title"
+          hidden
+        >
+          <div class="st-predict-modal-backdrop" data-st-claim-close="true"></div>
+          <div class="st-predict-modal-dialog">
+            <div class="st-predict-modal-head">
+              <div>
+                <p class="section-eyebrow">Signups</p>
+                <h2 class="st-predict-modal-title" id="st-claim-modal-title">Pick a slot</h2>
+                <p class="slot-tournaments-panel-text" id="st-claim-modal-hint">
+                  Pick a slot to claim your spot.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline"
+                id="st-claim-close"
+                data-st-claim-close="true"
+              >
+                Close
+              </button>
+            </div>
+            <div class="st-predict-modal-body">
+              <div class="st-slot-picker" id="st-claim-slot-picker">
+                <input
+                  class="guess-input st-slot-picker-search"
+                  id="st-claim-slot-search"
+                  type="search"
+                  placeholder="Search New Releases / Only on Stake…"
+                  autocomplete="off"
+                />
+                <div
+                  class="st-slot-picker-groups st-claim-slot-groups"
+                  id="st-claim-slot-groups"
+                  role="listbox"
+                  aria-label="Available slots"
+                ></div>
+                <p class="st-slot-picker-empty is-hidden" id="st-claim-slot-empty">
+                  Loading Stake slots…
+                </p>
+              </div>
+            </div>
+            <div class="st-predict-modal-foot">
+              <p class="slot-tournaments-panel-text" id="st-claim-modal-status"></p>
+            </div>
+          </div>
+        </div>
+
         <section class="slot-tournaments-panel bj21-panel theme-surface" aria-labelledby="st-signups-title">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
           <div class="slot-tournaments-section-head">

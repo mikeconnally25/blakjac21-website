@@ -7630,6 +7630,28 @@ a.feature-card:focus-visible {
   font-size: 0.8rem;
 }
 
+.st-claim-modal .st-predict-modal-dialog {
+  width: min(560px, 100%);
+  max-height: min(88vh, 720px);
+}
+
+.st-claim-slot-groups {
+  max-height: min(52vh, 420px);
+  overflow: auto;
+  margin-top: 0.55rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: calc(var(--radius-sm) + 2px);
+  background: rgba(6, 10, 16, 0.55);
+}
+
+.st-claim-modal #st-claim-modal-status.is-error {
+  color: #fca5a5;
+}
+
+.st-claim-modal #st-claim-modal-status.is-success {
+  color: #86efac;
+}
+
 .st-slot-picker-empty {
   margin: 0;
   color: var(--text-muted);

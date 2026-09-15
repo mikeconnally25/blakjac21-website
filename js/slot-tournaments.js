@@ -6,6 +6,9 @@ let assignSaveTimer = null;
 let assignDirty = false;
 let pickerOpen = false;
 let pickerFilter = "";
+let claimPickerOpen = false;
+let claimPickerFilter = "";
+let claimBusy = false;
 let predictionDraft = {};
 let predictionDirty = false;
 let state = {
@@ -28,6 +31,7 @@ let state = {
   predictionLeaderboard: [],
   predictionCount: 0,
   viewerEntered: false,
+  viewerEntryId: null,
 };
 
 function setBanner(message, tone = "") {
@@ -160,6 +164,42 @@ function assignedSlotForEntry(entryId) {
   const id = String(entryId || "").trim();
   if (!id) return null;
   return state.slots.find((slot) => slot.entryId === id) || null;
+}
+
+function viewerNeedsSlot() {
+  if (!state.viewerEntered || !state.viewerEntryId) return false;
+  return !assignedSlotForEntry(state.viewerEntryId);
+}
+
+function canOpenClaimPicker() {
+  if (!state.open || !currentUser?.kickUserId) return false;
+  if (viewerNeedsSlot()) return true;
+  return !state.viewerEntered && state.spotsLeft > 0;
+}
+
+function slotTakenByEntrant(catalogSlot, exceptEntryId = null) {
+  const except = String(exceptEntryId || "").trim();
+  const nextSlug = String(catalogSlot?.slug || "")
+    .trim()
+    .toLowerCase();
+  const nextName = String(catalogSlot?.name || "")
+    .trim()
+    .toLowerCase();
+  if (!nextSlug && !nextName) return false;
+
+  return state.slots.some((existing) => {
+    const owner = String(existing.entryId || "").trim();
+    if (!owner || (except && owner === except)) return false;
+    const existingSlug = String(existing.slug || "")
+      .trim()
+      .toLowerCase();
+    if (existingSlug && nextSlug && existingSlug === nextSlug) return true;
+    return (
+      String(existing.name || "")
+        .trim()
+        .toLowerCase() === nextName
+    );
+  });
 }
 
 function entryById(entryId) {
@@ -329,7 +369,9 @@ function closePredictModal() {
   if (!modal) return;
   modal.classList.add("is-hidden");
   modal.hidden = true;
-  document.body.classList.remove("st-predict-modal-open");
+  if (!claimPickerOpen) {
+    document.body.classList.remove("st-predict-modal-open");
+  }
 }
 
 function renderPredictPlayerRow(match, side, entryId, canEdit) {
@@ -611,6 +653,7 @@ function applyState(data) {
         : [],
       predictionCount: Number(data.predictionCount) || 0,
       viewerEntered: Boolean(data.viewerEntered),
+      viewerEntryId: data.viewerEntryId || null,
     };
     if (!predictionDirty) {
       predictionDraft = pruneInvalidPredictionPicks({
@@ -649,6 +692,7 @@ function applyState(data) {
       : [],
     predictionCount: Number(data.predictionCount) || 0,
     viewerEntered: Boolean(data.viewerEntered),
+    viewerEntryId: data.viewerEntryId || null,
   };
   if (!predictionDirty) {
     predictionDraft = pruneInvalidPredictionPicks({
@@ -763,14 +807,16 @@ function renderInfo() {
 
   if (hint) {
     if (state.open) {
-      if (state.viewerEntered) {
+      if (state.viewerEntered && !viewerNeedsSlot()) {
         hint.textContent = "You're in. Good luck.";
+      } else if (viewerNeedsSlot()) {
+        hint.textContent = "Pick a slot to finish claiming your spot.";
       } else if (!currentUser?.kickUserId) {
         hint.textContent = "Sign in with Kick to claim a spot.";
       } else if (state.spotsLeft <= 0) {
         hint.textContent = "Tournament is full.";
       } else {
-        hint.textContent = "Signups are open — claim a spot below.";
+        hint.textContent = "Pick a slot to claim your spot.";
       }
     } else if (state.phase === "live") {
       hint.textContent = "Signups closed. Tournament is live.";
@@ -782,20 +828,32 @@ function renderInfo() {
     }
   }
 
-  const canJoin =
-    state.open &&
-    currentUser?.kickUserId &&
-    !state.viewerEntered &&
-    state.spotsLeft > 0;
+  const needsSlot = viewerNeedsSlot();
+  const canJoin = canOpenClaimPicker();
   const needsSignIn = state.open && !currentUser?.kickUserId;
+  const showClaimed =
+    state.viewerEntered && !needsSlot && Boolean(currentUser?.kickUserId);
 
-  joinBtn?.classList.toggle("is-hidden", !canJoin && !state.viewerEntered);
+  joinBtn?.classList.toggle("is-hidden", !canJoin && !showClaimed);
   if (joinBtn) {
-    joinBtn.disabled = !canJoin;
-    joinBtn.textContent = state.viewerEntered ? "Spot claimed" : "Claim spot";
+    joinBtn.disabled = !canJoin || claimBusy;
+    if (needsSlot) {
+      joinBtn.textContent = "Pick slot";
+    } else if (showClaimed) {
+      joinBtn.textContent = "Spot claimed";
+    } else {
+      joinBtn.textContent = "Claim spot";
+    }
   }
 
   signInBtn?.classList.toggle("is-hidden", !needsSignIn);
+
+  if (canJoin && !slotCatalog.length) {
+    loadSlotCatalog().catch(() => {});
+  }
+  if (claimPickerOpen) {
+    renderClaimSlotPickerOptions();
+  }
 }
 
 function renderEntries() {
@@ -1467,6 +1525,7 @@ async function loadSlotCatalog({ force = false } = {}) {
       slotCatalog = Array.isArray(data.slots) ? data.slots : [];
       slotGroups = Array.isArray(data.groups) ? data.groups : [];
       renderSlotPickerOptions();
+      renderClaimSlotPickerOptions();
       if (currentUser?.isAdmin) {
         renderAssignPanel();
         renderEntries();
@@ -1480,6 +1539,11 @@ async function loadSlotCatalog({ force = false } = {}) {
       if (empty && pickerOpen) {
         empty.textContent = error.message || "Could not load Stake slots.";
         empty.classList.remove("is-hidden");
+      }
+      const claimEmpty = document.getElementById("st-claim-slot-empty");
+      if (claimEmpty && claimPickerOpen) {
+        claimEmpty.textContent = error.message || "Could not load Stake slots.";
+        claimEmpty.classList.remove("is-hidden");
       }
       throw error;
     } finally {
@@ -1598,17 +1662,227 @@ function initAdmin() {
   });
 }
 
-function initJoin() {
-  document.getElementById("st-join-btn")?.addEventListener("click", async () => {
-    setBanner("Claiming spot...");
-    try {
-      const data = await postJson("/api/slot-tournaments/join", {});
-      setBanner(
-        data.alreadyEntered ? "You already claimed a spot." : "Spot claimed.",
-        "success"
+function setClaimStatus(message, tone = "") {
+  const status = document.getElementById("st-claim-modal-status");
+  if (!status) return;
+  status.textContent = message || "";
+  status.classList.toggle("is-error", tone === "error");
+  status.classList.toggle("is-success", tone === "success");
+}
+
+function setClaimPickerOpen(open) {
+  const modal = document.getElementById("st-claim-modal");
+  if (!modal) return;
+
+  claimPickerOpen = Boolean(open);
+  modal.classList.toggle("is-hidden", !claimPickerOpen);
+  modal.hidden = !claimPickerOpen;
+  const predictOpen = !document
+    .getElementById("st-predict-modal")
+    ?.classList.contains("is-hidden");
+  document.body.classList.toggle(
+    "st-predict-modal-open",
+    claimPickerOpen || predictOpen
+  );
+
+  if (claimPickerOpen) {
+    setClaimStatus("");
+    claimPickerFilter = "";
+    const search = document.getElementById("st-claim-slot-search");
+    if (search) search.value = "";
+    renderClaimSlotPickerOptions();
+    loadSlotCatalog()
+      .then(() => {
+        if (claimPickerOpen) renderClaimSlotPickerOptions();
+      })
+      .catch((error) => {
+        setClaimStatus(error.message || "Could not load Stake slots.", "error");
+        renderClaimSlotPickerOptions();
+      });
+    window.setTimeout(() => {
+      document.getElementById("st-claim-slot-search")?.focus();
+    }, 0);
+  }
+}
+
+function renderClaimSlotPickerOptions() {
+  const groupsEl = document.getElementById("st-claim-slot-groups");
+  const empty = document.getElementById("st-claim-slot-empty");
+  if (!groupsEl) return;
+
+  groupsEl.replaceChildren();
+  const query = claimPickerFilter.trim().toLowerCase();
+  const exceptEntryId = viewerNeedsSlot() ? state.viewerEntryId : null;
+
+  const groups =
+    slotGroups.length > 0
+      ? slotGroups
+      : [
+          { slug: "new-releases", label: "New Releases" },
+          { slug: "only-on-stake", label: "Only on Stake" },
+        ];
+
+  let visibleCount = 0;
+
+  for (const group of groups) {
+    const slots = slotCatalog
+      .filter((slot) => String(slot.groupSlug || "") === group.slug)
+      .filter((slot) => {
+        if (!query) return true;
+        const haystack = [slot.name, slot.provider, group.label]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(query);
+      })
+      .sort((a, b) =>
+        String(a.name || "").localeCompare(String(b.name || ""), undefined, {
+          sensitivity: "base",
+        })
       );
-    } catch (error) {
-      setBanner(error.message || "Could not claim a spot.", "error");
+
+    if (!slots.length) continue;
+
+    const section = document.createElement("div");
+    section.className = "st-slot-picker-group";
+
+    const heading = document.createElement("p");
+    heading.className = "st-slot-picker-group-label";
+    heading.textContent = group.label;
+    section.append(heading);
+
+    slots.forEach((slot) => {
+      const taken = slotTakenByEntrant(slot, exceptEntryId);
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "st-slot-picker-option";
+      button.dataset.slotSlug = slot.slug || "";
+      button.dataset.slotName = slot.name || "";
+      button.setAttribute("role", "option");
+
+      if (taken || claimBusy) {
+        button.disabled = true;
+        button.classList.add("is-added");
+      }
+
+      button.append(createSlotThumb(slot.name, slot.thumbnailUrl));
+
+      const copy = document.createElement("span");
+      copy.className = "st-slot-picker-option-copy";
+
+      const name = document.createElement("span");
+      name.className = "st-slot-picker-option-name";
+      name.textContent = slot.name;
+
+      const provider = document.createElement("span");
+      provider.className = "st-slot-picker-option-provider";
+      provider.textContent = taken ? "Taken" : slot.provider || group.label;
+
+      copy.append(name, provider);
+      button.append(copy);
+      section.append(button);
+      visibleCount += 1;
+    });
+
+    groupsEl.append(section);
+  }
+
+  if (empty) {
+    if (!slotCatalog.length) {
+      empty.textContent = "Loading Stake slots…";
+      empty.classList.remove("is-hidden");
+    } else if (!visibleCount) {
+      empty.textContent = query
+        ? "No matching slots."
+        : "No New Releases / Only on Stake slots found.";
+      empty.classList.remove("is-hidden");
+    } else {
+      empty.classList.add("is-hidden");
+    }
+  }
+}
+
+async function claimWithSlot(slug, name) {
+  if (claimBusy) return;
+  const catalogHit =
+    findCatalogSlotBySlug(slug) ||
+    slotCatalog.find(
+      (slot) =>
+        String(slot.name || "").trim().toLowerCase() ===
+        String(name || "").trim().toLowerCase()
+    );
+  if (!catalogHit?.slug && !catalogHit?.name) {
+    setClaimStatus("Choose a slot from the list.", "error");
+    return;
+  }
+
+  if (
+    slotTakenByEntrant(
+      catalogHit,
+      viewerNeedsSlot() ? state.viewerEntryId : null
+    )
+  ) {
+    setClaimStatus("That slot is already taken.", "error");
+    renderClaimSlotPickerOptions();
+    return;
+  }
+
+  claimBusy = true;
+  renderStatus();
+  renderClaimSlotPickerOptions();
+  setClaimStatus("Claiming spot…");
+
+  try {
+    const payload = catalogHit.slug
+      ? { slotSlug: catalogHit.slug }
+      : { slotName: catalogHit.name };
+    const data = await postJson("/api/slot-tournaments/join", payload);
+    setClaimPickerOpen(false);
+    const message = data.slotAssigned
+      ? "Slot picked. Spot secured."
+      : data.alreadyEntered
+        ? "You already claimed a spot."
+        : "Spot claimed.";
+    setBanner(message, "success");
+  } catch (error) {
+    setClaimStatus(error.message || "Could not claim a spot.", "error");
+    setBanner(error.message || "Could not claim a spot.", "error");
+    await refreshStatus().catch(() => {});
+    renderClaimSlotPickerOptions();
+  } finally {
+    claimBusy = false;
+    renderStatus();
+  }
+}
+
+function initJoin() {
+  document.getElementById("st-join-btn")?.addEventListener("click", () => {
+    if (!canOpenClaimPicker() || claimBusy) return;
+    setClaimPickerOpen(true);
+  });
+
+  document.getElementById("st-claim-slot-search")?.addEventListener("input", (event) => {
+    claimPickerFilter = String(event.target.value || "");
+    renderClaimSlotPickerOptions();
+  });
+
+  document.getElementById("st-claim-slot-groups")?.addEventListener("click", (event) => {
+    const option = event.target.closest(".st-slot-picker-option");
+    if (!option || option.disabled) return;
+    event.preventDefault();
+    claimWithSlot(option.dataset.slotSlug, option.dataset.slotName);
+  });
+
+  document.querySelectorAll("[data-st-claim-close]").forEach((el) => {
+    el.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (!claimBusy) setClaimPickerOpen(false);
+    });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && claimPickerOpen && !claimBusy) {
+      setClaimPickerOpen(false);
     }
   });
 }
@@ -1624,7 +1898,7 @@ window.addEventListener("auth:change", async (event) => {
   currentUser = event.detail?.user || null;
   try {
     await refreshStatus();
-    if (currentUser?.isAdmin) {
+    if (currentUser?.isAdmin || canOpenClaimPicker()) {
       loadSlotCatalog();
     }
   } catch (error) {
@@ -1639,7 +1913,7 @@ initJoin();
 refreshStatus()
   .then(() => {
     startPolling();
-    if (currentUser?.isAdmin) {
+    if (currentUser?.isAdmin || canOpenClaimPicker()) {
       loadSlotCatalog();
     }
   })
