@@ -25,6 +25,7 @@ let state = {
   results: [],
   predictionsOpen: false,
   viewerPrediction: null,
+  predictionLeaderboard: [],
   predictionCount: 0,
   viewerEntered: false,
 };
@@ -605,6 +606,9 @@ function applyState(data) {
       results: Array.isArray(data.results) ? data.results : [],
       predictionsOpen: Boolean(data.predictionsOpen),
       viewerPrediction: data.viewerPrediction || null,
+      predictionLeaderboard: Array.isArray(data.predictionLeaderboard)
+        ? data.predictionLeaderboard
+        : [],
       predictionCount: Number(data.predictionCount) || 0,
       viewerEntered: Boolean(data.viewerEntered),
     };
@@ -616,6 +620,7 @@ function applyState(data) {
     renderStatus();
     renderInfo();
     renderEntries();
+    renderPredictionLeaderboard();
     renderResults();
     renderPredictions();
     renderAdminForm();
@@ -639,6 +644,9 @@ function applyState(data) {
     results: Array.isArray(data.results) ? data.results : [],
     predictionsOpen: Boolean(data.predictionsOpen),
     viewerPrediction: data.viewerPrediction || null,
+    predictionLeaderboard: Array.isArray(data.predictionLeaderboard)
+      ? data.predictionLeaderboard
+      : [],
     predictionCount: Number(data.predictionCount) || 0,
     viewerEntered: Boolean(data.viewerEntered),
   };
@@ -860,6 +868,82 @@ function renderEntries() {
   });
 }
 
+function formatPredictionRoundBreakdown(correctByRound) {
+  const rounds = Object.keys(correctByRound || {})
+    .map((key) => Number(key))
+    .filter((round) => Number.isFinite(round) && round > 0)
+    .sort((a, b) => a - b);
+  if (!rounds.length) return "No correct picks yet";
+  return rounds
+    .map((round) => `R${round}: ${correctByRound[round]}`)
+    .join(" · ");
+}
+
+function renderPredictionLeaderboard() {
+  const list = document.getElementById("st-prediction-board");
+  const empty = document.getElementById("st-prediction-board-empty");
+  const meta = document.getElementById("st-prediction-board-meta");
+  if (!list || !empty) return;
+
+  const rows = Array.isArray(state.predictionLeaderboard)
+    ? state.predictionLeaderboard
+    : [];
+  const decidedCount = getBracketMatches().filter(
+    (match) => match.winnerEntryId
+  ).length;
+
+  if (meta) {
+    const sheetNote = rows.length
+      ? `${rows.length} predictor${rows.length === 1 ? "" : "s"}`
+      : "No sheets yet";
+    const scoreNote = decidedCount
+      ? `${decidedCount} match${decidedCount === 1 ? "" : "es"} scored`
+      : "scores update as winners are set";
+    meta.textContent = `R1 = 1 pt · R2 = 2 pts · R3 = 3 pts · ${sheetNote} · ${scoreNote}`;
+  }
+
+  list.replaceChildren();
+  if (!rows.length) {
+    empty.classList.remove("is-hidden");
+    empty.textContent = "No prediction sheets yet.";
+    list.classList.add("is-hidden");
+    return;
+  }
+
+  empty.classList.add("is-hidden");
+  list.classList.remove("is-hidden");
+
+  rows.forEach((row, index) => {
+    const item = document.createElement("li");
+    item.className = "st-prediction-board-row";
+    if (index < 3) item.classList.add(`is-top-${index + 1}`);
+
+    const place = document.createElement("span");
+    place.className = "st-prediction-board-place";
+    place.textContent = String(index + 1);
+
+    const copy = document.createElement("div");
+    copy.className = "st-prediction-board-copy";
+
+    const name = document.createElement("p");
+    name.className = "st-prediction-board-name";
+    name.textContent = row.username || "viewer";
+
+    const detail = document.createElement("p");
+    detail.className = "st-prediction-board-detail";
+    detail.textContent = formatPredictionRoundBreakdown(row.correctByRound);
+
+    copy.append(name, detail);
+
+    const points = document.createElement("span");
+    points.className = "st-prediction-board-points";
+    points.textContent = `${Number(row.points) || 0} pts`;
+
+    item.append(place, copy, points);
+    list.append(item);
+  });
+}
+
 function renderResults() {
   const list = document.getElementById("st-results");
   const empty = document.getElementById("st-results-empty");
@@ -1021,6 +1105,7 @@ function renderAll() {
   renderInfo();
   renderEntries();
   renderPredictions();
+  renderPredictionLeaderboard();
   renderResults();
   renderAssignPanel();
   renderAdminForm();

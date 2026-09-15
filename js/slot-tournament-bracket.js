@@ -242,7 +242,7 @@ function renderMatchCard(match, isAdmin) {
   } else if (isAdmin && !match.winnerEntryId) {
     const note = document.createElement("p");
     note.className = "st-bracket-match-note";
-    note.textContent = "Click a player to advance";
+    note.textContent = "Click a player to set the winner";
     card.append(note);
   }
 
@@ -358,9 +358,9 @@ function initAdmin() {
         scoreA,
         scoreB,
       });
-      setBanner("Winner advanced.", "success");
+      setBanner("Winner set.", "success");
     } catch (error) {
-      setBanner(error.message || "Could not advance winner.", "error");
+      setBanner(error.message || "Could not set winner.", "error");
     }
   });
 }

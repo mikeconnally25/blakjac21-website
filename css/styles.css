@@ -7285,9 +7285,71 @@ a.feature-card:focus-visible {
   }
 }
 
-.st-signups-actions {
-  flex-wrap: wrap;
-  justify-content: flex-end;
+.st-prediction-board {
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.st-prediction-board-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(8, 14, 22, 0.45);
+}
+
+.st-prediction-board-row.is-top-1 {
+  border-color: rgba(240, 195, 106, 0.4);
+  background: rgba(240, 195, 106, 0.08);
+}
+
+.st-prediction-board-row.is-top-2 {
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+.st-prediction-board-row.is-top-3 {
+  border-color: rgba(205, 127, 50, 0.35);
+}
+
+.st-prediction-board-place {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.st-prediction-board-copy {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.st-prediction-board-name {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.st-prediction-board-detail {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.st-prediction-board-points {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+  color: var(--raffle-gold, #f0c36a);
+  white-space: nowrap;
 }
 
 .st-predict-modal-open {
