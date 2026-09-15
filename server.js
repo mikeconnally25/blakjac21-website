@@ -81,6 +81,7 @@ import {
   handleBotRepliesGet,
   handleBotRepliesSave,
 } from "./lib/bot-replies-handlers.js";
+import { startLocalChatPromoScheduler } from "./lib/chat-promos.js";
 import {
   handlePointsAward,
   handlePointsAwardChat,
@@ -316,4 +317,6 @@ app.post("/api/commands/replies", (req, res) => handleBotRepliesSave(req, res));
 app.listen(PORT, () => {
   console.log(`BLAKJAC21 site running at http://localhost:${PORT}`);
   console.log(`Kick redirect URI: ${process.env.KICK_REDIRECT_URI || `http://localhost:${PORT}/api/auth/callback`}`);
+  startLocalChatPromoScheduler();
+  console.log("Kick chat promos: Stake every 10m, KYC/Discord every 15m");
 });
