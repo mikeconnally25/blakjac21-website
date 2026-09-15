@@ -318,5 +318,5 @@ app.listen(PORT, () => {
   console.log(`BLAKJAC21 site running at http://localhost:${PORT}`);
   console.log(`Kick redirect URI: ${process.env.KICK_REDIRECT_URI || `http://localhost:${PORT}/api/auth/callback`}`);
   startLocalChatPromoScheduler();
-  console.log("Kick chat promos: Stake every 10m, KYC/Discord every 15m");
+  console.log("Kick chat promo: combined message every 5m");
 });
