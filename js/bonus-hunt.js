@@ -3129,22 +3129,6 @@ function initAdminForm() {
   }
   window[lockKey] = true;
 
-  const gameAnchors = () =>
-    [...document.querySelectorAll('a[href*="/casino/games/"], a[href*="casino/games/"]')];
-
-  const countGames = () => {
-    const seen = new Set();
-    for (const a of gameAnchors()) {
-      try {
-        const slug = new URL(a.href, location.origin).pathname.split("/").filter(Boolean).pop();
-        if (slug) seen.add(slug);
-      } catch {
-        /* ignore bad href */
-      }
-    }
-    return seen.size;
-  };
-
   const buttonLabel = (el) =>
     (el.innerText || el.textContent || el.getAttribute("aria-label") || "")
       .replace(/\\s+/g, " ")
@@ -3238,6 +3222,86 @@ function initAdminForm() {
   };
 
   console.log("Syncing ${label} to Bonus Hunt (full group load + logos)...");
+
+  const path = String(location.pathname || "").toLowerCase();
+  const expectedPath = "/casino/group/" + groupSlug;
+  if (!path.includes(expectedPath)) {
+    throw new Error(
+      "Wrong Stake page. Open https://stake.com" +
+        expectedPath +
+        " , wait for it to load, then paste this script again."
+    );
+  }
+
+  const gameAnchors = () => {
+    const root =
+      document.querySelector("main") ||
+      document.querySelector("[role='main']") ||
+      document.body;
+    const candidates = [
+      ...root.querySelectorAll(
+        'a[href*="/casino/games/"], a[href*="casino/games/"]'
+      ),
+    ].filter((a) => {
+      if (!a.querySelector("img")) return false;
+      if (
+        a.closest(
+          "header, footer, nav, [role='navigation'], [role='banner'], [role='contentinfo']"
+        )
+      ) {
+        return false;
+      }
+      const rect = a.getBoundingClientRect();
+      if (rect.width > 0 && rect.width < 48) return false;
+      return true;
+    });
+
+    if (candidates.length < 8) return candidates;
+
+    const parentCounts = new Map();
+    for (const a of candidates) {
+      let el = a.parentElement;
+      for (let depth = 0; el && depth < 8; depth += 1) {
+        if (el === root || el === document.body || el === document.documentElement) {
+          break;
+        }
+        const prev = parentCounts.get(el) || { count: 0, depth };
+        parentCounts.set(el, { count: prev.count + 1, depth });
+        el = el.parentElement;
+      }
+    }
+
+    let best = null;
+    let bestScore = 0;
+    const minCount = Math.max(8, Math.floor(candidates.length * 0.55));
+    for (const [el, info] of parentCounts) {
+      if (info.count < minCount) continue;
+      const score = info.count * 10 + info.depth;
+      if (score > bestScore) {
+        best = el;
+        bestScore = score;
+      }
+    }
+
+    if (best) {
+      return candidates.filter((a) => best.contains(a));
+    }
+    return candidates;
+  };
+
+  const countGames = () => {
+    const seen = new Set();
+    for (const a of gameAnchors()) {
+      try {
+        const slug = new URL(a.href, location.origin).pathname.split("/").filter(Boolean).pop();
+        if (slug) seen.add(slug);
+      } catch {
+        /* ignore bad href */
+      }
+    }
+    return seen.size;
+  };
+
   let lastCount = 0;
   let stable = 0;
   let missingBtnStreak = 0;
