@@ -11,6 +11,10 @@ let claimPickerFilter = "";
 let claimBusy = false;
 let predictionDraft = {};
 let predictionDirty = false;
+let predictionEndsAt = null;
+let predictionTimerMinutes = 5;
+let predictionTimerTick = null;
+let predictionMinutesHydrated = false;
 let state = {
   open: false,
   phase: "closed",
@@ -27,6 +31,8 @@ let state = {
   bracket: { generatedAt: null, entrantIds: [], matches: [] },
   results: [],
   predictionsOpen: false,
+  predictionsEndsAt: null,
+  predictionsTimerMinutes: 5,
   viewerPrediction: null,
   predictionLeaderboard: [],
   predictors: [],
@@ -331,6 +337,103 @@ function setPredictionStatus(message, tone = "") {
   }
 }
 
+function formatTimeRemaining(ms) {
+  const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function formatClockMinutes(value) {
+  return String(Math.max(1, Math.min(180, Math.floor(Number(value) || 5)))).padStart(
+    2,
+    "0"
+  );
+}
+
+function normalizePredictionMinutes(value) {
+  const minutes = Math.floor(Number(value));
+  if (!Number.isFinite(minutes)) return 5;
+  return Math.min(180, Math.max(1, minutes));
+}
+
+function getPredictionTimeRemainingMs() {
+  if (!predictionEndsAt) return 0;
+  return Math.max(0, Date.parse(predictionEndsAt) - Date.now());
+}
+
+function isPredictionTimerActive() {
+  return Boolean(state.predictionsOpen && getPredictionTimeRemainingMs() > 0);
+}
+
+function schedulePredictionTimerTick() {
+  if (predictionTimerTick) {
+    window.clearInterval(predictionTimerTick);
+  }
+  predictionTimerTick = window.setInterval(updatePredictionTimer, 1000);
+}
+
+function updatePredictionTimer() {
+  const panel = document.getElementById("st-predictions-timer");
+  const value = document.getElementById("st-predictions-timer-value");
+  const remaining = getPredictionTimeRemainingMs();
+  const active = isPredictionTimerActive();
+
+  panel?.classList.toggle("is-hidden", !active);
+  if (value && active) {
+    value.textContent = formatTimeRemaining(remaining);
+  }
+
+  if (predictionEndsAt && remaining <= 0 && state.predictionsOpen) {
+    state.predictionsOpen = false;
+    predictionEndsAt = null;
+    state.predictionsEndsAt = null;
+    setPredictionStatus("Prediction timer ended. Picks are closed.", "success");
+    renderPredictions();
+    refreshStatus().catch(() => {});
+  }
+}
+
+function getPredictionMinutesFromInput() {
+  const input = document.getElementById("st-predictions-minutes");
+  if (!input || document.activeElement === input) {
+    return normalizePredictionMinutes(predictionTimerMinutes);
+  }
+  return normalizePredictionMinutes(input.value);
+}
+
+function setPredictionMinutes(nextValue) {
+  predictionTimerMinutes = normalizePredictionMinutes(nextValue);
+  state.predictionsTimerMinutes = predictionTimerMinutes;
+  const input = document.getElementById("st-predictions-minutes");
+  if (input && document.activeElement !== input) {
+    input.value = formatClockMinutes(predictionTimerMinutes);
+  }
+}
+
+function syncPredictionMinutesControls() {
+  const admin = document.getElementById("st-predictions-timer-admin");
+  const picker = document.getElementById("st-predictions-minutes-picker");
+  const input = document.getElementById("st-predictions-minutes");
+  const down = document.getElementById("st-predictions-minutes-down");
+  const up = document.getElementById("st-predictions-minutes-up");
+  const isAdmin = Boolean(currentUser?.isAdmin);
+  const hasBracket = getBracketMatches().length > 0;
+  const showAdmin =
+    isAdmin && hasBracket && !state.predictionsOpen;
+
+  admin?.classList.toggle("is-hidden", !showAdmin);
+  picker?.classList.toggle("is-disabled", state.predictionsOpen);
+  if (input) {
+    input.disabled = state.predictionsOpen;
+    if (document.activeElement !== input) {
+      input.value = formatClockMinutes(predictionTimerMinutes);
+    }
+  }
+  if (down) down.disabled = state.predictionsOpen;
+  if (up) up.disabled = state.predictionsOpen;
+}
+
 function renderPredictions() {
   const status = document.getElementById("st-predictions-status");
   const toggle = document.getElementById("st-predictions-toggle");
@@ -350,11 +453,15 @@ function renderPredictions() {
     if (!hasBracket) {
       status.textContent = "Generate a bracket before predictions.";
     } else if (state.predictionsOpen) {
+      const sheetNote = state.predictionCount
+        ? ` · ${state.predictionCount} sheet${state.predictionCount === 1 ? "" : "s"}`
+        : "";
+      const timeNote = isPredictionTimerActive()
+        ? ` · ${formatTimeRemaining(getPredictionTimeRemainingMs())} left`
+        : "";
       status.textContent = isAdmin
-        ? `Predictions open${
-            state.predictionCount ? ` · ${state.predictionCount} sheets` : ""
-          }`
-        : "Predictions open — tap Predict to fill out the bracket.";
+        ? `Predictions open${sheetNote}${timeNote}`
+        : `Predictions open${timeNote} — tap Predict to fill out the bracket.`;
     } else {
       status.textContent = "Predictions closed";
     }
@@ -384,6 +491,9 @@ function renderPredictions() {
     saveBtn.classList.toggle("is-hidden", !state.predictionsOpen || !signedIn);
     saveBtn.disabled = !state.predictionsOpen;
   }
+
+  syncPredictionMinutesControls();
+  updatePredictionTimer();
 
   if (modalOpen) {
     renderPredictBracket();
@@ -595,15 +705,20 @@ function initPredictions() {
     "click",
     async () => {
       const nextOpen = !state.predictionsOpen;
+      const minutes = getPredictionMinutesFromInput();
       setPredictionStatus(
         nextOpen ? "Enabling predictions..." : "Closing predictions..."
       );
       try {
-        await postJson("/api/slot-tournaments/predictions/toggle", {
-          open: nextOpen,
-        });
+        const payload = { open: nextOpen };
+        if (nextOpen) {
+          payload.minutes = minutes;
+        }
+        await postJson("/api/slot-tournaments/predictions/toggle", payload);
         setPredictionStatus(
-          nextOpen ? "Predictions enabled." : "Predictions closed.",
+          nextOpen
+            ? `Predictions open for ${minutes} minute${minutes === 1 ? "" : "s"}.`
+            : "Predictions closed.",
           "success"
         );
       } catch (error) {
@@ -614,6 +729,29 @@ function initPredictions() {
       }
     }
   );
+
+  document
+    .getElementById("st-predictions-minutes-down")
+    ?.addEventListener("click", () => {
+      setPredictionMinutes(getPredictionMinutesFromInput() - 1);
+    });
+  document
+    .getElementById("st-predictions-minutes-up")
+    ?.addEventListener("click", () => {
+      setPredictionMinutes(getPredictionMinutesFromInput() + 1);
+    });
+  document
+    .getElementById("st-predictions-minutes")
+    ?.addEventListener("change", () => {
+      setPredictionMinutes(getPredictionMinutesFromInput());
+    });
+  document
+    .getElementById("st-predictions-minutes")
+    ?.addEventListener("blur", () => {
+      setPredictionMinutes(getPredictionMinutesFromInput());
+    });
+
+  schedulePredictionTimerTick();
 
   document.getElementById("st-predict-open")?.addEventListener("click", () => {
     openPredictModal();
@@ -688,6 +826,10 @@ function applyState(data) {
       bracket: data.bracket || state.bracket,
       results: Array.isArray(data.results) ? data.results : [],
       predictionsOpen: Boolean(data.predictionsOpen),
+      predictionsEndsAt: data.predictionsEndsAt || null,
+      predictionsTimerMinutes: normalizePredictionMinutes(
+        data.predictionsTimerMinutes ?? predictionTimerMinutes
+      ),
       viewerPrediction: data.viewerPrediction || null,
       predictionLeaderboard: Array.isArray(data.predictionLeaderboard)
         ? data.predictionLeaderboard
@@ -702,6 +844,7 @@ function applyState(data) {
         ...(state.viewerPrediction?.picks || {}),
       });
     }
+    applyPredictionTimerFromStatus(data);
     renderStatus();
     renderInfo();
     renderEntries();
@@ -743,7 +886,42 @@ function applyState(data) {
       ...(state.viewerPrediction?.picks || {}),
     });
   }
+  applyPredictionTimerFromStatus(data);
   renderAll();
+}
+
+function applyPredictionTimerFromStatus(data) {
+  const nextEndsAt = data.predictionsEndsAt || null;
+  const localRemaining = getPredictionTimeRemainingMs();
+
+  if (nextEndsAt) {
+    predictionEndsAt = nextEndsAt;
+  } else if (localRemaining <= 0 || !data.predictionsOpen) {
+    predictionEndsAt = null;
+  }
+
+  state.predictionsEndsAt = predictionEndsAt;
+  state.predictionsOpen = Boolean(
+    data.predictionsOpen &&
+      (!predictionEndsAt || getPredictionTimeRemainingMs() > 0)
+  );
+
+  if (
+    data.predictionsTimerMinutes !== undefined &&
+    data.predictionsTimerMinutes !== null
+  ) {
+    const input = document.getElementById("st-predictions-minutes");
+    if (!predictionMinutesHydrated || document.activeElement !== input) {
+      predictionTimerMinutes = normalizePredictionMinutes(
+        data.predictionsTimerMinutes
+      );
+      predictionMinutesHydrated = true;
+      if (input && document.activeElement !== input) {
+        input.value = formatClockMinutes(predictionTimerMinutes);
+      }
+    }
+  }
+  state.predictionsTimerMinutes = predictionTimerMinutes;
 }
 
 function renderStatus() {

@@ -7315,6 +7315,32 @@ a.feature-card:focus-visible {
   }
 }
 
+.st-predictions-timer-admin {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0 0 1rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(88, 201, 243, 0.16);
+  background: rgba(8, 14, 22, 0.4);
+}
+
+.st-predictions-timer-admin .guess-label {
+  margin: 0;
+}
+
+.st-predictions-timer-admin .slot-tournaments-panel-text {
+  margin: 0;
+}
+
+.st-predictions-timer-admin .digital-clock-picker {
+  margin-top: 0.25rem;
+}
+
+#st-predictions-timer {
+  margin-top: 0.35rem;
+}
+
 .st-predictors-list {
   list-style: none;
   margin: 0.85rem 0 0;

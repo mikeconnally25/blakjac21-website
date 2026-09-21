@@ -214,6 +214,55 @@
               </a>
             </div>
           </div>
+
+          <div
+            class="round-timer bj21-panel-inset is-hidden"
+            id="st-predictions-timer"
+            role="timer"
+            aria-live="polite"
+          >
+            <span class="round-timer-label">Time left to predict</span>
+            <span class="round-timer-value" id="st-predictions-timer-value">5:00</span>
+          </div>
+
+          <div class="st-predictions-timer-admin is-hidden" id="st-predictions-timer-admin">
+            <label class="guess-label" for="st-predictions-minutes">Prediction timer</label>
+            <p class="slot-tournaments-panel-text">
+              How long viewers have to submit picks when you enable predictions.
+            </p>
+            <div class="digital-clock-picker" id="st-predictions-minutes-picker">
+              <button
+                type="button"
+                class="digital-clock-step"
+                id="st-predictions-minutes-down"
+                aria-label="Decrease prediction timer by one minute"
+              >
+                −
+              </button>
+              <div class="digital-clock-screen">
+                <input
+                  class="digital-clock-minutes"
+                  id="st-predictions-minutes"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="3"
+                  value="05"
+                  aria-label="Prediction timer length in minutes"
+                />
+                <span class="digital-clock-colon" aria-hidden="true">:</span>
+                <span class="digital-clock-seconds" aria-hidden="true">00</span>
+              </div>
+              <button
+                type="button"
+                class="digital-clock-step"
+                id="st-predictions-minutes-up"
+                aria-label="Increase prediction timer by one minute"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
           <p class="slot-tournaments-banner is-hidden" id="st-predictions-banner" role="status"></p>
           <p class="slot-tournaments-empty" id="st-entries-empty">No signups yet.</p>
           <div class="slot-tournaments-scroll">
