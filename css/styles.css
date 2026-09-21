@@ -6456,7 +6456,7 @@ ul {
 /* Menu */
 .menu {
   position: relative;
-  padding: 2.75rem 0 2.5rem;
+  padding: 2.1rem 0 1.85rem;
   overflow: hidden;
 }
 
@@ -6475,21 +6475,21 @@ ul {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 55% 70% at 8% 20%, rgba(88, 201, 243, 0.16), transparent 58%),
-    radial-gradient(ellipse 45% 55% at 92% 75%, rgba(0, 51, 77, 0.55), transparent 60%),
-    linear-gradient(180deg, rgba(88, 201, 243, 0.04), transparent 42%, rgba(2, 16, 24, 0.35));
+    radial-gradient(ellipse 50% 55% at 10% 0%, rgba(88, 201, 243, 0.14), transparent 60%),
+    radial-gradient(ellipse 40% 45% at 95% 80%, rgba(0, 51, 77, 0.45), transparent 58%),
+    linear-gradient(180deg, rgba(88, 201, 243, 0.03), transparent 50%);
 }
 
 .menu-atmosphere::before {
   content: "";
   position: absolute;
   inset: 0;
-  opacity: 0.22;
+  opacity: 0.14;
   background-image:
-    linear-gradient(rgba(88, 201, 243, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(88, 201, 243, 0.07) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 90%);
+    linear-gradient(rgba(88, 201, 243, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(88, 201, 243, 0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.65), transparent 85%);
 }
 
 .menu-inner {
@@ -6498,24 +6498,34 @@ ul {
 }
 
 .menu-header {
-  margin-bottom: 1.6rem;
-  max-width: 34rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.65rem 1.5rem;
+  margin-bottom: 1.15rem;
+}
+
+.menu-header-copy {
+  display: grid;
+  gap: 0.15rem;
 }
 
 .menu-eyebrow {
-  margin: 0 0 0.35rem;
+  margin: 0;
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-muted);
+  line-height: 1;
 }
 
 .menu-heading {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(3rem, 7vw, 4.6rem);
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
   font-weight: 700;
   letter-spacing: 0.04em;
   line-height: 0.9;
@@ -6527,16 +6537,18 @@ ul {
 }
 
 .menu-lead {
-  margin: 0.7rem 0 0;
+  margin: 0;
+  max-width: 16rem;
   color: var(--text-muted);
-  font-size: 1rem;
-  line-height: 1.45;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  text-align: right;
 }
 
 .menu-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.9rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
 }
 
 .menu-card {
@@ -6544,50 +6556,52 @@ ul {
   position: relative;
   isolation: isolate;
   display: grid;
-  gap: 0.55rem;
-  min-height: 10.5rem;
-  padding: 1.25rem 1.3rem 1.15rem;
-  border-radius: calc(var(--radius) + 2px);
-  border: 1px solid rgba(88, 201, 243, 0.16);
-  background:
-    linear-gradient(155deg, rgba(18, 31, 43, 0.92), rgba(6, 12, 18, 0.88));
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 0;
+  padding: 0.85rem 0.95rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(88, 201, 243, 0.14);
+  background: linear-gradient(160deg, rgba(14, 24, 34, 0.92), rgba(7, 12, 18, 0.88));
+  box-shadow: none;
   overflow: hidden;
-  transform: translateY(10px);
+  transform: translateY(8px);
   opacity: 0;
-  animation: menu-card-in 0.55s ease forwards;
+  animation: menu-card-in 0.45s ease forwards;
   animation-delay: var(--menu-delay);
   transition:
-    transform 0.22s ease,
-    border-color 0.22s ease,
-    box-shadow 0.22s ease;
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
 .menu-card::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: linear-gradient(180deg, #7ed8ff, rgba(88, 201, 243, 0.15));
-  opacity: 0.75;
-  transition: opacity 0.22s ease, width 0.22s ease;
+  top: 0.7rem;
+  bottom: 0.7rem;
+  width: 2px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #7ed8ff, rgba(88, 201, 243, 0.2));
+  opacity: 0.7;
+  transition: opacity 0.2s ease, top 0.2s ease, bottom 0.2s ease;
 }
 
 .menu-card::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    115deg,
-    transparent 35%,
-    rgba(126, 216, 255, 0.12) 48%,
-    transparent 62%
-  );
-  transform: translateX(-120%);
-  transition: transform 0.55s ease;
   pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 40%,
+    rgba(126, 216, 255, 0.1) 50%,
+    transparent 60%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.45s ease;
 }
 
 @keyframes menu-card-in {
@@ -6597,43 +6611,23 @@ ul {
   }
 }
 
-.menu-card-glow {
-  position: absolute;
-  right: -18%;
-  top: -35%;
-  width: 12rem;
-  height: 12rem;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(88, 201, 243, 0.22), transparent 68%);
-  pointer-events: none;
-  z-index: -1;
-  transition: transform 0.35s ease, opacity 0.35s ease;
-}
-
 .menu-card:hover,
 .menu-card:focus-visible {
-  transform: translateY(-4px);
-  border-color: rgba(126, 216, 255, 0.45);
-  box-shadow:
-    0 18px 44px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(88, 201, 243, 0.08);
+  transform: translateY(-2px);
+  border-color: rgba(126, 216, 255, 0.42);
+  background: linear-gradient(160deg, rgba(18, 32, 44, 0.98), rgba(8, 14, 20, 0.94));
 }
 
 .menu-card:hover::before,
 .menu-card:focus-visible::before {
-  width: 4px;
   opacity: 1;
+  top: 0.45rem;
+  bottom: 0.45rem;
 }
 
 .menu-card:hover::after,
 .menu-card:focus-visible::after {
-  transform: translateX(120%);
-}
-
-.menu-card:hover .menu-card-glow,
-.menu-card:focus-visible .menu-card-glow {
-  transform: scale(1.18);
-  opacity: 1;
+  transform: translateX(130%);
 }
 
 .menu-card:hover .menu-card-cta,
@@ -6642,39 +6636,49 @@ ul {
   transform: translateX(3px);
 }
 
-.menu-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+.menu-card:hover .menu-title,
+.menu-card:focus-visible .menu-title {
+  color: var(--accent-bright);
 }
 
 .menu-card-index {
   font-family: var(--font-display);
-  font-size: 1.35rem;
+  font-size: 1.05rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  color: rgba(126, 216, 255, 0.55);
+  letter-spacing: 0.06em;
+  color: rgba(126, 216, 255, 0.42);
   line-height: 1;
+  padding-left: 0.2rem;
+}
+
+.menu-card-body {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
 }
 
 .menu-label {
   color: var(--text-muted);
-  font-size: 0.72rem;
+  font-size: 0.64rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+  line-height: 1;
 }
 
 .menu-title {
-  margin: 0.15rem 0 0;
+  margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(1.85rem, 3.4vw, 2.35rem);
+  font-size: clamp(1.2rem, 1.8vw, 1.45rem);
   font-weight: 700;
-  letter-spacing: 0.04em;
-  line-height: 0.95;
+  letter-spacing: 0.03em;
+  line-height: 1;
   color: var(--text);
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
 }
 
 .menu-blurb {
@@ -6686,13 +6690,14 @@ ul {
 }
 
 .menu-card-cta {
-  margin-top: auto;
-  padding-top: 0.35rem;
-  color: rgba(238, 246, 251, 0.78);
-  font-size: 0.82rem;
+  margin: 0;
+  padding: 0;
+  color: rgba(238, 246, 251, 0.45);
+  font-size: 1rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1;
   transition: color 0.2s ease, transform 0.2s ease;
 }
 
@@ -6700,6 +6705,17 @@ ul {
   align-items: center;
   justify-content: center;
   text-align: center;
+}
+
+@media (max-width: 960px) {
+  .menu-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .menu-lead {
+    text-align: left;
+    max-width: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -6841,7 +6857,12 @@ a.feature-card:focus-visible {
 
 .link-card .menu-card-cta {
   margin-top: auto;
-  padding-top: 0.55rem;
+  padding-top: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(238, 246, 251, 0.78);
 }
 
 /* Footer */
@@ -6958,14 +6979,23 @@ a.feature-card:focus-visible {
     transform: translateY(-7px) rotate(-45deg);
   }
 
-  .menu-grid,
   .feature-grid,
   .link-grid {
     grid-template-columns: 1fr;
   }
 
+  .menu-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
   .menu-card {
-    min-height: 9.25rem;
+    padding: 0.75rem 0.8rem;
+    gap: 0.55rem;
+  }
+
+  .menu-title {
+    font-size: 1.15rem;
   }
 
   .hero {
