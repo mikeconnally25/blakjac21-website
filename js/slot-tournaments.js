@@ -29,6 +29,7 @@ let state = {
   predictionsOpen: false,
   viewerPrediction: null,
   predictionLeaderboard: [],
+  predictors: [],
   predictionCount: 0,
   viewerEntered: false,
   viewerEntryId: null,
@@ -691,6 +692,7 @@ function applyState(data) {
       predictionLeaderboard: Array.isArray(data.predictionLeaderboard)
         ? data.predictionLeaderboard
         : [],
+      predictors: Array.isArray(data.predictors) ? data.predictors : [],
       predictionCount: Number(data.predictionCount) || 0,
       viewerEntered: Boolean(data.viewerEntered),
       viewerEntryId: data.viewerEntryId || null,
@@ -703,6 +705,7 @@ function applyState(data) {
     renderStatus();
     renderInfo();
     renderEntries();
+    renderPredictors();
     renderPredictionLeaderboard();
     renderResults();
     renderPredictions();
@@ -730,6 +733,7 @@ function applyState(data) {
     predictionLeaderboard: Array.isArray(data.predictionLeaderboard)
       ? data.predictionLeaderboard
       : [],
+    predictors: Array.isArray(data.predictors) ? data.predictors : [],
     predictionCount: Number(data.predictionCount) || 0,
     viewerEntered: Boolean(data.viewerEntered),
     viewerEntryId: data.viewerEntryId || null,
@@ -963,6 +967,61 @@ function renderEntries() {
 
     row.append(place, copy);
     list.append(row);
+  });
+}
+
+function formatPredictionUpdatedAt(value) {
+  const at = Date.parse(value || "");
+  if (!Number.isFinite(at)) return "";
+  return new Date(at).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function renderPredictors() {
+  const list = document.getElementById("st-predictors-list");
+  const empty = document.getElementById("st-predictors-empty");
+  const meta = document.getElementById("st-predictors-meta");
+  if (!list || !empty) return;
+
+  const rows = Array.isArray(state.predictors) ? state.predictors : [];
+  if (meta) {
+    meta.textContent = rows.length
+      ? `${rows.length} account${rows.length === 1 ? "" : "s"} submitted a bracket prediction`
+      : "Accounts that submitted a bracket prediction";
+  }
+
+  list.replaceChildren();
+  if (!rows.length) {
+    empty.classList.remove("is-hidden");
+    list.classList.add("is-hidden");
+    return;
+  }
+
+  empty.classList.add("is-hidden");
+  list.classList.remove("is-hidden");
+
+  rows.forEach((row) => {
+    const item = document.createElement("li");
+    item.className = "st-predictors-item";
+
+    const name = document.createElement("span");
+    name.className = "st-predictors-name";
+    name.textContent = row.username || "viewer";
+
+    const detail = document.createElement("span");
+    detail.className = "st-predictors-detail";
+    const when = formatPredictionUpdatedAt(row.updatedAt);
+    const picks = Number(row.pickCount) || 0;
+    detail.textContent = when
+      ? `${picks} pick${picks === 1 ? "" : "s"} · ${when}`
+      : `${picks} pick${picks === 1 ? "" : "s"}`;
+
+    item.append(name, detail);
+    list.append(item);
   });
 }
 
@@ -1203,6 +1262,7 @@ function renderAll() {
   renderInfo();
   renderEntries();
   renderPredictions();
+  renderPredictors();
   renderPredictionLeaderboard();
   renderResults();
   renderAssignPanel();
