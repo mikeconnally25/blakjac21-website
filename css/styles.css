@@ -6760,6 +6760,17 @@ ul {
   padding: 0.7rem 1rem;
 }
 
+.house-games-self-credit {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.45rem 0.65rem;
+}
+
+.house-games-self-credit.is-hidden {
+  display: none;
+}
+
 .house-games-balance-label {
   font-size: 0.78rem;
   letter-spacing: 0.08em;

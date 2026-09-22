@@ -115,6 +115,7 @@ import {
 import {
   handleHouseGamesBalance,
   handleHouseGamesPlay,
+  handleHouseGamesSelfCredit,
 } from "./lib/house-games-handlers.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -238,6 +239,9 @@ app.post("/api/points/delete-redemption", (req, res) =>
 );
 app.get("/api/house-games/balance", (req, res) =>
   handleHouseGamesBalance(req, res)
+);
+app.post("/api/house-games/self-credit", (req, res) =>
+  handleHouseGamesSelfCredit(req, res)
 );
 app.post("/api/house-games/play", (req, res) => handleHouseGamesPlay(req, res));
 app.get("/api/slot-tournaments/status", (req, res) =>

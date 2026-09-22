@@ -522,7 +522,9 @@
   }
 
   function syncBetLimits(maxBet) {
-    document.querySelectorAll(".hg-bet-input").forEach((input) => {
+    document
+      .querySelectorAll(".hg-bet-input:not(#hg-self-credit-amount)")
+      .forEach((input) => {
       if (maxBet == null) {
         input.removeAttribute("max");
         input.title = "No max bet for your account";
@@ -537,6 +539,11 @@
     });
   }
 
+  function syncSelfCreditUi(canSelfCredit) {
+    const wrap = $("hg-self-credit");
+    wrap?.classList.toggle("is-hidden", !canSelfCredit);
+  }
+
   function syncAuthUi() {
     const guest = $("hg-guest");
     const stage = $("hg-stage");
@@ -546,6 +553,7 @@
     if (!signedIn) {
       setBalance(null);
       syncBetLimits(5000);
+      syncSelfCreditUi(false);
       bjSessionId = null;
       renderBlackjack(null);
       setStatus("");
@@ -555,6 +563,7 @@
   async function loadBalance() {
     if (!currentUser?.kickUserId) {
       setBalance(null);
+      syncSelfCreditUi(false);
       return;
     }
     try {
@@ -575,8 +584,39 @@
           ? data.maxBet
           : 5000
       );
+      syncSelfCreditUi(Boolean(data.canSelfCredit));
     } catch {
       /* ignore */
+    }
+  }
+
+  async function selfCreditPoints() {
+    const input = $("hg-self-credit-amount");
+    const button = $("hg-self-credit-btn");
+    const amount = Math.floor(Number(input?.value || 0));
+    if (!Number.isFinite(amount) || amount < 1) {
+      setStatus("Enter at least 1 point to add.", { error: true });
+      return;
+    }
+    if (button) button.disabled = true;
+    try {
+      const response = await fetch("/api/house-games/self-credit", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "Could not add points.");
+      }
+      setBalance(data.points);
+      syncSelfCreditUi(true);
+      setStatus(`Added ${formatPoints(data.added)} points.`);
+    } catch (error) {
+      setStatus(error.message || "Could not add points.", { error: true });
+    } finally {
+      if (button) button.disabled = false;
     }
   }
 
@@ -1283,6 +1323,16 @@
   function bindUi() {
     document.querySelectorAll(".house-games-tab").forEach((tab) => {
       tab.addEventListener("click", () => switchGame(tab.dataset.hgGame));
+    });
+
+    $("hg-self-credit-btn")?.addEventListener("click", () => {
+      void selfCreditPoints();
+    });
+    $("hg-self-credit-amount")?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        void selfCreditPoints();
+      }
     });
 
     $("hg-bj-deal")?.addEventListener("click", () => {
