@@ -6932,7 +6932,9 @@ ul {
   display: grid;
   gap: 1rem;
   align-content: start;
+  align-self: stretch;
   min-width: 0;
+  height: 100%;
   padding: 1rem 1.05rem;
   border-radius: 16px;
   border: 1px solid rgba(126, 216, 255, 0.12);
@@ -7733,35 +7735,46 @@ ul {
   display: grid;
   grid-template-columns: minmax(12.5rem, 15rem) minmax(0, 1fr) minmax(12.5rem, 16rem);
   gap: 1rem 1.15rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 .hg-keno-board-stage {
   position: relative;
-  max-width: 40rem;
-  padding: 0.85rem;
-  border-radius: 18px;
+  align-self: stretch;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  display: grid;
+  align-content: start;
+  padding: 1rem 1.05rem;
+  border-radius: 16px;
   border: 1px solid rgba(126, 216, 255, 0.12);
   background:
     radial-gradient(circle at 50% 0%, rgba(88, 201, 243, 0.1), transparent 55%),
     linear-gradient(180deg, rgba(10, 22, 32, 0.9), rgba(5, 12, 20, 0.94));
+  box-sizing: border-box;
 }
 
 .hg-keno-board {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 0.4rem;
+  width: 100%;
 }
 
 .hg-keno-paytable {
   display: grid;
   gap: 0.55rem;
   align-content: start;
+  align-self: stretch;
+  min-width: 0;
+  height: 100%;
   padding: 1rem 1.05rem;
   border-radius: 16px;
   border: 1px solid rgba(126, 216, 255, 0.12);
   background:
     linear-gradient(165deg, rgba(12, 24, 34, 0.92), rgba(6, 14, 22, 0.88));
+  box-sizing: border-box;
 }
 
 .hg-keno-paytable-title {
@@ -8038,19 +8051,20 @@ ul {
     grid-template-columns: 1fr;
   }
 
+  .hg-keno-controls,
+  .hg-keno-board-stage,
   .hg-keno-paytable {
-    grid-column: auto;
+    height: auto;
   }
 
-  .hg-keno-board-stage {
-    max-width: none;
+  .hg-keno-paytable {
+    grid-column: auto;
   }
 }
 
 @media (max-width: 640px) {
   .hg-keno-board-stage {
-    max-width: none;
-    padding: 0.7rem;
+    padding: 0.85rem;
   }
 
   .hg-keno-board {
