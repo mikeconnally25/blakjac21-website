@@ -8459,13 +8459,36 @@ ul {
 
 .slot-tournaments-page .st-prediction-podium-stage .podium-user {
   font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
   color: var(--text);
   overflow-wrap: anywhere;
   max-width: 100%;
+}
+
+.slot-tournaments-page .st-prediction-podium-stage .st-predictor-name {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: center;
+  text-decoration: underline;
+  text-decoration-color: rgba(148, 163, 184, 0.35);
+  text-underline-offset: 0.18em;
+}
+
+.slot-tournaments-page .st-prediction-podium-stage .st-predictor-name:hover,
+.slot-tournaments-page .st-prediction-podium-stage .st-predictor-name:focus-visible {
+  color: #7ed8ff;
+  text-decoration-color: rgba(126, 216, 255, 0.65);
+  outline: none;
 }
 
 .slot-tournaments-page .st-prediction-podium-stage .podium-guess {
@@ -8529,8 +8552,31 @@ ul {
 
 .st-prediction-board-name {
   margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
   font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text);
   overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.st-prediction-board-name.st-predictor-name {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(148, 163, 184, 0.35);
+  text-underline-offset: 0.18em;
+}
+
+.st-prediction-board-name.st-predictor-name:hover,
+.st-prediction-board-name.st-predictor-name:focus-visible {
+  color: #7ed8ff;
+  text-decoration-color: rgba(126, 216, 255, 0.65);
+  outline: none;
 }
 
 .st-prediction-board-detail {

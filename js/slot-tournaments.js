@@ -1189,6 +1189,84 @@ function formatPredictionRoundBreakdown(correctByRound) {
     .join(" · ");
 }
 
+function ensurePredictorProfileModal() {
+  let modal = document.getElementById("st-predictor-profile-modal");
+  if (modal) return modal;
+
+  modal = document.createElement("div");
+  modal.id = "st-predictor-profile-modal";
+  modal.className = "winner-profile-modal is-hidden";
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+  modal.setAttribute("aria-labelledby", "st-predictor-profile-title");
+  modal.innerHTML = `
+    <div class="winner-profile-backdrop" data-st-predictor-profile-close="true"></div>
+    <div class="winner-profile-dialog">
+      <p class="section-eyebrow">Predictor account</p>
+      <h3 class="winner-profile-title" id="st-predictor-profile-title">Account</h3>
+      <dl class="winner-profile-fields">
+        <div class="winner-profile-field">
+          <dt>Kick</dt>
+          <dd id="st-predictor-profile-kick">—</dd>
+        </div>
+        <div class="winner-profile-field">
+          <dt>Stake</dt>
+          <dd id="st-predictor-profile-stake">—</dd>
+        </div>
+      </dl>
+      <button type="button" class="btn btn-sm btn-outline" data-st-predictor-profile-close="true">
+        Close
+      </button>
+    </div>
+  `;
+  document.body.append(modal);
+
+  modal.addEventListener("click", (event) => {
+    if (event.target?.closest?.("[data-st-predictor-profile-close]")) {
+      hidePredictorProfile();
+    }
+  });
+
+  return modal;
+}
+
+function hidePredictorProfile() {
+  document
+    .getElementById("st-predictor-profile-modal")
+    ?.classList.add("is-hidden");
+}
+
+function showPredictorProfile(row) {
+  if (!row) return;
+
+  const modal = ensurePredictorProfileModal();
+  const title = document.getElementById("st-predictor-profile-title");
+  const kick = document.getElementById("st-predictor-profile-kick");
+  const stake = document.getElementById("st-predictor-profile-stake");
+
+  const username = String(row.username || "").trim() || "viewer";
+  if (title) title.textContent = username;
+  if (kick) kick.textContent = username;
+  if (stake) {
+    stake.textContent = String(row.stakeUsername || "").trim() || "Not linked";
+  }
+
+  modal.classList.remove("is-hidden");
+}
+
+function createPredictorNameButton(row, className) {
+  const username = String(row?.username || "").trim() || "viewer";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = className;
+  button.textContent = username;
+  button.title = "View Kick and Stake usernames";
+  button.addEventListener("click", () => {
+    showPredictorProfile(row);
+  });
+  return button;
+}
+
 const PREDICTION_TROPHY_METALS = {
   1: {
     light: "#ffe9a8",
@@ -1274,9 +1352,14 @@ function createPredictionPodiumSlot(place, row) {
 
   const trophy = createPredictionPodiumTrophy(place);
 
-  const user = document.createElement("span");
-  user.className = "podium-user";
-  user.textContent = row?.username || "—";
+  const user = row
+    ? createPredictorNameButton(row, "podium-user st-predictor-name")
+    : (() => {
+        const empty = document.createElement("span");
+        empty.className = "podium-user";
+        empty.textContent = "—";
+        return empty;
+      })();
 
   const detail = document.createElement("span");
   detail.className = "podium-guess";
@@ -1359,9 +1442,10 @@ function renderPredictionLeaderboard() {
     const copy = document.createElement("div");
     copy.className = "st-prediction-board-copy";
 
-    const name = document.createElement("p");
-    name.className = "st-prediction-board-name";
-    name.textContent = row.username || "viewer";
+    const name = createPredictorNameButton(
+      row,
+      "st-prediction-board-name st-predictor-name"
+    );
 
     const detail = document.createElement("p");
     detail.className = "st-prediction-board-detail";
