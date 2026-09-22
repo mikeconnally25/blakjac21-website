@@ -774,6 +774,89 @@
     });
   }
 
+  const KENO_PAYTABLE = {
+    1: { 1: 3 },
+    2: { 2: 12 },
+    3: { 2: 2, 3: 42 },
+    4: { 2: 1, 3: 4, 4: 100 },
+    5: { 3: 2, 4: 20, 5: 400 },
+    6: { 3: 1, 4: 5, 5: 50, 6: 1000 },
+    7: { 3: 1, 4: 3, 5: 15, 6: 100, 7: 2000 },
+    8: { 4: 2, 5: 10, 6: 50, 7: 500, 8: 5000 },
+    9: { 4: 1, 5: 5, 6: 20, 7: 100, 8: 1000, 9: 5000 },
+    10: { 5: 2, 6: 10, 7: 40, 8: 200, 9: 1000, 10: 5000 },
+  };
+
+  function kenoUnitBet() {
+    const n = Math.floor(Number($("hg-keno-bet")?.value || 0));
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  }
+
+  function renderKenoPaytable() {
+    const body = $("hg-keno-paytable-body");
+    const sub = $("hg-keno-paytable-sub");
+    if (!body) return;
+
+    const pickCount = kenoPicks.size;
+    const bet = kenoUnitBet();
+    const activeTable = KENO_PAYTABLE[pickCount];
+
+    if (sub) {
+      if (!pickCount) {
+        sub.textContent = "Select picks to see hit payoffs";
+      } else {
+        sub.textContent = `${pickCount} pick${pickCount === 1 ? "" : "s"} · bet ${formatPoints(bet)} pts`;
+      }
+    }
+
+    if (!activeTable) {
+      body.innerHTML = `
+        <div class="hg-keno-pay-rows hg-keno-pay-overview">
+          ${Object.keys(KENO_PAYTABLE)
+            .map((picks) => {
+              const table = KENO_PAYTABLE[picks];
+              const top = Object.entries(table)
+                .map(([hits, mult]) => `${hits}=${mult}x`)
+                .join(" · ");
+              return `<div class="hg-keno-pay-overview-row"><span>${picks} pick${picks === "1" ? "" : "s"}</span><span>${top}</span></div>`;
+            })
+            .join("")}
+        </div>
+      `;
+      return;
+    }
+
+    const rows = Object.entries(activeTable)
+      .map(([hits, mult]) => {
+        const payout = bet * Number(mult);
+        return `
+          <div class="hg-keno-pay-row">
+            <span class="hg-keno-pay-hits">${hits} hit${hits === "1" ? "" : "s"}</span>
+            <span class="hg-keno-pay-mult">${mult}x</span>
+            <span class="hg-keno-pay-pts">${formatPoints(payout)} pts</span>
+          </div>
+        `;
+      })
+      .join("");
+
+    body.innerHTML = `
+      <div class="hg-keno-pay-head">
+        <span>Hits</span>
+        <span>Pay</span>
+        <span>Win</span>
+      </div>
+      <div class="hg-keno-pay-rows">${rows}</div>
+    `;
+  }
+
+  function syncKenoHint() {
+    const hint = $("hg-keno-hint");
+    if (hint) {
+      hint.textContent = `Pick 1–10 numbers (${kenoPicks.size} selected). 10 are drawn.`;
+    }
+    renderKenoPaytable();
+  }
+
   function buildKenoBoard() {
     const board = $("hg-keno-board");
     if (!board || board.childElementCount) return;
@@ -795,13 +878,11 @@
           setStatus("");
         }
         btn.classList.toggle("is-picked", kenoPicks.has(key));
-        const hint = $("hg-keno-hint");
-        if (hint) {
-          hint.textContent = `Pick 1–10 numbers (${kenoPicks.size} selected). 10 are drawn.`;
-        }
+        syncKenoHint();
       });
       board.appendChild(btn);
     }
+    renderKenoPaytable();
   }
 
   function clearKenoMarks() {
@@ -973,7 +1054,10 @@
       }
       const result = $("hg-keno-result");
       if (result) result.textContent = "";
+      renderKenoPaytable();
     });
+
+    $("hg-keno-bet")?.addEventListener("input", renderKenoPaytable);
 
     $("hg-keno-play")?.addEventListener("click", () => {
       void playKeno();

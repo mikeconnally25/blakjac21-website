@@ -7592,11 +7592,105 @@ ul {
   }
 }
 
+.hg-keno-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 38rem) minmax(12rem, 16rem);
+  gap: 1rem 1.25rem;
+  align-items: start;
+}
+
 .hg-keno-board {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 0.45rem;
   max-width: 38rem;
+}
+
+.hg-keno-paytable {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.85rem 0.95rem;
+}
+
+.hg-keno-paytable-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-bright);
+}
+
+.hg-keno-paytable-sub {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.hg-keno-pay-head,
+.hg-keno-pay-row,
+.hg-keno-pay-overview-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.hg-keno-pay-overview-row {
+  grid-template-columns: 4.5rem 1fr;
+  gap: 0.55rem;
+  padding: 0.28rem 0;
+  border-bottom: 1px solid rgba(88, 201, 243, 0.1);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.hg-keno-pay-overview-row span:first-child {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.hg-keno-pay-head {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid rgba(88, 201, 243, 0.16);
+}
+
+.hg-keno-pay-rows {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.hg-keno-pay-row {
+  padding: 0.28rem 0;
+  border-bottom: 1px solid rgba(88, 201, 243, 0.08);
+  font-size: 0.92rem;
+}
+
+.hg-keno-pay-hits {
+  color: var(--text);
+}
+
+.hg-keno-pay-mult {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent-bright);
+}
+
+.hg-keno-pay-pts {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: #6de0a4;
 }
 
 .hg-keno-cell {
@@ -7650,6 +7744,12 @@ ul {
   .hg-roulette-ball,
   .hg-bj-table.is-dealing .hg-bj-shoe-deck:nth-child(3) {
     animation: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .hg-keno-layout {
+    grid-template-columns: 1fr;
   }
 }
 

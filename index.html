@@ -297,7 +297,14 @@
                   <button type="button" class="btn btn-primary" id="hg-keno-play">Draw</button>
                 </div>
                 <p class="slot-tournaments-panel-text" id="hg-keno-hint">Pick 1–10 numbers. 10 are drawn.</p>
-                <div class="hg-keno-board" id="hg-keno-board"></div>
+                <div class="hg-keno-layout">
+                  <div class="hg-keno-board" id="hg-keno-board"></div>
+                  <aside class="hg-keno-paytable bj21-panel-inset" aria-label="Keno payouts">
+                    <p class="hg-keno-paytable-title">Payouts</p>
+                    <p class="hg-keno-paytable-sub" id="hg-keno-paytable-sub">Select picks to see hit payoffs</p>
+                    <div class="hg-keno-paytable-body" id="hg-keno-paytable-body"></div>
+                  </aside>
+                </div>
                 <div class="hg-keno-result" id="hg-keno-result" aria-live="polite"></div>
               </div>
             </div>
