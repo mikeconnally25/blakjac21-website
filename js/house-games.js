@@ -32,7 +32,6 @@
   ]);
   const ROULETTE_POCKET = 360 / ROULETTE_ORDER.length;
   const ROULETTE_SPIN_MS = 5400;
-  const ROULETTE_WHEEL_EASE = "cubic-bezier(0.12, 0.82, 0.08, 1)";
   const ROULETTE_BALL_EASE = "cubic-bezier(0.05, 0.58, 0.12, 1)";
 
   function $(id) {
@@ -150,6 +149,8 @@
     });
   }
 
+  const playHouseWinSound = playKenoWinSound;
+
   function hideKenoWinBanner() {
     const banner = $("hg-keno-win-banner");
     if (!banner) return;
@@ -164,9 +165,31 @@
     const hits = Number(data.hitCount) || 0;
     const mult = data.multiplier != null ? `${data.multiplier}x` : "";
     banner.innerHTML = `
-      <div class="hg-keno-win-banner-inner">
-        <span class="hg-keno-win-banner-label">You win</span>
-        <span class="hg-keno-win-banner-detail">+${payout} pts · ${hits} hit${hits === 1 ? "" : "s"}${mult ? ` · ${mult}` : ""}</span>
+      <div class="hg-win-banner-inner">
+        <span class="hg-win-banner-label">You win</span>
+        <span class="hg-win-banner-detail">+${payout} pts · ${hits} hit${hits === 1 ? "" : "s"}${mult ? ` · ${mult}` : ""}</span>
+      </div>
+    `;
+    banner.classList.remove("is-hidden");
+  }
+
+  function hideRouletteWinBanner() {
+    const banner = $("hg-roulette-win-banner");
+    if (!banner) return;
+    banner.classList.add("is-hidden");
+    banner.innerHTML = "";
+  }
+
+  function showRouletteWinBanner(data) {
+    const banner = $("hg-roulette-win-banner");
+    if (!banner) return;
+    const payout = formatPoints(data.payout);
+    const color = data.color || rouletteColor(data.spin);
+    const spin = data.spin != null ? String(data.spin) : "—";
+    banner.innerHTML = `
+      <div class="hg-win-banner-inner">
+        <span class="hg-win-banner-label">You win</span>
+        <span class="hg-win-banner-detail">+${payout} pts · ${spin} ${color}</span>
       </div>
     `;
     banner.classList.remove("is-hidden");
@@ -883,6 +906,7 @@
   function clearRoulettePicks() {
     rouletteOutside = null;
     rouletteNumbers = new Set();
+    hideRouletteWinBanner();
     document.querySelectorAll(".hg-roulette-cell.is-hit").forEach((cell) => {
       cell.classList.remove("is-hit");
     });
@@ -943,13 +967,16 @@
   async function animateRouletteSpin(resultNumber) {
     const wrap = document.querySelector(".hg-roulette-rim");
     const ball = $("hg-roulette-ball-orb");
-    const wheelEl = $("hg-roulette-wheel");
     const trackEl = $("hg-roulette-ball-track");
+    const wheelEl = $("hg-roulette-wheel");
+
+    const pocket = roulettePocketAngle(resultNumber);
+    // Wheel stays put; ball lands on the winning pocket.
+    const wheelBase = ((rouletteWheelAngle % 360) + 360) % 360;
+    const ballTarget = ((wheelBase + pocket) % 360 + 360) % 360;
 
     if (!wrap || prefersReducedMotion()) {
-      const pocket = roulettePocketAngle(resultNumber);
-      rouletteWheelAngle = -pocket;
-      rouletteBallAngle = 0;
+      rouletteBallAngle = ballTarget;
       setRouletteTransforms();
       return;
     }
@@ -957,31 +984,21 @@
     wrap.classList.add("is-spinning");
     ball?.classList.add("is-spinning");
 
-    const pocket = roulettePocketAngle(resultNumber);
-    const wheelSpins = 5 + Math.floor(Math.random() * 2);
-    const ballSpins = 8 + Math.floor(Math.random() * 3);
-
-    const wheelNormalized = ((rouletteWheelAngle % 360) + 360) % 360;
-    const wheelTarget = ((-pocket % 360) + 360) % 360;
-    let wheelDelta = wheelTarget - wheelNormalized;
-    if (wheelDelta > 0) wheelDelta -= 360;
-    const finalWheel = rouletteWheelAngle + wheelSpins * 360 + wheelDelta;
-
+    const ballSpins = 9 + Math.floor(Math.random() * 3);
     const ballNormalized = ((rouletteBallAngle % 360) + 360) % 360;
-    let ballDelta = 0 - ballNormalized;
+    let ballDelta = ballTarget - ballNormalized;
     if (ballDelta > 0) ballDelta -= 360;
     const finalBall = rouletteBallAngle - ballSpins * 360 + ballDelta;
 
     const duration = ROULETTE_SPIN_MS;
     if (wheelEl) {
-      wheelEl.style.transition = `transform ${duration}ms ${ROULETTE_WHEEL_EASE}`;
+      wheelEl.style.transition = "";
     }
     if (trackEl) {
       trackEl.style.transition = `transform ${duration}ms ${ROULETTE_BALL_EASE}`;
     }
 
-    void wheelEl?.offsetWidth;
-    rouletteWheelAngle = finalWheel;
+    void trackEl?.offsetWidth;
     rouletteBallAngle = finalBall;
     setRouletteTransforms();
 
@@ -989,7 +1006,6 @@
     wrap.classList.remove("is-spinning");
     ball?.classList.add("is-settling");
     ball?.classList.remove("is-spinning");
-    if (wheelEl) wheelEl.style.transition = "";
     if (trackEl) trackEl.style.transition = "";
     await wait(prefersReducedMotion() ? 0 : 280);
     ball?.classList.remove("is-settling");
@@ -1388,6 +1404,7 @@
 
     const el = $("hg-roulette-result");
     if (el) el.textContent = "Spinning…";
+    hideRouletteWinBanner();
     document.querySelectorAll(".hg-roulette-cell.is-hit").forEach((cell) => {
       cell.classList.remove("is-hit");
     });
@@ -1401,6 +1418,10 @@
         : "Lose";
       if (el) {
         el.innerHTML = `<span class="hg-roulette-ball is-${color}">${data.spin}</span><span class="hg-roulette-copy">${color} · ${outcome}</span>`;
+      }
+      if (data.won) {
+        showRouletteWinBanner(data);
+        playHouseWinSound();
       }
     } finally {
       rouletteSpinning = false;
@@ -1460,7 +1481,7 @@
       }
       if (data.won) {
         showKenoWinBanner(data);
-        playKenoWinSound();
+        playHouseWinSound();
       }
     } finally {
       kenoDrawing = false;
