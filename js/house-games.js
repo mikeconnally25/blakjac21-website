@@ -7,6 +7,11 @@
   let rouletteWheelAngle = 0;
   let rouletteBallAngle = 0;
   let rouletteSpinning = false;
+  let rouletteBallAnimating = false;
+  let rouletteBallLockedToWheel = false;
+  let rouletteLockedPocketAngle = 0;
+  let rouletteIdleRaf = 0;
+  let rouletteIdleLastTs = 0;
   let kenoPicks = new Set();
   let kenoDrawing = false;
   let busy = false;
@@ -33,6 +38,8 @@
   const ROULETTE_POCKET = 360 / ROULETTE_ORDER.length;
   const ROULETTE_SPIN_MS = 5400;
   const ROULETTE_BALL_EASE = "cubic-bezier(0.05, 0.58, 0.12, 1)";
+  // One full turn about every 50s.
+  const ROULETTE_IDLE_DEG_PER_MS = 360 / 50000;
 
   function $(id) {
     return document.getElementById(id);
@@ -953,30 +960,65 @@
     label.textContent = "Pick up to 12 numbers, or one outside bet";
   }
 
-  function setRouletteTransforms() {
+  function setRouletteTransforms({ wheelOnly = false } = {}) {
     const wheel = $("hg-roulette-wheel");
     const track = $("hg-roulette-ball-track");
     if (wheel) {
       wheel.style.transform = `rotate(${rouletteWheelAngle}deg)`;
     }
-    if (track) {
+    if (!wheelOnly && track) {
       track.style.transform = `rotate(${rouletteBallAngle}deg)`;
     }
+  }
+
+  function tickRouletteIdle(ts) {
+    if (!rouletteIdleLastTs) rouletteIdleLastTs = ts;
+    const dt = Math.min(48, ts - rouletteIdleLastTs);
+    rouletteIdleLastTs = ts;
+
+    if (!prefersReducedMotion()) {
+      rouletteWheelAngle += ROULETTE_IDLE_DEG_PER_MS * dt;
+    }
+
+    setRouletteTransforms({ wheelOnly: true });
+
+    if (rouletteBallLockedToWheel && !rouletteBallAnimating) {
+      rouletteBallAngle = rouletteWheelAngle + rouletteLockedPocketAngle;
+      const track = $("hg-roulette-ball-track");
+      if (track) {
+        track.style.transform = `rotate(${rouletteBallAngle}deg)`;
+      }
+    }
+
+    rouletteIdleRaf = window.requestAnimationFrame(tickRouletteIdle);
+  }
+
+  function startRouletteIdleSpin() {
+    if (rouletteIdleRaf || prefersReducedMotion()) return;
+    if (!$("hg-roulette-wheel")) return;
+    rouletteIdleLastTs = 0;
+    rouletteIdleRaf = window.requestAnimationFrame(tickRouletteIdle);
   }
 
   async function animateRouletteSpin(resultNumber) {
     const wrap = document.querySelector(".hg-roulette-rim");
     const ball = $("hg-roulette-ball-orb");
     const trackEl = $("hg-roulette-ball-track");
-    const wheelEl = $("hg-roulette-wheel");
 
     const pocket = roulettePocketAngle(resultNumber);
-    // Wheel stays put; ball lands on the winning pocket.
-    const wheelBase = ((rouletteWheelAngle % 360) + 360) % 360;
-    const ballTarget = ((wheelBase + pocket) % 360 + 360) % 360;
+    rouletteBallLockedToWheel = false;
+    rouletteBallAnimating = true;
+
+    const duration = ROULETTE_SPIN_MS;
+    const idleSpeed = prefersReducedMotion() ? 0 : ROULETTE_IDLE_DEG_PER_MS;
+    const predictedWheel = rouletteWheelAngle + idleSpeed * duration;
+    const ballTarget = ((predictedWheel + pocket) % 360 + 360) % 360;
 
     if (!wrap || prefersReducedMotion()) {
-      rouletteBallAngle = ballTarget;
+      rouletteBallAngle = rouletteWheelAngle + pocket;
+      rouletteBallLockedToWheel = true;
+      rouletteLockedPocketAngle = pocket;
+      rouletteBallAnimating = false;
       setRouletteTransforms();
       return;
     }
@@ -990,24 +1032,31 @@
     if (ballDelta > 0) ballDelta -= 360;
     const finalBall = rouletteBallAngle - ballSpins * 360 + ballDelta;
 
-    const duration = ROULETTE_SPIN_MS;
-    if (wheelEl) {
-      wheelEl.style.transition = "";
-    }
     if (trackEl) {
       trackEl.style.transition = `transform ${duration}ms ${ROULETTE_BALL_EASE}`;
     }
 
     void trackEl?.offsetWidth;
     rouletteBallAngle = finalBall;
-    setRouletteTransforms();
+    if (trackEl) {
+      trackEl.style.transform = `rotate(${rouletteBallAngle}deg)`;
+    }
 
     await wait(duration + 40);
     wrap.classList.remove("is-spinning");
     ball?.classList.add("is-settling");
     ball?.classList.remove("is-spinning");
     if (trackEl) trackEl.style.transition = "";
-    await wait(prefersReducedMotion() ? 0 : 280);
+
+    rouletteLockedPocketAngle = pocket;
+    rouletteBallLockedToWheel = true;
+    rouletteBallAnimating = false;
+    rouletteBallAngle = rouletteWheelAngle + pocket;
+    if (trackEl) {
+      trackEl.style.transform = `rotate(${rouletteBallAngle}deg)`;
+    }
+
+    await wait(280);
     ball?.classList.remove("is-settling");
   }
 
@@ -1596,6 +1645,7 @@
     buildRouletteWheel();
     buildRouletteBoard();
     setRouletteTransforms();
+    startRouletteIdleSpin();
     buildKenoBoard();
     bindUi();
     syncBjChip();
