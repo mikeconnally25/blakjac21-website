@@ -1060,6 +1060,32 @@
     ball?.classList.remove("is-settling");
   }
 
+  function setRouletteHubNumber(number, { spinning = false } = {}) {
+    const el = $("hg-roulette-hub-number");
+    const hub = document.querySelector(".hg-roulette-hub");
+    if (!el) return;
+
+    el.classList.remove("is-red", "is-black", "is-green", "is-result", "is-spinning");
+    hub?.classList.remove("has-result", "is-spinning");
+
+    if (spinning) {
+      el.textContent = "·";
+      el.classList.add("is-spinning");
+      hub?.classList.add("is-spinning");
+      return;
+    }
+
+    if (number == null || !Number.isFinite(Number(number))) {
+      el.textContent = "21";
+      return;
+    }
+
+    const color = rouletteColor(Number(number));
+    el.textContent = String(number);
+    el.classList.add("is-result", `is-${color}`);
+    hub?.classList.add("has-result");
+  }
+
   function highlightRouletteResult(number) {
     document.querySelectorAll(".hg-roulette-cell").forEach((cell) => {
       cell.classList.toggle(
@@ -1067,6 +1093,7 @@
         Number(cell.dataset.choice) === Number(number)
       );
     });
+    setRouletteHubNumber(number);
   }
 
   const KENO_PAYTABLES = {
@@ -1454,6 +1481,7 @@
     const el = $("hg-roulette-result");
     if (el) el.textContent = "Spinning…";
     hideRouletteWinBanner();
+    setRouletteHubNumber(null, { spinning: true });
     document.querySelectorAll(".hg-roulette-cell.is-hit").forEach((cell) => {
       cell.classList.remove("is-hit");
     });
