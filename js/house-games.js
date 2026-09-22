@@ -99,8 +99,12 @@
       if (dt) dt.textContent = "";
       if (pt) pt.textContent = "";
       const result = $("hg-bj-result");
-      if (result) result.textContent = "";
+      if (result) {
+        result.textContent = "";
+        result.className = "hg-result hg-bj-result";
+      }
       setBlackjackActions(null);
+      syncBjChip();
       return;
     }
 
@@ -126,14 +130,23 @@
         const payout =
           state.payout > 0 ? ` · +${formatPoints(state.payout)} pts` : "";
         result.textContent = `${label}${payout}`;
-        result.className = `hg-result is-${state.result}`;
+        result.className = `hg-result hg-bj-result is-${state.result}`;
       } else {
         result.textContent = "";
-        result.className = "hg-result";
+        result.className = "hg-result hg-bj-result";
       }
     }
 
     setBlackjackActions(state);
+    syncBjChip();
+  }
+
+  function syncBjChip() {
+    const bet = $("hg-bj-bet");
+    const chip = $("hg-bj-chip-value");
+    if (!chip || !bet) return;
+    const n = Math.floor(Number(bet.value));
+    chip.textContent = Number.isFinite(n) && n > 0 ? String(n) : "—";
   }
 
   function syncAuthUi() {
@@ -358,6 +371,7 @@
     $("hg-bj-deal")?.addEventListener("click", () => {
       void dealBlackjack();
     });
+    $("hg-bj-bet")?.addEventListener("input", syncBjChip);
     $("hg-bj-hit")?.addEventListener("click", () => {
       void actBlackjack("hit");
     });
@@ -425,6 +439,7 @@
     if (!$("house-games")) return;
     buildKenoBoard();
     bindUi();
+    syncBjChip();
     await loadAuth();
     syncAuthUi();
     if (currentUser?.kickUserId) {

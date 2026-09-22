@@ -206,27 +206,42 @@
 
             <div class="house-games-stage is-hidden" id="hg-stage">
               <div class="house-game-panel is-active" data-hg-panel="blackjack" id="hg-blackjack">
-                <div class="hg-bet-row">
-                  <label class="guess-label" for="hg-bj-bet">Bet</label>
-                  <input class="guess-input hg-bet-input" id="hg-bj-bet" type="number" min="1" max="5000" step="1" value="10" />
-                  <button type="button" class="btn btn-primary" id="hg-bj-deal">Deal</button>
-                </div>
-                <div class="hg-bj-table">
-                  <div class="hg-hand" id="hg-bj-dealer">
-                    <p class="hg-hand-label">Dealer <span id="hg-bj-dealer-total"></span></p>
-                    <div class="hg-cards" id="hg-bj-dealer-cards"></div>
+                <div class="hg-bj-shell">
+                  <div class="hg-bj-table" aria-label="Blackjack table">
+                    <div class="hg-bj-felt">
+                      <p class="hg-bj-banner" aria-hidden="true">BLAKJAC<span>21</span> · BLACKJACK PAYS 3 TO 2</p>
+                      <div class="hg-hand hg-hand-dealer" id="hg-bj-dealer">
+                        <p class="hg-hand-label">Dealer <span id="hg-bj-dealer-total"></span></p>
+                        <div class="hg-cards" id="hg-bj-dealer-cards"></div>
+                      </div>
+                      <div class="hg-bj-insurance" aria-hidden="true">Insurance pays 2 to 1</div>
+                      <p class="hg-result hg-bj-result" id="hg-bj-result"></p>
+                      <div class="hg-hand hg-hand-player" id="hg-bj-player">
+                        <div class="hg-cards" id="hg-bj-player-cards"></div>
+                        <p class="hg-hand-label">You <span id="hg-bj-player-total"></span></p>
+                      </div>
+                      <div class="hg-bj-spot">
+                        <div class="hg-bj-chip" aria-hidden="true">
+                          <span class="hg-bj-chip-inner" id="hg-bj-chip-value">10</span>
+                        </div>
+                        <span class="hg-bj-spot-label">Bet</span>
+                      </div>
+                    </div>
                   </div>
-                  <div class="hg-hand" id="hg-bj-player">
-                    <p class="hg-hand-label">You <span id="hg-bj-player-total"></span></p>
-                    <div class="hg-cards" id="hg-bj-player-cards"></div>
+
+                  <div class="hg-bj-rail">
+                    <div class="hg-bet-row hg-bj-bet-controls">
+                      <label class="guess-label" for="hg-bj-bet">Wager</label>
+                      <input class="guess-input hg-bet-input" id="hg-bj-bet" type="number" min="1" max="5000" step="1" value="10" />
+                      <button type="button" class="btn btn-primary" id="hg-bj-deal">Deal</button>
+                    </div>
+                    <div class="house-games-actions hg-bj-actions">
+                      <button type="button" class="btn btn-sm btn-primary" id="hg-bj-hit" disabled>Hit</button>
+                      <button type="button" class="btn btn-sm btn-outline" id="hg-bj-stand" disabled>Stand</button>
+                      <button type="button" class="btn btn-sm btn-outline" id="hg-bj-double" disabled>Double</button>
+                    </div>
                   </div>
                 </div>
-                <div class="house-games-actions">
-                  <button type="button" class="btn btn-sm btn-primary" id="hg-bj-hit" disabled>Hit</button>
-                  <button type="button" class="btn btn-sm btn-outline" id="hg-bj-stand" disabled>Stand</button>
-                  <button type="button" class="btn btn-sm btn-outline" id="hg-bj-double" disabled>Double</button>
-                </div>
-                <p class="hg-result" id="hg-bj-result"></p>
               </div>
 
               <div class="house-game-panel" data-hg-panel="roulette" id="hg-roulette" hidden>
