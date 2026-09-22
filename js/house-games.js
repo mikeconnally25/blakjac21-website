@@ -1,9 +1,11 @@
 (() => {
   let currentUser = null;
   let bjSessionId = null;
+  let bjSnapshot = { player: [], dealer: [] };
   let rouletteChoice = null;
   let kenoPicks = new Set();
   let busy = false;
+  let dealing = false;
 
   const SUIT_SYMBOL = { S: "♠", H: "♥", D: "♦", C: "♣" };
   const RESULT_LABEL = {
@@ -13,6 +15,8 @@
     push: "Push",
     blackjack: "Blackjack!",
   };
+  const DEAL_MS = 160;
+  const DEAL_FLIGHT_MS = 420;
 
   function $(id) {
     return document.getElementById(id);
@@ -50,6 +54,17 @@
     if (points != null) setBalance(points);
   }
 
+  function prefersReducedMotion() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  function wait(ms) {
+    if (prefersReducedMotion() || ms <= 0) return Promise.resolve();
+    return new Promise((resolve) => {
+      window.setTimeout(resolve, ms);
+    });
+  }
+
   function cardClass(card) {
     if (card?.hidden) return "hg-card is-hidden-card";
     const suit = card?.suit || "";
@@ -57,22 +72,58 @@
     return `hg-card${red ? " is-red" : ""}`;
   }
 
-  function renderCards(container, cards) {
+  function createCardEl(card, { deal = false, flip = false } = {}) {
+    const el = document.createElement("span");
+    el.className = cardClass(card);
+    if (deal && !prefersReducedMotion()) el.classList.add("is-dealing");
+    if (flip && !prefersReducedMotion()) el.classList.add("is-flipping");
+    if (card?.hidden) {
+      el.textContent = "?";
+      el.setAttribute("aria-label", "Hidden card");
+    } else {
+      const suit = SUIT_SYMBOL[card.suit] || card.suit || "";
+      el.innerHTML = `<span class="hg-card-rank">${card.rank}</span><span class="hg-card-suit">${suit}</span>`;
+      el.setAttribute("aria-label", `${card.rank} of ${suit}`);
+    }
+    return el;
+  }
+
+  function clearCards(container) {
     if (!container) return;
     container.innerHTML = "";
-    (cards || []).forEach((card) => {
-      const el = document.createElement("span");
-      el.className = cardClass(card);
-      if (card?.hidden) {
-        el.textContent = "?";
-        el.setAttribute("aria-label", "Hidden card");
-      } else {
-        const suit = SUIT_SYMBOL[card.suit] || card.suit || "";
-        el.innerHTML = `<span class="hg-card-rank">${card.rank}</span><span class="hg-card-suit">${suit}</span>`;
-        el.setAttribute("aria-label", `${card.rank} of ${suit}`);
-      }
-      container.appendChild(el);
-    });
+  }
+
+  function setTotals(state, { hide = false } = {}) {
+    const dealerTotal = $("hg-bj-dealer-total");
+    const playerTotal = $("hg-bj-player-total");
+    if (hide) {
+      if (dealerTotal) dealerTotal.textContent = "";
+      if (playerTotal) playerTotal.textContent = "";
+      return;
+    }
+    if (dealerTotal) {
+      dealerTotal.textContent =
+        state?.dealer?.total != null ? `(${state.dealer.total})` : "";
+    }
+    if (playerTotal) {
+      playerTotal.textContent =
+        state?.player?.total != null ? `(${state.player.total})` : "";
+    }
+  }
+
+  function setResult(state) {
+    const result = $("hg-bj-result");
+    if (!result) return;
+    if (state?.result) {
+      const label = RESULT_LABEL[state.result] || state.result;
+      const payout =
+        state.payout > 0 ? ` · +${formatPoints(state.payout)} pts` : "";
+      result.textContent = `${label}${payout}`;
+      result.className = `hg-result hg-bj-result is-${state.result}`;
+    } else {
+      result.textContent = "";
+      result.className = "hg-result hg-bj-result";
+    }
   }
 
   function setBlackjackActions(state) {
@@ -81,64 +132,152 @@
     const dbl = $("hg-bj-double");
     const deal = $("hg-bj-deal");
     const bet = $("hg-bj-bet");
+    const locked = busy || dealing;
     const playing = Boolean(state && !state.result && state.canHit);
 
-    if (hit) hit.disabled = busy || !state?.canHit;
-    if (stand) stand.disabled = busy || !state?.canStand;
-    if (dbl) dbl.disabled = busy || !state?.canDouble;
-    if (deal) deal.disabled = busy || playing;
-    if (bet) bet.disabled = busy || playing;
+    if (hit) hit.disabled = locked || !state?.canHit;
+    if (stand) stand.disabled = locked || !state?.canStand;
+    if (dbl) dbl.disabled = locked || !state?.canDouble;
+    if (deal) deal.disabled = locked || playing;
+    if (bet) bet.disabled = locked || playing;
+  }
+
+  async function dealCardTo(container, card, { flip = false } = {}) {
+    if (!container) return;
+    const table = $("hg-bj-table");
+    if (table && !prefersReducedMotion()) {
+      table.classList.remove("is-dealing");
+      // Force restart shoe flick for each card.
+      void table.offsetWidth;
+      table.classList.add("is-dealing");
+    }
+    const el = createCardEl(card, { deal: true, flip });
+    container.appendChild(el);
+    await wait(DEAL_MS);
+  }
+
+  async function animateInitialDeal(state) {
+    const playerCards = $("hg-bj-player-cards");
+    const dealerCards = $("hg-bj-dealer-cards");
+    clearCards(playerCards);
+    clearCards(dealerCards);
+    setTotals(null, { hide: true });
+    setResult(null);
+
+    const player = state.player?.cards || [];
+    const dealer = state.dealer?.cards || [];
+    const rounds = Math.max(player.length, dealer.length);
+
+    if (prefersReducedMotion()) {
+      player.forEach((card) => playerCards.appendChild(createCardEl(card)));
+      dealer.forEach((card) => dealerCards.appendChild(createCardEl(card)));
+      return;
+    }
+
+    for (let i = 0; i < rounds; i += 1) {
+      if (player[i]) await dealCardTo(playerCards, player[i]);
+      if (dealer[i]) await dealCardTo(dealerCards, dealer[i]);
+    }
+    await wait(DEAL_FLIGHT_MS - DEAL_MS);
+  }
+
+  async function animateCardDelta(state) {
+    const playerCards = $("hg-bj-player-cards");
+    const dealerCards = $("hg-bj-dealer-cards");
+    const nextPlayer = state.player?.cards || [];
+    const nextDealer = state.dealer?.cards || [];
+    const prevPlayer = bjSnapshot.player || [];
+    const prevDealer = bjSnapshot.dealer || [];
+
+    if (prefersReducedMotion()) {
+      clearCards(playerCards);
+      clearCards(dealerCards);
+      nextPlayer.forEach((card) => playerCards.appendChild(createCardEl(card)));
+      nextDealer.forEach((card) => dealerCards.appendChild(createCardEl(card)));
+      return;
+    }
+
+    for (let i = prevPlayer.length; i < nextPlayer.length; i += 1) {
+      await dealCardTo(playerCards, nextPlayer[i]);
+    }
+
+    const dealerReveal =
+      prevDealer.some((c) => c?.hidden) &&
+      nextDealer.length >= prevDealer.length &&
+      !nextDealer.some((c) => c?.hidden);
+
+    if (dealerReveal) {
+      clearCards(dealerCards);
+      for (let i = 0; i < nextDealer.length; i += 1) {
+        const flip = Boolean(prevDealer[i]?.hidden) && !nextDealer[i]?.hidden;
+        const isNew = i >= prevDealer.length;
+        if (isNew) {
+          await dealCardTo(dealerCards, nextDealer[i]);
+        } else {
+          const el = createCardEl(nextDealer[i], { flip });
+          dealerCards.appendChild(el);
+          if (flip) await wait(220);
+        }
+      }
+    } else {
+      for (let i = prevDealer.length; i < nextDealer.length; i += 1) {
+        await dealCardTo(dealerCards, nextDealer[i]);
+      }
+    }
+
+    await wait(Math.max(0, DEAL_FLIGHT_MS - DEAL_MS));
+  }
+
+  function finishBjRender(state) {
+    bjSessionId = state.sessionId || bjSessionId;
+    bjSnapshot = {
+      player: [...(state.player?.cards || [])],
+      dealer: [...(state.dealer?.cards || [])],
+    };
+    setTotals(state);
+    setResult(state);
+    setBlackjackActions(state);
+    syncBjChip();
+    $("hg-bj-table")?.classList.remove("is-dealing");
   }
 
   function renderBlackjack(state) {
     if (!state) {
-      renderCards($("hg-bj-dealer-cards"), []);
-      renderCards($("hg-bj-player-cards"), []);
-      const dt = $("hg-bj-dealer-total");
-      const pt = $("hg-bj-player-total");
-      if (dt) dt.textContent = "";
-      if (pt) pt.textContent = "";
-      const result = $("hg-bj-result");
-      if (result) {
-        result.textContent = "";
-        result.className = "hg-result hg-bj-result";
-      }
+      clearCards($("hg-bj-dealer-cards"));
+      clearCards($("hg-bj-player-cards"));
+      setTotals(null, { hide: true });
+      setResult(null);
+      bjSnapshot = { player: [], dealer: [] };
       setBlackjackActions(null);
       syncBjChip();
+      $("hg-bj-table")?.classList.remove("is-dealing");
       return;
     }
 
-    bjSessionId = state.sessionId || bjSessionId;
-    renderCards($("hg-bj-dealer-cards"), state.dealer?.cards);
-    renderCards($("hg-bj-player-cards"), state.player?.cards);
+    clearCards($("hg-bj-dealer-cards"));
+    clearCards($("hg-bj-player-cards"));
+    (state.dealer?.cards || []).forEach((card) => {
+      $("hg-bj-dealer-cards")?.appendChild(createCardEl(card));
+    });
+    (state.player?.cards || []).forEach((card) => {
+      $("hg-bj-player-cards")?.appendChild(createCardEl(card));
+    });
+    finishBjRender(state);
+  }
 
-    const dealerTotal = $("hg-bj-dealer-total");
-    const playerTotal = $("hg-bj-player-total");
-    if (dealerTotal) {
-      dealerTotal.textContent =
-        state.dealer?.total != null ? `(${state.dealer.total})` : "";
-    }
-    if (playerTotal) {
-      playerTotal.textContent =
-        state.player?.total != null ? `(${state.player.total})` : "";
-    }
-
-    const result = $("hg-bj-result");
-    if (result) {
-      if (state.result) {
-        const label = RESULT_LABEL[state.result] || state.result;
-        const payout =
-          state.payout > 0 ? ` · +${formatPoints(state.payout)} pts` : "";
-        result.textContent = `${label}${payout}`;
-        result.className = `hg-result hg-bj-result is-${state.result}`;
-      } else {
-        result.textContent = "";
-        result.className = "hg-result hg-bj-result";
-      }
-    }
-
+  async function presentBlackjack(state, mode) {
+    dealing = true;
     setBlackjackActions(state);
-    syncBjChip();
+    try {
+      if (mode === "deal") {
+        await animateInitialDeal(state);
+      } else {
+        await animateCardDelta(state);
+      }
+    } finally {
+      dealing = false;
+      finishBjRender(state);
+    }
   }
 
   function syncBjChip() {
@@ -293,7 +432,7 @@
       setBlackjackActions(null);
       return;
     }
-    renderBlackjack(data);
+    await presentBlackjack(data, "deal");
   }
 
   async function actBlackjack(action) {
@@ -314,7 +453,7 @@
       });
       return;
     }
-    renderBlackjack(data);
+    await presentBlackjack(data, "act");
   }
 
   async function spinRoulette() {

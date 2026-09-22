@@ -6875,7 +6875,7 @@ ul {
 .hg-bj-felt {
   position: relative;
   display: grid;
-  grid-template-rows: auto auto auto 1fr auto auto;
+  grid-template-rows: auto auto auto auto 1fr auto auto;
   justify-items: center;
   gap: 0.55rem;
   min-height: 26rem;
@@ -6890,6 +6890,42 @@ ul {
     inset 0 0 0 1px rgba(255, 255, 255, 0.06),
     inset 0 18px 40px rgba(0, 0, 0, 0.28);
   overflow: hidden;
+}
+
+.hg-bj-table.is-dealing .hg-bj-felt {
+  overflow: visible;
+}
+
+.hg-bj-shoe {
+  position: absolute;
+  top: 0.85rem;
+  right: 12%;
+  z-index: 3;
+  width: 2.6rem;
+  height: 3.4rem;
+  pointer-events: none;
+}
+
+.hg-bj-shoe-deck {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.28rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background:
+    repeating-linear-gradient(
+      -32deg,
+      #163554 0 5px,
+      #1c4164 5px 10px
+    );
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.hg-bj-shoe-deck:nth-child(1) { transform: translate(4px, -4px); }
+.hg-bj-shoe-deck:nth-child(2) { transform: translate(2px, -2px); }
+.hg-bj-shoe-deck:nth-child(3) { transform: none; }
+
+.hg-bj-table.is-dealing .hg-bj-shoe-deck:nth-child(3) {
+  animation: hg-shoe-flick 0.42s ease;
 }
 
 .hg-bj-felt::before {
@@ -6987,10 +7023,10 @@ ul {
   font-family: var(--font-display);
   font-weight: 700;
   line-height: 1;
+  transform-origin: center top;
   box-shadow:
     0 12px 20px rgba(0, 0, 0, 0.32),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  animation: hg-card-in 0.28s ease both;
 }
 
 .hg-card.is-red {
@@ -7009,6 +7045,26 @@ ul {
   box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
 }
 
+.hg-card.is-dealing {
+  animation: hg-deal 0.42s cubic-bezier(0.18, 0.82, 0.22, 1) both;
+}
+
+.hg-hand-player .hg-card.is-dealing {
+  --deal-x: 48px;
+  --deal-y: -150px;
+  --deal-rot: -22deg;
+}
+
+.hg-hand-dealer .hg-card.is-dealing {
+  --deal-x: 90px;
+  --deal-y: -70px;
+  --deal-rot: -12deg;
+}
+
+.hg-card.is-flipping {
+  animation: hg-flip 0.45s ease both;
+}
+
 .hg-card-rank {
   font-size: 1.3rem;
   letter-spacing: 0.02em;
@@ -7018,14 +7074,39 @@ ul {
   font-size: 1.05rem;
 }
 
-@keyframes hg-card-in {
-  from {
+@keyframes hg-deal {
+  0% {
     opacity: 0;
-    transform: translateY(8px) scale(0.96);
+    transform: translate(var(--deal-x, 40px), var(--deal-y, -140px))
+      rotate(var(--deal-rot, -18deg)) scale(0.82);
   }
-  to {
+  70% {
     opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes hg-flip {
+  0% {
+    transform: rotateY(90deg) scaleX(0.7);
+    opacity: 0.4;
+  }
+  100% {
+    transform: rotateY(0deg) scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes hg-shoe-flick {
+  0%,
+  100% {
     transform: none;
+  }
+  40% {
+    transform: translate(-6px, 4px) rotate(-4deg);
   }
 }
 
@@ -7281,8 +7362,10 @@ ul {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hg-card,
-  .hg-roulette-ball {
+  .hg-card.is-dealing,
+  .hg-card.is-flipping,
+  .hg-roulette-ball,
+  .hg-bj-table.is-dealing .hg-bj-shoe-deck:nth-child(3) {
     animation: none;
   }
 }
