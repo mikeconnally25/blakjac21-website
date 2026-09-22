@@ -253,24 +253,39 @@
               </div>
 
               <div class="house-game-panel" data-hg-panel="roulette" id="hg-roulette" hidden>
-                <div class="hg-bet-row">
-                  <label class="guess-label" for="hg-roulette-bet">Bet</label>
-                  <input class="guess-input hg-bet-input" id="hg-roulette-bet" type="number" min="1" max="5000" step="1" value="10" />
+                <div class="hg-roulette-stage">
+                  <div class="hg-roulette-wheel-wrap" aria-hidden="true">
+                    <div class="hg-roulette-pointer"></div>
+                    <div class="hg-roulette-rim">
+                      <div class="hg-roulette-wheel" id="hg-roulette-wheel"></div>
+                      <div class="hg-roulette-ball-track" id="hg-roulette-ball-track">
+                        <span class="hg-roulette-ball-orb" id="hg-roulette-ball-orb"></span>
+                      </div>
+                      <div class="hg-roulette-hub">
+                        <span class="hg-roulette-hub-mark">21</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="hg-roulette-board-wrap">
+                    <div class="hg-bet-row">
+                      <label class="guess-label" for="hg-roulette-bet">Bet</label>
+                      <input class="guess-input hg-bet-input" id="hg-roulette-bet" type="number" min="1" max="5000" step="1" value="10" />
+                      <button type="button" class="btn btn-primary" id="hg-roulette-spin">Spin</button>
+                    </div>
+                    <div class="hg-roulette-board" id="hg-roulette-board" role="group" aria-label="Roulette numbers"></div>
+                    <div class="hg-roulette-choices" id="hg-roulette-choices">
+                      <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="red">Red</button>
+                      <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="black">Black</button>
+                      <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="even">Even</button>
+                      <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="odd">Odd</button>
+                      <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="low">1–18</button>
+                      <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="high">19–36</button>
+                    </div>
+                    <p class="hg-roulette-pick-label" id="hg-roulette-pick-label">Pick a number or outside bet</p>
+                    <div class="hg-roulette-result" id="hg-roulette-result" aria-live="polite"></div>
+                  </div>
                 </div>
-                <div class="hg-roulette-choices" id="hg-roulette-choices">
-                  <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="red">Red</button>
-                  <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="black">Black</button>
-                  <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="even">Even</button>
-                  <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="odd">Odd</button>
-                  <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="low">1–18</button>
-                  <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="high">19–36</button>
-                </div>
-                <div class="hg-bet-row">
-                  <label class="guess-label" for="hg-roulette-number">Or number (0–36)</label>
-                  <input class="guess-input hg-bet-input" id="hg-roulette-number" type="number" min="0" max="36" step="1" placeholder="e.g. 17" />
-                  <button type="button" class="btn btn-primary" id="hg-roulette-spin">Spin</button>
-                </div>
-                <div class="hg-roulette-result" id="hg-roulette-result" aria-live="polite"></div>
               </div>
 
               <div class="house-game-panel" data-hg-panel="keno" id="hg-keno" hidden>

@@ -3,6 +3,9 @@
   let bjSessionId = null;
   let bjSnapshot = { hands: [[]], dealer: [], activeHand: 0 };
   let rouletteChoice = null;
+  let rouletteWheelAngle = 0;
+  let rouletteBallAngle = 0;
+  let rouletteSpinning = false;
   let kenoPicks = new Set();
   let busy = false;
   let dealing = false;
@@ -18,6 +21,15 @@
   };
   const DEAL_MS = 340;
   const DEAL_FLIGHT_MS = 780;
+  const ROULETTE_ORDER = [
+    0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5,
+    24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26,
+  ];
+  const ROULETTE_RED = new Set([
+    1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36,
+  ]);
+  const ROULETTE_POCKET = 360 / ROULETTE_ORDER.length;
+  const ROULETTE_SPIN_MS = 4200;
 
   function $(id) {
     return document.getElementById(id);
@@ -529,11 +541,202 @@
     setStatus("");
   }
 
+  function rouletteColor(n) {
+    if (n === 0) return "green";
+    return ROULETTE_RED.has(n) ? "red" : "black";
+  }
+
+  function roulettePocketAngle(n) {
+    const index = ROULETTE_ORDER.indexOf(Number(n));
+    if (index < 0) return 0;
+    // Pocket centers sit clockwise from top.
+    return index * ROULETTE_POCKET + ROULETTE_POCKET / 2;
+  }
+
+  function buildRouletteWheel() {
+    const mount = $("hg-roulette-wheel");
+    if (!mount || mount.childElementCount) return;
+
+    const size = 320;
+    const cx = size / 2;
+    const cy = size / 2;
+    const outer = size / 2 - 2;
+    const inner = outer * 0.62;
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
+    svg.setAttribute("class", "hg-roulette-svg");
+    svg.setAttribute("aria-hidden", "true");
+
+    ROULETTE_ORDER.forEach((num, index) => {
+      const start = ((index * ROULETTE_POCKET - 90) * Math.PI) / 180;
+      const end = (((index + 1) * ROULETTE_POCKET - 90) * Math.PI) / 180;
+      const x1 = cx + outer * Math.cos(start);
+      const y1 = cy + outer * Math.sin(start);
+      const x2 = cx + outer * Math.cos(end);
+      const y2 = cy + outer * Math.sin(end);
+      const x3 = cx + inner * Math.cos(end);
+      const y3 = cy + inner * Math.sin(end);
+      const x4 = cx + inner * Math.cos(start);
+      const y4 = cy + inner * Math.sin(start);
+      const path = document.createElementNS(svgNS, "path");
+      path.setAttribute(
+        "d",
+        `M ${x1} ${y1} A ${outer} ${outer} 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${inner} ${inner} 0 0 0 ${x4} ${y4} Z`
+      );
+      path.setAttribute("class", `hg-roulette-pocket is-${rouletteColor(num)}`);
+      svg.appendChild(path);
+
+      const mid = ((index + 0.5) * ROULETTE_POCKET - 90) * (Math.PI / 180);
+      const tx = cx + (outer * 0.82) * Math.cos(mid);
+      const ty = cy + (outer * 0.82) * Math.sin(mid);
+      const text = document.createElementNS(svgNS, "text");
+      text.setAttribute("x", String(tx));
+      text.setAttribute("y", String(ty));
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("dominant-baseline", "middle");
+      text.setAttribute(
+        "transform",
+        `rotate(${index * ROULETTE_POCKET + ROULETTE_POCKET / 2}, ${tx}, ${ty})`
+      );
+      text.setAttribute("class", "hg-roulette-label");
+      text.textContent = String(num);
+      svg.appendChild(text);
+    });
+
+    mount.appendChild(svg);
+  }
+
+  function buildRouletteBoard() {
+    const board = $("hg-roulette-board");
+    if (!board || board.childElementCount) return;
+
+    const zero = document.createElement("button");
+    zero.type = "button";
+    zero.className = "hg-roulette-cell is-green is-zero";
+    zero.dataset.choice = "0";
+    zero.textContent = "0";
+    zero.addEventListener("click", () => selectRouletteChoice("0"));
+    board.appendChild(zero);
+
+    for (let n = 1; n <= 36; n += 1) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `hg-roulette-cell is-${rouletteColor(n)}`;
+      btn.dataset.choice = String(n);
+      btn.textContent = String(n);
+      btn.addEventListener("click", () => selectRouletteChoice(String(n)));
+      board.appendChild(btn);
+    }
+  }
+
+  function selectRouletteChoice(choice) {
+    rouletteChoice = String(choice);
+    syncRoulettePicks();
+  }
+
   function syncRoulettePicks() {
     document.querySelectorAll(".hg-roulette-pick").forEach((btn) => {
       btn.classList.toggle(
         "is-active",
         btn.dataset.choice === rouletteChoice
+      );
+    });
+    document.querySelectorAll(".hg-roulette-cell").forEach((btn) => {
+      btn.classList.toggle(
+        "is-active",
+        btn.dataset.choice === rouletteChoice
+      );
+    });
+    const label = $("hg-roulette-pick-label");
+    if (!label) return;
+    if (!rouletteChoice) {
+      label.textContent = "Pick a number or outside bet";
+      return;
+    }
+    if (/^\d+$/.test(rouletteChoice)) {
+      label.textContent = `Betting number ${rouletteChoice}`;
+      return;
+    }
+    const names = {
+      red: "Red",
+      black: "Black",
+      even: "Even",
+      odd: "Odd",
+      low: "1–18",
+      high: "19–36",
+    };
+    label.textContent = `Betting ${names[rouletteChoice] || rouletteChoice}`;
+  }
+
+  function setRouletteTransforms() {
+    const wheel = $("hg-roulette-wheel");
+    const track = $("hg-roulette-ball-track");
+    if (wheel) {
+      wheel.style.transform = `rotate(${rouletteWheelAngle}deg)`;
+    }
+    if (track) {
+      track.style.transform = `rotate(${rouletteBallAngle}deg)`;
+    }
+  }
+
+  async function animateRouletteSpin(resultNumber) {
+    const wrap = document.querySelector(".hg-roulette-rim");
+    const ball = $("hg-roulette-ball-orb");
+    const wheelEl = $("hg-roulette-wheel");
+    const trackEl = $("hg-roulette-ball-track");
+
+    if (!wrap || prefersReducedMotion()) {
+      const pocket = roulettePocketAngle(resultNumber);
+      rouletteWheelAngle = -pocket;
+      rouletteBallAngle = 0;
+      setRouletteTransforms();
+      return;
+    }
+
+    wrap.classList.add("is-spinning");
+    ball?.classList.add("is-spinning");
+
+    const pocket = roulettePocketAngle(resultNumber);
+    const wheelSpins = 4 + Math.floor(Math.random() * 2);
+    const ballSpins = 6 + Math.floor(Math.random() * 2);
+
+    const wheelNormalized = ((rouletteWheelAngle % 360) + 360) % 360;
+    const wheelTarget = ((-pocket % 360) + 360) % 360;
+    let wheelDelta = wheelTarget - wheelNormalized;
+    if (wheelDelta > 0) wheelDelta -= 360;
+    const finalWheel = rouletteWheelAngle + wheelSpins * 360 + wheelDelta;
+
+    const ballNormalized = ((rouletteBallAngle % 360) + 360) % 360;
+    let ballDelta = 0 - ballNormalized;
+    if (ballDelta > 0) ballDelta -= 360;
+    const finalBall = rouletteBallAngle - ballSpins * 360 + ballDelta;
+
+    const duration = ROULETTE_SPIN_MS;
+    if (wheelEl) {
+      wheelEl.style.transition = `transform ${duration}ms cubic-bezier(0.12, 0.7, 0.12, 1)`;
+    }
+    if (trackEl) {
+      trackEl.style.transition = `transform ${duration}ms cubic-bezier(0.05, 0.65, 0.15, 1)`;
+    }
+
+    void wheelEl?.offsetWidth;
+    rouletteWheelAngle = finalWheel;
+    rouletteBallAngle = finalBall;
+    setRouletteTransforms();
+
+    await wait(duration + 80);
+    wrap.classList.remove("is-spinning");
+    ball?.classList.remove("is-spinning");
+    if (wheelEl) wheelEl.style.transition = "";
+    if (trackEl) trackEl.style.transition = "";
+  }
+
+  function highlightRouletteResult(number) {
+    document.querySelectorAll(".hg-roulette-cell").forEach((cell) => {
+      cell.classList.toggle(
+        "is-hit",
+        Number(cell.dataset.choice) === Number(number)
       );
     });
   }
@@ -618,26 +821,43 @@
   }
 
   async function spinRoulette() {
+    if (rouletteSpinning) return;
     const bet = Number($("hg-roulette-bet")?.value || 0);
-    const numberInput = $("hg-roulette-number");
-    const numberRaw = String(numberInput?.value || "").trim();
-    let choice = rouletteChoice;
-    if (numberRaw !== "") {
-      choice = numberRaw;
-    }
-    if (!choice) {
+    if (!rouletteChoice) {
       setStatus("Pick a color/parity bet or a number.", { error: true });
       return;
     }
+    const choice = rouletteChoice;
+    const spinBtn = $("hg-roulette-spin");
+    rouletteSpinning = true;
+    if (spinBtn) spinBtn.disabled = true;
+
     const data = await play({ game: "roulette", bet, choice });
-    if (!data) return;
+    if (!data) {
+      rouletteSpinning = false;
+      if (spinBtn) spinBtn.disabled = false;
+      return;
+    }
+
     const el = $("hg-roulette-result");
-    if (el) {
-      const color = data.color || "";
+    if (el) el.textContent = "Spinning…";
+    document.querySelectorAll(".hg-roulette-cell.is-hit").forEach((cell) => {
+      cell.classList.remove("is-hit");
+    });
+
+    try {
+      await animateRouletteSpin(data.spin);
+      highlightRouletteResult(data.spin);
+      const color = data.color || rouletteColor(data.spin);
       const outcome = data.won
         ? `Win · +${formatPoints(data.payout)} pts`
         : "Lose";
-      el.innerHTML = `<span class="hg-roulette-ball is-${color}">${data.spin}</span><span class="hg-roulette-copy">${color} · ${outcome}</span>`;
+      if (el) {
+        el.innerHTML = `<span class="hg-roulette-ball is-${color}">${data.spin}</span><span class="hg-roulette-copy">${color} · ${outcome}</span>`;
+      }
+    } finally {
+      rouletteSpinning = false;
+      if (spinBtn) spinBtn.disabled = false;
     }
   }
 
@@ -687,16 +907,8 @@
 
     document.querySelectorAll(".hg-roulette-pick").forEach((btn) => {
       btn.addEventListener("click", () => {
-        rouletteChoice = btn.dataset.choice;
-        const numberInput = $("hg-roulette-number");
-        if (numberInput) numberInput.value = "";
-        syncRoulettePicks();
+        selectRouletteChoice(btn.dataset.choice);
       });
-    });
-
-    $("hg-roulette-number")?.addEventListener("input", () => {
-      rouletteChoice = null;
-      syncRoulettePicks();
     });
 
     $("hg-roulette-spin")?.addEventListener("click", () => {
@@ -740,6 +952,9 @@
 
   async function init() {
     if (!$("house-games")) return;
+    buildRouletteWheel();
+    buildRouletteBoard();
+    setRouletteTransforms();
     buildKenoBoard();
     bindUi();
     syncBjChip();
