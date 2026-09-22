@@ -80,6 +80,52 @@
     });
   }
 
+  let kenoAudioCtx = null;
+
+  function getKenoAudioContext() {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return null;
+    if (!kenoAudioCtx) {
+      kenoAudioCtx = new AudioCtx();
+    }
+    if (kenoAudioCtx.state === "suspended") {
+      void kenoAudioCtx.resume();
+    }
+    return kenoAudioCtx;
+  }
+
+  function playKenoTone(kind) {
+    const ctx = getKenoAudioContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    const isHit = kind === "hit";
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    osc.type = isHit ? "triangle" : "sine";
+    osc.frequency.setValueAtTime(isHit ? 660 : 180, now);
+    if (isHit) {
+      osc.frequency.exponentialRampToValueAtTime(990, now + 0.09);
+    } else {
+      osc.frequency.exponentialRampToValueAtTime(110, now + 0.12);
+    }
+
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(isHit ? 3200 : 900, now);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(isHit ? 0.085 : 0.045, now + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + (isHit ? 0.16 : 0.14));
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.18);
+  }
+
   function cardClass(card) {
     if (card?.hidden) return "hg-card is-hidden-card";
     const suit = card?.suit || "";
@@ -1043,6 +1089,7 @@
         if (!cell) return;
         cell.classList.add(hits.has(n) ? "is-hit" : "is-miss");
       });
+      playKenoTone(hits.size > 0 ? "hit" : "miss");
       return;
     }
 
@@ -1059,6 +1106,8 @@
         cell.classList.add("is-revealing");
         cell.classList.add(isHit ? "is-hit" : "is-miss");
       }
+
+      playKenoTone(isHit ? "hit" : "miss");
 
       if (resultEl) {
         resultEl.textContent = `Drawing ${i + 1}/${drawn.length} · ${n} ${
@@ -1153,6 +1202,7 @@
 
   async function playKeno() {
     if (kenoDrawing) return;
+    getKenoAudioContext();
     const bet = Number($("hg-keno-bet")?.value || 0);
     if (kenoPicks.size < 1) {
       setStatus("Pick at least one number.", { error: true });
