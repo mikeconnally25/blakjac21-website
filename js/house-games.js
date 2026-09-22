@@ -1125,11 +1125,22 @@
 
   async function resumeActiveBlackjack() {
     if (!currentUser?.kickUserId) return;
-    const data = await play({ game: "blackjack", action: "resume" });
-    if (!data?.sessionId || data.active === false) return;
-    switchGame("blackjack");
-    renderBlackjack(data);
-    setStatus("Resumed your blackjack hand.");
+    try {
+      const response = await fetch("/api/house-games/play", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ game: "blackjack", action: "resume" }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data?.sessionId || data.active === false) return;
+      applyBalance(data);
+      switchGame("blackjack");
+      renderBlackjack(data);
+      setStatus("Resumed your blackjack hand.");
+    } catch {
+      /* ignore resume failures */
+    }
   }
 
   async function dealBlackjack() {
@@ -1137,6 +1148,12 @@
     const data = await play({ game: "blackjack", action: "start", bet });
     if (!data) {
       setBlackjackActions(null);
+      return;
+    }
+    if (data.resumed) {
+      switchGame("blackjack");
+      renderBlackjack(data);
+      setStatus("Resumed your blackjack hand.");
       return;
     }
     await presentBlackjack(data, "deal");
