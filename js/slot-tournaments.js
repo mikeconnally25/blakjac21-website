@@ -1148,17 +1148,6 @@ function renderEntries() {
   });
 }
 
-function formatPredictionUpdatedAt(value) {
-  const at = Date.parse(value || "");
-  if (!Number.isFinite(at)) return "";
-  return new Date(at).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
 function renderPredictors() {
   const list = document.getElementById("st-predictors-list");
   const empty = document.getElementById("st-predictors-empty");
@@ -1168,7 +1157,7 @@ function renderPredictors() {
   const rows = Array.isArray(state.predictors) ? state.predictors : [];
   if (meta) {
     meta.textContent = rows.length
-      ? `${rows.length} account${rows.length === 1 ? "" : "s"} submitted a bracket prediction`
+      ? `${rows.length} account${rows.length === 1 ? "" : "s"} predicted`
       : "Accounts that submitted a bracket prediction";
   }
 
@@ -1185,20 +1174,7 @@ function renderPredictors() {
   rows.forEach((row) => {
     const item = document.createElement("li");
     item.className = "st-predictors-item";
-
-    const name = document.createElement("span");
-    name.className = "st-predictors-name";
-    name.textContent = row.username || "viewer";
-
-    const detail = document.createElement("span");
-    detail.className = "st-predictors-detail";
-    const when = formatPredictionUpdatedAt(row.updatedAt);
-    const picks = Number(row.pickCount) || 0;
-    detail.textContent = when
-      ? `${picks} pick${picks === 1 ? "" : "s"} · ${when}`
-      : `${picks} pick${picks === 1 ? "" : "s"}`;
-
-    item.append(name, detail);
+    item.textContent = row.username || "viewer";
     list.append(item);
   });
 }
@@ -1214,10 +1190,116 @@ function formatPredictionRoundBreakdown(correctByRound) {
     .join(" · ");
 }
 
+const PREDICTION_TROPHY_METALS = {
+  1: {
+    light: "#ffe9a8",
+    mid: "#f0c34a",
+    deep: "#c49216",
+    dark: "#8a6408",
+    shine: "#fff6d6",
+  },
+  2: {
+    light: "#f4f7fb",
+    mid: "#d5dde6",
+    deep: "#8e9aab",
+    dark: "#5d6a7a",
+    shine: "#ffffff",
+  },
+  3: {
+    light: "#f3c08a",
+    mid: "#cd7f32",
+    deep: "#935318",
+    dark: "#63340e",
+    shine: "#ffe0b8",
+  },
+};
+
+function createPredictionPodiumTrophy(place) {
+  const metal = PREDICTION_TROPHY_METALS[place] || PREDICTION_TROPHY_METALS[3];
+  const uid = `st-trophy-${place}-${Math.random().toString(36).slice(2, 8)}`;
+  const trophy = document.createElement("span");
+  trophy.className = `podium-trophy podium-trophy--${place}`;
+  trophy.setAttribute("aria-label", `Place ${place}`);
+  trophy.innerHTML = `
+    <svg class="podium-trophy-icon" viewBox="0 0 88 108" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="${uid}-cup" x1="18" y1="8" x2="70" y2="70" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="${metal.shine}"/>
+          <stop offset="28%" stop-color="${metal.light}"/>
+          <stop offset="55%" stop-color="${metal.mid}"/>
+          <stop offset="82%" stop-color="${metal.deep}"/>
+          <stop offset="100%" stop-color="${metal.dark}"/>
+        </linearGradient>
+        <linearGradient id="${uid}-rim" x1="18" y1="8" x2="70" y2="20" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="${metal.shine}"/>
+          <stop offset="45%" stop-color="${metal.light}"/>
+          <stop offset="100%" stop-color="${metal.deep}"/>
+        </linearGradient>
+        <linearGradient id="${uid}-handle" x1="0" y1="20" x2="1" y2="55" gradientUnits="objectBoundingBox">
+          <stop offset="0%" stop-color="${metal.light}"/>
+          <stop offset="50%" stop-color="${metal.mid}"/>
+          <stop offset="100%" stop-color="${metal.dark}"/>
+        </linearGradient>
+        <linearGradient id="${uid}-stem" x1="40" y1="58" x2="48" y2="78" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="${metal.light}"/>
+          <stop offset="55%" stop-color="${metal.mid}"/>
+          <stop offset="100%" stop-color="${metal.dark}"/>
+        </linearGradient>
+        <linearGradient id="${uid}-base" x1="20" y1="78" x2="68" y2="100" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="${metal.light}"/>
+          <stop offset="40%" stop-color="${metal.mid}"/>
+          <stop offset="100%" stop-color="${metal.dark}"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="44" cy="100" rx="22" ry="3.5" fill="rgba(0,0,0,0.28)"/>
+      <path d="M22 26c-11 1-18 9-18 19 0 12 8 20 19 21" fill="none" stroke="url(#${uid}-handle)" stroke-width="5.5" stroke-linecap="round"/>
+      <path d="M66 26c11 1 18 9 18 19 0 12-8 20-19 21" fill="none" stroke="url(#${uid}-handle)" stroke-width="5.5" stroke-linecap="round"/>
+      <path d="M26 18h36c1.4 0 2.5 1.1 2.5 2.5V30c0 16.5-9 29.5-20.5 34.5C32.5 59.5 23.5 46.5 23.5 30V20.5c0-1.4 1.1-2.5 2.5-2.5Z" fill="url(#${uid}-cup)"/>
+      <rect x="21" y="11" width="46" height="10" rx="3.5" fill="url(#${uid}-rim)"/>
+      <rect x="41" y="62" width="6" height="16" rx="2" fill="url(#${uid}-stem)"/>
+      <path d="M31 76h26l6 9H25l6-9Z" fill="url(#${uid}-base)"/>
+      <rect x="20" y="85" width="48" height="8" rx="3" fill="url(#${uid}-base)"/>
+    </svg>
+    <span class="podium-trophy-place">${place}</span>
+  `;
+  return trophy;
+}
+
+function createPredictionPodiumSlot(place, row) {
+  const slot = document.createElement("div");
+  slot.className = `podium-slot place-${place}`;
+  if (!row) slot.classList.add("is-vacant");
+
+  const block = document.createElement("div");
+  block.className = "podium-block";
+
+  const trophy = createPredictionPodiumTrophy(place);
+
+  const user = document.createElement("span");
+  user.className = "podium-user";
+  user.textContent = row?.username || "—";
+
+  const detail = document.createElement("span");
+  detail.className = "podium-guess";
+  detail.textContent = row
+    ? formatPredictionRoundBreakdown(row.correctByRound)
+    : "";
+
+  const points = document.createElement("span");
+  points.className = "podium-prize";
+  points.textContent = row ? `${Number(row.points) || 0} pts` : "";
+
+  block.append(trophy, user, detail, points);
+  slot.append(block);
+  return slot;
+}
+
 function renderPredictionLeaderboard() {
   const list = document.getElementById("st-prediction-board");
   const empty = document.getElementById("st-prediction-board-empty");
   const meta = document.getElementById("st-prediction-board-meta");
+  const podium = document.getElementById("st-prediction-podium");
+  const stage = document.getElementById("st-prediction-podium-stage");
   if (!list || !empty) return;
 
   const rows = Array.isArray(state.predictionLeaderboard)
@@ -1238,24 +1320,42 @@ function renderPredictionLeaderboard() {
   }
 
   list.replaceChildren();
+  stage?.replaceChildren();
+
   if (!rows.length) {
     empty.classList.remove("is-hidden");
     empty.textContent = "No prediction sheets yet.";
     list.classList.add("is-hidden");
+    podium?.classList.add("is-hidden");
     return;
   }
 
   empty.classList.add("is-hidden");
-  list.classList.remove("is-hidden");
 
-  rows.forEach((row, index) => {
+  const topThree = rows.slice(0, 3);
+  const rest = rows.slice(3);
+
+  if (podium && stage) {
+    podium.classList.remove("is-hidden");
+    stage.replaceChildren();
+    [2, 1, 3].forEach((place) => {
+      stage.append(createPredictionPodiumSlot(place, topThree[place - 1] || null));
+    });
+  }
+
+  if (!rest.length) {
+    list.classList.add("is-hidden");
+    return;
+  }
+
+  list.classList.remove("is-hidden");
+  rest.forEach((row, index) => {
     const item = document.createElement("li");
     item.className = "st-prediction-board-row";
-    if (index < 3) item.classList.add(`is-top-${index + 1}`);
 
     const place = document.createElement("span");
     place.className = "st-prediction-board-place";
-    place.textContent = String(index + 1);
+    place.textContent = String(index + 4);
 
     const copy = document.createElement("div");
     copy.className = "st-prediction-board-copy";
