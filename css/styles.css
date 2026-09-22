@@ -8024,13 +8024,29 @@ ul {
 }
 
 .slot-tournaments-page .page-content.slot-tournaments-shell {
-  max-width: 48rem;
+  max-width: 72rem;
 }
 
 .slot-tournaments-shell {
-  max-width: 48rem;
+  max-width: 72rem;
   display: grid;
   gap: 1rem;
+}
+
+.slot-tournaments-split {
+  display: grid;
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .slot-tournaments-split {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .slot-tournaments-split > .slot-tournaments-panel {
+    min-height: 100%;
+  }
 }
 
 .slot-tournaments-top {

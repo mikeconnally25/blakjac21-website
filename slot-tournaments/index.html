@@ -173,123 +173,153 @@
           </div>
         </div>
 
-        <section class="slot-tournaments-panel bj21-panel theme-surface" aria-labelledby="st-signups-title">
-          <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <div class="slot-tournaments-section-head">
-            <div>
-              <h2 class="slot-tournaments-panel-title" id="st-signups-title">Signups</h2>
-              <p class="slot-tournaments-panel-text" id="st-spots-display"></p>
-              <p class="slot-tournaments-panel-text" id="st-predictions-status">
-                Predictions closed
-              </p>
-            </div>
-            <div class="slot-tournaments-actions st-signups-actions">
-              <button
-                type="button"
-                class="btn btn-sm btn-primary is-hidden"
-                id="st-predictions-toggle"
-              >
-                Enable predictions
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-primary is-hidden"
-                id="st-predict-open"
-              >
-                Predict
-              </button>
-              <a
-                href="/api/auth/login"
-                class="btn btn-sm btn-outline is-hidden"
-                id="st-predictions-guest"
-              >
-                Sign in to predict
-              </a>
-              <a
-                href="/slot-tournaments/bracket/"
-                class="btn btn-sm btn-outline is-hidden"
-                id="st-view-bracket"
-              >
-                View bracket
-              </a>
-            </div>
-          </div>
-
-          <div
-            class="round-timer bj21-panel-inset is-hidden"
-            id="st-predictions-timer"
-            role="timer"
-            aria-live="polite"
-          >
-            <span class="round-timer-label">Time left to predict</span>
-            <span class="round-timer-value" id="st-predictions-timer-value">5:00</span>
-          </div>
-
-          <div class="st-predictions-timer-admin is-hidden" id="st-predictions-timer-admin">
-            <label class="guess-label" for="st-predictions-minutes">Prediction timer</label>
-            <p class="slot-tournaments-panel-text">
-              How long viewers have to submit picks when you enable predictions.
-            </p>
-            <div class="digital-clock-picker" id="st-predictions-minutes-picker">
-              <button
-                type="button"
-                class="digital-clock-step"
-                id="st-predictions-minutes-down"
-                aria-label="Decrease prediction timer by one minute"
-              >
-                −
-              </button>
-              <div class="digital-clock-screen">
-                <input
-                  class="digital-clock-minutes"
-                  id="st-predictions-minutes"
-                  type="text"
-                  inputmode="numeric"
-                  maxlength="3"
-                  value="05"
-                  aria-label="Prediction timer length in minutes"
-                />
-                <span class="digital-clock-colon" aria-hidden="true">:</span>
-                <span class="digital-clock-seconds" aria-hidden="true">00</span>
+        <div class="slot-tournaments-split">
+          <section class="slot-tournaments-panel bj21-panel theme-surface" aria-labelledby="st-signups-title">
+            <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <div class="slot-tournaments-section-head">
+              <div>
+                <h2 class="slot-tournaments-panel-title" id="st-signups-title">Signups</h2>
+                <p class="slot-tournaments-panel-text" id="st-spots-display"></p>
+                <p class="slot-tournaments-panel-text" id="st-predictions-status">
+                  Predictions closed
+                </p>
               </div>
-              <button
-                type="button"
-                class="digital-clock-step"
-                id="st-predictions-minutes-up"
-                aria-label="Increase prediction timer by one minute"
-              >
-                +
-              </button>
+              <div class="slot-tournaments-actions st-signups-actions">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-primary is-hidden"
+                  id="st-predictions-toggle"
+                >
+                  Enable predictions
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-primary is-hidden"
+                  id="st-predict-open"
+                >
+                  Predict
+                </button>
+                <a
+                  href="/api/auth/login"
+                  class="btn btn-sm btn-outline is-hidden"
+                  id="st-predictions-guest"
+                >
+                  Sign in to predict
+                </a>
+                <a
+                  href="/slot-tournaments/bracket/"
+                  class="btn btn-sm btn-outline is-hidden"
+                  id="st-view-bracket"
+                >
+                  View bracket
+                </a>
+              </div>
             </div>
-          </div>
 
-          <p class="slot-tournaments-banner is-hidden" id="st-predictions-banner" role="status"></p>
-          <p class="slot-tournaments-empty" id="st-entries-empty">No signups yet.</p>
-          <div class="slot-tournaments-scroll">
-            <ol class="slot-tournaments-entries is-hidden" id="st-entries"></ol>
-          </div>
-          <div class="slot-tournaments-bots is-hidden" id="st-bots">
-            <p class="slot-tournaments-panel-label">Fill with bots</p>
-            <div class="slot-tournaments-bots-row">
-              <label class="guess-label" for="st-bots-count">Count</label>
-              <input
-                class="guess-input"
-                id="st-bots-count"
-                type="number"
-                min="1"
-                max="100"
-                step="1"
-                value="1"
-              />
-              <button type="button" class="btn btn-sm btn-primary" id="st-bots-add">
-                Add bots
-              </button>
-              <button type="button" class="btn btn-sm btn-outline is-hidden" id="st-bots-fill">
-                Fill remaining
-              </button>
+            <div
+              class="round-timer bj21-panel-inset is-hidden"
+              id="st-predictions-timer"
+              role="timer"
+              aria-live="polite"
+            >
+              <span class="round-timer-label">Time left to predict</span>
+              <span class="round-timer-value" id="st-predictions-timer-value">5:00</span>
             </div>
-          </div>
-        </section>
+
+            <div class="st-predictions-timer-admin is-hidden" id="st-predictions-timer-admin">
+              <label class="guess-label" for="st-predictions-minutes">Prediction timer</label>
+              <p class="slot-tournaments-panel-text">
+                How long viewers have to submit picks when you enable predictions.
+              </p>
+              <div class="digital-clock-picker" id="st-predictions-minutes-picker">
+                <button
+                  type="button"
+                  class="digital-clock-step"
+                  id="st-predictions-minutes-down"
+                  aria-label="Decrease prediction timer by one minute"
+                >
+                  −
+                </button>
+                <div class="digital-clock-screen">
+                  <input
+                    class="digital-clock-minutes"
+                    id="st-predictions-minutes"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="3"
+                    value="05"
+                    aria-label="Prediction timer length in minutes"
+                  />
+                  <span class="digital-clock-colon" aria-hidden="true">:</span>
+                  <span class="digital-clock-seconds" aria-hidden="true">00</span>
+                </div>
+                <button
+                  type="button"
+                  class="digital-clock-step"
+                  id="st-predictions-minutes-up"
+                  aria-label="Increase prediction timer by one minute"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <p class="slot-tournaments-banner is-hidden" id="st-predictions-banner" role="status"></p>
+            <p class="slot-tournaments-empty" id="st-entries-empty">No signups yet.</p>
+            <div class="slot-tournaments-scroll">
+              <ol class="slot-tournaments-entries is-hidden" id="st-entries"></ol>
+            </div>
+            <div class="slot-tournaments-bots is-hidden" id="st-bots">
+              <p class="slot-tournaments-panel-label">Fill with bots</p>
+              <div class="slot-tournaments-bots-row">
+                <label class="guess-label" for="st-bots-count">Count</label>
+                <input
+                  class="guess-input"
+                  id="st-bots-count"
+                  type="number"
+                  min="1"
+                  max="100"
+                  step="1"
+                  value="1"
+                />
+                <button type="button" class="btn btn-sm btn-primary" id="st-bots-add">
+                  Add bots
+                </button>
+                <button type="button" class="btn btn-sm btn-outline is-hidden" id="st-bots-fill">
+                  Fill remaining
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section
+            class="slot-tournaments-panel bj21-panel theme-surface"
+            aria-labelledby="st-prediction-board-title"
+          >
+            <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <div class="slot-tournaments-section-head">
+              <div>
+                <h2 class="slot-tournaments-panel-title" id="st-prediction-board-title">
+                  Predictions leaderboard
+                </h2>
+                <p class="slot-tournaments-panel-text" id="st-prediction-board-meta">
+                  R1 = 1 pt · R2 = 2 pts · R3 = 3 pts · scores update as winners are set
+                </p>
+              </div>
+            </div>
+            <p class="slot-tournaments-empty" id="st-prediction-board-empty">
+              No prediction sheets yet.
+            </p>
+            <div class="st-prediction-podium is-hidden" id="st-prediction-podium">
+              <div
+                class="podium-stage st-prediction-podium-stage"
+                id="st-prediction-podium-stage"
+                aria-label="Top 3 prediction scores"
+              ></div>
+            </div>
+            <ol class="st-prediction-board is-hidden" id="st-prediction-board"></ol>
+          </section>
+        </div>
 
         <div
           class="st-predict-modal is-hidden"
@@ -365,34 +395,6 @@
             No predictions submitted yet.
           </p>
           <ul class="st-predictors-list is-hidden" id="st-predictors-list"></ul>
-        </section>
-
-        <section
-          class="slot-tournaments-panel bj21-panel theme-surface"
-          aria-labelledby="st-prediction-board-title"
-        >
-          <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <div class="slot-tournaments-section-head">
-            <div>
-              <h2 class="slot-tournaments-panel-title" id="st-prediction-board-title">
-                Predictions leaderboard
-              </h2>
-              <p class="slot-tournaments-panel-text" id="st-prediction-board-meta">
-                R1 = 1 pt · R2 = 2 pts · R3 = 3 pts · scores update as winners are set
-              </p>
-            </div>
-          </div>
-          <p class="slot-tournaments-empty" id="st-prediction-board-empty">
-            No prediction sheets yet.
-          </p>
-          <div class="st-prediction-podium is-hidden" id="st-prediction-podium">
-            <div
-              class="podium-stage st-prediction-podium-stage"
-              id="st-prediction-podium-stage"
-              aria-label="Top 3 prediction scores"
-            ></div>
-          </div>
-          <ol class="st-prediction-board is-hidden" id="st-prediction-board"></ol>
         </section>
 
         <section class="slot-tournaments-panel bj21-panel theme-surface" aria-labelledby="st-results-title">
