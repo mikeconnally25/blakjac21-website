@@ -7594,9 +7594,9 @@ ul {
 
 .hg-keno-board {
   display: grid;
-  grid-template-columns: repeat(10, minmax(0, 1fr));
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 0.35rem;
-  max-width: 42rem;
+  max-width: 28rem;
 }
 
 .hg-keno-cell {
@@ -7655,7 +7655,8 @@ ul {
 
 @media (max-width: 640px) {
   .hg-keno-board {
-    grid-template-columns: repeat(8, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    max-width: none;
   }
 }
 

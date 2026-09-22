@@ -777,7 +777,7 @@
   function buildKenoBoard() {
     const board = $("hg-keno-board");
     if (!board || board.childElementCount) return;
-    for (let n = 1; n <= 80; n += 1) {
+    for (let n = 1; n <= 40; n += 1) {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "hg-keno-cell";
@@ -797,7 +797,7 @@
         btn.classList.toggle("is-picked", kenoPicks.has(key));
         const hint = $("hg-keno-hint");
         if (hint) {
-          hint.textContent = `Pick 1–10 numbers (${kenoPicks.size} selected). 20 are drawn.`;
+          hint.textContent = `Pick 1–10 numbers (${kenoPicks.size} selected). 10 are drawn.`;
         }
       });
       board.appendChild(btn);
@@ -969,7 +969,7 @@
       });
       const hint = $("hg-keno-hint");
       if (hint) {
-        hint.textContent = "Pick 1–10 numbers. 20 are drawn.";
+        hint.textContent = "Pick 1–10 numbers. 10 are drawn.";
       }
       const result = $("hg-keno-result");
       if (result) result.textContent = "";
