@@ -6883,12 +6883,13 @@ ul {
   padding: 1.4rem 1.5rem 1.65rem;
   border-radius: var(--radius);
   background:
-    radial-gradient(ellipse 80% 55% at 50% -10%, rgba(88, 201, 243, 0.18), transparent 55%),
-    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(0, 51, 77, 0.55), transparent 55%),
-    linear-gradient(165deg, rgba(15, 26, 36, 0.98), rgba(7, 12, 17, 0.98) 55%, rgba(2, 16, 24, 0.99));
+    radial-gradient(ellipse 85% 60% at 50% 0%, rgba(126, 216, 255, 0.28), transparent 58%),
+    radial-gradient(ellipse 70% 50% at 50% 100%, rgba(0, 20, 35, 0.45), transparent 55%),
+    linear-gradient(165deg, #1a6f96 0%, #0f5578 38%, #0a3d5c 72%, #072f48 100%);
   box-shadow:
-    inset 0 1px 0 rgba(126, 216, 255, 0.12),
-    inset 0 -20px 40px rgba(0, 0, 0, 0.35);
+    inset 0 1px 0 rgba(126, 216, 255, 0.22),
+    inset 0 0 0 1px rgba(88, 201, 243, 0.12),
+    inset 0 -24px 48px rgba(0, 0, 0, 0.35);
   overflow: hidden;
 }
 
@@ -6972,7 +6973,7 @@ ul {
   content: "";
   position: absolute;
   inset: 14% 10% 16%;
-  border: 1px solid rgba(88, 201, 243, 0.16);
+  border: 1px solid rgba(126, 216, 255, 0.28);
   border-radius: 42% 42% 38% 38% / 28% 28% 58% 58%;
   pointer-events: none;
   mask-image: linear-gradient(180deg, transparent, #000 18%, #000 82%, transparent);
@@ -6984,11 +6985,18 @@ ul {
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(rgba(88, 201, 243, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(88, 201, 243, 0.035) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 20%, transparent 75%);
-  opacity: 0.7;
+    radial-gradient(ellipse at 30% 20%, rgba(126, 216, 255, 0.08), transparent 40%),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 2px,
+      rgba(7, 12, 17, 0.04) 2px 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 2px,
+      rgba(7, 12, 17, 0.04) 2px 3px
+    );
+  opacity: 0.9;
 }
 
 .hg-bj-banner {
@@ -7000,8 +7008,9 @@ ul {
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: rgba(238, 246, 251, 0.72);
   text-align: center;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
 }
 
 .hg-bj-banner span {
@@ -7013,15 +7022,15 @@ ul {
   z-index: 1;
   margin: 0.1rem 0;
   padding: 0.22rem 1rem;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(126, 216, 255, 0.28);
   border-radius: 999px;
-  background: rgba(7, 12, 17, 0.35);
+  background: rgba(7, 12, 17, 0.22);
   font-family: var(--font-display);
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: rgba(238, 246, 251, 0.7);
 }
 
 .hg-hand {
@@ -7044,7 +7053,7 @@ ul {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: rgba(238, 246, 251, 0.78);
 }
 
 .hg-hand-label span {
@@ -7222,7 +7231,7 @@ ul {
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: rgba(238, 246, 251, 0.65);
 }
 
 .hg-bj-rail {
