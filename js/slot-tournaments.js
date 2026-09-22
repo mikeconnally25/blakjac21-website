@@ -850,7 +850,6 @@ function applyState(data) {
     renderEntries();
     renderPredictors();
     renderPredictionLeaderboard();
-    renderResults();
     renderPredictions();
     renderAdminForm();
     return;
@@ -1043,7 +1042,7 @@ function renderInfo() {
     } else if (state.phase === "live") {
       hint.textContent = "Signups closed. Tournament is live.";
     } else if (state.phase === "results") {
-      hint.textContent = "Tournament complete — see results below.";
+      hint.textContent = "Tournament complete.";
     } else {
       hint.textContent =
         "When signups open, sign in with Kick and claim a spot on this page.";
@@ -1379,47 +1378,6 @@ function renderPredictionLeaderboard() {
   });
 }
 
-function renderResults() {
-  const list = document.getElementById("st-results");
-  const empty = document.getElementById("st-results-empty");
-  if (!list || !empty) return;
-
-  list.replaceChildren();
-  if (!state.results.length) {
-    empty.classList.remove("is-hidden");
-    list.classList.add("is-hidden");
-    return;
-  }
-
-  empty.classList.add("is-hidden");
-  list.classList.remove("is-hidden");
-
-  state.results.forEach((entry) => {
-    const row = document.createElement("li");
-    row.className = "slot-tournaments-result";
-
-    const place = document.createElement("span");
-    place.className = "slot-tournaments-result-place";
-    place.textContent = `#${entry.place}`;
-
-    const copy = document.createElement("div");
-    copy.className = "slot-tournaments-result-copy";
-
-    const name = document.createElement("p");
-    name.className = "slot-tournaments-result-name";
-    name.textContent = entry.username;
-
-    const meta = document.createElement("p");
-    meta.className = "slot-tournaments-result-meta";
-    meta.textContent = [entry.score, entry.note].filter(Boolean).join(" · ");
-
-    copy.append(name);
-    if (meta.textContent) copy.append(meta);
-    row.append(place, copy);
-    list.append(row);
-  });
-}
-
 function renderAssignPanel() {
   const panel = document.getElementById("st-assign");
   const isAdmin = Boolean(currentUser?.isAdmin);
@@ -1542,7 +1500,6 @@ function renderAll() {
   renderPredictions();
   renderPredictors();
   renderPredictionLeaderboard();
-  renderResults();
   renderAssignPanel();
   renderAdminForm();
 }

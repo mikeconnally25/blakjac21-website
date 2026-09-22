@@ -8236,8 +8236,7 @@ ul {
   overscroll-behavior: contain;
 }
 
-.slot-tournaments-entries,
-.slot-tournaments-results {
+.slot-tournaments-entries {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -8245,8 +8244,7 @@ ul {
   gap: 0.45rem;
 }
 
-.slot-tournaments-entry,
-.slot-tournaments-result {
+.slot-tournaments-entry {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -8256,8 +8254,7 @@ ul {
   background: rgba(8, 14, 22, 0.45);
 }
 
-.slot-tournaments-entry-index,
-.slot-tournaments-result-place {
+.slot-tournaments-entry-index {
   font-family: var(--font-display);
   font-size: 1.05rem;
   letter-spacing: 0.05em;
@@ -8265,8 +8262,7 @@ ul {
   min-width: 2rem;
 }
 
-.slot-tournaments-entry-name,
-.slot-tournaments-result-name {
+.slot-tournaments-entry-name {
   margin: 0;
   font-weight: 600;
   color: var(--text);
@@ -8710,18 +8706,6 @@ ul {
   width: 1.35rem;
   height: 1.35rem;
   font-size: 0.5rem;
-}
-
-.slot-tournaments-result-copy {
-  display: grid;
-  gap: 0.1rem;
-  min-width: 0;
-}
-
-.slot-tournaments-result-meta {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 0.84rem;
 }
 
 .slot-tournaments-assign,
