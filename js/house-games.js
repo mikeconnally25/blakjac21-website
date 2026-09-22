@@ -126,6 +126,50 @@
     osc.stop(now + 0.18);
   }
 
+  function playKenoWinSound() {
+    const ctx = getKenoAudioContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    const notes = [523.25, 659.25, 783.99, 1046.5];
+    notes.forEach((freq, index) => {
+      const t = now + index * 0.07;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = index === notes.length - 1 ? "triangle" : "sine";
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.11, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.36);
+    });
+  }
+
+  function hideKenoWinBanner() {
+    const banner = $("hg-keno-win-banner");
+    if (!banner) return;
+    banner.classList.add("is-hidden");
+    banner.innerHTML = "";
+  }
+
+  function showKenoWinBanner(data) {
+    const banner = $("hg-keno-win-banner");
+    if (!banner) return;
+    const payout = formatPoints(data.payout);
+    const hits = Number(data.hitCount) || 0;
+    const mult = data.multiplier != null ? `${data.multiplier}x` : "";
+    banner.innerHTML = `
+      <div class="hg-keno-win-banner-inner">
+        <span class="hg-keno-win-banner-label">You win</span>
+        <span class="hg-keno-win-banner-detail">+${payout} pts · ${hits} hit${hits === 1 ? "" : "s"}${mult ? ` · ${mult}` : ""}</span>
+      </div>
+    `;
+    banner.classList.remove("is-hidden");
+  }
+
   function cardClass(card) {
     if (card?.hidden) return "hg-card is-hidden-card";
     const suit = card?.suit || "";
@@ -1128,6 +1172,7 @@
 
   async function animateKenoDraw(data) {
     clearKenoMarks();
+    hideKenoWinBanner();
     const drawn = Array.isArray(data.drawn) ? data.drawn : [];
     const hits = new Set(data.hits || []);
     const resultEl = $("hg-keno-result");
@@ -1307,6 +1352,7 @@
 
     const el = $("hg-keno-result");
     if (el) el.textContent = "Drawing…";
+    hideKenoWinBanner();
 
     try {
       await animateKenoDraw(data);
@@ -1318,6 +1364,10 @@
           ? `Win · ${riskLabel}${data.hitCount} hit · ${data.multiplier}x · +${formatPoints(data.payout)} pts`
           : `${riskLabel}${data.hitCount} hit · no payout`;
         el.textContent = outcome;
+      }
+      if (data.won) {
+        showKenoWinBanner(data);
+        playKenoWinSound();
       }
     } finally {
       kenoDrawing = false;
@@ -1379,6 +1429,7 @@
       document.querySelectorAll(".hg-keno-cell").forEach((cell) => {
         cell.classList.remove("is-picked", "is-drawn", "is-hit", "is-miss", "is-revealing");
       });
+      hideKenoWinBanner();
       const hint = $("hg-keno-hint");
       if (hint) {
         hint.textContent = "Pick 1–10 numbers. 10 are drawn.";

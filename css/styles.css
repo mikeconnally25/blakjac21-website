@@ -7651,11 +7651,15 @@ ul {
   align-items: start;
 }
 
+.hg-keno-board-stage {
+  position: relative;
+  max-width: 38rem;
+}
+
 .hg-keno-board {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 0.45rem;
-  max-width: 38rem;
 }
 
 .hg-keno-paytable {
@@ -7825,11 +7829,78 @@ ul {
   color: var(--accent-bright);
 }
 
+.hg-keno-win-banner {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  text-align: center;
+  padding: 1rem;
+  background: radial-gradient(
+    circle at center,
+    rgba(8, 28, 36, 0.72) 0%,
+    rgba(8, 28, 36, 0.45) 42%,
+    rgba(8, 28, 36, 0) 72%
+  );
+}
+
+.hg-keno-win-banner.is-hidden {
+  display: none;
+}
+
+.hg-keno-win-banner-inner {
+  display: grid;
+  gap: 0.2rem;
+  justify-items: center;
+  padding: 0.85rem 1.35rem;
+  border: 1px solid rgba(109, 224, 164, 0.45);
+  background: rgba(10, 36, 42, 0.92);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+  animation: hg-keno-win-pop 0.42s ease both;
+}
+
+.hg-keno-win-banner-label {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6de0a4;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+}
+
+.hg-keno-win-banner-detail {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-bright);
+}
+
+@keyframes hg-keno-win-pop {
+  0% {
+    transform: scale(0.86);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hg-card.is-dealing,
   .hg-card.is-flipping,
   .hg-roulette-ball,
   .hg-keno-cell.is-revealing,
+  .hg-keno-win-banner-inner,
   .hg-bj-table.is-dealing .hg-bj-shoe-deck:nth-child(3) {
     animation: none;
   }
@@ -7842,9 +7913,12 @@ ul {
 }
 
 @media (max-width: 640px) {
+  .hg-keno-board-stage {
+    max-width: none;
+  }
+
   .hg-keno-board {
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    max-width: none;
   }
 }
 
