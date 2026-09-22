@@ -471,6 +471,22 @@
     chip.textContent = Number.isFinite(n) && n > 0 ? String(n) : "—";
   }
 
+  function syncBetLimits(maxBet) {
+    document.querySelectorAll(".hg-bet-input").forEach((input) => {
+      if (maxBet == null) {
+        input.removeAttribute("max");
+        input.title = "No max bet for your account";
+      } else {
+        input.max = String(maxBet);
+        input.title = `Max bet ${maxBet} pts`;
+        const value = Math.floor(Number(input.value));
+        if (Number.isFinite(value) && value > maxBet) {
+          input.value = String(maxBet);
+        }
+      }
+    });
+  }
+
   function syncAuthUi() {
     const guest = $("hg-guest");
     const stage = $("hg-stage");
@@ -479,6 +495,7 @@
     stage?.classList.toggle("is-hidden", !signedIn);
     if (!signedIn) {
       setBalance(null);
+      syncBetLimits(5000);
       bjSessionId = null;
       renderBlackjack(null);
       setStatus("");
@@ -503,6 +520,11 @@
       if (!response.ok) return;
       const data = await response.json();
       setBalance(data.points);
+      syncBetLimits(
+        Object.prototype.hasOwnProperty.call(data, "maxBet")
+          ? data.maxBet
+          : 5000
+      );
     } catch {
       /* ignore */
     }
