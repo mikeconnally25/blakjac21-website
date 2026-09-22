@@ -6857,6 +6857,43 @@ ul {
   width: 7.5rem;
 }
 
+.hg-keno-risk {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.hg-keno-risk-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.hg-keno-risk-btn {
+  appearance: none;
+  border: 1px solid rgba(126, 216, 255, 0.28);
+  background: rgba(0, 24, 40, 0.55);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.hg-keno-risk-btn:hover,
+.hg-keno-risk-btn:focus-visible {
+  border-color: rgba(126, 216, 255, 0.55);
+  outline: none;
+}
+
+.hg-keno-risk-btn.is-active {
+  background: rgba(88, 201, 243, 0.22);
+  border-color: rgba(126, 216, 255, 0.75);
+  color: #eaf8ff;
+}
+
 .hg-bj-shell {
   display: grid;
   gap: 0;

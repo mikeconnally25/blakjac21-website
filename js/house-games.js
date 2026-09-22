@@ -806,18 +806,85 @@
     });
   }
 
-  const KENO_PAYTABLE = {
-    1: { 1: 3.96 },
-    2: { 1: 1.9, 2: 4.5 },
-    3: { 1: 1, 2: 3.1, 3: 10.4 },
-    4: { 1: 0.8, 2: 1.8, 3: 5, 4: 22.5 },
-    5: { 1: 0.25, 2: 1.4, 3: 4.1, 4: 16.5, 5: 36 },
-    6: { 2: 1, 3: 3.68, 4: 7, 5: 16.5, 6: 40 },
-    7: { 2: 0.47, 3: 3, 4: 4.5, 5: 14, 6: 31, 7: 60 },
-    8: { 3: 2.2, 4: 4, 5: 13, 6: 22, 7: 55, 8: 70 },
-    9: { 3: 1.55, 4: 3, 5: 8, 6: 15, 7: 44, 8: 60, 9: 85 },
-    10: { 3: 1.4, 4: 2.25, 5: 4.5, 6: 8, 7: 17, 8: 50, 9: 80, 10: 100 },
+  const KENO_PAYTABLES = {
+    classic: {
+      1: { 1: 3.96 },
+      2: { 1: 1.9, 2: 4.5 },
+      3: { 1: 1, 2: 3.1, 3: 10.4 },
+      4: { 1: 0.8, 2: 1.8, 3: 5, 4: 22.5 },
+      5: { 1: 0.25, 2: 1.4, 3: 4.1, 4: 16.5, 5: 36 },
+      6: { 2: 1, 3: 3.68, 4: 7, 5: 16.5, 6: 40 },
+      7: { 2: 0.47, 3: 3, 4: 4.5, 5: 14, 6: 31, 7: 60 },
+      8: { 3: 2.2, 4: 4, 5: 13, 6: 22, 7: 55, 8: 70 },
+      9: { 3: 1.55, 4: 3, 5: 8, 6: 15, 7: 44, 8: 60, 9: 85 },
+      10: { 3: 1.4, 4: 2.25, 5: 4.5, 6: 8, 7: 17, 8: 50, 9: 80, 10: 100 },
+    },
+    low: {
+      1: { 0: 0.7, 1: 1.85 },
+      2: { 1: 2, 2: 3.8 },
+      3: { 1: 1.1, 2: 1.38, 3: 26 },
+      4: { 2: 2.2, 3: 7.9, 4: 90 },
+      5: { 2: 1.5, 3: 4.2, 4: 13, 5: 300 },
+      6: { 2: 1.1, 3: 2, 4: 6.2, 5: 100, 6: 700 },
+      7: { 2: 1.1, 3: 1.6, 4: 3.5, 5: 15, 6: 225, 7: 700 },
+      8: { 2: 1.1, 3: 1.5, 4: 2, 5: 5.5, 6: 39, 7: 100, 8: 800 },
+      9: { 2: 1.1, 3: 1.3, 4: 1.7, 5: 2.5, 6: 7.5, 7: 50, 8: 250, 9: 1000 },
+      10: {
+        2: 1.1,
+        3: 1.2,
+        4: 1.3,
+        5: 1.8,
+        6: 3.5,
+        7: 13,
+        8: 50,
+        9: 250,
+        10: 1000,
+      },
+    },
+    medium: {
+      1: { 0: 0.4, 1: 2.75 },
+      2: { 1: 1.8, 2: 5.1 },
+      3: { 2: 2.8, 3: 50 },
+      4: { 2: 1.7, 3: 10, 4: 100 },
+      5: { 2: 1.4, 3: 4, 4: 14, 5: 390 },
+      6: { 3: 3, 4: 9, 5: 180, 6: 710 },
+      7: { 3: 2, 4: 7, 5: 30, 6: 400, 7: 800 },
+      8: { 3: 2, 4: 4, 5: 11, 6: 67, 7: 400, 8: 900 },
+      9: { 3: 2, 4: 2.5, 5: 5, 6: 15, 7: 100, 8: 500, 9: 1000 },
+      10: {
+        3: 1.6,
+        4: 2,
+        5: 4,
+        6: 7,
+        7: 26,
+        8: 100,
+        9: 500,
+        10: 1000,
+      },
+    },
+    high: {
+      1: { 1: 3.96 },
+      2: { 2: 17.1 },
+      3: { 3: 81.5 },
+      4: { 3: 10, 4: 259 },
+      5: { 3: 4.5, 4: 48, 5: 450 },
+      6: { 4: 11, 5: 350, 6: 710 },
+      7: { 4: 7, 5: 90, 6: 400, 7: 800 },
+      8: { 4: 5, 5: 20, 6: 270, 7: 600, 8: 900 },
+      9: { 4: 4, 5: 11, 6: 56, 7: 500, 8: 800, 9: 1000 },
+      10: {
+        4: 3.5,
+        5: 8,
+        6: 13,
+        7: 63,
+        8: 500,
+        9: 800,
+        10: 1000,
+      },
+    },
   };
+
+  let kenoRisk = "classic";
 
   function formatKenoMult(mult) {
     const n = Number(mult);
@@ -825,9 +892,34 @@
     return String(Number(n.toFixed(2)));
   }
 
+  function formatKenoHitsLabel(hits) {
+    const n = Number(hits);
+    if (n === 0) return "0 hits";
+    return `${n} hit${n === 1 ? "" : "s"}`;
+  }
+
+  function activeKenoPaytable() {
+    return KENO_PAYTABLES[kenoRisk] || KENO_PAYTABLES.classic;
+  }
+
   function kenoUnitBet() {
     const n = Math.floor(Number($("hg-keno-bet")?.value || 0));
     return Number.isFinite(n) && n > 0 ? n : 0;
+  }
+
+  function setKenoRisk(nextRisk) {
+    const risk = String(nextRisk || "")
+      .trim()
+      .toLowerCase();
+    kenoRisk =
+      risk === "low" || risk === "medium" || risk === "high" ? risk : "classic";
+    document.querySelectorAll("[data-keno-risk]").forEach((btn) => {
+      btn.classList.toggle(
+        "is-active",
+        btn.getAttribute("data-keno-risk") === kenoRisk
+      );
+    });
+    renderKenoPaytable();
   }
 
   function renderKenoPaytable() {
@@ -837,23 +929,27 @@
 
     const pickCount = kenoPicks.size;
     const bet = kenoUnitBet();
-    const activeTable = KENO_PAYTABLE[pickCount];
+    const riskTables = activeKenoPaytable();
+    const activeTable = riskTables[pickCount];
+    const riskLabel =
+      kenoRisk.charAt(0).toUpperCase() + kenoRisk.slice(1);
 
     if (sub) {
       if (!pickCount) {
-        sub.textContent = "Select picks to see hit payoffs";
+        sub.textContent = `${riskLabel} risk · select picks to see hit payoffs`;
       } else {
-        sub.textContent = `${pickCount} pick${pickCount === 1 ? "" : "s"} · bet ${formatPoints(bet)} pts`;
+        sub.textContent = `${riskLabel} · ${pickCount} pick${pickCount === 1 ? "" : "s"} · bet ${formatPoints(bet)} pts`;
       }
     }
 
     if (!activeTable) {
       body.innerHTML = `
         <div class="hg-keno-pay-rows hg-keno-pay-overview">
-          ${Object.keys(KENO_PAYTABLE)
+          ${Object.keys(riskTables)
             .map((picks) => {
-              const table = KENO_PAYTABLE[picks];
+              const table = riskTables[picks];
               const top = Object.entries(table)
+                .sort((a, b) => Number(a[0]) - Number(b[0]))
                 .map(([hits, mult]) => `${hits}=${formatKenoMult(mult)}x`)
                 .join(" · ");
               return `<div class="hg-keno-pay-overview-row"><span>${picks} pick${picks === "1" ? "" : "s"}</span><span>${top}</span></div>`;
@@ -865,11 +961,12 @@
     }
 
     const rows = Object.entries(activeTable)
+      .sort((a, b) => Number(a[0]) - Number(b[0]))
       .map(([hits, mult]) => {
         const payout = Math.floor(bet * Number(mult));
         return `
           <div class="hg-keno-pay-row">
-            <span class="hg-keno-pay-hits">${hits} hit${hits === "1" ? "" : "s"}</span>
+            <span class="hg-keno-pay-hits">${formatKenoHitsLabel(hits)}</span>
             <span class="hg-keno-pay-mult">${formatKenoMult(mult)}x</span>
             <span class="hg-keno-pay-pts">${formatPoints(payout)} pts</span>
           </div>
@@ -1072,6 +1169,7 @@
       game: "keno",
       bet,
       picks: [...kenoPicks],
+      risk: kenoRisk,
     });
 
     if (!data) {
@@ -1087,9 +1185,12 @@
     try {
       await animateKenoDraw(data);
       if (el) {
+        const riskLabel = data.risk
+          ? `${String(data.risk).charAt(0).toUpperCase()}${String(data.risk).slice(1)} · `
+          : "";
         const outcome = data.won
-          ? `Win · ${data.hitCount} hit · ${data.multiplier}x · +${formatPoints(data.payout)} pts`
-          : `${data.hitCount} hit · no payout`;
+          ? `Win · ${riskLabel}${data.hitCount} hit · ${data.multiplier}x · +${formatPoints(data.payout)} pts`
+          : `${riskLabel}${data.hitCount} hit · no payout`;
         el.textContent = outcome;
       }
     } finally {
@@ -1149,6 +1250,13 @@
       const result = $("hg-keno-result");
       if (result) result.textContent = "";
       renderKenoPaytable();
+    });
+
+    document.querySelectorAll("[data-keno-risk]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (kenoDrawing) return;
+        setKenoRisk(btn.getAttribute("data-keno-risk"));
+      });
     });
 
     $("hg-keno-bet")?.addEventListener("input", renderKenoPaytable);
