@@ -295,41 +295,46 @@
               </div>
 
               <div class="house-game-panel" data-hg-panel="keno" id="hg-keno" hidden>
-                <div class="hg-bet-row">
-                  <label class="guess-label" for="hg-keno-bet">Bet</label>
-                  <input class="guess-input hg-bet-input" id="hg-keno-bet" type="number" min="1" max="5000" step="1" value="10" />
-                  <div class="hg-keno-risk" role="group" aria-label="Keno volatility">
-                    <span class="guess-label">Risk</span>
-                    <div class="hg-keno-risk-options">
-                      <button type="button" class="hg-keno-risk-btn is-active" data-keno-risk="classic">Classic</button>
-                      <button type="button" class="hg-keno-risk-btn" data-keno-risk="low">Low</button>
-                      <button type="button" class="hg-keno-risk-btn" data-keno-risk="medium">Medium</button>
-                      <button type="button" class="hg-keno-risk-btn" data-keno-risk="high">High</button>
-                    </div>
-                  </div>
-                  <div class="hg-keno-random" role="group" aria-label="Random keno picks">
-                    <label class="guess-label" for="hg-keno-random-count">Random</label>
-                    <div class="hg-keno-random-row">
-                      <select class="guess-input hg-keno-random-count" id="hg-keno-random-count" aria-label="How many random numbers">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5" selected>5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                      </select>
-                      <button type="button" class="btn btn-outline" id="hg-keno-random">Pick</button>
-                    </div>
-                  </div>
-                  <button type="button" class="btn btn-outline" id="hg-keno-clear">Clear picks</button>
-                  <button type="button" class="btn btn-primary" id="hg-keno-play">Draw</button>
-                </div>
-                <p class="slot-tournaments-panel-text" id="hg-keno-hint">Pick 1–10 numbers. 10 are drawn.</p>
                 <div class="hg-keno-layout">
+                  <div class="hg-keno-controls">
+                    <div class="hg-keno-field">
+                      <label class="guess-label" for="hg-keno-bet">Bet</label>
+                      <input class="guess-input hg-bet-input" id="hg-keno-bet" type="number" min="1" max="5000" step="1" value="10" />
+                    </div>
+                    <div class="hg-keno-risk" role="group" aria-label="Keno volatility">
+                      <span class="guess-label">Risk</span>
+                      <div class="hg-keno-risk-options">
+                        <button type="button" class="hg-keno-risk-btn is-active" data-keno-risk="classic">Classic</button>
+                        <button type="button" class="hg-keno-risk-btn" data-keno-risk="low">Low</button>
+                        <button type="button" class="hg-keno-risk-btn" data-keno-risk="medium">Medium</button>
+                        <button type="button" class="hg-keno-risk-btn" data-keno-risk="high">High</button>
+                      </div>
+                    </div>
+                    <div class="hg-keno-random" role="group" aria-label="Random keno picks">
+                      <label class="guess-label" for="hg-keno-random-count">Random</label>
+                      <div class="hg-keno-random-row">
+                        <select class="guess-input hg-keno-random-count" id="hg-keno-random-count" aria-label="How many random numbers">
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4">4</option>
+                          <option value="5" selected>5</option>
+                          <option value="6">6</option>
+                          <option value="7">7</option>
+                          <option value="8">8</option>
+                          <option value="9">9</option>
+                          <option value="10">10</option>
+                        </select>
+                        <button type="button" class="btn btn-outline" id="hg-keno-random">Pick</button>
+                      </div>
+                    </div>
+                    <div class="hg-keno-actions">
+                      <button type="button" class="btn btn-outline" id="hg-keno-clear">Clear picks</button>
+                      <button type="button" class="btn btn-primary" id="hg-keno-play">Draw</button>
+                    </div>
+                    <p class="slot-tournaments-panel-text hg-keno-hint" id="hg-keno-hint">Pick 1–10 numbers. 10 are drawn.</p>
+                    <div class="hg-keno-result" id="hg-keno-result" aria-live="polite"></div>
+                  </div>
                   <div class="hg-keno-board-stage">
                     <div class="hg-keno-board" id="hg-keno-board"></div>
                     <div class="hg-keno-win-banner is-hidden" id="hg-keno-win-banner" aria-live="polite"></div>
@@ -340,7 +345,6 @@
                     <div class="hg-keno-paytable-body" id="hg-keno-paytable-body"></div>
                   </aside>
                 </div>
-                <div class="hg-keno-result" id="hg-keno-result" aria-live="polite"></div>
               </div>
             </div>
           </div>
