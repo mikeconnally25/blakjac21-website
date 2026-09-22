@@ -100,6 +100,15 @@
       el.innerHTML = `<span class="hg-card-rank">${card.rank}</span><span class="hg-card-suit">${suit}</span>`;
       el.setAttribute("aria-label", `${card.rank} of ${suit}`);
     }
+    if (deal || flip) {
+      el.addEventListener(
+        "animationend",
+        () => {
+          el.classList.remove("is-dealing", "is-flipping");
+        },
+        { once: true }
+      );
+    }
     return el;
   }
 
