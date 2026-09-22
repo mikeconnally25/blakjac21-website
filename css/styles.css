@@ -8356,6 +8356,22 @@ ul {
   margin-top: 0.85rem;
 }
 
+.slot-tournaments-panel:has(#st-prediction-board-title) {
+  text-align: center;
+}
+
+.slot-tournaments-panel:has(#st-prediction-board-title) .slot-tournaments-section-head {
+  justify-content: center;
+}
+
+.slot-tournaments-panel:has(#st-prediction-board-title) .slot-tournaments-section-head > div {
+  justify-items: center;
+}
+
+.slot-tournaments-panel:has(#st-prediction-board-title) .st-prediction-board-row {
+  text-align: left;
+}
+
 .st-prediction-podium-stage {
   display: grid;
   grid-template-columns: 1fr 1.18fr 1fr;
