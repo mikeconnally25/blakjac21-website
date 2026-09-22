@@ -315,7 +315,7 @@ function renderAccounts(users) {
       badges.append(subBadge);
     }
 
-    if ((user.possibleAlts || []).length > 0) {
+    if (!user.altImmune && (user.possibleAlts || []).length > 0) {
       const altBadge = document.createElement("span");
       altBadge.className = user.altSoftBlocked
         ? "accounts-alt-badge is-soft-blocked"
