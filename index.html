@@ -34,7 +34,7 @@
             <li class="is-hidden" id="admin-nav-commands">
         <a href="/commands/">Commands</a>
       </li>
-            <li><a href="#about">About</a></li>
+            <li><a href="#house-games">House Games</a></li>
             <li><a href="#links">Links</a></li>
             <li class="is-hidden" id="admin-nav-accounts">
               <a href="/accounts/">Accounts</a>
@@ -175,39 +175,92 @@
           </div>
         </section>
 
-        <section class="about section" id="about">
+        <section class="house-games section" id="house-games">
           <div class="section-atmosphere" aria-hidden="true"></div>
-          <div class="container about-grid">
-            <div class="about-text">
-              <div class="section-header left">
-                <p class="section-eyebrow">The channel</p>
-                <h2>About BLAKJAC21</h2>
-                <p>Built for viewers who love the rush of a bonus round and the tension of a high-stakes hand.</p>
-              </div>
-              <p>
-                BLAKJAC21 is a verified Kick gambling channel focused on STAKE sessions, entertainment, and those moments that make you jump out of your chair. Whether it's a max win, a brutal bonus buy, or a blackjack heater — you're here for the ride.
-              </p>
-              <p>
-                Follow on Kick to get notified when we go live. Drop a follow, say what's up in chat, and let's run it up together.
-              </p>
+          <div class="container house-games-inner">
+            <div class="section-header left house-games-header">
+              <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
+              <h2>House Games</h2>
+              <p>Gamble store points on blackjack, roulette, and keno. Wins go straight back to your balance.</p>
             </div>
 
-            <div class="feature-grid">
-              <article class="feature-card theme-surface">
-                <span class="feature-index">01</span>
-                <h3>Blackjack</h3>
-                <p>Table game action with real tension — hits, stands, doubles, and the occasional heater.</p>
-              </article>
-              <article class="feature-card theme-surface">
-                <span class="feature-index">02</span>
-                <h3>Community Vibes</h3>
-                <p>Interactive chat, reactions, and a community that shows up for every session.</p>
-              </article>
-              <article class="feature-card theme-surface">
-                <span class="feature-index">03</span>
-                <h3>Live on Kick</h3>
-                <p>Low-latency streams and a platform built for creators who go all in.</p>
-              </article>
+            <div class="house-games-toolbar">
+              <div class="house-games-balance bj21-panel-inset">
+                <span class="house-games-balance-label">Your points</span>
+                <span class="house-games-balance-value" id="hg-balance">—</span>
+              </div>
+              <div class="house-games-tabs" role="tablist" aria-label="House games">
+                <button type="button" class="house-games-tab is-active" data-hg-game="blackjack" role="tab" aria-selected="true">Blackjack</button>
+                <button type="button" class="house-games-tab" data-hg-game="roulette" role="tab" aria-selected="false">Roulette</button>
+                <button type="button" class="house-games-tab" data-hg-game="keno" role="tab" aria-selected="false">Keno</button>
+              </div>
+            </div>
+
+            <p class="house-games-status is-hidden" id="hg-status" role="status" aria-live="polite"></p>
+
+            <div class="house-games-guest bj21-panel theme-surface" id="hg-guest">
+              <span class="bj21-panel-glow" aria-hidden="true"></span>
+              <p>Sign in with Kick to wager store points.</p>
+              <a href="/api/auth/login" class="btn btn-primary">Sign in with Kick</a>
+            </div>
+
+            <div class="house-games-stage is-hidden" id="hg-stage">
+              <div class="house-game-panel is-active" data-hg-panel="blackjack" id="hg-blackjack">
+                <div class="hg-bet-row">
+                  <label class="guess-label" for="hg-bj-bet">Bet</label>
+                  <input class="guess-input hg-bet-input" id="hg-bj-bet" type="number" min="1" max="5000" step="1" value="10" />
+                  <button type="button" class="btn btn-primary" id="hg-bj-deal">Deal</button>
+                </div>
+                <div class="hg-bj-table">
+                  <div class="hg-hand" id="hg-bj-dealer">
+                    <p class="hg-hand-label">Dealer <span id="hg-bj-dealer-total"></span></p>
+                    <div class="hg-cards" id="hg-bj-dealer-cards"></div>
+                  </div>
+                  <div class="hg-hand" id="hg-bj-player">
+                    <p class="hg-hand-label">You <span id="hg-bj-player-total"></span></p>
+                    <div class="hg-cards" id="hg-bj-player-cards"></div>
+                  </div>
+                </div>
+                <div class="house-games-actions">
+                  <button type="button" class="btn btn-sm btn-primary" id="hg-bj-hit" disabled>Hit</button>
+                  <button type="button" class="btn btn-sm btn-outline" id="hg-bj-stand" disabled>Stand</button>
+                  <button type="button" class="btn btn-sm btn-outline" id="hg-bj-double" disabled>Double</button>
+                </div>
+                <p class="hg-result" id="hg-bj-result"></p>
+              </div>
+
+              <div class="house-game-panel" data-hg-panel="roulette" id="hg-roulette" hidden>
+                <div class="hg-bet-row">
+                  <label class="guess-label" for="hg-roulette-bet">Bet</label>
+                  <input class="guess-input hg-bet-input" id="hg-roulette-bet" type="number" min="1" max="5000" step="1" value="10" />
+                </div>
+                <div class="hg-roulette-choices" id="hg-roulette-choices">
+                  <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="red">Red</button>
+                  <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="black">Black</button>
+                  <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="even">Even</button>
+                  <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="odd">Odd</button>
+                  <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="low">1–18</button>
+                  <button type="button" class="btn btn-sm btn-outline hg-roulette-pick" data-choice="high">19–36</button>
+                </div>
+                <div class="hg-bet-row">
+                  <label class="guess-label" for="hg-roulette-number">Or number (0–36)</label>
+                  <input class="guess-input hg-bet-input" id="hg-roulette-number" type="number" min="0" max="36" step="1" placeholder="e.g. 17" />
+                  <button type="button" class="btn btn-primary" id="hg-roulette-spin">Spin</button>
+                </div>
+                <div class="hg-roulette-result" id="hg-roulette-result" aria-live="polite"></div>
+              </div>
+
+              <div class="house-game-panel" data-hg-panel="keno" id="hg-keno" hidden>
+                <div class="hg-bet-row">
+                  <label class="guess-label" for="hg-keno-bet">Bet</label>
+                  <input class="guess-input hg-bet-input" id="hg-keno-bet" type="number" min="1" max="5000" step="1" value="10" />
+                  <button type="button" class="btn btn-outline" id="hg-keno-clear">Clear picks</button>
+                  <button type="button" class="btn btn-primary" id="hg-keno-play">Draw</button>
+                </div>
+                <p class="slot-tournaments-panel-text" id="hg-keno-hint">Pick 1–10 numbers. 20 are drawn.</p>
+                <div class="hg-keno-board" id="hg-keno-board"></div>
+                <div class="hg-keno-result" id="hg-keno-result" aria-live="polite"></div>
+              </div>
             </div>
           </div>
         </section>
@@ -321,6 +374,7 @@
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js"></script>
   <script src="js/main.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/house-games.js"></script>
   <script src="js/site-chat.js"></script>
 </body>
 </html>
