@@ -1213,6 +1213,10 @@ function ensurePredictorProfileModal() {
           <dt>Stake</dt>
           <dd id="st-predictor-profile-stake">—</dd>
         </div>
+        <div class="winner-profile-field">
+          <dt>Affiliate</dt>
+          <dd id="st-predictor-profile-aff">—</dd>
+        </div>
       </dl>
       <button type="button" class="btn btn-sm btn-outline" data-st-predictor-profile-close="true">
         Close
@@ -1243,12 +1247,18 @@ function showPredictorProfile(row) {
   const title = document.getElementById("st-predictor-profile-title");
   const kick = document.getElementById("st-predictor-profile-kick");
   const stake = document.getElementById("st-predictor-profile-stake");
+  const aff = document.getElementById("st-predictor-profile-aff");
 
   const username = String(row.username || "").trim() || "viewer";
   if (title) title.textContent = username;
   if (kick) kick.textContent = username;
   if (stake) {
     stake.textContent = String(row.stakeUsername || "").trim() || "Not linked";
+  }
+  if (aff) {
+    const isAffiliate = Boolean(row.isAffiliate);
+    aff.textContent = isAffiliate ? "Yes" : "No";
+    aff.classList.toggle("is-affiliate", isAffiliate);
   }
 
   modal.classList.remove("is-hidden");
