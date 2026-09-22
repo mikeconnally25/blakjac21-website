@@ -785,17 +785,23 @@
   }
 
   const KENO_PAYTABLE = {
-    1: { 1: 3 },
-    2: { 2: 12 },
-    3: { 2: 2, 3: 42 },
-    4: { 2: 1, 3: 4, 4: 100 },
-    5: { 3: 2, 4: 20, 5: 400 },
-    6: { 3: 1, 4: 5, 5: 50, 6: 1000 },
-    7: { 3: 1, 4: 3, 5: 15, 6: 100, 7: 2000 },
-    8: { 4: 2, 5: 10, 6: 50, 7: 500, 8: 5000 },
-    9: { 4: 1, 5: 5, 6: 20, 7: 100, 8: 1000, 9: 5000 },
-    10: { 5: 2, 6: 10, 7: 40, 8: 200, 9: 1000, 10: 5000 },
+    1: { 1: 3.96 },
+    2: { 1: 1.9, 2: 4.5 },
+    3: { 1: 1, 2: 3.1, 3: 10.4 },
+    4: { 1: 0.8, 2: 1.8, 3: 5, 4: 22.5 },
+    5: { 1: 0.25, 2: 1.4, 3: 4.1, 4: 16.5, 5: 36 },
+    6: { 2: 1, 3: 3.68, 4: 7, 5: 16.5, 6: 40 },
+    7: { 2: 0.47, 3: 3, 4: 4.5, 5: 14, 6: 31, 7: 60 },
+    8: { 3: 2.2, 4: 4, 5: 13, 6: 22, 7: 55, 8: 70 },
+    9: { 3: 1.55, 4: 3, 5: 8, 6: 15, 7: 44, 8: 60, 9: 85 },
+    10: { 3: 1.4, 4: 2.25, 5: 4.5, 6: 8, 7: 17, 8: 50, 9: 80, 10: 100 },
   };
+
+  function formatKenoMult(mult) {
+    const n = Number(mult);
+    if (!Number.isFinite(n)) return "0";
+    return String(Number(n.toFixed(2)));
+  }
 
   function kenoUnitBet() {
     const n = Math.floor(Number($("hg-keno-bet")?.value || 0));
@@ -826,7 +832,7 @@
             .map((picks) => {
               const table = KENO_PAYTABLE[picks];
               const top = Object.entries(table)
-                .map(([hits, mult]) => `${hits}=${mult}x`)
+                .map(([hits, mult]) => `${hits}=${formatKenoMult(mult)}x`)
                 .join(" · ");
               return `<div class="hg-keno-pay-overview-row"><span>${picks} pick${picks === "1" ? "" : "s"}</span><span>${top}</span></div>`;
             })
@@ -838,11 +844,11 @@
 
     const rows = Object.entries(activeTable)
       .map(([hits, mult]) => {
-        const payout = bet * Number(mult);
+        const payout = Math.floor(bet * Number(mult));
         return `
           <div class="hg-keno-pay-row">
             <span class="hg-keno-pay-hits">${hits} hit${hits === "1" ? "" : "s"}</span>
-            <span class="hg-keno-pay-mult">${mult}x</span>
+            <span class="hg-keno-pay-mult">${formatKenoMult(mult)}x</span>
             <span class="hg-keno-pay-pts">${formatPoints(payout)} pts</span>
           </div>
         `;
