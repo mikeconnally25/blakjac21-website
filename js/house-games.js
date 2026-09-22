@@ -8,6 +8,7 @@
   let rouletteBallAngle = 0;
   let rouletteSpinning = false;
   let kenoPicks = new Set();
+  let kenoDrawing = false;
   let busy = false;
   let dealing = false;
 
@@ -887,19 +888,52 @@
 
   function clearKenoMarks() {
     document.querySelectorAll(".hg-keno-cell").forEach((cell) => {
-      cell.classList.remove("is-drawn", "is-hit");
+      cell.classList.remove("is-drawn", "is-hit", "is-miss", "is-revealing");
     });
   }
 
-  function markKenoResult(data) {
+  function kenoCellFor(n) {
+    return document.querySelector(`.hg-keno-cell[data-num="${n}"]`);
+  }
+
+  async function animateKenoDraw(data) {
     clearKenoMarks();
-    const drawn = new Set(data.drawn || []);
+    const drawn = Array.isArray(data.drawn) ? data.drawn : [];
     const hits = new Set(data.hits || []);
-    document.querySelectorAll(".hg-keno-cell").forEach((cell) => {
-      const n = Number(cell.dataset.num);
-      if (drawn.has(n)) cell.classList.add("is-drawn");
-      if (hits.has(n)) cell.classList.add("is-hit");
-    });
+    const resultEl = $("hg-keno-result");
+    const delayMs = prefersReducedMotion() ? 0 : 520;
+
+    if (prefersReducedMotion()) {
+      drawn.forEach((n) => {
+        const cell = kenoCellFor(n);
+        if (!cell) return;
+        cell.classList.add(hits.has(n) ? "is-hit" : "is-miss");
+      });
+      return;
+    }
+
+    let hitSoFar = 0;
+    for (let i = 0; i < drawn.length; i += 1) {
+      const n = drawn[i];
+      const cell = kenoCellFor(n);
+      const isHit = hits.has(n);
+      if (isHit) hitSoFar += 1;
+
+      if (cell) {
+        cell.classList.remove("is-revealing");
+        void cell.offsetWidth;
+        cell.classList.add("is-revealing");
+        cell.classList.add(isHit ? "is-hit" : "is-miss");
+      }
+
+      if (resultEl) {
+        resultEl.textContent = `Drawing ${i + 1}/${drawn.length} · ${n} ${
+          isHit ? "HIT" : "miss"
+        } · ${hitSoFar} hit${hitSoFar === 1 ? "" : "s"}`;
+      }
+
+      await wait(delayMs);
+    }
   }
 
   async function dealBlackjack() {
@@ -984,24 +1018,47 @@
   }
 
   async function playKeno() {
+    if (kenoDrawing) return;
     const bet = Number($("hg-keno-bet")?.value || 0);
     if (kenoPicks.size < 1) {
       setStatus("Pick at least one number.", { error: true });
       return;
     }
+
+    const playBtn = $("hg-keno-play");
+    const clearBtn = $("hg-keno-clear");
+    kenoDrawing = true;
+    if (playBtn) playBtn.disabled = true;
+    if (clearBtn) clearBtn.disabled = true;
+
     const data = await play({
       game: "keno",
       bet,
       picks: [...kenoPicks],
     });
-    if (!data) return;
-    markKenoResult(data);
+
+    if (!data) {
+      kenoDrawing = false;
+      if (playBtn) playBtn.disabled = false;
+      if (clearBtn) clearBtn.disabled = false;
+      return;
+    }
+
     const el = $("hg-keno-result");
-    if (el) {
-      const outcome = data.won
-        ? `Win · ${data.hitCount} hit · ${data.multiplier}x · +${formatPoints(data.payout)} pts`
-        : `${data.hitCount} hit · no payout`;
-      el.textContent = outcome;
+    if (el) el.textContent = "Drawing…";
+
+    try {
+      await animateKenoDraw(data);
+      if (el) {
+        const outcome = data.won
+          ? `Win · ${data.hitCount} hit · ${data.multiplier}x · +${formatPoints(data.payout)} pts`
+          : `${data.hitCount} hit · no payout`;
+        el.textContent = outcome;
+      }
+    } finally {
+      kenoDrawing = false;
+      if (playBtn) playBtn.disabled = false;
+      if (clearBtn) clearBtn.disabled = false;
     }
   }
 
@@ -1046,7 +1103,7 @@
     $("hg-keno-clear")?.addEventListener("click", () => {
       kenoPicks = new Set();
       document.querySelectorAll(".hg-keno-cell").forEach((cell) => {
-        cell.classList.remove("is-picked", "is-drawn", "is-hit");
+        cell.classList.remove("is-picked", "is-drawn", "is-hit", "is-miss", "is-revealing");
       });
       const hint = $("hg-keno-hint");
       if (hint) {

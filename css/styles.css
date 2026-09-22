@@ -7718,14 +7718,49 @@ ul {
   background: rgba(88, 201, 243, 0.16);
 }
 
-.hg-keno-cell.is-drawn {
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+.hg-keno-cell.is-miss {
+  color: #fff;
+  border-color: rgba(230, 57, 70, 0.75);
+  background: linear-gradient(160deg, #e63946, #b4232e);
 }
 
 .hg-keno-cell.is-hit {
   color: #0d1a14;
-  border-color: rgba(109, 224, 164, 0.7);
+  border-color: rgba(109, 224, 164, 0.85);
   background: #6de0a4;
+}
+
+.hg-keno-cell.is-picked.is-miss {
+  /* Drawn miss replaces pick styling */
+  color: #fff;
+  border-color: rgba(230, 57, 70, 0.75);
+  background: linear-gradient(160deg, #e63946, #b4232e);
+}
+
+.hg-keno-cell.is-picked.is-hit {
+  color: #0d1a14;
+  border-color: rgba(109, 224, 164, 0.85);
+  background: #6de0a4;
+}
+
+.hg-keno-cell.is-revealing {
+  animation: hg-keno-pop 0.45s ease both;
+  z-index: 2;
+}
+
+@keyframes hg-keno-pop {
+  0% {
+    transform: scale(0.82);
+    box-shadow: 0 0 0 0 rgba(126, 216, 255, 0);
+  }
+  55% {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 6px rgba(126, 216, 255, 0.22);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(126, 216, 255, 0);
+  }
 }
 
 .hg-keno-result {
@@ -7742,6 +7777,7 @@ ul {
   .hg-card.is-dealing,
   .hg-card.is-flipping,
   .hg-roulette-ball,
+  .hg-keno-cell.is-revealing,
   .hg-bj-table.is-dealing .hg-bj-shoe-deck:nth-child(3) {
     animation: none;
   }
