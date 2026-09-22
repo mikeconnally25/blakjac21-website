@@ -3,6 +3,7 @@ let catalog = [];
 let myRedemptions = [];
 let pendingQueue = [];
 let pointsBalance = 0;
+let canRedeem = true;
 
 function setStoreStatus(message, tone = "") {
   const status = document.getElementById("store-status");
@@ -30,7 +31,11 @@ function renderBalance() {
   }
 
   value.textContent = String(pointsBalance);
-  copy.textContent = `Signed in as ${currentUser.username}.`;
+  if (!canRedeem) {
+    copy.textContent = `Signed in as ${currentUser.username}. Store redemptions are disabled for this account.`;
+  } else {
+    copy.textContent = `Signed in as ${currentUser.username}.`;
+  }
 }
 
 function statusLabel(status) {
@@ -118,9 +123,13 @@ function renderCatalog() {
     redeem.type = "button";
     redeem.className = "btn btn-primary store-reward-card-cta";
     redeem.textContent = "Redeem";
-    redeem.disabled = !currentUser || pointsBalance < item.cost;
+    redeem.disabled =
+      !currentUser || !canRedeem || pointsBalance < item.cost;
     if (!currentUser) {
       redeem.title = "Sign in with Kick to redeem";
+    } else if (!canRedeem) {
+      redeem.title = "Redemptions disabled for this account";
+      row.classList.add("is-locked");
     } else if (pointsBalance < item.cost) {
       redeem.title = "Not enough points";
       row.classList.add("is-locked");
@@ -396,6 +405,7 @@ async function loadMe() {
   if (!currentUser) {
     pointsBalance = 0;
     myRedemptions = [];
+    canRedeem = true;
     return;
   }
 
@@ -409,6 +419,7 @@ async function loadMe() {
   const data = await response.json();
   pointsBalance = Number(data.balance?.points) || 0;
   myRedemptions = Array.isArray(data.redemptions) ? data.redemptions : [];
+  canRedeem = data.canRedeem !== false;
 }
 
 async function loadQueue() {
@@ -441,6 +452,10 @@ async function refreshStore() {
 async function redeemItem(itemId, button) {
   if (!currentUser) {
     setStoreStatus("Sign in with Kick to redeem.", "error");
+    return;
+  }
+  if (!canRedeem) {
+    setStoreStatus("This account cannot redeem store rewards.", "error");
     return;
   }
 
