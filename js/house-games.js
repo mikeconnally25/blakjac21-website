@@ -541,7 +541,13 @@
 
   function syncSelfCreditUi(canSelfCredit) {
     const wrap = $("hg-self-credit");
+    const input = $("hg-self-credit-amount");
     wrap?.classList.toggle("is-hidden", !canSelfCredit);
+    // Uncapped accounts have no per-add limit (clear any cached HTML max).
+    if (input) {
+      input.removeAttribute("max");
+      input.title = canSelfCredit ? "No amount limit" : "";
+    }
   }
 
   function syncAuthUi() {
