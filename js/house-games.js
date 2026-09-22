@@ -2,7 +2,8 @@
   let currentUser = null;
   let bjSessionId = null;
   let bjSnapshot = { hands: [[]], dealer: [], activeHand: 0 };
-  let rouletteChoice = null;
+  let rouletteOutside = null;
+  let rouletteNumbers = new Set();
   let rouletteWheelAngle = 0;
   let rouletteBallAngle = 0;
   let rouletteSpinning = false;
@@ -616,7 +617,7 @@
     zero.className = "hg-roulette-cell is-green is-zero";
     zero.dataset.choice = "0";
     zero.textContent = "0";
-    zero.addEventListener("click", () => selectRouletteChoice("0"));
+    zero.addEventListener("click", () => toggleRouletteNumber(0));
     board.appendChild(zero);
 
     for (let n = 1; n <= 36; n += 1) {
@@ -625,48 +626,80 @@
       btn.className = `hg-roulette-cell is-${rouletteColor(n)}`;
       btn.dataset.choice = String(n);
       btn.textContent = String(n);
-      btn.addEventListener("click", () => selectRouletteChoice(String(n)));
+      btn.addEventListener("click", () => toggleRouletteNumber(n));
       board.appendChild(btn);
     }
   }
 
-  function selectRouletteChoice(choice) {
-    rouletteChoice = String(choice);
+  function toggleRouletteNumber(n) {
+    const key = Number(n);
+    rouletteOutside = null;
+    if (rouletteNumbers.has(key)) {
+      rouletteNumbers.delete(key);
+    } else if (rouletteNumbers.size >= 12) {
+      setStatus("Pick up to 12 numbers.", { error: true });
+      return;
+    } else {
+      rouletteNumbers.add(key);
+      setStatus("");
+    }
     syncRoulettePicks();
+  }
+
+  function selectRouletteOutside(choice) {
+    rouletteOutside = String(choice);
+    rouletteNumbers = new Set();
+    setStatus("");
+    syncRoulettePicks();
+  }
+
+  function clearRoulettePicks() {
+    rouletteOutside = null;
+    rouletteNumbers = new Set();
+    document.querySelectorAll(".hg-roulette-cell.is-hit").forEach((cell) => {
+      cell.classList.remove("is-hit");
+    });
+    syncRoulettePicks();
+  }
+
+  function rouletteUnitBet() {
+    const n = Math.floor(Number($("hg-roulette-bet")?.value || 0));
+    return Number.isFinite(n) && n > 0 ? n : 0;
   }
 
   function syncRoulettePicks() {
     document.querySelectorAll(".hg-roulette-pick").forEach((btn) => {
       btn.classList.toggle(
         "is-active",
-        btn.dataset.choice === rouletteChoice
+        btn.dataset.choice === rouletteOutside
       );
     });
     document.querySelectorAll(".hg-roulette-cell").forEach((btn) => {
-      btn.classList.toggle(
-        "is-active",
-        btn.dataset.choice === rouletteChoice
-      );
+      const num = Number(btn.dataset.choice);
+      btn.classList.toggle("is-active", rouletteNumbers.has(num));
     });
     const label = $("hg-roulette-pick-label");
     if (!label) return;
-    if (!rouletteChoice) {
-      label.textContent = "Pick a number or outside bet";
+    const unit = rouletteUnitBet();
+    if (rouletteNumbers.size) {
+      const total = unit * rouletteNumbers.size;
+      const list = [...rouletteNumbers].sort((a, b) => a - b).join(", ");
+      label.textContent = `${rouletteNumbers.size} number${rouletteNumbers.size === 1 ? "" : "s"} selected (${list}) · total ${formatPoints(total)} pts`;
       return;
     }
-    if (/^\d+$/.test(rouletteChoice)) {
-      label.textContent = `Betting number ${rouletteChoice}`;
+    if (rouletteOutside) {
+      const names = {
+        red: "Red",
+        black: "Black",
+        even: "Even",
+        odd: "Odd",
+        low: "1–18",
+        high: "19–36",
+      };
+      label.textContent = `Betting ${names[rouletteOutside] || rouletteOutside} · ${formatPoints(unit)} pts`;
       return;
     }
-    const names = {
-      red: "Red",
-      black: "Black",
-      even: "Even",
-      odd: "Odd",
-      low: "1–18",
-      high: "19–36",
-    };
-    label.textContent = `Betting ${names[rouletteChoice] || rouletteChoice}`;
+    label.textContent = "Pick up to 12 numbers, or one outside bet";
   }
 
   function setRouletteTransforms() {
@@ -822,17 +855,25 @@
 
   async function spinRoulette() {
     if (rouletteSpinning) return;
-    const bet = Number($("hg-roulette-bet")?.value || 0);
-    if (!rouletteChoice) {
-      setStatus("Pick a color/parity bet or a number.", { error: true });
+    const bet = rouletteUnitBet();
+    const hasNumbers = rouletteNumbers.size > 0;
+    const hasOutside = Boolean(rouletteOutside);
+    if (!hasNumbers && !hasOutside) {
+      setStatus("Pick a color/parity bet or at least one number.", {
+        error: true,
+      });
       return;
     }
-    const choice = rouletteChoice;
+
+    const payload = hasNumbers
+      ? { game: "roulette", bet, picks: [...rouletteNumbers] }
+      : { game: "roulette", bet, choice: rouletteOutside };
+
     const spinBtn = $("hg-roulette-spin");
     rouletteSpinning = true;
     if (spinBtn) spinBtn.disabled = true;
 
-    const data = await play({ game: "roulette", bet, choice });
+    const data = await play(payload);
     if (!data) {
       rouletteSpinning = false;
       if (spinBtn) spinBtn.disabled = false;
@@ -907,8 +948,14 @@
 
     document.querySelectorAll(".hg-roulette-pick").forEach((btn) => {
       btn.addEventListener("click", () => {
-        selectRouletteChoice(btn.dataset.choice);
+        selectRouletteOutside(btn.dataset.choice);
       });
+    });
+
+    $("hg-roulette-bet")?.addEventListener("input", syncRoulettePicks);
+
+    $("hg-roulette-clear")?.addEventListener("click", () => {
+      clearRoulettePicks();
     });
 
     $("hg-roulette-spin")?.addEventListener("click", () => {
