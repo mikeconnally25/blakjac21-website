@@ -417,7 +417,11 @@
   }
 
   function finishBjRender(state) {
-    bjSessionId = state.sessionId || bjSessionId;
+    if (state?.resolved) {
+      bjSessionId = null;
+    } else {
+      bjSessionId = state.sessionId || bjSessionId;
+    }
     const hands = stateHands(state);
     bjSnapshot = {
       hands: hands.map((hand) => [...(hand.cards || [])]),
@@ -1119,6 +1123,15 @@
     }
   }
 
+  async function resumeActiveBlackjack() {
+    if (!currentUser?.kickUserId) return;
+    const data = await play({ game: "blackjack", action: "resume" });
+    if (!data?.sessionId || data.active === false) return;
+    switchGame("blackjack");
+    renderBlackjack(data);
+    setStatus("Resumed your blackjack hand.");
+  }
+
   async function dealBlackjack() {
     const bet = Number($("hg-bj-bet")?.value || 0);
     const data = await play({ game: "blackjack", action: "start", bet });
@@ -1345,6 +1358,7 @@
     syncAuthUi();
     if (currentUser?.kickUserId) {
       await loadBalance();
+      await resumeActiveBlackjack();
     }
   }
 
@@ -1352,7 +1366,7 @@
     currentUser = event.detail?.user || null;
     syncAuthUi();
     if (currentUser?.kickUserId) {
-      void loadBalance();
+      void loadBalance().then(() => resumeActiveBlackjack());
     }
   });
 
