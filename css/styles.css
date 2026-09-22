@@ -7457,30 +7457,31 @@ ul {
 
 .hg-roulette-stage {
   display: grid;
-  grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
+  grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr);
   gap: 1.25rem 1.5rem;
   align-items: start;
 }
 
 .hg-roulette-wheel-wrap {
   position: relative;
-  width: min(100%, 20rem);
+  width: min(100%, 22rem);
   margin-inline: auto;
   aspect-ratio: 1;
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.45));
 }
 
 .hg-roulette-pointer {
   position: absolute;
-  top: -0.15rem;
+  top: -0.05rem;
   left: 50%;
-  z-index: 5;
-  width: 0;
-  height: 0;
-  border-left: 0.55rem solid transparent;
-  border-right: 0.55rem solid transparent;
-  border-top: 0.95rem solid var(--accent-bright);
+  z-index: 6;
+  width: 0.95rem;
+  height: 1.25rem;
   transform: translateX(-50%);
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
+  background:
+    linear-gradient(180deg, #f3e2b0 0%, #c9a45a 48%, #8d6b2f 100%);
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
 .hg-roulette-rim {
@@ -7488,20 +7489,45 @@ ul {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  padding: 0.55rem;
+  padding: 0.7rem;
   background:
-    radial-gradient(circle at 35% 30%, rgba(126, 216, 255, 0.25), transparent 45%),
-    linear-gradient(145deg, #2a4052, #0d1822 55%, #081018);
+    radial-gradient(circle at 30% 24%, rgba(255, 236, 190, 0.22), transparent 34%),
+    conic-gradient(
+      from 0deg,
+      #6b4e2a,
+      #b8944f,
+      #5a4124,
+      #d0b06a,
+      #6b4e2a,
+      #b8944f,
+      #5a4124,
+      #d0b06a,
+      #6b4e2a
+    );
   box-shadow:
-    var(--shadow-card),
-    inset 0 0 0 1px rgba(126, 216, 255, 0.28);
+    inset 0 0 0 2px rgba(255, 220, 160, 0.28),
+    inset 0 0 0 7px rgba(20, 14, 8, 0.55),
+    0 10px 24px rgba(0, 0, 0, 0.35);
 }
 
 .hg-roulette-rim.is-spinning {
   box-shadow:
-    var(--shadow-card),
-    0 0 0 1px rgba(126, 216, 255, 0.35),
-    0 0 28px rgba(88, 201, 243, 0.2);
+    inset 0 0 0 2px rgba(255, 220, 160, 0.34),
+    inset 0 0 0 7px rgba(20, 14, 8, 0.55),
+    0 12px 28px rgba(0, 0, 0, 0.4);
+}
+
+.hg-roulette-bowl {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 45%, #1a242e 0%, #0a1016 70%, #05080c 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 220, 160, 0.18),
+    inset 0 18px 28px rgba(0, 0, 0, 0.45);
 }
 
 .hg-roulette-wheel {
@@ -7510,6 +7536,7 @@ ul {
   border-radius: 50%;
   overflow: hidden;
   will-change: transform;
+  transform: translateZ(0);
 }
 
 .hg-roulette-svg {
@@ -7518,74 +7545,101 @@ ul {
   height: 100%;
 }
 
-.hg-roulette-pocket.is-red {
-  fill: #b4232e;
+.hg-roulette-fret {
+  stroke: rgba(232, 205, 140, 0.72);
+  stroke-width: 1.15;
+  stroke-linecap: round;
 }
 
-.hg-roulette-pocket.is-black {
-  fill: #121820;
-}
-
-.hg-roulette-pocket.is-green {
-  fill: #1f7a45;
+.hg-roulette-inner-ring {
+  fill: none;
+  stroke: rgba(232, 205, 140, 0.55);
+  stroke-width: 2.5;
 }
 
 .hg-roulette-label {
-  fill: #eef6fb;
+  fill: #f4f7fa;
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.02em;
   pointer-events: none;
+  paint-order: stroke fill;
+  stroke: rgba(0, 0, 0, 0.35);
+  stroke-width: 0.6px;
 }
 
 .hg-roulette-ball-track {
   position: absolute;
-  inset: 0.85rem;
+  inset: 0.72rem;
   border-radius: 50%;
   pointer-events: none;
   will-change: transform;
+  transform: translateZ(0);
 }
 
 .hg-roulette-ball-orb {
   position: absolute;
-  top: 0.15rem;
+  top: 0.08rem;
   left: 50%;
-  width: 0.72rem;
-  height: 0.72rem;
-  margin-left: -0.36rem;
+  width: 0.78rem;
+  height: 0.78rem;
+  margin-left: -0.39rem;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 30% 30%, #fff, #d7e8f4 45%, #8bb4c9 100%);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+    radial-gradient(circle at 32% 28%, #ffffff 0%, #e8eef4 38%, #9aadb8 100%);
+  box-shadow:
+    0 1px 2px rgba(255, 255, 255, 0.55) inset,
+    0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .hg-roulette-ball-orb.is-spinning {
   box-shadow:
-    0 2px 6px rgba(0, 0, 0, 0.45),
-    0 0 10px rgba(126, 216, 255, 0.55);
+    0 1px 2px rgba(255, 255, 255, 0.55) inset,
+    0 2px 6px rgba(0, 0, 0, 0.5),
+    0 0 8px rgba(255, 255, 255, 0.25);
+}
+
+.hg-roulette-ball-orb.is-settling {
+  transform: scale(1.12);
 }
 
 .hg-roulette-hub {
   position: absolute;
-  inset: 32%;
+  inset: 30%;
   display: grid;
   place-items: center;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 35% 30%, rgba(126, 216, 255, 0.35), transparent 50%),
-    linear-gradient(160deg, #1a2c3a, #0a121a);
-  border: 1px solid rgba(126, 216, 255, 0.28);
-  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45);
+    radial-gradient(circle at 34% 28%, rgba(255, 230, 180, 0.28), transparent 42%),
+    linear-gradient(160deg, #2a2116, #120e0a 58%, #1c160f);
+  border: 1px solid rgba(232, 205, 140, 0.42);
+  box-shadow:
+    inset 0 0 16px rgba(0, 0, 0, 0.5),
+    0 0 0 3px rgba(20, 14, 8, 0.55);
   pointer-events: none;
 }
 
+.hg-roulette-hub-core {
+  position: absolute;
+  inset: 28%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, #f0d9a0, #b8934e 55%, #6d5228);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.35);
+  opacity: 0.9;
+}
+
 .hg-roulette-hub-mark {
+  position: relative;
+  z-index: 1;
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: var(--accent-bright);
+  color: #1a140c;
+  text-shadow: 0 1px 0 rgba(255, 236, 190, 0.35);
 }
 
 .hg-roulette-board-wrap {
@@ -7723,7 +7777,7 @@ ul {
   }
 
   .hg-roulette-wheel-wrap {
-    width: min(100%, 18rem);
+    width: min(100%, 19rem);
   }
 
   .hg-roulette-board {
@@ -7736,6 +7790,15 @@ ul {
   grid-template-columns: minmax(12.5rem, 15rem) minmax(0, 1fr) minmax(12.5rem, 16rem);
   gap: 1rem 1.15rem;
   align-items: stretch;
+}
+
+.hg-keno-layout:has(.hg-keno-paytable[hidden]),
+.hg-keno-layout:has(.hg-keno-paytable.is-hidden) {
+  grid-template-columns: minmax(12.5rem, 15rem) minmax(0, 1fr);
+}
+
+.hg-keno-paytable.is-hidden {
+  display: none;
 }
 
 .hg-keno-board-stage {
@@ -8034,10 +8097,19 @@ ul {
   .hg-bj-table.is-dealing .hg-bj-shoe-deck:nth-child(3) {
     animation: none;
   }
+
+  .hg-roulette-ball-orb.is-settling {
+    transform: none;
+  }
 }
 
 @media (max-width: 1100px) {
   .hg-keno-layout {
+    grid-template-columns: minmax(12rem, 14rem) minmax(0, 1fr);
+  }
+
+  .hg-keno-layout:has(.hg-keno-paytable[hidden]),
+  .hg-keno-layout:has(.hg-keno-paytable.is-hidden) {
     grid-template-columns: minmax(12rem, 14rem) minmax(0, 1fr);
   }
 

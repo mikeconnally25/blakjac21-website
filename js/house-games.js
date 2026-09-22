@@ -31,7 +31,9 @@
     1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36,
   ]);
   const ROULETTE_POCKET = 360 / ROULETTE_ORDER.length;
-  const ROULETTE_SPIN_MS = 4200;
+  const ROULETTE_SPIN_MS = 5400;
+  const ROULETTE_WHEEL_EASE = "cubic-bezier(0.12, 0.82, 0.08, 1)";
+  const ROULETTE_BALL_EASE = "cubic-bezier(0.05, 0.58, 0.12, 1)";
 
   function $(id) {
     return document.getElementById(id);
@@ -730,16 +732,48 @@
     const mount = $("hg-roulette-wheel");
     if (!mount || mount.childElementCount) return;
 
-    const size = 320;
+    const size = 360;
     const cx = size / 2;
     const cy = size / 2;
-    const outer = size / 2 - 2;
-    const inner = outer * 0.62;
+    const outer = size / 2 - 4;
+    const inner = outer * 0.58;
+    const labelR = outer * 0.84;
     const svgNS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNS, "svg");
     svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
     svg.setAttribute("class", "hg-roulette-svg");
     svg.setAttribute("aria-hidden", "true");
+
+    const defs = document.createElementNS(svgNS, "defs");
+    const gradients = [
+      ["hg-roulette-grad-red", "#e2555f", "#9a1d28"],
+      ["hg-roulette-grad-black", "#2a3340", "#0b1016"],
+      ["hg-roulette-grad-green", "#2f9b5d", "#17663a"],
+    ];
+    gradients.forEach(([id, from, to]) => {
+      const grad = document.createElementNS(svgNS, "radialGradient");
+      grad.setAttribute("id", id);
+      grad.setAttribute("cx", "38%");
+      grad.setAttribute("cy", "32%");
+      grad.setAttribute("r", "78%");
+      const stop1 = document.createElementNS(svgNS, "stop");
+      stop1.setAttribute("offset", "0%");
+      stop1.setAttribute("stop-color", from);
+      const stop2 = document.createElementNS(svgNS, "stop");
+      stop2.setAttribute("offset", "100%");
+      stop2.setAttribute("stop-color", to);
+      grad.appendChild(stop1);
+      grad.appendChild(stop2);
+      defs.appendChild(grad);
+    });
+    svg.appendChild(defs);
+
+    const pockets = document.createElementNS(svgNS, "g");
+    pockets.setAttribute("class", "hg-roulette-pockets");
+    const frets = document.createElementNS(svgNS, "g");
+    frets.setAttribute("class", "hg-roulette-frets");
+    const labels = document.createElementNS(svgNS, "g");
+    labels.setAttribute("class", "hg-roulette-labels");
 
     ROULETTE_ORDER.forEach((num, index) => {
       const start = ((index * ROULETTE_POCKET - 90) * Math.PI) / 180;
@@ -752,17 +786,27 @@
       const y3 = cy + inner * Math.sin(end);
       const x4 = cx + inner * Math.cos(start);
       const y4 = cy + inner * Math.sin(start);
+      const color = rouletteColor(num);
       const path = document.createElementNS(svgNS, "path");
       path.setAttribute(
         "d",
         `M ${x1} ${y1} A ${outer} ${outer} 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${inner} ${inner} 0 0 0 ${x4} ${y4} Z`
       );
-      path.setAttribute("class", `hg-roulette-pocket is-${rouletteColor(num)}`);
-      svg.appendChild(path);
+      path.setAttribute("class", `hg-roulette-pocket is-${color}`);
+      path.setAttribute("fill", `url(#hg-roulette-grad-${color})`);
+      pockets.appendChild(path);
+
+      const fret = document.createElementNS(svgNS, "line");
+      fret.setAttribute("x1", String(cx + inner * Math.cos(start)));
+      fret.setAttribute("y1", String(cy + inner * Math.sin(start)));
+      fret.setAttribute("x2", String(cx + outer * Math.cos(start)));
+      fret.setAttribute("y2", String(cy + outer * Math.sin(start)));
+      fret.setAttribute("class", "hg-roulette-fret");
+      frets.appendChild(fret);
 
       const mid = ((index + 0.5) * ROULETTE_POCKET - 90) * (Math.PI / 180);
-      const tx = cx + (outer * 0.82) * Math.cos(mid);
-      const ty = cy + (outer * 0.82) * Math.sin(mid);
+      const tx = cx + labelR * Math.cos(mid);
+      const ty = cy + labelR * Math.sin(mid);
       const text = document.createElementNS(svgNS, "text");
       text.setAttribute("x", String(tx));
       text.setAttribute("y", String(ty));
@@ -774,8 +818,19 @@
       );
       text.setAttribute("class", "hg-roulette-label");
       text.textContent = String(num);
-      svg.appendChild(text);
+      labels.appendChild(text);
     });
+
+    svg.appendChild(pockets);
+    svg.appendChild(frets);
+    svg.appendChild(labels);
+
+    const ring = document.createElementNS(svgNS, "circle");
+    ring.setAttribute("cx", String(cx));
+    ring.setAttribute("cy", String(cy));
+    ring.setAttribute("r", String(inner - 1.5));
+    ring.setAttribute("class", "hg-roulette-inner-ring");
+    svg.appendChild(ring);
 
     mount.appendChild(svg);
   }
@@ -903,8 +958,8 @@
     ball?.classList.add("is-spinning");
 
     const pocket = roulettePocketAngle(resultNumber);
-    const wheelSpins = 4 + Math.floor(Math.random() * 2);
-    const ballSpins = 6 + Math.floor(Math.random() * 2);
+    const wheelSpins = 5 + Math.floor(Math.random() * 2);
+    const ballSpins = 8 + Math.floor(Math.random() * 3);
 
     const wheelNormalized = ((rouletteWheelAngle % 360) + 360) % 360;
     const wheelTarget = ((-pocket % 360) + 360) % 360;
@@ -919,10 +974,10 @@
 
     const duration = ROULETTE_SPIN_MS;
     if (wheelEl) {
-      wheelEl.style.transition = `transform ${duration}ms cubic-bezier(0.12, 0.7, 0.12, 1)`;
+      wheelEl.style.transition = `transform ${duration}ms ${ROULETTE_WHEEL_EASE}`;
     }
     if (trackEl) {
-      trackEl.style.transition = `transform ${duration}ms cubic-bezier(0.05, 0.65, 0.15, 1)`;
+      trackEl.style.transition = `transform ${duration}ms ${ROULETTE_BALL_EASE}`;
     }
 
     void wheelEl?.offsetWidth;
@@ -930,11 +985,14 @@
     rouletteBallAngle = finalBall;
     setRouletteTransforms();
 
-    await wait(duration + 80);
+    await wait(duration + 40);
     wrap.classList.remove("is-spinning");
+    ball?.classList.add("is-settling");
     ball?.classList.remove("is-spinning");
     if (wheelEl) wheelEl.style.transition = "";
     if (trackEl) trackEl.style.transition = "";
+    await wait(prefersReducedMotion() ? 0 : 280);
+    ball?.classList.remove("is-settling");
   }
 
   function highlightRouletteResult(number) {
@@ -1063,6 +1121,7 @@
   }
 
   function renderKenoPaytable() {
+    const panel = document.querySelector(".hg-keno-paytable");
     const body = $("hg-keno-paytable-body");
     const sub = $("hg-keno-paytable-sub");
     if (!body) return;
@@ -1074,30 +1133,25 @@
     const riskLabel =
       kenoRisk.charAt(0).toUpperCase() + kenoRisk.slice(1);
 
-    if (sub) {
-      if (!pickCount) {
-        sub.textContent = `${riskLabel} risk · select picks to see hit payoffs`;
-      } else {
-        sub.textContent = `${riskLabel} · ${pickCount} pick${pickCount === 1 ? "" : "s"} · bet ${formatPoints(bet)} pts`;
+    if (!pickCount || !activeTable) {
+      body.innerHTML = "";
+      if (sub) {
+        sub.textContent = "Select picks to see hit payoffs";
       }
+      if (panel) {
+        panel.classList.add("is-hidden");
+        panel.hidden = true;
+      }
+      return;
     }
 
-    if (!activeTable) {
-      body.innerHTML = `
-        <div class="hg-keno-pay-rows hg-keno-pay-overview">
-          ${Object.keys(riskTables)
-            .map((picks) => {
-              const table = riskTables[picks];
-              const top = Object.entries(table)
-                .sort((a, b) => Number(a[0]) - Number(b[0]))
-                .map(([hits, mult]) => `${hits}=${formatKenoMult(mult)}x`)
-                .join(" · ");
-              return `<div class="hg-keno-pay-overview-row"><span>${picks} pick${picks === "1" ? "" : "s"}</span><span>${top}</span></div>`;
-            })
-            .join("")}
-        </div>
-      `;
-      return;
+    if (panel) {
+      panel.classList.remove("is-hidden");
+      panel.hidden = false;
+    }
+
+    if (sub) {
+      sub.textContent = `${riskLabel} · ${pickCount} pick${pickCount === 1 ? "" : "s"} · bet ${formatPoints(bet)} pts`;
     }
 
     const rows = Object.entries(activeTable)
