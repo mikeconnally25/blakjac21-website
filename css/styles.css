@@ -8382,10 +8382,13 @@ ul {
 
 .slot-tournaments-page .st-prediction-podium-stage .podium-slot {
   max-width: none;
+  width: 100%;
   gap: 0;
+  align-items: stretch;
 }
 
 .slot-tournaments-page .st-prediction-podium-stage .podium-block {
+  width: 100%;
   min-height: 0;
   padding: 0 0.4rem 1.1rem;
   border: 0;
@@ -8394,6 +8397,7 @@ ul {
   gap: 0.28rem;
   display: grid;
   justify-items: center;
+  justify-content: end;
   text-align: center;
 }
 
@@ -8401,6 +8405,7 @@ ul {
   content: "";
   display: block;
   width: 100%;
+  align-self: stretch;
   border-radius: 10px 10px 0 0;
 }
 
@@ -8422,8 +8427,9 @@ ul {
 .slot-tournaments-page .st-prediction-podium-stage .podium-trophy {
   position: relative;
   display: grid;
-  justify-items: center;
+  place-items: center;
   width: 4.4rem;
+  margin: 0 auto 0.2rem;
 }
 
 .slot-tournaments-page .st-prediction-podium-stage .podium-slot.place-1 .podium-trophy {
@@ -8443,12 +8449,15 @@ ul {
 .slot-tournaments-page .st-prediction-podium-stage .podium-trophy-place {
   position: absolute;
   bottom: 0.15rem;
+  left: 50%;
+  transform: translateX(-50%);
   font-family: var(--font-display);
   font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: rgba(7, 12, 17, 0.85);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+  pointer-events: none;
 }
 
 .slot-tournaments-page .st-prediction-podium-stage .podium-slot.place-1 .podium-trophy-place {
@@ -8463,13 +8472,14 @@ ul {
   text-transform: uppercase;
   color: var(--text);
   overflow-wrap: anywhere;
+  max-width: 100%;
 }
 
 .slot-tournaments-page .st-prediction-podium-stage .podium-guess {
   color: var(--text-muted);
   font-size: 0.78rem;
   line-height: 1.3;
-  max-width: 11rem;
+  max-width: 100%;
 }
 
 .slot-tournaments-page .st-prediction-podium-stage .podium-prize {
