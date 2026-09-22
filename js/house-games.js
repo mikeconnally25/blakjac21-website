@@ -1,7 +1,7 @@
 (() => {
   let currentUser = null;
   let bjSessionId = null;
-  let bjSnapshot = { player: [], dealer: [] };
+  let bjSnapshot = { hands: [[]], dealer: [], activeHand: 0 };
   let rouletteChoice = null;
   let kenoPicks = new Set();
   let busy = false;
@@ -14,9 +14,10 @@
     bust: "Bust",
     push: "Push",
     blackjack: "Blackjack!",
+    split: "Hands settled",
   };
-  const DEAL_MS = 160;
-  const DEAL_FLIGHT_MS = 420;
+  const DEAL_MS = 340;
+  const DEAL_FLIGHT_MS = 780;
 
   function $(id) {
     return document.getElementById(id);
@@ -93,21 +94,34 @@
     container.innerHTML = "";
   }
 
+  function stateHands(state) {
+    if (Array.isArray(state?.hands) && state.hands.length) {
+      return state.hands;
+    }
+    return [
+      {
+        cards: state?.player?.cards || [],
+        total: state?.player?.total,
+        bet: state?.bet,
+        active: true,
+        result: state?.result,
+        payout: state?.payout,
+      },
+    ];
+  }
+
   function setTotals(state, { hide = false } = {}) {
     const dealerTotal = $("hg-bj-dealer-total");
-    const playerTotal = $("hg-bj-player-total");
     if (hide) {
       if (dealerTotal) dealerTotal.textContent = "";
-      if (playerTotal) playerTotal.textContent = "";
+      document.querySelectorAll("[data-hg-hand-total]").forEach((el) => {
+        el.textContent = "";
+      });
       return;
     }
     if (dealerTotal) {
       dealerTotal.textContent =
         state?.dealer?.total != null ? `(${state.dealer.total})` : "";
-    }
-    if (playerTotal) {
-      playerTotal.textContent =
-        state?.player?.total != null ? `(${state.player.total})` : "";
     }
   }
 
@@ -130,16 +144,92 @@
     const hit = $("hg-bj-hit");
     const stand = $("hg-bj-stand");
     const dbl = $("hg-bj-double");
+    const split = $("hg-bj-split");
     const deal = $("hg-bj-deal");
     const bet = $("hg-bj-bet");
     const locked = busy || dealing;
-    const playing = Boolean(state && !state.result && state.canHit);
+    const playing = Boolean(
+      state && state.status === "player" && !state.result && (state.canHit || state.canStand)
+    );
 
     if (hit) hit.disabled = locked || !state?.canHit;
     if (stand) stand.disabled = locked || !state?.canStand;
     if (dbl) dbl.disabled = locked || !state?.canDouble;
+    if (split) split.disabled = locked || !state?.canSplit;
     if (deal) deal.disabled = locked || playing;
     if (bet) bet.disabled = locked || playing;
+  }
+
+  function ensurePlayerHands(count) {
+    const row = $("hg-bj-player-row");
+    if (!row) return [];
+    while (row.children.length < count) {
+      const index = row.children.length;
+      const hand = document.createElement("div");
+      hand.className = "hg-hand hg-hand-player";
+      hand.dataset.handIndex = String(index);
+      hand.innerHTML = `
+        <div class="hg-cards" data-hg-cards></div>
+        <p class="hg-hand-label">Hand ${index + 1} <span data-hg-hand-total></span></p>
+        <div class="hg-bj-spot">
+          <div class="hg-bj-chip" aria-hidden="true">
+            <span class="hg-bj-chip-inner" data-hg-chip>10</span>
+          </div>
+          <span class="hg-bj-spot-label">Bet</span>
+        </div>
+      `;
+      row.appendChild(hand);
+    }
+    while (row.children.length > Math.max(1, count)) {
+      row.removeChild(row.lastElementChild);
+    }
+    return [...row.querySelectorAll(".hg-hand-player")];
+  }
+
+  function paintHandShell(state, { hideTotals = false } = {}) {
+    const hands = stateHands(state);
+    const nodes = ensurePlayerHands(hands.length);
+    const activeIdx = Number(state?.activeHand) || 0;
+
+    nodes.forEach((node, index) => {
+      const hand = hands[index];
+      const isActive = Boolean(hand?.active) || (index === activeIdx && state?.status === "player");
+      node.classList.toggle("is-active", isActive && state?.status === "player");
+      node.classList.toggle("is-done", Boolean(hand?.done || hand?.result));
+      const label = node.querySelector(".hg-hand-label");
+      const totalEl = node.querySelector("[data-hg-hand-total]") || $("hg-bj-player-total");
+      if (label && index === 0 && hands.length === 1) {
+        label.innerHTML = `You <span data-hg-hand-total id="hg-bj-player-total"></span>`;
+      } else if (label && hands.length > 1) {
+        label.innerHTML = `Hand ${index + 1} <span data-hg-hand-total></span>`;
+      }
+      const total = node.querySelector("[data-hg-hand-total]");
+      if (total) {
+        total.textContent =
+          hideTotals || hand?.total == null ? "" : `(${hand.total})`;
+      }
+      const chip = node.querySelector("[data-hg-chip], #hg-bj-chip-value");
+      if (chip) {
+        const betVal = hand?.bet ?? Number($("hg-bj-bet")?.value || 0);
+        chip.textContent =
+          Number.isFinite(Number(betVal)) && Number(betVal) > 0
+            ? String(Math.floor(Number(betVal)))
+            : "—";
+      }
+      if (!node.querySelector("[data-hg-cards]") && index === 0) {
+        const cards = node.querySelector(".hg-cards");
+        if (cards) cards.id = "hg-bj-player-cards";
+      }
+    });
+
+    return nodes;
+  }
+
+  function handCardsContainer(node, index) {
+    if (index === 0) {
+      return node.querySelector("#hg-bj-player-cards") || node.querySelector(".hg-cards");
+    }
+    return node.querySelector("[data-hg-cards]") || node.querySelector(".hg-cards");
   }
 
   async function dealCardTo(container, card, { flip = false } = {}) {
@@ -147,7 +237,6 @@
     const table = $("hg-bj-table");
     if (table && !prefersReducedMotion()) {
       table.classList.remove("is-dealing");
-      // Force restart shoe flick for each card.
       void table.offsetWidth;
       table.classList.add("is-dealing");
     }
@@ -157,48 +246,78 @@
   }
 
   async function animateInitialDeal(state) {
-    const playerCards = $("hg-bj-player-cards");
     const dealerCards = $("hg-bj-dealer-cards");
-    clearCards(playerCards);
     clearCards(dealerCards);
     setTotals(null, { hide: true });
     setResult(null);
 
-    const player = state.player?.cards || [];
+    const hands = stateHands(state);
+    const nodes = paintHandShell(state, { hideTotals: true });
+    nodes.forEach((node) => clearCards(handCardsContainer(node, Number(node.dataset.handIndex) || 0)));
+
+    const player = hands[0]?.cards || [];
     const dealer = state.dealer?.cards || [];
     const rounds = Math.max(player.length, dealer.length);
+    const playerContainer = handCardsContainer(nodes[0], 0);
 
     if (prefersReducedMotion()) {
-      player.forEach((card) => playerCards.appendChild(createCardEl(card)));
+      player.forEach((card) => playerContainer.appendChild(createCardEl(card)));
       dealer.forEach((card) => dealerCards.appendChild(createCardEl(card)));
       return;
     }
 
     for (let i = 0; i < rounds; i += 1) {
-      if (player[i]) await dealCardTo(playerCards, player[i]);
+      if (player[i]) await dealCardTo(playerContainer, player[i]);
       if (dealer[i]) await dealCardTo(dealerCards, dealer[i]);
     }
     await wait(DEAL_FLIGHT_MS - DEAL_MS);
   }
 
   async function animateCardDelta(state) {
-    const playerCards = $("hg-bj-player-cards");
     const dealerCards = $("hg-bj-dealer-cards");
-    const nextPlayer = state.player?.cards || [];
+    const nextHands = stateHands(state);
+    const prevHands = bjSnapshot.hands || [];
     const nextDealer = state.dealer?.cards || [];
-    const prevPlayer = bjSnapshot.player || [];
     const prevDealer = bjSnapshot.dealer || [];
+    const nodes = paintHandShell(state, { hideTotals: true });
 
     if (prefersReducedMotion()) {
-      clearCards(playerCards);
       clearCards(dealerCards);
-      nextPlayer.forEach((card) => playerCards.appendChild(createCardEl(card)));
       nextDealer.forEach((card) => dealerCards.appendChild(createCardEl(card)));
+      nodes.forEach((node, index) => {
+        const container = handCardsContainer(node, index);
+        clearCards(container);
+        (nextHands[index]?.cards || []).forEach((card) => {
+          container.appendChild(createCardEl(card));
+        });
+      });
       return;
     }
 
-    for (let i = prevPlayer.length; i < nextPlayer.length; i += 1) {
-      await dealCardTo(playerCards, nextPlayer[i]);
+    // Split: rebuild both hands with deal animation for new cards
+    if (nextHands.length > prevHands.length) {
+      for (let h = 0; h < nextHands.length; h += 1) {
+        const container = handCardsContainer(nodes[h], h);
+        clearCards(container);
+        const cards = nextHands[h]?.cards || [];
+        for (const card of cards) {
+          await dealCardTo(container, card);
+        }
+      }
+    } else {
+      for (let h = 0; h < nextHands.length; h += 1) {
+        const container = handCardsContainer(nodes[h], h);
+        const prev = prevHands[h] || [];
+        const next = nextHands[h]?.cards || [];
+        // If DOM got out of sync (hand advance), resync without re-animating old cards
+        if (container && container.childElementCount !== prev.length) {
+          clearCards(container);
+          prev.forEach((card) => container.appendChild(createCardEl(card)));
+        }
+        for (let i = prev.length; i < next.length; i += 1) {
+          await dealCardTo(container, next[i]);
+        }
+      }
     }
 
     const dealerReveal =
@@ -216,7 +335,7 @@
         } else {
           const el = createCardEl(nextDealer[i], { flip });
           dealerCards.appendChild(el);
-          if (flip) await wait(220);
+          if (flip) await wait(320);
         }
       }
     } else {
@@ -230,10 +349,36 @@
 
   function finishBjRender(state) {
     bjSessionId = state.sessionId || bjSessionId;
+    const hands = stateHands(state);
     bjSnapshot = {
-      player: [...(state.player?.cards || [])],
+      hands: hands.map((hand) => [...(hand.cards || [])]),
       dealer: [...(state.dealer?.cards || [])],
+      activeHand: Number(state.activeHand) || 0,
     };
+
+    const nodes = paintHandShell(state);
+    nodes.forEach((node, index) => {
+      const container = handCardsContainer(node, index);
+      if (!container) return;
+      if (container.childElementCount !== (hands[index]?.cards || []).length) {
+        clearCards(container);
+        (hands[index]?.cards || []).forEach((card) => {
+          container.appendChild(createCardEl(card));
+        });
+      }
+    });
+
+    const dealerContainer = $("hg-bj-dealer-cards");
+    if (
+      dealerContainer &&
+      dealerContainer.childElementCount !== (state.dealer?.cards || []).length
+    ) {
+      clearCards(dealerContainer);
+      (state.dealer?.cards || []).forEach((card) => {
+        dealerContainer.appendChild(createCardEl(card));
+      });
+    }
+
     setTotals(state);
     setResult(state);
     setBlackjackActions(state);
@@ -244,10 +389,20 @@
   function renderBlackjack(state) {
     if (!state) {
       clearCards($("hg-bj-dealer-cards"));
-      clearCards($("hg-bj-player-cards"));
+      ensurePlayerHands(1);
+      const first = $("hg-bj-player");
+      if (first) {
+        first.classList.add("is-active");
+        first.classList.remove("is-done");
+        clearCards(handCardsContainer(first, 0));
+        const label = first.querySelector(".hg-hand-label");
+        if (label) {
+          label.innerHTML = `You <span data-hg-hand-total id="hg-bj-player-total"></span>`;
+        }
+      }
       setTotals(null, { hide: true });
       setResult(null);
-      bjSnapshot = { player: [], dealer: [] };
+      bjSnapshot = { hands: [[]], dealer: [], activeHand: 0 };
       setBlackjackActions(null);
       syncBjChip();
       $("hg-bj-table")?.classList.remove("is-dealing");
@@ -255,12 +410,17 @@
     }
 
     clearCards($("hg-bj-dealer-cards"));
-    clearCards($("hg-bj-player-cards"));
+    const hands = stateHands(state);
+    const nodes = paintHandShell(state);
     (state.dealer?.cards || []).forEach((card) => {
       $("hg-bj-dealer-cards")?.appendChild(createCardEl(card));
     });
-    (state.player?.cards || []).forEach((card) => {
-      $("hg-bj-player-cards")?.appendChild(createCardEl(card));
+    nodes.forEach((node, index) => {
+      const container = handCardsContainer(node, index);
+      clearCards(container);
+      (hands[index]?.cards || []).forEach((card) => {
+        container.appendChild(createCardEl(card));
+      });
     });
     finishBjRender(state);
   }
@@ -450,6 +610,7 @@
         canHit: true,
         canStand: true,
         canDouble: action !== "double",
+        canSplit: action !== "split",
       });
       return;
     }
@@ -519,6 +680,9 @@
     });
     $("hg-bj-double")?.addEventListener("click", () => {
       void actBlackjack("double");
+    });
+    $("hg-bj-split")?.addEventListener("click", () => {
+      void actBlackjack("split");
     });
 
     document.querySelectorAll(".hg-roulette-pick").forEach((btn) => {

@@ -221,15 +221,17 @@
                       </div>
                       <div class="hg-bj-insurance" aria-hidden="true">Insurance pays 2 to 1</div>
                       <p class="hg-result hg-bj-result" id="hg-bj-result"></p>
-                      <div class="hg-hand hg-hand-player" id="hg-bj-player">
-                        <div class="hg-cards" id="hg-bj-player-cards"></div>
-                        <p class="hg-hand-label">You <span id="hg-bj-player-total"></span></p>
-                      </div>
-                      <div class="hg-bj-spot">
-                        <div class="hg-bj-chip" aria-hidden="true">
-                          <span class="hg-bj-chip-inner" id="hg-bj-chip-value">10</span>
+                      <div class="hg-bj-player-row" id="hg-bj-player-row">
+                        <div class="hg-hand hg-hand-player is-active" data-hand-index="0" id="hg-bj-player">
+                          <div class="hg-cards" id="hg-bj-player-cards"></div>
+                          <p class="hg-hand-label">You <span id="hg-bj-player-total"></span></p>
+                          <div class="hg-bj-spot">
+                            <div class="hg-bj-chip" aria-hidden="true">
+                              <span class="hg-bj-chip-inner" id="hg-bj-chip-value">10</span>
+                            </div>
+                            <span class="hg-bj-spot-label">Bet</span>
+                          </div>
                         </div>
-                        <span class="hg-bj-spot-label">Bet</span>
                       </div>
                     </div>
                   </div>
@@ -244,6 +246,7 @@
                       <button type="button" class="btn btn-sm btn-primary" id="hg-bj-hit" disabled>Hit</button>
                       <button type="button" class="btn btn-sm btn-outline" id="hg-bj-stand" disabled>Stand</button>
                       <button type="button" class="btn btn-sm btn-outline" id="hg-bj-double" disabled>Double</button>
+                      <button type="button" class="btn btn-sm btn-outline" id="hg-bj-split" disabled>Split</button>
                     </div>
                   </div>
                 </div>
