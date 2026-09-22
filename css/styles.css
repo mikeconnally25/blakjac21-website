@@ -6905,6 +6905,23 @@ ul {
   color: #eaf8ff;
 }
 
+.hg-keno-random {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.hg-keno-random-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.hg-keno-random-count {
+  width: 4.5rem;
+  min-width: 4.5rem;
+}
+
 .hg-bj-shell {
   display: grid;
   gap: 0;

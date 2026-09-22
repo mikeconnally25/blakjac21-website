@@ -1142,6 +1142,7 @@
       btn.dataset.num = String(n);
       btn.textContent = String(n);
       btn.addEventListener("click", () => {
+        if (kenoDrawing) return;
         const key = n;
         if (kenoPicks.has(key)) {
           kenoPicks.delete(key);
@@ -1158,6 +1159,38 @@
       board.appendChild(btn);
     }
     renderKenoPaytable();
+  }
+
+  function syncKenoPickCells() {
+    document.querySelectorAll(".hg-keno-cell").forEach((cell) => {
+      const n = Number(cell.dataset.num);
+      cell.classList.toggle("is-picked", kenoPicks.has(n));
+      cell.classList.remove("is-drawn", "is-hit", "is-miss", "is-revealing");
+    });
+  }
+
+  function pickRandomKenoNumbers() {
+    if (kenoDrawing) return;
+    const countInput = $("hg-keno-random-count");
+    let count = Math.floor(Number(countInput?.value || 5));
+    if (!Number.isFinite(count)) count = 5;
+    count = Math.max(1, Math.min(10, count));
+
+    const pool = Array.from({ length: 40 }, (_, i) => i + 1);
+    for (let i = pool.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = pool[i];
+      pool[i] = pool[j];
+      pool[j] = tmp;
+    }
+
+    kenoPicks = new Set(pool.slice(0, count));
+    hideKenoWinBanner();
+    const result = $("hg-keno-result");
+    if (result) result.textContent = "";
+    syncKenoPickCells();
+    syncKenoHint();
+    setStatus(`Picked ${count} random number${count === 1 ? "" : "s"}.`);
   }
 
   function clearKenoMarks() {
@@ -1332,9 +1365,13 @@
 
     const playBtn = $("hg-keno-play");
     const clearBtn = $("hg-keno-clear");
+    const randomBtn = $("hg-keno-random");
+    const randomCount = $("hg-keno-random-count");
     kenoDrawing = true;
     if (playBtn) playBtn.disabled = true;
     if (clearBtn) clearBtn.disabled = true;
+    if (randomBtn) randomBtn.disabled = true;
+    if (randomCount) randomCount.disabled = true;
 
     const data = await play({
       game: "keno",
@@ -1347,6 +1384,8 @@
       kenoDrawing = false;
       if (playBtn) playBtn.disabled = false;
       if (clearBtn) clearBtn.disabled = false;
+      if (randomBtn) randomBtn.disabled = false;
+      if (randomCount) randomCount.disabled = false;
       return;
     }
 
@@ -1373,6 +1412,8 @@
       kenoDrawing = false;
       if (playBtn) playBtn.disabled = false;
       if (clearBtn) clearBtn.disabled = false;
+      if (randomBtn) randomBtn.disabled = false;
+      if (randomCount) randomCount.disabled = false;
     }
   }
 
@@ -1425,6 +1466,7 @@
     });
 
     $("hg-keno-clear")?.addEventListener("click", () => {
+      if (kenoDrawing) return;
       kenoPicks = new Set();
       document.querySelectorAll(".hg-keno-cell").forEach((cell) => {
         cell.classList.remove("is-picked", "is-drawn", "is-hit", "is-miss", "is-revealing");
@@ -1437,6 +1479,10 @@
       const result = $("hg-keno-result");
       if (result) result.textContent = "";
       renderKenoPaytable();
+    });
+
+    $("hg-keno-random")?.addEventListener("click", () => {
+      pickRandomKenoNumbers();
     });
 
     document.querySelectorAll("[data-keno-risk]").forEach((btn) => {
