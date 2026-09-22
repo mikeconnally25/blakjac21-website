@@ -356,7 +356,8 @@ function renderAccounts(users) {
 
     const isSelf =
       String(currentUser?.kickUserId || "") === String(user.kickUserId || "");
-    if (!isSelf) {
+    const isTargetAdmin = Boolean(user.isAdmin);
+    if (!isSelf && !isTargetAdmin) {
       const banToggle = document.createElement("button");
       banToggle.type = "button";
       banToggle.className = user.banned
