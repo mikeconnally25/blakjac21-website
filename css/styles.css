@@ -9531,13 +9531,13 @@ ul {
 }
 
 .store-shell {
-  max-width: 52rem;
+  max-width: 72rem;
   display: grid;
   gap: 1rem;
 }
 
 .store-page .page-content.store-shell {
-  max-width: 52rem;
+  max-width: 72rem;
 }
 
 .store-top {
@@ -9872,7 +9872,7 @@ ul {
 }
 
 .store-queue-scroll {
-  max-height: min(16rem, 40vh);
+  max-height: min(28rem, 55vh);
 }
 
 .store-history-scroll {
@@ -9991,6 +9991,30 @@ ul {
   margin-top: 0.5rem;
   padding-top: 0.85rem;
   border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.store-admin-layout {
+  display: grid;
+  gap: 1rem;
+  align-items: start;
+}
+
+.store-admin-sidebar,
+.store-admin-main {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+@media (min-width: 960px) {
+  .store-admin-layout {
+    grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr);
+  }
+
+  .store-admin-sidebar {
+    position: sticky;
+    top: 5.5rem;
+  }
 }
 
 .store-admin-tools {
