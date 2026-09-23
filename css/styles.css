@@ -9785,6 +9785,30 @@ ul {
   gap: 1rem;
 }
 
+.store-browse-row {
+  display: grid;
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .store-browse-row {
+    grid-template-columns: minmax(0, 1.35fr) minmax(16rem, 0.9fr);
+  }
+
+  .store-browse-row .store-reward-grid {
+    grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr));
+  }
+}
+
+.store-redemptions-panel {
+  min-height: 12rem;
+}
+
+.store-redemptions-panel .store-list-scroll {
+  max-height: 28rem;
+}
+
 .store-page .page-content.store-shell {
   max-width: 72rem;
 }
