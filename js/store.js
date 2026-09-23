@@ -8,12 +8,12 @@ let canTip = true;
 let buyPackages = [];
 let buyConfig = {
   configured: false,
-  rate: 1000,
+  rate: 100,
   minUsd: 1,
   maxUsd: 100,
-  minPoints: 1000,
-  maxPoints: 100000,
-  stepPoints: 1000,
+  minPoints: 100,
+  maxPoints: 10000,
+  stepPoints: 100,
 };
 let selectedBuyPackageId = null;
 
@@ -101,7 +101,7 @@ function renderBuyForm() {
 
   if (copy) {
     copy.textContent = `Pay with crypto. $1 USD = ${Number(
-      buyConfig.rate || 1000
+      buyConfig.rate || 100
     ).toLocaleString()} points.`;
   }
 
@@ -209,7 +209,7 @@ function syncBuyInputsFromPoints() {
   }
   clearSelectedBuyPackage();
   usdInput.value = String(
-    Number((points / (buyConfig.rate || 1000)).toFixed(2))
+    Number((points / (buyConfig.rate || 100)).toFixed(2))
   );
 }
 
@@ -223,7 +223,7 @@ function syncBuyInputsFromUsd() {
     return;
   }
   clearSelectedBuyPackage();
-  pointsInput.value = String(Math.round(usd * (buyConfig.rate || 1000)));
+  pointsInput.value = String(Math.round(usd * (buyConfig.rate || 100)));
 }
 
 function statusLabel(status) {
@@ -661,12 +661,12 @@ async function loadBuyPackages() {
   buyPackages = Array.isArray(data.packages) ? data.packages : [];
   buyConfig = {
     configured: Boolean(data.configured),
-    rate: Number(data.rate) || 1000,
+    rate: Number(data.rate) || 100,
     minUsd: Number(data.minUsd) || 1,
     maxUsd: Number(data.maxUsd) || 100,
-    minPoints: Number(data.minPoints) || 1000,
-    maxPoints: Number(data.maxPoints) || 100000,
-    stepPoints: Number(data.stepPoints) || 1000,
+    minPoints: Number(data.minPoints) || 100,
+    maxPoints: Number(data.maxPoints) || 10000,
+    stepPoints: Number(data.stepPoints) || 100,
   };
 }
 

@@ -9,7 +9,7 @@ Crypto checkout for channel points via hosted NOWPayments invoices.
 | `NOWPAYMENTS_API_KEY` | Yes | API key from the NOWPayments dashboard |
 | `NOWPAYMENTS_IPN_SECRET` | Yes | IPN secret used to verify `x-nowpayments-sig` |
 | `NOWPAYMENTS_SANDBOX` | No | Set to `1` to use `api-sandbox.nowpayments.io` |
-| `POINTS_USD_RATE` | No | Points per $1 USD (default `1000`) |
+| `POINTS_USD_RATE` | No | Points per $1 USD (default `100`) |
 | `SITE_URL` | Recommended on Vercel | Public site origin, e.g. `https://website-blakjac21.vercel.app` — used for IPN + success/cancel URLs. Falls back to `KICK_REDIRECT_URI` host / `VERCEL_URL` |
 
 Also requires the existing Upstash Redis env vars so purchase orders persist.
@@ -33,6 +33,6 @@ The store UI shows a status message from that query, strips it from the URL, and
 
 ## Pricing
 
-- Fixed packages: 1,000 ($1) · 5,000 ($5) · 10,000 ($10) · 25,000 ($25) at the configured rate
+- Fixed packages: 100 ($1) · 500 ($5) · 1,000 ($10) · 2,500 ($25) at the configured rate
 - Custom: steps of `POINTS_USD_RATE`, min $1 / rate pts, max $100 / (rate × 100) pts
 - Charged in USD (`price_currency: usd`); user picks coin on NOWPayments
