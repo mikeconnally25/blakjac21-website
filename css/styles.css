@@ -8962,11 +8962,26 @@ ul {
 }
 
 .st-prediction-podium {
-  margin-top: 0.85rem;
+  margin-top: 0;
+}
+
+.st-prediction-board-scroll {
+  display: grid;
+  gap: 0.85rem;
+  max-height: min(32rem, 70vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 0.15rem;
+  margin-top: 0.35rem;
+}
+
+.st-prediction-board-scroll:has(.st-prediction-board.is-hidden):has(.st-prediction-podium.is-hidden) {
+  display: none;
 }
 
 .slot-tournaments-panel:has(#st-prediction-board-title) {
   text-align: center;
+  align-self: start;
 }
 
 .slot-tournaments-panel:has(#st-prediction-board-title) .slot-tournaments-section-head {
@@ -9115,7 +9130,7 @@ ul {
 
 .st-prediction-board {
   list-style: none;
-  margin: 0.85rem 0 0;
+  margin: 0;
   padding: 0;
   display: grid;
   gap: 0.45rem;
