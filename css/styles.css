@@ -8848,11 +8848,8 @@ ul {
 }
 
 .slot-tournaments-manual-suggestions {
-  position: absolute;
-  top: calc(100% + 0.25rem);
-  left: 0;
-  right: 0;
-  z-index: 8;
+  position: fixed;
+  z-index: 80;
   list-style: none;
   margin: 0;
   padding: 0.3rem;
@@ -8860,16 +8857,25 @@ ul {
   overflow: auto;
   border-radius: calc(var(--radius-sm) + 2px);
   border: 1px solid rgba(126, 216, 255, 0.22);
-  background: rgba(8, 14, 22, 0.96);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.4);
+  background: rgba(8, 14, 22, 0.98);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
 }
 
 .slot-tournaments-manual-suggestion {
+  display: block;
+  width: 100%;
+  margin: 0;
   padding: 0.55rem 0.7rem;
+  border: 0;
   border-radius: var(--radius-sm);
+  background: transparent;
   color: var(--text);
+  font: inherit;
   font-weight: 600;
+  text-align: left;
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .slot-tournaments-manual-suggestion:hover,

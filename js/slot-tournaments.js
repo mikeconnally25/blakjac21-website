@@ -2074,8 +2074,30 @@ function hideManualSuggestions() {
   if (list) {
     list.replaceChildren();
     list.classList.add("is-hidden");
+    list.hidden = true;
   }
   input?.setAttribute("aria-expanded", "false");
+  window.removeEventListener("scroll", positionManualSuggestions, true);
+  window.removeEventListener("resize", positionManualSuggestions);
+}
+
+function positionManualSuggestions() {
+  const list = document.getElementById("st-manual-suggestions");
+  const input = document.getElementById("st-manual-username");
+  if (!list || !input || list.classList.contains("is-hidden")) return;
+
+  const rect = input.getBoundingClientRect();
+  const width = Math.max(rect.width, 12 * 16);
+  const left = Math.min(
+    rect.left,
+    Math.max(8, window.innerWidth - width - 8)
+  );
+  list.style.position = "fixed";
+  list.style.top = `${Math.round(rect.bottom + 6)}px`;
+  list.style.left = `${Math.round(left)}px`;
+  list.style.width = `${Math.round(width)}px`;
+  list.style.right = "auto";
+  list.style.zIndex = "80";
 }
 
 function renderManualSuggestions() {
@@ -2084,6 +2106,10 @@ function renderManualSuggestions() {
   if (!list || !input || !currentUser?.isAdmin) {
     hideManualSuggestions();
     return;
+  }
+
+  if (list.parentElement !== document.body) {
+    document.body.appendChild(list);
   }
 
   const matches = filterManualUsers(manualUsers, input.value);
@@ -2096,7 +2122,8 @@ function renderManualSuggestions() {
   }
 
   matches.forEach((user, index) => {
-    const item = document.createElement("li");
+    const item = document.createElement("button");
+    item.type = "button";
     item.className = "slot-tournaments-manual-suggestion";
     item.setAttribute("role", "option");
     item.id = `st-manual-suggestion-${index}`;
@@ -2106,7 +2133,11 @@ function renderManualSuggestions() {
   });
 
   list.classList.remove("is-hidden");
+  list.hidden = false;
   input.setAttribute("aria-expanded", "true");
+  positionManualSuggestions();
+  window.addEventListener("scroll", positionManualSuggestions, true);
+  window.addEventListener("resize", positionManualSuggestions);
 }
 
 function selectManualSuggestion(username) {
@@ -2196,15 +2227,25 @@ function initManualUserSearch() {
     }
   });
 
-  list.addEventListener("mousedown", (event) => {
+  list.addEventListener("pointerdown", (event) => {
     const option = event.target.closest(".slot-tournaments-manual-suggestion");
     if (!option) return;
     event.preventDefault();
+    event.stopPropagation();
+    selectManualSuggestion(option.dataset.username);
+  });
+
+  list.addEventListener("click", (event) => {
+    const option = event.target.closest(".slot-tournaments-manual-suggestion");
+    if (!option) return;
+    event.preventDefault();
+    event.stopPropagation();
     selectManualSuggestion(option.dataset.username);
   });
 
   document.addEventListener("click", (event) => {
     if (event.target.closest("#st-manual-add")) return;
+    if (event.target.closest("#st-manual-suggestions")) return;
     hideManualSuggestions();
   });
 }
