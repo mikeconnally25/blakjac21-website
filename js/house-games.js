@@ -702,9 +702,12 @@
     }
   }
 
+  let lastPlayError = "";
+
   async function play(body) {
     if (busy) return null;
     busy = true;
+    lastPlayError = "";
     setStatus("");
     setBlackjackActions(
       bjSessionId
@@ -725,11 +728,25 @@
       applyBalance(data);
       return data;
     } catch (error) {
-      setStatus(error.message || "Could not play.", { error: true });
+      lastPlayError = error.message || "Could not play.";
+      setStatus(lastPlayError, { error: true });
       return null;
     } finally {
       busy = false;
     }
+  }
+
+  function isBlackjackHandGoneError(message) {
+    return /hand not found|expired|already finished|deal a new hand|no active blackjack/i.test(
+      String(message || "")
+    );
+  }
+
+  function clearBlackjackLocalState() {
+    bjSessionId = null;
+    bjSnapshot = { hands: [[]], dealer: [], activeHand: 0 };
+    dealing = false;
+    busy = false;
   }
 
   function switchGame(game) {
@@ -1417,6 +1434,9 @@
     const bet = Number($("hg-bj-bet")?.value || 0);
     const data = await play({ game: "blackjack", action: "start", bet });
     if (!data) {
+      if (isBlackjackHandGoneError(lastPlayError)) {
+        clearBlackjackLocalState();
+      }
       setBlackjackActions(null);
       return;
     }
@@ -1440,6 +1460,15 @@
       sessionId: bjSessionId,
     });
     if (!data) {
+      if (isBlackjackHandGoneError(lastPlayError)) {
+        clearBlackjackLocalState();
+        renderBlackjack(null);
+        setBlackjackActions(null);
+        setStatus(lastPlayError || "That hand expired. Deal a new hand.", {
+          error: true,
+        });
+        return;
+      }
       setBlackjackActions({
         canHit: true,
         canStand: true,
