@@ -1146,13 +1146,25 @@ function renderEntries() {
     row.append(place, copy);
 
     if (currentUser?.isAdmin) {
+      const actions = document.createElement("div");
+      actions.className = "slot-tournaments-entry-actions";
+
       const changeBtn = document.createElement("button");
       changeBtn.type = "button";
-      changeBtn.className = "btn btn-sm btn-outline slot-tournaments-entry-change";
+      changeBtn.className = "btn btn-sm btn-outline";
       changeBtn.dataset.changeEntryId = entry.id;
       changeBtn.dataset.changeUsername = entry.username || "";
       changeBtn.textContent = assigned?.name ? "Change slot" : "Assign slot";
-      row.append(changeBtn);
+
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "btn btn-sm btn-outline";
+      removeBtn.dataset.removeEntryId = entry.id;
+      removeBtn.dataset.removeUsername = entry.username || "";
+      removeBtn.textContent = "Remove";
+
+      actions.append(changeBtn, removeBtn);
+      row.append(actions);
     }
 
     list.append(row);
@@ -2316,13 +2328,50 @@ function initJoin() {
   });
 
   document.getElementById("st-entries")?.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-change-entry-id]");
-    if (!button || !currentUser?.isAdmin || claimBusy) return;
+    const changeBtn = event.target.closest("[data-change-entry-id]");
+    if (changeBtn && currentUser?.isAdmin && !claimBusy) {
+      event.preventDefault();
+      setClaimPickerOpen(true, {
+        entryId: changeBtn.getAttribute("data-change-entry-id"),
+        username: changeBtn.getAttribute("data-change-username") || "",
+      });
+      return;
+    }
+
+    const removeBtn = event.target.closest("[data-remove-entry-id]");
+    if (!removeBtn || !currentUser?.isAdmin || claimBusy) return;
     event.preventDefault();
-    setClaimPickerOpen(true, {
-      entryId: button.getAttribute("data-change-entry-id"),
-      username: button.getAttribute("data-change-username") || "",
-    });
+
+    const entryId = removeBtn.getAttribute("data-remove-entry-id");
+    const username = removeBtn.getAttribute("data-remove-username") || "this entrant";
+    if (
+      !window.confirm(
+        `Remove ${username} from signups? Their slot will be freed${
+          state.bracket?.entrantIds?.includes(entryId)
+            ? ", and the bracket will be cleared"
+            : ""
+        }.`
+      )
+    ) {
+      return;
+    }
+
+    removeBtn.disabled = true;
+    setBanner(`Removing ${username}…`);
+    postJson("/api/slot-tournaments/entries/remove", { entryId })
+      .then((data) => {
+        const note = data.bracketCleared ? " Bracket cleared." : "";
+        setBanner(
+          `Removed ${data.username || username} from signups.${note}`,
+          "success"
+        );
+      })
+      .catch((error) => {
+        setBanner(error.message || "Could not remove entrant.", "error");
+      })
+      .finally(() => {
+        removeBtn.disabled = false;
+      });
   });
 
   document.getElementById("st-claim-slot-search")?.addEventListener("input", (event) => {

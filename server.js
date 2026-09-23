@@ -103,6 +103,7 @@ import {
   handleSlotTournamentChangeEntrySlot,
   handleSlotTournamentEntriesBots,
   handleSlotTournamentEntriesClear,
+  handleSlotTournamentEntryRemove,
   handleSlotTournamentJoin,
   handleSlotTournamentPhase,
   handleSlotTournamentPredictionsSave,
@@ -267,6 +268,9 @@ app.post("/api/slot-tournaments/subscribers-only", (req, res) =>
 );
 app.post("/api/slot-tournaments/entries/clear", (req, res) =>
   handleSlotTournamentEntriesClear(req, res)
+);
+app.post("/api/slot-tournaments/entries/remove", (req, res) =>
+  handleSlotTournamentEntryRemove(req, res)
 );
 app.post("/api/slot-tournaments/entries/bots", (req, res) =>
   handleSlotTournamentEntriesBots(req, res)
