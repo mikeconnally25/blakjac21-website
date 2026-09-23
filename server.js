@@ -96,6 +96,11 @@ import {
   handlePointsTip,
 } from "./lib/points-handlers.js";
 import {
+  handlePointsBuy,
+  handlePointsBuyIpn,
+  handlePointsBuyPackages,
+} from "./lib/points-buy-handlers.js";
+import {
   handleSlotTournamentAffiliatesOnly,
   handleSlotTournamentBracketClear,
   handleSlotTournamentBracketGenerate,
@@ -224,6 +229,11 @@ app.post("/api/points/award", (req, res) => handlePointsAward(req, res));
 app.post("/api/points/award-chat", (req, res) => handlePointsAwardChat(req, res));
 app.post("/api/points/redeem", (req, res) => handlePointsRedeem(req, res));
 app.post("/api/points/tip", (req, res) => handlePointsTip(req, res));
+app.get("/api/points/buy/packages", (req, res) =>
+  handlePointsBuyPackages(req, res)
+);
+app.post("/api/points/buy", (req, res) => handlePointsBuy(req, res));
+app.post("/api/points/buy/ipn", (req, res) => handlePointsBuyIpn(req, res));
 app.get("/api/points/redemptions", (req, res) =>
   handlePointsRedemptionsList(req, res)
 );

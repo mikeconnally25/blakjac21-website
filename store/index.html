@@ -82,6 +82,52 @@
 
         <p class="store-status is-hidden" id="store-status" role="status"></p>
 
+        <section class="store-panel store-buy-panel bj21-panel theme-surface" aria-labelledby="store-buy-title">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <div class="store-section-header">
+            <h2 class="store-section-title" id="store-buy-title">Buy points</h2>
+            <p class="store-section-copy" id="store-buy-copy">
+              Pay with crypto. $1 USD = 1,000 points.
+            </p>
+          </div>
+          <div class="store-buy-packages" id="store-buy-packages" role="group" aria-label="Point packages"></div>
+          <form class="store-buy-form" id="store-buy-form">
+            <div class="store-buy-custom-grid">
+              <div class="store-field">
+                <label class="guess-label" for="store-buy-points">Custom points</label>
+                <input
+                  class="guess-input"
+                  id="store-buy-points"
+                  name="points"
+                  type="number"
+                  min="1000"
+                  step="1000"
+                  placeholder="1000"
+                />
+              </div>
+              <div class="store-field">
+                <label class="guess-label" for="store-buy-usd">or USD</label>
+                <input
+                  class="guess-input"
+                  id="store-buy-usd"
+                  name="usd"
+                  type="number"
+                  min="1"
+                  max="100"
+                  step="1"
+                  placeholder="1"
+                />
+              </div>
+              <div class="store-buy-submit-wrap">
+                <button type="submit" class="btn btn-sm btn-primary" id="store-buy-submit" disabled>
+                  Pay with crypto
+                </button>
+              </div>
+            </div>
+            <p class="store-buy-note" id="store-buy-note">Sign in with Kick to buy points.</p>
+          </form>
+        </section>
+
         <section class="store-panel store-tip-panel bj21-panel theme-surface" aria-labelledby="store-tip-title">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
           <div class="store-section-header">
