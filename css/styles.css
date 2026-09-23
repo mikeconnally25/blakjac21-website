@@ -8768,6 +8768,11 @@ ul {
   background: rgba(8, 14, 22, 0.45);
 }
 
+.slot-tournaments-entry-change {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .slot-tournaments-entry-index {
   font-family: var(--font-display);
   font-size: 1.05rem;

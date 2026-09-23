@@ -100,6 +100,7 @@ import {
   handleSlotTournamentBracketClear,
   handleSlotTournamentBracketGenerate,
   handleSlotTournamentBracketScore,
+  handleSlotTournamentChangeEntrySlot,
   handleSlotTournamentEntriesBots,
   handleSlotTournamentEntriesClear,
   handleSlotTournamentJoin,
@@ -272,6 +273,9 @@ app.post("/api/slot-tournaments/entries/bots", (req, res) =>
 );
 app.post("/api/slot-tournaments/slots", (req, res) =>
   handleSlotTournamentSlots(req, res)
+);
+app.post("/api/slot-tournaments/entries/slot", (req, res) =>
+  handleSlotTournamentChangeEntrySlot(req, res)
 );
 app.post("/api/slot-tournaments/bracket/generate", (req, res) =>
   handleSlotTournamentBracketGenerate(req, res)

@@ -9,6 +9,7 @@ let pickerFilter = "";
 let claimPickerOpen = false;
 let claimPickerFilter = "";
 let claimBusy = false;
+let adminChangeEntryId = null;
 let predictionDraft = {};
 let predictionDirty = false;
 let predictionEndsAt = null;
@@ -1143,6 +1144,17 @@ function renderEntries() {
     }
 
     row.append(place, copy);
+
+    if (currentUser?.isAdmin) {
+      const changeBtn = document.createElement("button");
+      changeBtn.type = "button";
+      changeBtn.className = "btn btn-sm btn-outline slot-tournaments-entry-change";
+      changeBtn.dataset.changeEntryId = entry.id;
+      changeBtn.dataset.changeUsername = entry.username || "";
+      changeBtn.textContent = assigned?.name ? "Change slot" : "Assign slot";
+      row.append(changeBtn);
+    }
+
     list.append(row);
   });
 }
@@ -2092,11 +2104,12 @@ function setClaimStatus(message, tone = "") {
   status.classList.toggle("is-success", tone === "success");
 }
 
-function setClaimPickerOpen(open) {
+function setClaimPickerOpen(open, { entryId = null, username = "" } = {}) {
   const modal = document.getElementById("st-claim-modal");
   if (!modal) return;
 
   claimPickerOpen = Boolean(open);
+  adminChangeEntryId = claimPickerOpen ? String(entryId || "").trim() || null : null;
   modal.classList.toggle("is-hidden", !claimPickerOpen);
   modal.hidden = !claimPickerOpen;
   const predictOpen = !document
@@ -2106,6 +2119,25 @@ function setClaimPickerOpen(open) {
     "st-predict-modal-open",
     claimPickerOpen || predictOpen
   );
+
+  const title = document.getElementById("st-claim-modal-title");
+  const hint = document.getElementById("st-claim-modal-hint");
+  const eyebrow = modal.querySelector(".st-predict-modal-head .section-eyebrow");
+  if (claimPickerOpen && adminChangeEntryId) {
+    if (eyebrow) eyebrow.textContent = "Admin";
+    if (title) {
+      title.textContent = username
+        ? `Change slot for ${username}`
+        : "Change slot";
+    }
+    if (hint) {
+      hint.textContent = "Pick a new slot for this entrant. Their old slot is freed.";
+    }
+  } else if (claimPickerOpen) {
+    if (eyebrow) eyebrow.textContent = "Signups";
+    if (title) title.textContent = "Pick a slot";
+    if (hint) hint.textContent = "Pick a slot to claim your spot.";
+  }
 
   if (claimPickerOpen) {
     setClaimStatus("");
@@ -2134,7 +2166,11 @@ function renderClaimSlotPickerOptions() {
 
   groupsEl.replaceChildren();
   const query = claimPickerFilter.trim().toLowerCase();
-  const exceptEntryId = viewerNeedsSlot() ? state.viewerEntryId : null;
+  const exceptEntryId = adminChangeEntryId
+    ? adminChangeEntryId
+    : viewerNeedsSlot()
+      ? state.viewerEntryId
+      : null;
 
   const groups = getPickerGroups();
 
@@ -2218,12 +2254,13 @@ async function claimWithSlot(slug, name) {
     return;
   }
 
-  if (
-    slotTakenByEntrant(
-      catalogHit,
-      viewerNeedsSlot() ? state.viewerEntryId : null
-    )
-  ) {
+  const exceptEntryId = adminChangeEntryId
+    ? adminChangeEntryId
+    : viewerNeedsSlot()
+      ? state.viewerEntryId
+      : null;
+
+  if (slotTakenByEntrant(catalogHit, exceptEntryId)) {
     setClaimStatus("That slot is already taken.", "error");
     renderClaimSlotPickerOptions();
     return;
@@ -2232,23 +2269,38 @@ async function claimWithSlot(slug, name) {
   claimBusy = true;
   renderStatus();
   renderClaimSlotPickerOptions();
-  setClaimStatus("Claiming spot…");
+  setClaimStatus(
+    adminChangeEntryId ? "Updating slot…" : "Claiming spot…"
+  );
 
   try {
     const payload = catalogHit.slug
       ? { slotSlug: catalogHit.slug }
       : { slotName: catalogHit.name };
-    const data = await postJson("/api/slot-tournaments/join", payload);
-    setClaimPickerOpen(false);
-    const message = data.slotAssigned
-      ? "Slot picked. Spot secured."
-      : data.alreadyEntered
-        ? "You already claimed a spot."
-        : "Spot claimed.";
-    setBanner(message, "success");
+
+    if (adminChangeEntryId) {
+      const data = await postJson("/api/slot-tournaments/entries/slot", {
+        entryId: adminChangeEntryId,
+        ...payload,
+      });
+      setClaimPickerOpen(false);
+      setBanner(
+        `Updated slot${data.slotName ? ` to ${data.slotName}` : ""}.`,
+        "success"
+      );
+    } else {
+      const data = await postJson("/api/slot-tournaments/join", payload);
+      setClaimPickerOpen(false);
+      const message = data.slotAssigned
+        ? "Slot picked. Spot secured."
+        : data.alreadyEntered
+          ? "You already claimed a spot."
+          : "Spot claimed.";
+      setBanner(message, "success");
+    }
   } catch (error) {
-    setClaimStatus(error.message || "Could not claim a spot.", "error");
-    setBanner(error.message || "Could not claim a spot.", "error");
+    setClaimStatus(error.message || "Could not save slot.", "error");
+    setBanner(error.message || "Could not save slot.", "error");
     await refreshStatus().catch(() => {});
     renderClaimSlotPickerOptions();
   } finally {
@@ -2261,6 +2313,16 @@ function initJoin() {
   document.getElementById("st-join-btn")?.addEventListener("click", () => {
     if (!canOpenClaimPicker() || claimBusy) return;
     setClaimPickerOpen(true);
+  });
+
+  document.getElementById("st-entries")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-change-entry-id]");
+    if (!button || !currentUser?.isAdmin || claimBusy) return;
+    event.preventDefault();
+    setClaimPickerOpen(true, {
+      entryId: button.getAttribute("data-change-entry-id"),
+      username: button.getAttribute("data-change-username") || "",
+    });
   });
 
   document.getElementById("st-claim-slot-search")?.addEventListener("input", (event) => {
