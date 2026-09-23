@@ -8,8 +8,9 @@
   let rouletteBallAngle = 0;
   let rouletteSpinning = false;
   let rouletteBallAnimating = false;
-  let rouletteBallLockedToWheel = false;
+  let rouletteBallLockedToWheel = true;
   let rouletteLockedPocketAngle = 0;
+  let rouletteLastHit = 21;
   let rouletteIdleRaf = 0;
   let rouletteIdleLastTs = 0;
   let kenoPicks = new Set();
@@ -777,7 +778,7 @@
 
   function buildRouletteWheel() {
     const mount = $("hg-roulette-wheel");
-    if (!mount || mount.childElementCount) return;
+    if (!mount || mount.querySelector(".hg-roulette-svg")) return;
 
     const size = 360;
     const cx = size / 2;
@@ -879,7 +880,15 @@
     ring.setAttribute("class", "hg-roulette-inner-ring");
     svg.appendChild(ring);
 
-    mount.appendChild(svg);
+    const ballTrack = $("hg-roulette-ball-track");
+    if (ballTrack && ballTrack.parentElement === mount) {
+      mount.insertBefore(svg, ballTrack);
+    } else {
+      mount.appendChild(svg);
+    }
+
+    rouletteLockedPocketAngle = roulettePocketAngle(rouletteLastHit);
+    rouletteBallLockedToWheel = true;
   }
 
   function buildRouletteBoard() {
@@ -983,8 +992,26 @@
     if (wheel) {
       wheel.style.transform = `rotate(${rouletteWheelAngle}deg)`;
     }
-    if (!wheelOnly && track) {
-      track.style.transform = `rotate(${rouletteBallAngle}deg)`;
+    if (wheelOnly || !track) return;
+
+    // Ball is a child of the wheel. Locked = pocket angle in wheel space.
+    // Spinning = animated local angle (still wheel-relative).
+    const local = rouletteBallLockedToWheel
+      ? rouletteLockedPocketAngle
+      : rouletteBallAngle;
+    track.style.transform = `rotate(${local}deg)`;
+  }
+
+  function lockRouletteBallToNumber(number) {
+    rouletteLastHit = Number(number);
+    rouletteLockedPocketAngle = roulettePocketAngle(rouletteLastHit);
+    rouletteBallLockedToWheel = true;
+    rouletteBallAnimating = false;
+    rouletteBallAngle = rouletteLockedPocketAngle;
+    const track = $("hg-roulette-ball-track");
+    if (track) {
+      track.style.transition = "";
+      track.style.transform = `rotate(${rouletteLockedPocketAngle}deg)`;
     }
   }
 
@@ -997,14 +1024,10 @@
       rouletteWheelAngle += ROULETTE_IDLE_DEG_PER_MS * dt;
     }
 
-    setRouletteTransforms({ wheelOnly: true });
-
-    if (rouletteBallLockedToWheel && !rouletteBallAnimating) {
-      rouletteBallAngle = rouletteWheelAngle + rouletteLockedPocketAngle;
-      const track = $("hg-roulette-ball-track");
-      if (track) {
-        track.style.transform = `rotate(${rouletteBallAngle}deg)`;
-      }
+    // Ball is nested in the wheel — locked pockets ride automatically.
+    const wheel = $("hg-roulette-wheel");
+    if (wheel) {
+      wheel.style.transform = `rotate(${rouletteWheelAngle}deg)`;
     }
 
     rouletteIdleRaf = window.requestAnimationFrame(tickRouletteIdle);
@@ -1017,61 +1040,63 @@
     rouletteIdleRaf = window.requestAnimationFrame(tickRouletteIdle);
   }
 
+  function easeRouletteBall(t) {
+    const a = 1 - Math.pow(1 - t, 3);
+    const b = t * t * (3 - 2 * t);
+    return a * 0.65 + b * 0.35;
+  }
+
   async function animateRouletteSpin(resultNumber) {
     const wrap = document.querySelector(".hg-roulette-rim");
     const ball = $("hg-roulette-ball-orb");
     const trackEl = $("hg-roulette-ball-track");
 
     const pocket = roulettePocketAngle(resultNumber);
+    const startLocal = rouletteLockedPocketAngle;
     rouletteBallLockedToWheel = false;
     rouletteBallAnimating = true;
+    rouletteBallAngle = startLocal;
 
     const duration = ROULETTE_SPIN_MS;
-    const idleSpeed = prefersReducedMotion() ? 0 : ROULETTE_IDLE_DEG_PER_MS;
-    const predictedWheel = rouletteWheelAngle + idleSpeed * duration;
-    const ballTarget = ((predictedWheel + pocket) % 360 + 360) % 360;
 
     if (!wrap || prefersReducedMotion()) {
-      rouletteBallAngle = rouletteWheelAngle + pocket;
-      rouletteBallLockedToWheel = true;
-      rouletteLockedPocketAngle = pocket;
-      rouletteBallAnimating = false;
+      lockRouletteBallToNumber(resultNumber);
       setRouletteTransforms();
       return;
     }
 
     wrap.classList.add("is-spinning");
     ball?.classList.add("is-spinning");
+    if (trackEl) trackEl.style.transition = "";
 
     const ballSpins = 9 + Math.floor(Math.random() * 3);
-    const ballNormalized = ((rouletteBallAngle % 360) + 360) % 360;
-    let ballDelta = ballTarget - ballNormalized;
-    if (ballDelta > 0) ballDelta -= 360;
-    const finalBall = rouletteBallAngle - ballSpins * 360 + ballDelta;
+    let delta = pocket - startLocal;
+    delta = ((delta % 360) + 360) % 360;
+    if (delta > 0) delta -= 360;
+    const endLocal = startLocal - ballSpins * 360 + delta;
 
-    if (trackEl) {
-      trackEl.style.transition = `transform ${duration}ms ${ROULETTE_BALL_EASE}`;
-    }
+    await new Promise((resolve) => {
+      const startTs = performance.now();
+      const step = (now) => {
+        const t = Math.min(1, (now - startTs) / duration);
+        const eased = easeRouletteBall(t);
+        rouletteBallAngle = startLocal + (endLocal - startLocal) * eased;
+        if (trackEl) {
+          trackEl.style.transform = `rotate(${rouletteBallAngle}deg)`;
+        }
+        if (t < 1) {
+          window.requestAnimationFrame(step);
+        } else {
+          resolve();
+        }
+      };
+      window.requestAnimationFrame(step);
+    });
 
-    void trackEl?.offsetWidth;
-    rouletteBallAngle = finalBall;
-    if (trackEl) {
-      trackEl.style.transform = `rotate(${rouletteBallAngle}deg)`;
-    }
-
-    await wait(duration + 40);
     wrap.classList.remove("is-spinning");
     ball?.classList.add("is-settling");
     ball?.classList.remove("is-spinning");
-    if (trackEl) trackEl.style.transition = "";
-
-    rouletteLockedPocketAngle = pocket;
-    rouletteBallLockedToWheel = true;
-    rouletteBallAnimating = false;
-    rouletteBallAngle = rouletteWheelAngle + pocket;
-    if (trackEl) {
-      trackEl.style.transform = `rotate(${rouletteBallAngle}deg)`;
-    }
+    lockRouletteBallToNumber(resultNumber);
 
     await wait(280);
     ball?.classList.remove("is-settling");

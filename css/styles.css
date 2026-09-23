@@ -7586,10 +7586,11 @@ ul {
 }
 
 .hg-roulette-wheel {
+  position: relative;
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  overflow: hidden;
+  overflow: visible;
   will-change: transform;
   transform: translateZ(0);
 }
@@ -7626,16 +7627,18 @@ ul {
 
 .hg-roulette-ball-track {
   position: absolute;
-  inset: 0.72rem;
+  inset: 0;
   border-radius: 50%;
   pointer-events: none;
   will-change: transform;
   transform: translateZ(0);
+  z-index: 4;
 }
 
 .hg-roulette-ball-orb {
   position: absolute;
-  top: 0.08rem;
+  /* Sit on the number ring (labels are ~84% of radius). */
+  top: 7.2%;
   left: 50%;
   width: 0.78rem;
   height: 0.78rem;
