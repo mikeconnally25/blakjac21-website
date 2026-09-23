@@ -1,5 +1,7 @@
 # Buy store points with NOWPayments
 
+> **Status:** Store UI is hidden for now. Backend (`lib/nowpayments.js`, `lib/points-purchases.js`, `/api/points/buy*`) remains in the repo for a later rework.
+
 Crypto checkout for channel points via hosted NOWPayments invoices.
 
 ## Env vars (Vercel + local `.env`)

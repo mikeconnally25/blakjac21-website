@@ -9923,60 +9923,8 @@ ul {
   max-width: 72rem;
 }
 
-.store-buy-panel,
 .store-tip-panel {
   align-content: start;
-}
-
-.store-buy-packages {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 0 0 0.85rem;
-}
-
-.store-buy-package-btn {
-  min-width: 7.5rem;
-}
-
-.store-buy-package-btn.is-selected {
-  outline: 2px solid var(--accent, #c9a227);
-  outline-offset: 1px;
-}
-
-.store-buy-form {
-  margin: 0;
-}
-
-.store-buy-custom-grid {
-  display: grid;
-  gap: 0.65rem 0.85rem;
-  align-items: end;
-}
-
-@media (min-width: 640px) {
-  .store-buy-custom-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(6.5rem, 0.55fr) auto;
-  }
-}
-
-.store-buy-submit-wrap {
-  display: flex;
-  align-items: end;
-}
-
-.store-buy-note {
-  margin: 0.65rem 0 0;
-  color: var(--text-muted);
-  font-size: 0.88rem;
-  line-height: 1.4;
-}
-
-.store-buy-form.is-disabled .guess-input,
-.store-buy-form.is-disabled .btn,
-.store-buy-packages.is-disabled .btn {
-  opacity: 0.55;
-  pointer-events: none;
 }
 
 .store-tip-form {
