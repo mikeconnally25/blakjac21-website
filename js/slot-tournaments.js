@@ -10,6 +10,10 @@ let claimPickerOpen = false;
 let claimPickerFilter = "";
 let claimBusy = false;
 let adminChangeEntryId = null;
+let manualUsers = [];
+let manualUsersLoaded = false;
+let manualUsersLoading = null;
+let manualSuggestIndex = -1;
 let predictionDraft = {};
 let predictionDirty = false;
 let predictionEndsAt = null;
@@ -1014,6 +1018,9 @@ function renderInfo() {
   const isAdmin = Boolean(currentUser?.isAdmin);
   botsPanel?.classList.toggle("is-hidden", !isAdmin);
   manualPanel?.classList.toggle("is-hidden", !isAdmin);
+  if (isAdmin) {
+    loadManualUsers().catch(() => {});
+  }
   if (botsFill) {
     const canFill = Boolean(state.capacity) && state.spotsLeft > 0;
     botsFill.classList.toggle("is-hidden", !canFill);
@@ -2002,6 +2009,206 @@ async function loadSlotCatalog({ force = false } = {}) {
   return catalogLoadPromise;
 }
 
+function filterManualUsers(users, query) {
+  const term = String(query || "")
+    .trim()
+    .replace(/^@/, "")
+    .toLowerCase();
+  if (!term) return [];
+
+  const signedUp = new Set(
+    (state.entries || []).map((entry) =>
+      String(entry.username || "")
+        .trim()
+        .toLowerCase()
+    )
+  );
+
+  return users
+    .filter((user) => {
+      const username = String(user.username || "").toLowerCase();
+      if (!username || signedUp.has(username)) return false;
+
+      const kickUserId = String(user.kickUserId || "").toLowerCase();
+      const stakeUsername = String(user.stakeUsername || "").toLowerCase();
+      const lastLoginIp = String(user.lastLoginIp || "").toLowerCase();
+      const lastLoginLocation = String(user.lastLoginLocation || "").toLowerCase();
+      const historyIps = (user.loginHistory || [])
+        .map((entry) => String(entry.ip || "").toLowerCase())
+        .join(" ");
+      const historyPlaces = (user.loginHistory || [])
+        .map((entry) =>
+          [entry.city, entry.region, entry.country]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase()
+        )
+        .join(" ");
+      const altNames = (user.possibleAlts || [])
+        .map((alt) => String(alt.username || "").toLowerCase())
+        .join(" ");
+
+      return (
+        username.includes(term) ||
+        kickUserId.includes(term) ||
+        stakeUsername.includes(term) ||
+        lastLoginIp.includes(term) ||
+        lastLoginLocation.includes(term) ||
+        historyIps.includes(term) ||
+        historyPlaces.includes(term) ||
+        altNames.includes(term)
+      );
+    })
+    .sort((a, b) =>
+      String(a.username || "").localeCompare(String(b.username || ""), undefined, {
+        sensitivity: "base",
+      })
+    )
+    .slice(0, 12);
+}
+
+function hideManualSuggestions() {
+  const list = document.getElementById("st-manual-suggestions");
+  const input = document.getElementById("st-manual-username");
+  manualSuggestIndex = -1;
+  if (list) {
+    list.replaceChildren();
+    list.classList.add("is-hidden");
+  }
+  input?.setAttribute("aria-expanded", "false");
+}
+
+function renderManualSuggestions() {
+  const list = document.getElementById("st-manual-suggestions");
+  const input = document.getElementById("st-manual-username");
+  if (!list || !input || !currentUser?.isAdmin) {
+    hideManualSuggestions();
+    return;
+  }
+
+  const matches = filterManualUsers(manualUsers, input.value);
+  list.replaceChildren();
+  manualSuggestIndex = -1;
+
+  if (!matches.length || !String(input.value || "").trim()) {
+    hideManualSuggestions();
+    return;
+  }
+
+  matches.forEach((user, index) => {
+    const item = document.createElement("li");
+    item.className = "slot-tournaments-manual-suggestion";
+    item.setAttribute("role", "option");
+    item.id = `st-manual-suggestion-${index}`;
+    item.dataset.username = user.username || "";
+    item.textContent = user.username || "";
+    list.append(item);
+  });
+
+  list.classList.remove("is-hidden");
+  input.setAttribute("aria-expanded", "true");
+}
+
+function selectManualSuggestion(username) {
+  const input = document.getElementById("st-manual-username");
+  if (!input || !username) return;
+  input.value = username;
+  hideManualSuggestions();
+  input.focus();
+}
+
+async function loadManualUsers({ force = false } = {}) {
+  if (!currentUser?.isAdmin) return [];
+  if (manualUsersLoaded && !force) return manualUsers;
+  if (manualUsersLoading) return manualUsersLoading;
+
+  manualUsersLoading = (async () => {
+    try {
+      const response = await fetch("/api/users", {
+        credentials: "same-origin",
+        cache: "no-store",
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "Could not load accounts.");
+      }
+      manualUsers = Array.isArray(data.users) ? data.users : [];
+      manualUsersLoaded = true;
+      return manualUsers;
+    } finally {
+      manualUsersLoading = null;
+    }
+  })();
+
+  return manualUsersLoading;
+}
+
+function initManualUserSearch() {
+  const input = document.getElementById("st-manual-username");
+  const list = document.getElementById("st-manual-suggestions");
+  if (!input || !list) return;
+
+  input.addEventListener("focus", () => {
+    loadManualUsers()
+      .then(() => renderManualSuggestions())
+      .catch(() => {});
+  });
+
+  input.addEventListener("input", () => {
+    loadManualUsers()
+      .then(() => renderManualSuggestions())
+      .catch(() => renderManualSuggestions());
+  });
+
+  input.addEventListener("keydown", (event) => {
+    const options = [
+      ...list.querySelectorAll(".slot-tournaments-manual-suggestion"),
+    ];
+    if (event.key === "ArrowDown" && options.length) {
+      event.preventDefault();
+      manualSuggestIndex = Math.min(manualSuggestIndex + 1, options.length - 1);
+      options.forEach((option, index) => {
+        option.classList.toggle("is-active", index === manualSuggestIndex);
+      });
+      options[manualSuggestIndex]?.scrollIntoView({ block: "nearest" });
+      return;
+    }
+    if (event.key === "ArrowUp" && options.length) {
+      event.preventDefault();
+      manualSuggestIndex = Math.max(manualSuggestIndex - 1, 0);
+      options.forEach((option, index) => {
+        option.classList.toggle("is-active", index === manualSuggestIndex);
+      });
+      options[manualSuggestIndex]?.scrollIntoView({ block: "nearest" });
+      return;
+    }
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (manualSuggestIndex >= 0 && options[manualSuggestIndex]) {
+        selectManualSuggestion(options[manualSuggestIndex].dataset.username);
+        return;
+      }
+      document.getElementById("st-manual-add-btn")?.click();
+      return;
+    }
+    if (event.key === "Escape") {
+      hideManualSuggestions();
+    }
+  });
+
+  list.addEventListener("mousedown", (event) => {
+    const option = event.target.closest(".slot-tournaments-manual-suggestion");
+    if (!option) return;
+    event.preventDefault();
+    selectManualSuggestion(option.dataset.username);
+  });
+
+  document.addEventListener("click", (event) => {
+    if (event.target.closest("#st-manual-add")) return;
+    hideManualSuggestions();
+  });
+}
+
 function initAdmin() {
   document.getElementById("st-settings-form")?.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -2071,6 +2278,7 @@ function initAdmin() {
     }
 
     if (button) button.disabled = true;
+    hideManualSuggestions();
     setBanner(`Adding @${username}…`);
     try {
       const data = await postJson("/api/slot-tournaments/entries/add", {
@@ -2089,12 +2297,7 @@ function initAdmin() {
     }
   });
 
-  document.getElementById("st-manual-username")?.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      document.getElementById("st-manual-add-btn")?.click();
-    }
-  });
+  initManualUserSearch();
 
   document.getElementById("st-bots-add")?.addEventListener("click", async () => {
     const count = Number(document.getElementById("st-bots-count")?.value || 0);

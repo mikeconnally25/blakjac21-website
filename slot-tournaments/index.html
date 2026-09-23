@@ -271,16 +271,27 @@
             </div>
             <div class="slot-tournaments-manual is-hidden" id="st-manual-add">
               <p class="slot-tournaments-panel-label">Add user</p>
-              <div class="slot-tournaments-bots-row">
-                <label class="guess-label" for="st-manual-username">Username</label>
-                <input
-                  class="guess-input"
-                  id="st-manual-username"
-                  type="text"
-                  maxlength="40"
-                  autocomplete="off"
-                  placeholder="Kick username"
-                />
+              <div class="slot-tournaments-manual-row">
+                <div class="slot-tournaments-manual-search">
+                  <label class="guess-label" for="st-manual-username">Username</label>
+                  <input
+                    class="guess-input"
+                    id="st-manual-username"
+                    type="search"
+                    maxlength="40"
+                    autocomplete="off"
+                    placeholder="Search Kick username…"
+                    aria-autocomplete="list"
+                    aria-controls="st-manual-suggestions"
+                    aria-expanded="false"
+                  />
+                  <ul
+                    class="slot-tournaments-manual-suggestions is-hidden"
+                    id="st-manual-suggestions"
+                    role="listbox"
+                    aria-label="Matching usernames"
+                  ></ul>
+                </div>
                 <button type="button" class="btn btn-sm btn-primary" id="st-manual-add-btn">
                   Add
                 </button>

@@ -8833,6 +8833,57 @@ ul {
   grid-template-columns: minmax(0, 1fr) auto;
 }
 
+.slot-tournaments-manual-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: end;
+}
+
+.slot-tournaments-manual-search {
+  position: relative;
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.slot-tournaments-manual-suggestions {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  right: 0;
+  z-index: 8;
+  list-style: none;
+  margin: 0;
+  padding: 0.3rem;
+  max-height: 14rem;
+  overflow: auto;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(126, 216, 255, 0.22);
+  background: rgba(8, 14, 22, 0.96);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.4);
+}
+
+.slot-tournaments-manual-suggestion {
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.slot-tournaments-manual-suggestion:hover,
+.slot-tournaments-manual-suggestion.is-active {
+  background: rgba(88, 201, 243, 0.14);
+  color: #fff;
+}
+
+@media (max-width: 640px) {
+  .slot-tournaments-manual-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .slot-tournaments-bots-row {
   display: grid;
   grid-template-columns: auto 5rem auto auto;
