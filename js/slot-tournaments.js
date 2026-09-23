@@ -1008,10 +1008,12 @@ function renderInfo() {
   viewBracket?.classList.toggle("is-hidden", state.entryCount < 2);
 
   const botsPanel = document.getElementById("st-bots");
+  const manualPanel = document.getElementById("st-manual-add");
   const botsFill = document.getElementById("st-bots-fill");
   const botsCount = document.getElementById("st-bots-count");
   const isAdmin = Boolean(currentUser?.isAdmin);
   botsPanel?.classList.toggle("is-hidden", !isAdmin);
+  manualPanel?.classList.toggle("is-hidden", !isAdmin);
   if (botsFill) {
     const canFill = Boolean(state.capacity) && state.spotsLeft > 0;
     botsFill.classList.toggle("is-hidden", !canFill);
@@ -2053,6 +2055,44 @@ function initAdmin() {
       setAdminStatus("Signups cleared.", "success");
     } catch (error) {
       setAdminStatus(error.message || "Could not clear signups.", "error");
+    }
+  });
+
+  document.getElementById("st-manual-add-btn")?.addEventListener("click", async () => {
+    const input = document.getElementById("st-manual-username");
+    const button = document.getElementById("st-manual-add-btn");
+    const username = String(input?.value || "")
+      .replace(/^@/, "")
+      .trim();
+    if (!username) {
+      setBanner("Enter a Kick username to add.", "error");
+      input?.focus();
+      return;
+    }
+
+    if (button) button.disabled = true;
+    setBanner(`Adding @${username}…`);
+    try {
+      const data = await postJson("/api/slot-tournaments/entries/add", {
+        username,
+      });
+      if (input) input.value = "";
+      setBanner(
+        `Added @${data.username || username} to signups.`,
+        "success"
+      );
+      input?.focus();
+    } catch (error) {
+      setBanner(error.message || "Could not add user.", "error");
+    } finally {
+      if (button) button.disabled = false;
+    }
+  });
+
+  document.getElementById("st-manual-username")?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      document.getElementById("st-manual-add-btn")?.click();
     }
   });
 

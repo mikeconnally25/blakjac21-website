@@ -269,6 +269,23 @@
             <div class="slot-tournaments-scroll">
               <ol class="slot-tournaments-entries is-hidden" id="st-entries"></ol>
             </div>
+            <div class="slot-tournaments-manual is-hidden" id="st-manual-add">
+              <p class="slot-tournaments-panel-label">Add user</p>
+              <div class="slot-tournaments-bots-row">
+                <label class="guess-label" for="st-manual-username">Username</label>
+                <input
+                  class="guess-input"
+                  id="st-manual-username"
+                  type="text"
+                  maxlength="40"
+                  autocomplete="off"
+                  placeholder="Kick username"
+                />
+                <button type="button" class="btn btn-sm btn-primary" id="st-manual-add-btn">
+                  Add
+                </button>
+              </div>
+            </div>
             <div class="slot-tournaments-bots is-hidden" id="st-bots">
               <p class="slot-tournaments-panel-label">Fill with bots</p>
               <div class="slot-tournaments-bots-row">

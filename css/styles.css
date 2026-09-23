@@ -8821,6 +8821,18 @@ ul {
   gap: 0.45rem;
 }
 
+.slot-tournaments-manual {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+  display: grid;
+  gap: 0.45rem;
+}
+
+.slot-tournaments-manual .slot-tournaments-bots-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
 .slot-tournaments-bots-row {
   display: grid;
   grid-template-columns: auto 5rem auto auto;
