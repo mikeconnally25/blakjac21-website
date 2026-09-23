@@ -82,6 +82,50 @@
 
         <p class="store-status is-hidden" id="store-status" role="status"></p>
 
+        <section class="store-panel store-tip-panel bj21-panel theme-surface" aria-labelledby="store-tip-title">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <div class="store-section-header">
+            <h2 class="store-section-title" id="store-tip-title">Tip points</h2>
+            <p class="store-section-copy">Send points to another Kick user who has signed in on the site.</p>
+          </div>
+          <form class="store-tip-form" id="store-tip-form">
+            <div class="store-tip-grid">
+              <div class="store-field">
+                <label class="guess-label" for="store-tip-username">Username</label>
+                <input
+                  class="guess-input"
+                  id="store-tip-username"
+                  name="username"
+                  type="text"
+                  maxlength="40"
+                  autocomplete="off"
+                  placeholder="Kick username"
+                  required
+                />
+              </div>
+              <div class="store-field">
+                <label class="guess-label" for="store-tip-amount">Amount</label>
+                <input
+                  class="guess-input"
+                  id="store-tip-amount"
+                  name="amount"
+                  type="number"
+                  min="1"
+                  step="1"
+                  value="100"
+                  required
+                />
+              </div>
+              <div class="store-tip-submit-wrap">
+                <button type="submit" class="btn btn-sm btn-primary" id="store-tip-submit">
+                  Send tip
+                </button>
+              </div>
+            </div>
+            <p class="store-tip-note" id="store-tip-note">Sign in with Kick to tip other users.</p>
+          </form>
+        </section>
+
         <div class="store-browse-row">
           <section class="store-panel store-rewards-panel bj21-panel theme-surface" aria-labelledby="store-catalog-title">
             <span class="bj21-panel-glow" aria-hidden="true"></span>

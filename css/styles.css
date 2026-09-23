@@ -9825,6 +9825,44 @@ ul {
   max-width: 72rem;
 }
 
+.store-tip-panel {
+  align-content: start;
+}
+
+.store-tip-form {
+  margin: 0;
+}
+
+.store-tip-grid {
+  display: grid;
+  gap: 0.65rem 0.85rem;
+  align-items: end;
+}
+
+@media (min-width: 640px) {
+  .store-tip-grid {
+    grid-template-columns: minmax(0, 1.2fr) minmax(7rem, 0.55fr) auto;
+  }
+}
+
+.store-tip-submit-wrap {
+  display: flex;
+  align-items: end;
+}
+
+.store-tip-note {
+  margin: 0.65rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.store-tip-form.is-disabled .guess-input,
+.store-tip-form.is-disabled .btn {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
 .store-top {
   display: grid;
   gap: 1rem;

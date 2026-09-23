@@ -93,6 +93,7 @@ import {
   handlePointsRedemptionDelete,
   handlePointsRedemptionFulfill,
   handlePointsRedemptionsList,
+  handlePointsTip,
 } from "./lib/points-handlers.js";
 import {
   handleSlotTournamentAffiliatesOnly,
@@ -219,6 +220,7 @@ app.post("/api/points/catalog", (req, res) => handlePointsCatalogUpsert(req, res
 app.post("/api/points/award", (req, res) => handlePointsAward(req, res));
 app.post("/api/points/award-chat", (req, res) => handlePointsAwardChat(req, res));
 app.post("/api/points/redeem", (req, res) => handlePointsRedeem(req, res));
+app.post("/api/points/tip", (req, res) => handlePointsTip(req, res));
 app.get("/api/points/redemptions", (req, res) =>
   handlePointsRedemptionsList(req, res)
 );
