@@ -374,8 +374,23 @@ function renderHistory() {
 
 function renderAdmin() {
   const panel = document.getElementById("store-admin");
+  const queuePanel = document.getElementById("store-queue-panel");
+  const redemptionsPanel = document.getElementById("store-redemptions-panel");
+  const browseSide = document.getElementById("store-browse-side");
+  const adminSidebar = document.getElementById("store-admin-sidebar");
   const isAdmin = Boolean(currentUser?.isAdmin);
+
   panel?.classList.toggle("is-hidden", !isAdmin);
+  queuePanel?.classList.toggle("is-hidden", !isAdmin);
+
+  if (redemptionsPanel && browseSide && adminSidebar) {
+    if (isAdmin) {
+      adminSidebar.insertBefore(redemptionsPanel, adminSidebar.firstChild);
+    } else if (redemptionsPanel.parentElement !== browseSide) {
+      browseSide.appendChild(redemptionsPanel);
+    }
+  }
+
   if (!isAdmin) return;
   renderAdminCatalog();
   renderQueue();

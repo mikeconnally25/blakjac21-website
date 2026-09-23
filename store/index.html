@@ -93,16 +93,29 @@
             <ul class="store-catalog-list store-reward-grid" id="store-catalog-list"></ul>
           </section>
 
-          <section class="store-panel store-redemptions-panel bj21-panel theme-surface" aria-labelledby="store-redemptions-title">
-            <span class="bj21-panel-glow" aria-hidden="true"></span>
-            <div class="store-section-header">
-              <h2 class="store-section-title" id="store-redemptions-title">Your redemptions</h2>
+          <div class="store-browse-side" id="store-browse-side">
+            <div class="store-panel store-side-panel bj21-panel theme-surface is-hidden" id="store-queue-panel">
+              <span class="bj21-panel-glow" aria-hidden="true"></span>
+              <div class="store-section-header store-admin-queue-header">
+                <h2 class="store-section-title" id="store-queue-title">Pending queue</h2>
+              </div>
+              <p class="store-empty is-hidden" id="store-queue-empty">No pending redemptions.</p>
+              <div class="store-list-scroll store-queue-scroll">
+                <ul class="store-queue-list" id="store-queue-list"></ul>
+              </div>
             </div>
-            <p class="store-empty" id="store-redemptions-empty">No redemptions yet.</p>
-            <div class="store-list-scroll">
-              <ul class="store-redemptions-list is-hidden" id="store-redemptions-list"></ul>
-            </div>
-          </section>
+
+            <section class="store-panel store-side-panel store-redemptions-panel bj21-panel theme-surface" id="store-redemptions-panel" aria-labelledby="store-redemptions-title">
+              <span class="bj21-panel-glow" aria-hidden="true"></span>
+              <div class="store-section-header">
+                <h2 class="store-section-title" id="store-redemptions-title">Your redemptions</h2>
+              </div>
+              <p class="store-empty" id="store-redemptions-empty">No redemptions yet.</p>
+              <div class="store-list-scroll">
+                <ul class="store-redemptions-list is-hidden" id="store-redemptions-list"></ul>
+              </div>
+            </section>
+          </div>
         </div>
 
         <section class="store-admin is-hidden" id="store-admin" aria-labelledby="store-admin-title">
@@ -115,18 +128,7 @@
           </div>
 
           <div class="store-admin-layout">
-            <div class="store-admin-sidebar">
-              <div class="store-panel bj21-panel theme-surface" id="store-queue-panel">
-                <span class="bj21-panel-glow" aria-hidden="true"></span>
-                <div class="store-section-header store-admin-queue-header">
-                  <h3 class="store-section-subtitle">Pending queue</h3>
-                </div>
-                <p class="store-empty is-hidden" id="store-queue-empty">No pending redemptions.</p>
-                <div class="store-list-scroll store-queue-scroll">
-                  <ul class="store-queue-list" id="store-queue-list"></ul>
-                </div>
-              </div>
-
+            <div class="store-admin-sidebar" id="store-admin-sidebar">
               <div class="store-panel bj21-panel theme-surface" id="store-history-panel">
                 <span class="bj21-panel-glow" aria-hidden="true"></span>
                 <div class="store-section-header store-admin-queue-header" id="store-history-header">

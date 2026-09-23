@@ -9794,6 +9794,13 @@ ul {
   align-items: start;
 }
 
+.store-browse-side {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  align-content: start;
+}
+
 @media (min-width: 900px) {
   .store-browse-row {
     grid-template-columns: minmax(0, 1.35fr) minmax(16rem, 0.9fr);
@@ -9804,10 +9811,12 @@ ul {
   }
 }
 
+.store-side-panel,
 .store-redemptions-panel {
   min-height: 12rem;
 }
 
+.store-side-panel .store-list-scroll,
 .store-redemptions-panel .store-list-scroll {
   max-height: 28rem;
 }
