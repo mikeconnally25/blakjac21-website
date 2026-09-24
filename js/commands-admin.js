@@ -260,6 +260,9 @@
       section.append(heading);
 
       for (const field of groupFields) {
+        const row = document.createElement("div");
+        row.className = "commands-builtin-row";
+
         const wrap = document.createElement("div");
         wrap.className = "bonus-field commands-reply-field";
 
@@ -274,7 +277,12 @@
         input.name = field.key;
         input.rows = 1;
         input.maxLength = 400;
-        input.value = replies[field.key] || field.defaultValue || "";
+        const stored = replies[field.key];
+        input.value =
+          stored !== undefined && stored !== null
+            ? String(stored)
+            : field.defaultValue || "";
+        input.placeholder = field.defaultValue || "";
 
         wrap.append(label);
         if (field.description) {
@@ -284,10 +292,54 @@
           wrap.append(hint);
         }
         wrap.append(input);
-        section.append(wrap);
+
+        const actions = document.createElement("div");
+        actions.className = "commands-builtin-row-actions";
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.className = "btn btn-sm btn-outline commands-custom-delete";
+        deleteBtn.textContent = "Delete";
+        deleteBtn.setAttribute("aria-label", `Clear reply ${field.label}`);
+        deleteBtn.title = "Clear this reply so the bot stays silent for this message";
+        deleteBtn.disabled = !String(input.value || "").trim();
+        deleteBtn.addEventListener("click", () => {
+          void deleteBuiltinReply(field.key, field.label);
+        });
+        actions.append(deleteBtn);
+
+        row.append(wrap, actions);
+        section.append(row);
       }
 
       fieldsRoot.append(section);
+    }
+  }
+
+  async function deleteBuiltinReply(key, label) {
+    const name = String(label || key || "this reply").trim();
+    if (
+      !window.confirm(
+        `Clear ${name}? The bot will stay silent for that message. Saves immediately.`
+      )
+    ) {
+      return;
+    }
+
+    replies = { ...replies, [key]: "" };
+    const input = document.getElementById(`bot-reply-${key}`);
+    if (input) input.value = "";
+    setStatus(`Clearing ${name}…`);
+
+    try {
+      await saveCommandsPayload("Could not clear reply.");
+      setStatus(`Cleared ${name}.`, "success");
+    } catch (error) {
+      setStatus(error.message || "Could not clear reply.", "error");
+      try {
+        await loadReplies();
+      } catch {
+        /* keep local state */
+      }
     }
   }
 
