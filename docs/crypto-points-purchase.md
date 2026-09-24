@@ -44,6 +44,6 @@ The store UI shows a status message, strips the query, and refreshes balance. Po
 
 ## Pricing
 
-- Fixed packages: 100 ($1) · 500 ($5) · 1,000 ($10) · 2,500 ($25)
+- Fixed packages: 100 ($1) · 500 ($5) · 1,000 ($10) · 2,000 ($15)
 - Custom: steps of `POINTS_USD_RATE`, min $1 / rate pts, max $100 / (rate × 100) pts
 - Charged in USD (`price_currency: usd`); user picks coin on NOWPayments
