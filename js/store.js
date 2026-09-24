@@ -5,6 +5,17 @@ let pendingQueue = [];
 let pointsBalance = 0;
 let canRedeem = true;
 let canTip = true;
+let buyPackages = [];
+let buyConfig = {
+  configured: false,
+  rate: 100,
+  minUsd: 1,
+  maxUsd: 100,
+  minPoints: 100,
+  maxPoints: 10000,
+  stepPoints: 100,
+};
+let selectedBuyPackageId = null;
 
 function setStoreStatus(message, tone = "") {
   const status = document.getElementById("store-status");
@@ -63,6 +74,157 @@ function renderTipForm() {
     return;
   }
   note.textContent = `You have ${formatPoints(pointsBalance)} available to tip.`;
+}
+
+function formatUsd(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "$0";
+  return `$${n % 1 === 0 ? String(n) : n.toFixed(2)}`;
+}
+
+function clearSelectedBuyPackage() {
+  selectedBuyPackageId = null;
+  document
+    .querySelectorAll(".store-buy-package-btn.is-selected")
+    .forEach((btn) => btn.classList.remove("is-selected"));
+}
+
+function renderBuyForm() {
+  const form = document.getElementById("store-buy-form");
+  const packagesEl = document.getElementById("store-buy-packages");
+  const note = document.getElementById("store-buy-note");
+  const submit = document.getElementById("store-buy-submit");
+  const pointsInput = document.getElementById("store-buy-points");
+  const usdInput = document.getElementById("store-buy-usd");
+  const copy = document.getElementById("store-buy-copy");
+  if (!form || !note) return;
+
+  if (copy) {
+    copy.textContent = `Pay with crypto. $1 USD = ${Number(
+      buyConfig.rate || 100
+    ).toLocaleString()} points.`;
+  }
+
+  if (pointsInput) {
+    pointsInput.min = String(buyConfig.minPoints);
+    pointsInput.max = String(buyConfig.maxPoints);
+    pointsInput.step = String(buyConfig.stepPoints);
+  }
+  if (usdInput) {
+    usdInput.min = String(buyConfig.minUsd);
+    usdInput.max = String(buyConfig.maxUsd);
+  }
+
+  const canBuy = Boolean(currentUser) && buyConfig.configured;
+  form.classList.toggle("is-disabled", !canBuy);
+  packagesEl?.classList.toggle("is-disabled", !canBuy);
+  if (submit) submit.disabled = !canBuy;
+  if (pointsInput) pointsInput.disabled = !canBuy;
+  if (usdInput) usdInput.disabled = !canBuy;
+
+  if (!buyConfig.configured) {
+    note.textContent =
+      "Crypto purchases are not configured yet. Add NOWPAYMENTS_API_KEY and NOWPAYMENTS_IPN_SECRET on Vercel, then redeploy.";
+    return;
+  }
+  if (!currentUser) {
+    note.textContent = "Sign in with Kick to buy points.";
+    return;
+  }
+  note.textContent = `Custom: ${buyConfig.minPoints.toLocaleString()}–${buyConfig.maxPoints.toLocaleString()} pts ($${buyConfig.minUsd}–$${buyConfig.maxUsd}).`;
+}
+
+function renderBuyPackages() {
+  const packagesEl = document.getElementById("store-buy-packages");
+  if (!packagesEl) return;
+
+  packagesEl.replaceChildren();
+  buyPackages.forEach((pkg) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn btn-sm store-buy-package-btn";
+    btn.dataset.packageId = pkg.id;
+    btn.textContent = `${Number(pkg.points).toLocaleString()} · ${formatUsd(pkg.usd)}`;
+    if (selectedBuyPackageId === pkg.id) {
+      btn.classList.add("is-selected");
+    }
+    btn.addEventListener("click", () => {
+      if (!currentUser || !buyConfig.configured) {
+        setStoreStatus(
+          currentUser
+            ? "Crypto purchases are not configured yet."
+            : "Sign in with Kick to buy points.",
+          "error"
+        );
+        return;
+      }
+      selectedBuyPackageId = pkg.id;
+      document
+        .querySelectorAll(".store-buy-package-btn")
+        .forEach((el) =>
+          el.classList.toggle("is-selected", el.dataset.packageId === pkg.id)
+        );
+      const pointsInput = document.getElementById("store-buy-points");
+      const usdInput = document.getElementById("store-buy-usd");
+      if (pointsInput) pointsInput.value = "";
+      if (usdInput) usdInput.value = "";
+      startBuyPurchase({ packageId: pkg.id });
+    });
+    packagesEl.append(btn);
+  });
+}
+
+async function startBuyPurchase(payload) {
+  const submit = document.getElementById("store-buy-submit");
+  if (submit) submit.disabled = true;
+  setStoreStatus("Opening crypto checkout...");
+  try {
+    const response = await fetch("/api/points/buy", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Could not start purchase.");
+    }
+    if (!data.invoiceUrl) {
+      throw new Error("Checkout URL missing.");
+    }
+    window.location.href = data.invoiceUrl;
+  } catch (error) {
+    setStoreStatus(error.message || "Could not start purchase.", "error");
+    renderBuyForm();
+  }
+}
+
+function syncBuyInputsFromPoints() {
+  const pointsInput = document.getElementById("store-buy-points");
+  const usdInput = document.getElementById("store-buy-usd");
+  if (!pointsInput || !usdInput) return;
+  const points = Math.floor(Number(pointsInput.value));
+  if (!Number.isFinite(points) || points < 1) {
+    usdInput.value = "";
+    return;
+  }
+  clearSelectedBuyPackage();
+  usdInput.value = String(
+    Number((points / (buyConfig.rate || 100)).toFixed(2))
+  );
+}
+
+function syncBuyInputsFromUsd() {
+  const pointsInput = document.getElementById("store-buy-points");
+  const usdInput = document.getElementById("store-buy-usd");
+  if (!pointsInput || !usdInput) return;
+  const usd = Number(usdInput.value);
+  if (!Number.isFinite(usd) || usd <= 0) {
+    pointsInput.value = "";
+    return;
+  }
+  clearSelectedBuyPackage();
+  pointsInput.value = String(Math.round(usd * (buyConfig.rate || 100)));
 }
 
 function statusLabel(status) {
@@ -426,6 +588,8 @@ function renderAdmin() {
 
 function renderAll() {
   renderBalance();
+  renderBuyPackages();
+  renderBuyForm();
   renderTipForm();
   renderCatalog();
   renderMyRedemptions();
@@ -484,9 +648,32 @@ async function loadQueue() {
   pendingQueue = Array.isArray(data.redemptions) ? data.redemptions : [];
 }
 
+async function loadBuyPackages() {
+  const response = await fetch("/api/points/buy/packages", {
+    credentials: "same-origin",
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    buyPackages = [];
+    buyConfig.configured = false;
+    return;
+  }
+  const data = await response.json().catch(() => ({}));
+  buyPackages = Array.isArray(data.packages) ? data.packages : [];
+  buyConfig = {
+    configured: Boolean(data.configured),
+    rate: Number(data.rate) || 100,
+    minUsd: Number(data.minUsd) || 1,
+    maxUsd: Number(data.maxUsd) || 100,
+    minPoints: Number(data.minPoints) || 100,
+    maxPoints: Number(data.maxPoints) || 10000,
+    stepPoints: Number(data.stepPoints) || 100,
+  };
+}
+
 async function refreshStore() {
   try {
-    await Promise.all([loadCatalog(), loadMe(), loadQueue()]);
+    await Promise.all([loadCatalog(), loadMe(), loadQueue(), loadBuyPackages()]);
     renderAll();
   } catch (error) {
     setStoreStatus(error.message || "Could not load store.", "error");
@@ -737,6 +924,69 @@ function setAwardChatStatus(message, tone = "") {
   }
 }
 
+function initBuyForm() {
+  const form = document.getElementById("store-buy-form");
+  if (!form) return;
+
+  const pointsInput = document.getElementById("store-buy-points");
+  const usdInput = document.getElementById("store-buy-usd");
+  pointsInput?.addEventListener("input", syncBuyInputsFromPoints);
+  usdInput?.addEventListener("input", syncBuyInputsFromUsd);
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!currentUser) {
+      setStoreStatus("Sign in with Kick to buy points.", "error");
+      return;
+    }
+    if (!buyConfig.configured) {
+      setStoreStatus(
+        "Crypto purchases are not configured yet. Add NOWPayments keys on Vercel and redeploy.",
+        "error"
+      );
+      return;
+    }
+
+    if (selectedBuyPackageId) {
+      await startBuyPurchase({ packageId: selectedBuyPackageId });
+      return;
+    }
+
+    const points = Math.floor(Number(pointsInput?.value || 0));
+    const usd = Number(usdInput?.value || 0);
+    if (Number.isFinite(points) && points >= buyConfig.minPoints) {
+      await startBuyPurchase({ points });
+      return;
+    }
+    if (Number.isFinite(usd) && usd >= buyConfig.minUsd) {
+      await startBuyPurchase({ usd });
+      return;
+    }
+
+    setStoreStatus("Choose a package or enter a custom amount.", "error");
+  });
+}
+
+function handlePurchaseReturnQuery() {
+  const params = new URLSearchParams(window.location.search);
+  const purchase = params.get("purchase");
+  if (!purchase) return;
+
+  if (purchase === "success") {
+    setStoreStatus(
+      "Payment received. Points credit after the crypto payment confirms — refresh in a moment if your balance has not updated yet.",
+      "success"
+    );
+  } else if (purchase === "cancel") {
+    setStoreStatus("Purchase cancelled. No points were charged.", "error");
+  }
+
+  params.delete("purchase");
+  const next = params.toString();
+  const url = `${window.location.pathname}${next ? `?${next}` : ""}${window.location.hash || ""}`;
+  window.history.replaceState({}, "", url);
+}
+
 function initTipForm() {
   const form = document.getElementById("store-tip-form");
   if (!form) return;
@@ -848,6 +1098,8 @@ window.addEventListener("auth:change", async (event) => {
 });
 
 initCatalogForm();
+initBuyForm();
 initTipForm();
 initAwardChatForm();
+handlePurchaseReturnQuery();
 refreshStore();

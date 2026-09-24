@@ -1,10 +1,27 @@
 # Buy store points with NOWPayments
 
-> **Status:** Store UI is hidden for now. Backend (`lib/nowpayments.js`, `lib/points-purchases.js`, `/api/points/buy*`) remains in the repo for a later rework.
+> **Status:** Active — Buy points UI is on `/store/`. Backend credits after verified IPN.
 
 Crypto checkout for channel points via hosted NOWPayments invoices.
 
-## Env vars (Vercel + local `.env`)
+## Setup checklist
+
+1. In NOWPayments → **Store Settings**:
+   - Create an **API key** (not the public key)
+   - Generate an **IPN Secret Key** (copy it once)
+2. In Vercel → Project → **Environment Variables** (Production + Preview if needed):
+   - `NOWPAYMENTS_API_KEY`
+   - `NOWPAYMENTS_IPN_SECRET`
+   - `SITE_URL` = `https://website-blakjac21.vercel.app`
+   - Optional: `NOWPAYMENTS_SANDBOX` = `1` for sandbox testing
+   - Optional: `POINTS_USD_RATE` (default `100`)
+3. Set NOWPayments IPN URL to:
+   `https://website-blakjac21.vercel.app/api/points/buy/ipn`
+4. **Redeploy** Vercel (env vars do not apply until redeploy).
+5. Confirm `GET /api/points/buy/packages` returns `"configured": true`.
+6. Sign in on `/store/`, buy the $1 package, complete payment, wait for IPN credit.
+
+## Env vars
 
 | Variable | Required | Description |
 | --- | --- | --- |
@@ -12,29 +29,21 @@ Crypto checkout for channel points via hosted NOWPayments invoices.
 | `NOWPAYMENTS_IPN_SECRET` | Yes | IPN secret used to verify `x-nowpayments-sig` |
 | `NOWPAYMENTS_SANDBOX` | No | Set to `1` to use `api-sandbox.nowpayments.io` |
 | `POINTS_USD_RATE` | No | Points per $1 USD (default `100`) |
-| `SITE_URL` | Recommended on Vercel | Public site origin, e.g. `https://website-blakjac21.vercel.app` — used for IPN + success/cancel URLs. Falls back to `KICK_REDIRECT_URI` host / `VERCEL_URL` |
+| `SITE_URL` | Recommended on Vercel | Public site origin for IPN + success/cancel URLs |
 
-Also requires the existing Upstash Redis env vars so purchase orders persist.
-
-## Dashboard setup
-
-1. Create a NOWPayments account and generate an API key + IPN secret.
-2. Set the env vars above in Vercel (and local `.env`).
-3. Set the IPN callback URL in NOWPayments (or rely on per-invoice `ipn_callback_url`) to:
-   `https://<your-domain>/api/points/buy/ipn`
-4. Sandbox-test one package before going live (`NOWPAYMENTS_SANDBOX=1`).
+Also requires existing Upstash Redis env vars so purchase orders persist.
 
 ## Return URLs
 
-After checkout, NOWPayments redirects the browser to:
+After checkout, NOWPayments redirects to:
 
 - Success: `/store/?purchase=success`
 - Cancel: `/store/?purchase=cancel`
 
-The store UI shows a status message from that query, strips it from the URL, and refreshes the points balance. Points are credited only when the signed IPN reports `finished` or `confirmed` (idempotent on `payment_id`).
+The store UI shows a status message, strips the query, and refreshes balance. Points credit only on signed IPN status `finished` or `confirmed` (idempotent on `payment_id`).
 
 ## Pricing
 
-- Fixed packages: 100 ($1) · 500 ($5) · 1,000 ($10) · 2,500 ($25) at the configured rate
+- Fixed packages: 100 ($1) · 500 ($5) · 1,000 ($10) · 2,500 ($25)
 - Custom: steps of `POINTS_USD_RATE`, min $1 / rate pts, max $100 / (rate × 100) pts
 - Charged in USD (`price_currency: usd`); user picks coin on NOWPayments
