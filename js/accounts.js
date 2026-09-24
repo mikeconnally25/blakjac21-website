@@ -325,8 +325,8 @@ function renderAccounts(users) {
         allUsers.find((entry) => entry.kickUserId === user.altPrimaryKickUserId)
           ?.username || "oldest account";
       altBadge.title = user.altSoftBlocked
-        ? `Soft-blocked shared-IP alt. Oldest eligible: ${primaryName}`
-        : `Primary in shared-IP cluster (eligible). Possible alts: ${(
+        ? `Soft-blocked similar-IP alt. Oldest eligible: ${primaryName}`
+        : `Primary in similar-IP cluster (eligible). Possible alts: ${(
             user.possibleAlts || []
           )
             .map((alt) => alt.username)
