@@ -4,7 +4,6 @@ let myRedemptions = [];
 let pendingQueue = [];
 let pointsBalance = 0;
 let canRedeem = true;
-let canTip = true;
 let buyPackages = [];
 let buyConfig = {
   configured: false,
@@ -43,37 +42,11 @@ function renderBalance() {
   }
 
   value.textContent = String(pointsBalance);
-  if (!canRedeem || !canTip) {
-    copy.textContent = `Signed in as ${currentUser.username}. Store redemptions and tips are disabled for uncapped accounts.`;
+  if (!canRedeem) {
+    copy.textContent = `Signed in as ${currentUser.username}. Store redemptions are disabled for uncapped accounts.`;
   } else {
     copy.textContent = `Signed in as ${currentUser.username}.`;
   }
-}
-
-function renderTipForm() {
-  const form = document.getElementById("store-tip-form");
-  const note = document.getElementById("store-tip-note");
-  const submit = document.getElementById("store-tip-submit");
-  const username = document.getElementById("store-tip-username");
-  const amount = document.getElementById("store-tip-amount");
-  if (!form || !note) return;
-
-  const disabled = !currentUser || !canTip;
-  form.classList.toggle("is-disabled", disabled);
-  if (submit) submit.disabled = disabled;
-  if (username) username.disabled = disabled;
-  if (amount) amount.disabled = disabled;
-
-  if (!currentUser) {
-    note.textContent = "Sign in with Kick to tip other users.";
-    return;
-  }
-  if (!canTip) {
-    note.textContent =
-      "Uncapped house-game accounts cannot tip points to other users.";
-    return;
-  }
-  note.textContent = `You have ${formatPoints(pointsBalance)} available to tip.`;
 }
 
 function formatUsd(value) {
@@ -590,7 +563,6 @@ function renderAll() {
   renderBalance();
   renderBuyPackages();
   renderBuyForm();
-  renderTipForm();
   renderCatalog();
   renderMyRedemptions();
   renderAdmin();
@@ -613,7 +585,6 @@ async function loadMe() {
     pointsBalance = 0;
     myRedemptions = [];
     canRedeem = true;
-    canTip = true;
     return;
   }
 
@@ -628,7 +599,6 @@ async function loadMe() {
   pointsBalance = Number(data.balance?.points) || 0;
   myRedemptions = Array.isArray(data.redemptions) ? data.redemptions : [];
   canRedeem = data.canRedeem !== false;
-  canTip = data.canTip !== false;
 }
 
 async function loadQueue() {
@@ -987,70 +957,6 @@ function handlePurchaseReturnQuery() {
   window.history.replaceState({}, "", url);
 }
 
-function initTipForm() {
-  const form = document.getElementById("store-tip-form");
-  if (!form) return;
-
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (!currentUser) {
-      setStoreStatus("Sign in with Kick to tip.", "error");
-      return;
-    }
-    if (!canTip) {
-      setStoreStatus(
-        "Uncapped house-game accounts cannot tip points.",
-        "error"
-      );
-      return;
-    }
-
-    const submit = document.getElementById("store-tip-submit");
-    const username = String(
-      document.getElementById("store-tip-username")?.value || ""
-    )
-      .replace(/^@/, "")
-      .trim();
-    const amount = Number(
-      document.getElementById("store-tip-amount")?.value || 0
-    );
-
-    if (!username) {
-      setStoreStatus("Enter a Kick username to tip.", "error");
-      return;
-    }
-
-    if (submit) submit.disabled = true;
-    setStoreStatus("Sending tip...");
-    try {
-      const response = await fetch("/api/points/tip", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, amount }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(data.error || "Could not send tip.");
-      }
-
-      pointsBalance = Number(data.balance?.points) || 0;
-      renderAll();
-      setStoreStatus(
-        `Tipped ${formatPoints(data.amount)} to @${data.to?.username || username}.`,
-        "success"
-      );
-      const amountInput = document.getElementById("store-tip-amount");
-      if (amountInput) amountInput.value = "100";
-    } catch (error) {
-      setStoreStatus(error.message || "Could not send tip.", "error");
-    } finally {
-      renderTipForm();
-      if (submit && currentUser && canTip) submit.disabled = false;
-    }
-  });
-}
-
 function initAwardChatForm() {
   const form = document.getElementById("store-award-chat-form");
   if (!form) return;
@@ -1099,7 +1005,6 @@ window.addEventListener("auth:change", async (event) => {
 
 initCatalogForm();
 initBuyForm();
-initTipForm();
 initAwardChatForm();
 handlePurchaseReturnQuery();
 refreshStore();
