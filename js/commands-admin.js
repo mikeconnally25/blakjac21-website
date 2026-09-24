@@ -35,6 +35,9 @@
     triggerRoot.replaceChildren();
 
     for (const field of triggerFields) {
+      const row = document.createElement("div");
+      row.className = "commands-builtin-row";
+
       const wrap = document.createElement("div");
       wrap.className = "bonus-field commands-reply-field";
 
@@ -52,9 +55,13 @@
       input.spellcheck = false;
       input.placeholder = field.defaultValue || "!command";
       const value = triggers[field.key];
-      input.value = Array.isArray(value)
-        ? value.join(", ")
-        : value || field.defaultValue || "";
+      if (Array.isArray(value)) {
+        input.value = value.join(", ");
+      } else if (value) {
+        input.value = String(value);
+      } else {
+        input.value = "";
+      }
 
       wrap.append(label);
       if (field.description) {
@@ -64,7 +71,75 @@
         wrap.append(hint);
       }
       wrap.append(input);
-      triggerRoot.append(wrap);
+
+      const actions = document.createElement("div");
+      actions.className = "commands-builtin-row-actions";
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "btn btn-sm btn-outline commands-custom-delete";
+      deleteBtn.textContent = "Delete";
+      deleteBtn.setAttribute("aria-label", `Disable ${field.label}`);
+      deleteBtn.title = "Clear triggers so this built-in command stops responding";
+      deleteBtn.disabled = Array.isArray(value) && value.length === 0;
+      deleteBtn.addEventListener("click", () => {
+        void deleteBuiltinTrigger(field.key, field.label);
+      });
+      actions.append(deleteBtn);
+
+      row.append(wrap, actions);
+      triggerRoot.append(row);
+    }
+  }
+
+  async function saveCommandsPayload(statusMessage) {
+    const response = await fetch("/api/commands/replies", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        replies: collectReplies(),
+        triggers: collectTriggers(),
+        customCommands: collectCustomCommands(),
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || statusMessage || "Could not save commands.");
+    }
+    replies = data.replies || collectReplies();
+    triggers = data.triggers || collectTriggers();
+    customCommands = Array.isArray(data.customCommands)
+      ? data.customCommands.map((entry) => ({ ...entry }))
+      : collectCustomCommands();
+    renderAll();
+    return data;
+  }
+
+  async function deleteBuiltinTrigger(key, label) {
+    const name = String(label || key || "this command").trim();
+    if (
+      !window.confirm(
+        `Disable ${name}? This clears its chat triggers and saves immediately. You can restore them with Reset defaults or by typing triggers again.`
+      )
+    ) {
+      return;
+    }
+
+    triggers = { ...triggers, [key]: [] };
+    const input = document.getElementById(`bot-trigger-${key}`);
+    if (input) input.value = "";
+    setStatus(`Disabling ${name}…`);
+
+    try {
+      await saveCommandsPayload("Could not disable command.");
+      setStatus(`Disabled ${name}.`, "success");
+    } catch (error) {
+      setStatus(error.message || "Could not disable command.", "error");
+      try {
+        await loadReplies();
+      } catch {
+        /* keep local state */
+      }
     }
   }
 
@@ -80,7 +155,7 @@
       return;
     }
 
-    customCommands.forEach((command, index) => {
+    customCommands.forEach((command) => {
       const row = document.createElement("div");
       row.className = "commands-custom-row";
       row.dataset.id = command.id;
@@ -114,26 +189,54 @@
 
       const actions = document.createElement("div");
       actions.className = "commands-custom-row-actions";
-      const removeBtn = document.createElement("button");
-      removeBtn.type = "button";
-      removeBtn.className = "btn btn-sm btn-outline";
-      removeBtn.textContent = "Remove";
-      removeBtn.addEventListener("click", () => {
-        customCommands = customCommands.filter((entry) => entry.id !== command.id);
-        renderCustomCommands();
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "btn btn-sm btn-outline commands-custom-delete";
+      deleteBtn.textContent = "Delete";
+      deleteBtn.setAttribute(
+        "aria-label",
+        `Delete command ${command.trigger || ""}`.trim()
+      );
+      deleteBtn.addEventListener("click", () => {
+        void deleteCustomCommand(command.id, command.trigger);
       });
-      actions.append(removeBtn);
+      actions.append(deleteBtn);
 
       row.append(triggerField, replyField, actions);
       customRoot.append(row);
 
       triggerInput.addEventListener("input", () => {
-        customCommands[index].trigger = triggerInput.value;
+        const entry = customCommands.find((item) => item.id === command.id);
+        if (entry) entry.trigger = triggerInput.value;
       });
       replyInput.addEventListener("input", () => {
-        customCommands[index].reply = replyInput.value;
+        const entry = customCommands.find((item) => item.id === command.id);
+        if (entry) entry.reply = replyInput.value;
       });
     });
+  }
+
+  async function deleteCustomCommand(commandId, triggerLabel) {
+    const label = String(triggerLabel || "").trim() || "this command";
+    if (!window.confirm(`Delete ${label}? This saves immediately.`)) {
+      return;
+    }
+
+    customCommands = customCommands.filter((entry) => entry.id !== commandId);
+    renderCustomCommands();
+    setStatus(`Deleting ${label}…`);
+
+    try {
+      await saveCommandsPayload("Could not delete command.");
+      setStatus(`Deleted ${label}.`, "success");
+    } catch (error) {
+      setStatus(error.message || "Could not delete command.", "error");
+      try {
+        await loadReplies();
+      } catch {
+        /* keep local state */
+      }
+    }
   }
 
   function renderReplyFields() {
@@ -328,11 +431,10 @@
     }
 
     replies = { ...(defaults.replies || {}) };
-    triggers = {
-      slot: [...(defaults.triggers?.slot || [])],
-      points: [...(defaults.triggers?.points || [])],
-      pointsAll: [...(defaults.triggers?.pointsAll || [])],
-    };
+    triggers = {};
+    for (const [key, list] of Object.entries(defaults.triggers || {})) {
+      triggers[key] = Array.isArray(list) ? [...list] : [];
+    }
     renderAll();
     setStatus("Defaults restored in the form — click Save commands to apply.");
   });
