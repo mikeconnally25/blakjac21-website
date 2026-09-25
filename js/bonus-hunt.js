@@ -3145,7 +3145,48 @@ function initAdminForm() {
     });
   };
 
+  const isScrollable = (el) => {
+    if (!el || el === document.body || el === document.documentElement) return false;
+    try {
+      const style = window.getComputedStyle(el);
+      const overflowY = style.overflowY || style.overflow || "";
+      if (!/(auto|scroll|overlay)/i.test(overflowY)) return false;
+      return el.scrollHeight > el.clientHeight + 40;
+    } catch {
+      return false;
+    }
+  };
+
+  const findScrollRoot = () => {
+    const sample =
+      document.querySelector('a[href*="/casino/games/"]') ||
+      document.querySelector("main") ||
+      document.body;
+    let el = sample;
+    for (let depth = 0; el && depth < 14; depth += 1) {
+      if (isScrollable(el)) return el;
+      el = el.parentElement;
+    }
+    const candidates = [...document.querySelectorAll("main, [role='main'], div, section")];
+    let best = null;
+    let bestScore = 0;
+    for (const node of candidates) {
+      if (!isScrollable(node)) continue;
+      const score = node.scrollHeight - node.clientHeight;
+      if (score > bestScore) {
+        best = node;
+        bestScore = score;
+      }
+    }
+    return best;
+  };
+
   const scrollToBottom = () => {
+    const root = findScrollRoot();
+    if (root) {
+      root.scrollTop = root.scrollHeight;
+      root.dispatchEvent(new Event("scroll", { bubbles: true }));
+    }
     const top = Math.max(
       document.body.scrollHeight,
       document.documentElement.scrollHeight,
@@ -3157,6 +3198,15 @@ function initAdminForm() {
     document.body.scrollTop = top;
     const btn = findLoadMore();
     if (btn) btn.scrollIntoView({ block: "end", behavior: "auto" });
+  };
+
+  const revealTile = async (anchor) => {
+    try {
+      anchor.scrollIntoView({ block: "center", inline: "nearest", behavior: "auto" });
+    } catch {
+      /* ignore */
+    }
+    await sleep(40);
   };
 
   const pickThumbnail = (anchor) => {
@@ -3233,6 +3283,9 @@ function initAdminForm() {
     );
   }
 
+  const skip = new Set(["poker", "roulette", "blackjack", "baccarat", "dice", "mines", "plinko", "limbo", "keno", "wheel", "hilo", "crash"]);
+  const linked = new Map();
+
   const gameAnchors = () => {
     const root =
       document.querySelector("main") ||
@@ -3243,7 +3296,6 @@ function initAdminForm() {
         'a[href*="/casino/games/"], a[href*="casino/games/"]'
       ),
     ].filter((a) => {
-      if (!a.querySelector("img")) return false;
       if (
         a.closest(
           "header, footer, nav, [role='navigation'], [role='banner'], [role='contentinfo']"
@@ -3289,17 +3341,128 @@ function initAdminForm() {
     return candidates;
   };
 
-  const countGames = () => {
-    const seen = new Set();
+  const slugFromAnchor = (a) => {
+    try {
+      return new URL(a.href, location.origin).pathname.split("/").filter(Boolean).pop() || "";
+    } catch {
+      return String(a.getAttribute("href") || "").split("/").filter(Boolean).pop() || "";
+    }
+  };
+
+  const scrapeVisible = () => {
+    let added = 0;
+    let logosFilled = 0;
     for (const a of gameAnchors()) {
-      try {
-        const slug = new URL(a.href, location.origin).pathname.split("/").filter(Boolean).pop();
-        if (slug) seen.add(slug);
-      } catch {
-        /* ignore bad href */
+      const slug = slugFromAnchor(a);
+      if (!slug || skip.has(slug)) continue;
+      const thumbnailUrl = pickThumbnail(a);
+      const existing = linked.get(slug);
+      if (existing) {
+        if (!existing.thumbnailUrl && thumbnailUrl) {
+          existing.thumbnailUrl = thumbnailUrl;
+          logosFilled += 1;
+        }
+        continue;
+      }
+      const nameEl =
+        a.querySelector(".edge-typography-body-md-strong") ||
+        a.querySelector("[class*='typography'][class*='strong']") ||
+        a.querySelector(".game-info-wrap:not(.game-group) span") ||
+        a.querySelector("img[alt]");
+      const providerEl =
+        a.querySelector(".game-group") ||
+        a.querySelector("[class*='provider']") ||
+        a.querySelector("[class*='game-group']");
+      let name = (nameEl?.alt || nameEl?.textContent || "")
+        .replace(/\\s+/g, " ")
+        .trim();
+      const provider = (providerEl?.textContent || "").replace(/\\s+/g, " ").trim() || undefined;
+      if (!name) {
+        const raw = (a.textContent || "").replace(/\\s+/g, " ").trim();
+        name = raw.replace(/\\s+\\d+\\s*playing.*$/i, "").trim();
+        if (provider && name.toLowerCase().endsWith(provider.toLowerCase())) {
+          name = name.slice(0, -provider.length).trim();
+        }
+      }
+      linked.set(slug, {
+        name: name || slug,
+        slug,
+        groupSlug,
+        provider,
+        thumbnailUrl: thumbnailUrl || undefined,
+        _el: a,
+      });
+      added += 1;
+    }
+    return { added, logosFilled, total: linked.size };
+  };
+
+  const reportProgress = (message, count) => {
+    console.log(message);
+    try {
+      if (!window.opener || window.opener.closed) return;
+      const target = pickOpenerTarget();
+      window.opener.postMessage(
+        {
+          source: "bh-slot-sync-progress",
+          token,
+          groupSlug,
+          message,
+          count: count || linked.size,
+        },
+        target
+      );
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const hydrateMissingLogos = async () => {
+    const root = findScrollRoot();
+    const missingBefore = [...linked.values()].filter((e) => !e.thumbnailUrl).length;
+    if (!missingBefore) return;
+    reportProgress(
+      "Loading logos (" + missingBefore + " still missing)…",
+      linked.size
+    );
+
+    if (root) {
+      const step = Math.max(180, Math.floor(root.clientHeight * 0.75));
+      const maxY = Math.max(0, root.scrollHeight - root.clientHeight);
+      for (let y = 0; y <= maxY; y += step) {
+        root.scrollTop = y;
+        root.dispatchEvent(new Event("scroll", { bubbles: true }));
+        await sleep(55);
+        scrapeVisible();
+      }
+      root.scrollTop = maxY;
+    } else {
+      const docH = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+      );
+      const step = Math.max(240, Math.floor(window.innerHeight * 0.8));
+      for (let y = 0; y <= docH; y += step) {
+        window.scrollTo(0, y);
+        await sleep(55);
+        scrapeVisible();
       }
     }
-    return seen.size;
+
+    // Quick pass over a sample of still-missing tiles to force lazy images.
+    const stillMissing = [];
+    for (const entry of linked.values()) {
+      if (entry.thumbnailUrl) continue;
+      const el = entry._el;
+      if (el && document.contains(el)) stillMissing.push(entry);
+    }
+    const sample = stillMissing.slice(0, Math.min(80, stillMissing.length));
+    for (let i = 0; i < sample.length; i += 1) {
+      await revealTile(sample[i]._el);
+      if (i % 10 === 0) scrapeVisible();
+    }
+    scrapeVisible();
+    scrollToBottom();
   };
 
   let lastCount = 0;
@@ -3307,103 +3470,68 @@ function initAdminForm() {
   let missingBtnStreak = 0;
   let sawLoadMore = false;
 
-  for (let i = 0; i < 500; i++) {
+  for (let i = 0; i < 400; i++) {
     scrollToBottom();
     const btn = findLoadMore();
     if (btn) {
       sawLoadMore = true;
       missingBtnStreak = 0;
       btn.click();
-      await sleep(900);
+      await sleep(520);
       scrollToBottom();
       const again = findLoadMore();
       if (again) {
         again.click();
-        await sleep(550);
+        await sleep(320);
       }
     } else {
       missingBtnStreak += 1;
-      await sleep(700);
+      await sleep(380);
       scrollToBottom();
     }
 
-    const count = countGames();
-    if (i % 5 === 0 || !btn) {
-      console.log(
+    const { total } = scrapeVisible();
+    if (i % 4 === 0 || !btn) {
+      reportProgress(
         "Pass " +
           (i + 1) +
           ": " +
-          count +
-          " games" +
-          (btn ? " (Load More)" : " (scrolling)")
+          total +
+          " games linked" +
+          (btn ? " (Load More)" : " (auto-scroll)"),
+        total
       );
     }
 
-    if (count === lastCount) {
+    if (total === lastCount) {
       stable += 1;
-      const quietEnough = sawLoadMore ? missingBtnStreak >= 8 : missingBtnStreak >= 15;
-      if (stable >= 12 && quietEnough) break;
+      const quietEnough = sawLoadMore ? missingBtnStreak >= 4 : missingBtnStreak >= 8;
+      if (stable >= 5 && quietEnough) break;
     } else {
       stable = 0;
-      lastCount = count;
+      lastCount = total;
     }
   }
 
   scrollToBottom();
-  await sleep(800);
-  for (let j = 0; j < 8; j++) {
+  await sleep(350);
+  for (let j = 0; j < 3; j++) {
     const btn = findLoadMore();
     if (!btn) break;
     btn.click();
-    await sleep(950);
+    await sleep(450);
     scrollToBottom();
+    scrapeVisible();
   }
-  await sleep(500);
 
-  const skip = new Set(["poker", "roulette", "blackjack", "baccarat", "dice", "mines", "plinko", "limbo", "keno", "wheel", "hilo", "crash"]);
-  const seen = new Set();
+  await hydrateMissingLogos();
+
   const slots = [];
   let withLogos = 0;
-
-  for (const a of gameAnchors()) {
-    let slug = "";
-    try {
-      slug = new URL(a.href, location.origin).pathname.split("/").filter(Boolean).pop() || "";
-    } catch {
-      slug = String(a.getAttribute("href") || "").split("/").filter(Boolean).pop() || "";
-    }
-    if (!slug || skip.has(slug) || seen.has(slug)) continue;
-    seen.add(slug);
-    const nameEl =
-      a.querySelector(".edge-typography-body-md-strong") ||
-      a.querySelector("[class*='typography'][class*='strong']") ||
-      a.querySelector(".game-info-wrap:not(.game-group) span") ||
-      a.querySelector("img[alt]");
-    const providerEl =
-      a.querySelector(".game-group") ||
-      a.querySelector("[class*='provider']") ||
-      a.querySelector("[class*='game-group']");
-    let name = (nameEl?.alt || nameEl?.textContent || "")
-      .replace(/\\s+/g, " ")
-      .trim();
-    const provider = (providerEl?.textContent || "").replace(/\\s+/g, " ").trim() || undefined;
-    if (!name) {
-      const raw = (a.textContent || "").replace(/\\s+/g, " ").trim();
-      name = raw.replace(/\\s+\\d+\\s*playing.*$/i, "").trim();
-      if (provider && name.toLowerCase().endsWith(provider.toLowerCase())) {
-        name = name.slice(0, -provider.length).trim();
-      }
-    }
-    name = name || slug;
-    const thumbnailUrl = pickThumbnail(a);
-    if (thumbnailUrl) withLogos += 1;
-    slots.push({
-      name,
-      slug,
-      groupSlug,
-      provider,
-      thumbnailUrl: thumbnailUrl || undefined,
-    });
+  for (const entry of linked.values()) {
+    const { _el, ...slot } = entry;
+    if (slot.thumbnailUrl) withLogos += 1;
+    slots.push(slot);
   }
 
   if (!slots.length) {
@@ -3412,7 +3540,10 @@ function initAdminForm() {
     );
   }
 
-  console.log("Uploading " + slots.length + " ${label} slots (" + withLogos + " with logos)...");
+  reportProgress(
+    "Uploading " + slots.length + " ${label} slots (" + withLogos + " with logos)…",
+    slots.length
+  );
   try {
     let data;
     try {
@@ -3491,6 +3622,12 @@ function initAdminForm() {
     window.addEventListener("message", (event) => {
       if (!isStakeMessageOrigin(event.origin)) return;
       const data = event.data;
+      if (data?.source === "bh-slot-sync-progress" && data.token) {
+        if (typeof data.message === "string" && data.message.trim()) {
+          setCatalogSyncStatus(data.message.trim());
+        }
+        return;
+      }
       if (data?.source !== "bh-slot-sync" || !data.token || !Array.isArray(data.slots)) {
         return;
       }
