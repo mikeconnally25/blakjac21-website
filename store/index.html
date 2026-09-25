@@ -29,8 +29,8 @@
       <ul class="nav-links">
         <li><a href="/#watch">Watch</a></li>
         <li class="is-hidden" id="admin-nav-commands">
-        <a href="/commands/">Commands</a>
-      </li>
+          <a href="/commands/">Commands</a>
+        </li>
         <li><a href="/#menu">Menu</a></li>
         <li><a href="/#house-games">House Games</a></li>
         <li><a href="/#links">Links</a></li>
@@ -69,81 +69,42 @@
           <div class="store-hero">
             <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
             <h1 class="store-heading">Store</h1>
-            <p class="store-lede">Spend channel points on rewards.</p>
+            <p class="store-lede">Redeem points for rewards. Buy more anytime with crypto.</p>
           </div>
 
-          <div class="store-balance-panel bj21-panel theme-surface" id="store-balance-panel">
-            <span class="bj21-panel-glow" aria-hidden="true"></span>
-            <p class="store-panel-label">Your points</p>
+          <aside class="store-balance" id="store-balance-panel" aria-live="polite">
+            <p class="store-balance-label">Balance</p>
             <p class="store-balance-value" id="store-balance-value">—</p>
-            <p class="store-balance-copy" id="store-balance-copy">Sign in with Kick to redeem.</p>
-          </div>
+            <p class="store-balance-copy" id="store-balance-copy">Sign in to redeem</p>
+          </aside>
         </header>
 
         <p class="store-status is-hidden" id="store-status" role="status"></p>
 
-        <section class="store-panel store-buy-panel bj21-panel theme-surface" aria-labelledby="store-buy-title">
-          <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <div class="store-section-header">
-            <h2 class="store-section-title" id="store-buy-title">Buy points</h2>
-            <p class="store-section-copy" id="store-buy-copy">
-              Pay with crypto. $1 USD = 100 points.
-            </p>
+        <section class="store-buy" aria-labelledby="store-buy-title">
+          <div class="store-buy-copy">
+            <h2 class="store-buy-title" id="store-buy-title">Buy points</h2>
+            <p class="store-buy-subtitle" id="store-buy-copy">2,000 points for $15 · pay with crypto</p>
           </div>
-          <div class="store-buy-packages" id="store-buy-packages" role="group" aria-label="Point packages"></div>
-          <form class="store-buy-form" id="store-buy-form">
-            <div class="store-buy-custom-grid">
-              <div class="store-field">
-                <label class="guess-label" for="store-buy-points">Custom points</label>
-                <input
-                  class="guess-input"
-                  id="store-buy-points"
-                  name="points"
-                  type="number"
-                  min="100"
-                  step="100"
-                  placeholder="100"
-                />
-              </div>
-              <div class="store-field">
-                <label class="guess-label" for="store-buy-usd">or USD</label>
-                <input
-                  class="guess-input"
-                  id="store-buy-usd"
-                  name="usd"
-                  type="number"
-                  min="1"
-                  max="100"
-                  step="1"
-                  placeholder="1"
-                />
-              </div>
-              <div class="store-buy-submit-wrap">
-                <button type="submit" class="btn btn-sm btn-primary" id="store-buy-submit" disabled>
-                  Pay with crypto
-                </button>
-              </div>
-            </div>
-            <p class="store-buy-note" id="store-buy-note">Sign in with Kick to buy points.</p>
-          </form>
+          <div class="store-buy-packages" id="store-buy-packages" role="group" aria-label="Point package"></div>
+          <p class="store-buy-note" id="store-buy-note">Sign in with Kick to buy points.</p>
+          <form class="store-buy-form is-hidden" id="store-buy-form" aria-hidden="true"></form>
         </section>
 
         <div class="store-browse-row">
-          <section class="store-panel store-rewards-panel bj21-panel theme-surface" aria-labelledby="store-catalog-title">
-            <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <section class="store-rewards" aria-labelledby="store-catalog-title">
             <div class="store-section-header">
               <h2 class="store-section-title" id="store-catalog-title">Rewards</h2>
-              <p class="store-section-copy">Redeem anytime. Admins fulfill pending rewards.</p>
+              <p class="store-section-copy">Tap redeem. Admins fulfill pending rewards.</p>
             </div>
             <p class="store-empty is-hidden" id="store-catalog-empty">No rewards listed yet.</p>
-            <ul class="store-catalog-list store-reward-grid" id="store-catalog-list"></ul>
+            <ul class="store-reward-grid" id="store-catalog-list"></ul>
           </section>
 
-          <div class="store-browse-side" id="store-browse-side">
-            <div class="store-panel store-side-panel bj21-panel theme-surface is-hidden" id="store-queue-panel">
-              <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <aside class="store-browse-side" id="store-browse-side">
+            <div class="store-rail is-hidden" id="store-queue-panel">
               <div class="store-section-header store-admin-queue-header">
-                <h2 class="store-section-title" id="store-queue-title">Pending queue</h2>
+                <h2 class="store-section-title" id="store-queue-title">Pending</h2>
               </div>
               <p class="store-empty is-hidden" id="store-queue-empty">No pending redemptions.</p>
               <div class="store-list-scroll store-queue-scroll">
@@ -151,17 +112,16 @@
               </div>
             </div>
 
-            <section class="store-panel store-side-panel store-redemptions-panel bj21-panel theme-surface" id="store-redemptions-panel" aria-labelledby="store-redemptions-title">
-              <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <section class="store-rail" id="store-redemptions-panel" aria-labelledby="store-redemptions-title">
               <div class="store-section-header">
-                <h2 class="store-section-title" id="store-redemptions-title">Your redemptions</h2>
+                <h2 class="store-section-title" id="store-redemptions-title">Activity</h2>
               </div>
               <p class="store-empty" id="store-redemptions-empty">No redemptions yet.</p>
               <div class="store-list-scroll">
                 <ul class="store-redemptions-list is-hidden" id="store-redemptions-list"></ul>
               </div>
             </section>
-          </div>
+          </aside>
         </div>
 
         <section class="store-admin is-hidden" id="store-admin" aria-labelledby="store-admin-title">
@@ -175,8 +135,7 @@
 
           <div class="store-admin-layout">
             <div class="store-admin-sidebar" id="store-admin-sidebar">
-              <div class="store-panel bj21-panel theme-surface" id="store-history-panel">
-                <span class="bj21-panel-glow" aria-hidden="true"></span>
+              <div class="store-rail" id="store-history-panel">
                 <div class="store-section-header store-admin-queue-header" id="store-history-header">
                   <h3 class="store-section-subtitle">Previous redemptions</h3>
                 </div>
@@ -189,8 +148,7 @@
 
             <div class="store-admin-main">
               <div class="store-admin-tools">
-                <div class="store-admin-form bj21-panel theme-surface" id="store-buy-settings">
-                  <span class="bj21-panel-glow" aria-hidden="true"></span>
+                <div class="store-admin-form" id="store-buy-settings">
                   <p class="store-panel-label">Buy points</p>
                   <div class="store-buy-toggle">
                     <div>
@@ -211,8 +169,7 @@
                   </div>
                 </div>
 
-                <form class="store-admin-form bj21-panel theme-surface" id="store-award-chat-form">
-                  <span class="bj21-panel-glow" aria-hidden="true"></span>
+                <form class="store-admin-form" id="store-award-chat-form">
                   <p class="store-panel-label">Award chat</p>
                   <p class="store-section-copy">Points for Kick chatters active in the last N minutes.</p>
                   <div class="store-admin-grid store-award-chat-grid">
@@ -231,8 +188,7 @@
                   <p class="store-award-chat-status is-hidden" id="store-award-chat-status" role="status"></p>
                 </form>
 
-                <form class="store-admin-form bj21-panel theme-surface" id="store-catalog-form">
-                  <span class="bj21-panel-glow" aria-hidden="true"></span>
+                <form class="store-admin-form" id="store-catalog-form">
                   <p class="store-panel-label" id="store-catalog-form-label">Add reward</p>
                   <input type="hidden" id="store-item-id" name="id" value="" />
                   <div class="store-admin-grid">
@@ -254,8 +210,7 @@
                 </form>
               </div>
 
-              <div class="store-panel bj21-panel theme-surface" id="store-catalog-manage">
-                <span class="bj21-panel-glow" aria-hidden="true"></span>
+              <div class="store-rail" id="store-catalog-manage">
                 <p class="store-panel-label">Catalog</p>
                 <p class="store-empty is-hidden" id="store-admin-catalog-empty">No catalog items yet.</p>
                 <ul class="store-admin-catalog" id="store-admin-catalog"></ul>

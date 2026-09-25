@@ -60,45 +60,21 @@ function formatUsd(value) {
   return `$${n % 1 === 0 ? String(n) : n.toFixed(2)}`;
 }
 
-function clearSelectedBuyPackage() {
-  selectedBuyPackageId = null;
-  document
-    .querySelectorAll(".store-buy-package-btn.is-selected")
-    .forEach((btn) => btn.classList.remove("is-selected"));
-}
-
 function renderBuyForm() {
-  const form = document.getElementById("store-buy-form");
   const packagesEl = document.getElementById("store-buy-packages");
   const note = document.getElementById("store-buy-note");
-  const submit = document.getElementById("store-buy-submit");
-  const pointsInput = document.getElementById("store-buy-points");
-  const usdInput = document.getElementById("store-buy-usd");
   const copy = document.getElementById("store-buy-copy");
-  if (!form || !note) return;
+  if (!note) return;
 
+  const pkg = buyPackages[0];
   if (copy) {
-    copy.textContent = `Pay with crypto. $1 USD = ${Number(
-      buyConfig.rate || 100
-    ).toLocaleString()} points.`;
-  }
-
-  if (pointsInput) {
-    pointsInput.min = String(buyConfig.minPoints);
-    pointsInput.max = String(buyConfig.maxPoints);
-    pointsInput.step = String(buyConfig.stepPoints);
-  }
-  if (usdInput) {
-    usdInput.min = String(buyConfig.minUsd);
-    usdInput.max = String(buyConfig.maxUsd);
+    copy.textContent = pkg
+      ? `${Number(pkg.points).toLocaleString()} points for ${formatUsd(pkg.usd)} · pay with crypto`
+      : "2,000 points for $15 · pay with crypto";
   }
 
   const canBuy = Boolean(currentUser) && isBuyPointsOpen();
-  form.classList.toggle("is-disabled", !canBuy);
   packagesEl?.classList.toggle("is-disabled", !canBuy);
-  if (submit) submit.disabled = !canBuy;
-  if (pointsInput) pointsInput.disabled = !canBuy;
-  if (usdInput) usdInput.disabled = !canBuy;
 
   if (!buyConfig.configured) {
     note.textContent =
@@ -113,7 +89,7 @@ function renderBuyForm() {
     note.textContent = "Sign in with Kick to buy points.";
     return;
   }
-  note.textContent = `Custom: ${buyConfig.minPoints.toLocaleString()}–${buyConfig.maxPoints.toLocaleString()} pts ($${buyConfig.minUsd}–$${buyConfig.maxUsd}).`;
+  note.textContent = "One package available — tap to checkout.";
 }
 
 function renderBuyPackages() {
@@ -124,9 +100,23 @@ function renderBuyPackages() {
   buyPackages.forEach((pkg) => {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "btn btn-sm store-buy-package-btn";
+    btn.className = "store-buy-package-btn";
     btn.dataset.packageId = pkg.id;
-    btn.textContent = `${Number(pkg.points).toLocaleString()} · ${formatUsd(pkg.usd)}`;
+
+    const pts = document.createElement("span");
+    pts.className = "store-buy-package-pts";
+    pts.textContent = `${Number(pkg.points).toLocaleString()} pts`;
+
+    const sep = document.createElement("span");
+    sep.className = "store-buy-package-sep";
+    sep.setAttribute("aria-hidden", "true");
+
+    const usd = document.createElement("span");
+    usd.className = "store-buy-package-usd";
+    usd.textContent = formatUsd(pkg.usd);
+
+    btn.append(pts, sep, usd);
+
     if (selectedBuyPackageId === pkg.id) {
       btn.classList.add("is-selected");
     }
@@ -148,10 +138,6 @@ function renderBuyPackages() {
         .forEach((el) =>
           el.classList.toggle("is-selected", el.dataset.packageId === pkg.id)
         );
-      const pointsInput = document.getElementById("store-buy-points");
-      const usdInput = document.getElementById("store-buy-usd");
-      if (pointsInput) pointsInput.value = "";
-      if (usdInput) usdInput.value = "";
       startBuyPurchase({ packageId: pkg.id });
     });
     packagesEl.append(btn);
@@ -159,8 +145,10 @@ function renderBuyPackages() {
 }
 
 async function startBuyPurchase(payload) {
-  const submit = document.getElementById("store-buy-submit");
-  if (submit) submit.disabled = true;
+  const packageButtons = document.querySelectorAll(".store-buy-package-btn");
+  packageButtons.forEach((btn) => {
+    btn.disabled = true;
+  });
   setStoreStatus("Opening crypto checkout...");
   try {
     const response = await fetch("/api/points/buy", {
@@ -180,35 +168,10 @@ async function startBuyPurchase(payload) {
   } catch (error) {
     setStoreStatus(error.message || "Could not start purchase.", "error");
     renderBuyForm();
+    packageButtons.forEach((btn) => {
+      btn.disabled = false;
+    });
   }
-}
-
-function syncBuyInputsFromPoints() {
-  const pointsInput = document.getElementById("store-buy-points");
-  const usdInput = document.getElementById("store-buy-usd");
-  if (!pointsInput || !usdInput) return;
-  const points = Math.floor(Number(pointsInput.value));
-  if (!Number.isFinite(points) || points < 1) {
-    usdInput.value = "";
-    return;
-  }
-  clearSelectedBuyPackage();
-  usdInput.value = String(
-    Number((points / (buyConfig.rate || 100)).toFixed(2))
-  );
-}
-
-function syncBuyInputsFromUsd() {
-  const pointsInput = document.getElementById("store-buy-points");
-  const usdInput = document.getElementById("store-buy-usd");
-  if (!pointsInput || !usdInput) return;
-  const usd = Number(usdInput.value);
-  if (!Number.isFinite(usd) || usd <= 0) {
-    pointsInput.value = "";
-    return;
-  }
-  clearSelectedBuyPackage();
-  pointsInput.value = String(Math.round(usd * (buyConfig.rate || 100)));
 }
 
 function statusLabel(status) {
@@ -924,46 +887,8 @@ function initBuyForm() {
   const form = document.getElementById("store-buy-form");
   if (!form) return;
 
-  const pointsInput = document.getElementById("store-buy-points");
-  const usdInput = document.getElementById("store-buy-usd");
-  pointsInput?.addEventListener("input", syncBuyInputsFromPoints);
-  usdInput?.addEventListener("input", syncBuyInputsFromUsd);
-
-  form.addEventListener("submit", async (event) => {
+  form.addEventListener("submit", (event) => {
     event.preventDefault();
-    if (!currentUser) {
-      setStoreStatus("Sign in with Kick to buy points.", "error");
-      return;
-    }
-    if (!buyConfig.configured) {
-      setStoreStatus(
-        "Crypto purchases are not configured yet. Add NOWPayments keys on Vercel and redeploy.",
-        "error"
-      );
-      return;
-    }
-    if (buyConfig.enabled === false) {
-      setStoreStatus("Buying points is paused right now.", "error");
-      return;
-    }
-
-    if (selectedBuyPackageId) {
-      await startBuyPurchase({ packageId: selectedBuyPackageId });
-      return;
-    }
-
-    const points = Math.floor(Number(pointsInput?.value || 0));
-    const usd = Number(usdInput?.value || 0);
-    if (Number.isFinite(points) && points >= buyConfig.minPoints) {
-      await startBuyPurchase({ points });
-      return;
-    }
-    if (Number.isFinite(usd) && usd >= buyConfig.minUsd) {
-      await startBuyPurchase({ usd });
-      return;
-    }
-
-    setStoreStatus("Choose a package or enter a custom amount.", "error");
   });
 }
 
