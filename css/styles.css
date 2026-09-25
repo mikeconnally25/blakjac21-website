@@ -8394,6 +8394,24 @@ ul {
   font-size: 0.9rem;
 }
 
+.footer-contact {
+  margin: 0.55rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.footer-contact a {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
+.footer-contact a:hover,
+.footer-contact a:focus-visible {
+  color: #7ed8ff;
+}
+
 .disclaimer {
   margin: 0;
   padding: 1rem 1.15rem;

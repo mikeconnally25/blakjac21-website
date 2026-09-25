@@ -210,7 +210,35 @@ function initMobileNav() {
   });
 }
 
-document.getElementById("year").textContent = String(new Date().getFullYear());
+function ensureFooterContact() {
+  const footerInner = document.querySelector(".footer-inner");
+  if (!footerInner || document.getElementById("footer-contact")) return;
+
+  const contact = document.createElement("p");
+  contact.id = "footer-contact";
+  contact.className = "footer-contact";
+  contact.innerHTML =
+    'Contact: email <a href="mailto:blakjac21kick@gmail.com">blakjac21kick@gmail.com</a>';
+
+  const brand = footerInner.querySelector(".footer-brand");
+  if (brand) {
+    brand.appendChild(contact);
+    return;
+  }
+
+  const disclaimer = footerInner.querySelector(".disclaimer");
+  if (disclaimer) {
+    footerInner.insertBefore(contact, disclaimer);
+  } else {
+    footerInner.appendChild(contact);
+  }
+}
+
+const yearEl = document.getElementById("year");
+if (yearEl) {
+  yearEl.textContent = String(new Date().getFullYear());
+}
+ensureFooterContact();
 
 initMobileNav();
 if (document.getElementById("player-container")) {
