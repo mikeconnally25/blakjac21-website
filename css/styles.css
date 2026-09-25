@@ -9978,6 +9978,31 @@ ul {
   pointer-events: none;
 }
 
+.store-buy-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(88, 201, 243, 0.14);
+  background:
+    linear-gradient(155deg, rgba(14, 24, 34, 0.9), rgba(6, 12, 18, 0.86));
+}
+
+.store-buy-toggle .admin-panel-label {
+  margin: 0 0 0.2rem;
+}
+
+.store-buy-toggle .admin-panel-text {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+#store-buy-settings {
+  grid-column: 1 / -1;
+}
+
 .store-top {
   display: grid;
   gap: 1rem;

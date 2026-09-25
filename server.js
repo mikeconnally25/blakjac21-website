@@ -99,6 +99,7 @@ import {
   handlePointsBuy,
   handlePointsBuyIpn,
   handlePointsBuyPackages,
+  handlePointsBuySettings,
 } from "./lib/points-buy-handlers.js";
 import {
   handleSlotTournamentAffiliatesOnly,
@@ -231,6 +232,9 @@ app.post("/api/points/redeem", (req, res) => handlePointsRedeem(req, res));
 app.post("/api/points/tip", (req, res) => handlePointsTip(req, res));
 app.get("/api/points/buy/packages", (req, res) =>
   handlePointsBuyPackages(req, res)
+);
+app.post("/api/points/buy/settings", (req, res) =>
+  handlePointsBuySettings(req, res)
 );
 app.post("/api/points/buy", (req, res) => handlePointsBuy(req, res));
 app.post("/api/points/buy/ipn", (req, res) => handlePointsBuyIpn(req, res));

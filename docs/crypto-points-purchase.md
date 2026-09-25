@@ -19,7 +19,8 @@ Crypto checkout for channel points via hosted NOWPayments invoices.
    `https://website-blakjac21.vercel.app/api/points/buy/ipn`
 4. **Redeploy** Vercel (env vars do not apply until redeploy).
 5. Confirm `GET /api/points/buy/packages` returns `"configured": true`.
-6. Sign in on `/store/`, buy the $1 package, complete payment, wait for IPN credit.
+6. Admins can pause/resume purchases from the Store admin panel (`POST /api/points/buy/settings` with `{ "enabled": false }`).
+7. Sign in on `/store/`, buy the $1 package, complete payment, wait for IPN credit.
 
 ## Env vars
 

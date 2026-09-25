@@ -7,6 +7,7 @@ let canRedeem = true;
 let buyPackages = [];
 let buyConfig = {
   configured: false,
+  enabled: true,
   rate: 100,
   minUsd: 1,
   maxUsd: 100,
@@ -15,6 +16,10 @@ let buyConfig = {
   stepPoints: 100,
 };
 let selectedBuyPackageId = null;
+
+function isBuyPointsOpen() {
+  return Boolean(buyConfig.configured) && buyConfig.enabled !== false;
+}
 
 function setStoreStatus(message, tone = "") {
   const status = document.getElementById("store-status");
@@ -88,7 +93,7 @@ function renderBuyForm() {
     usdInput.max = String(buyConfig.maxUsd);
   }
 
-  const canBuy = Boolean(currentUser) && buyConfig.configured;
+  const canBuy = Boolean(currentUser) && isBuyPointsOpen();
   form.classList.toggle("is-disabled", !canBuy);
   packagesEl?.classList.toggle("is-disabled", !canBuy);
   if (submit) submit.disabled = !canBuy;
@@ -98,6 +103,10 @@ function renderBuyForm() {
   if (!buyConfig.configured) {
     note.textContent =
       "Crypto purchases are not configured yet. Add NOWPAYMENTS_API_KEY and NOWPAYMENTS_IPN_SECRET on Vercel, then redeploy.";
+    return;
+  }
+  if (buyConfig.enabled === false) {
+    note.textContent = "Buying points is paused right now. Check back later.";
     return;
   }
   if (!currentUser) {
@@ -122,11 +131,13 @@ function renderBuyPackages() {
       btn.classList.add("is-selected");
     }
     btn.addEventListener("click", () => {
-      if (!currentUser || !buyConfig.configured) {
+      if (!currentUser || !isBuyPointsOpen()) {
         setStoreStatus(
-          currentUser
+          !buyConfig.configured
             ? "Crypto purchases are not configured yet."
-            : "Sign in with Kick to buy points.",
+            : buyConfig.enabled === false
+              ? "Buying points is paused right now."
+              : "Sign in with Kick to buy points.",
           "error"
         );
         return;
@@ -557,6 +568,19 @@ function renderAdmin() {
   renderAdminCatalog();
   renderQueue();
   renderHistory();
+  renderBuyToggle();
+}
+
+function renderBuyToggle() {
+  const toggle = document.getElementById("store-buy-toggle");
+  const status = document.getElementById("store-buy-toggle-status");
+  if (!toggle || !status) return;
+
+  toggle.checked = buyConfig.enabled !== false;
+  status.textContent =
+    buyConfig.enabled !== false
+      ? "Buy points is open"
+      : "Buy points is paused";
 }
 
 function renderAll() {
@@ -626,12 +650,14 @@ async function loadBuyPackages() {
   if (!response.ok) {
     buyPackages = [];
     buyConfig.configured = false;
+    buyConfig.enabled = true;
     return;
   }
   const data = await response.json().catch(() => ({}));
   buyPackages = Array.isArray(data.packages) ? data.packages : [];
   buyConfig = {
     configured: Boolean(data.configured),
+    enabled: data.enabled !== false,
     rate: Number(data.rate) || 100,
     minUsd: Number(data.minUsd) || 1,
     maxUsd: Number(data.maxUsd) || 100,
@@ -916,6 +942,10 @@ function initBuyForm() {
       );
       return;
     }
+    if (buyConfig.enabled === false) {
+      setStoreStatus("Buying points is paused right now.", "error");
+      return;
+    }
 
     if (selectedBuyPackageId) {
       await startBuyPurchase({ packageId: selectedBuyPackageId });
@@ -998,6 +1028,51 @@ function initAwardChatForm() {
   });
 }
 
+function initBuyToggle() {
+  const toggle = document.getElementById("store-buy-toggle");
+  if (!toggle) return;
+
+  toggle.addEventListener("change", async () => {
+    if (!currentUser?.isAdmin) {
+      toggle.checked = buyConfig.enabled !== false;
+      return;
+    }
+
+    const nextEnabled = Boolean(toggle.checked);
+    const previous = buyConfig.enabled !== false;
+    toggle.disabled = true;
+    try {
+      const response = await fetch("/api/points/buy/settings", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled: nextEnabled }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "Could not update buy points.");
+      }
+      buyConfig.enabled = data.enabled !== false;
+      renderBuyToggle();
+      renderBuyForm();
+      renderBuyPackages();
+      setStoreStatus(
+        buyConfig.enabled
+          ? "Buy points resumed."
+          : "Buy points paused.",
+        "success"
+      );
+    } catch (error) {
+      buyConfig.enabled = previous;
+      toggle.checked = previous;
+      renderBuyToggle();
+      setStoreStatus(error.message || "Could not update buy points.", "error");
+    } finally {
+      toggle.disabled = false;
+    }
+  });
+}
+
 window.addEventListener("auth:change", async (event) => {
   currentUser = event.detail?.user || null;
   await refreshStore();
@@ -1005,6 +1080,7 @@ window.addEventListener("auth:change", async (event) => {
 
 initCatalogForm();
 initBuyForm();
+initBuyToggle();
 initAwardChatForm();
 handlePurchaseReturnQuery();
 refreshStore();
