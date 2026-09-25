@@ -45,6 +45,6 @@ The store UI shows a status message, strips the query, and refreshes balance. Po
 
 ## Pricing
 
-- Fixed package only: 2,000 points for $15
+- Fixed packages: 2,000 points for $15 · 10,000 points for $75
 - Custom amounts are disabled
 - Charged in USD (`price_currency: usd`); user picks coin on NOWPayments

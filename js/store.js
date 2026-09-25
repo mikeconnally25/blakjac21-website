@@ -68,9 +68,13 @@ function renderBuyForm() {
 
   const pkg = buyPackages[0];
   if (copy) {
-    copy.textContent = pkg
-      ? `${Number(pkg.points).toLocaleString()} points for ${formatUsd(pkg.usd)} · pay with crypto`
-      : "2,000 points for $15 · pay with crypto";
+    if (buyPackages.length > 1) {
+      copy.textContent = "Choose a package · pay with crypto";
+    } else if (pkg) {
+      copy.textContent = `${Number(pkg.points).toLocaleString()} points for ${formatUsd(pkg.usd)} · pay with crypto`;
+    } else {
+      copy.textContent = "2,000 points for $15 · pay with crypto";
+    }
   }
 
   const canBuy = Boolean(currentUser) && isBuyPointsOpen();
@@ -89,7 +93,7 @@ function renderBuyForm() {
     note.textContent = "Sign in with Kick to buy points.";
     return;
   }
-  note.textContent = "One package available — tap to checkout.";
+  note.textContent = "Tap a package to checkout.";
 }
 
 function renderBuyPackages() {
