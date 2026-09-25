@@ -317,7 +317,10 @@ function initAuth() {
 
   logoutBtn?.addEventListener("click", async () => {
     sessionStorage.removeItem("bj21-stake-prompt-dismissed");
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "same-origin",
+    });
     renderAuthState(null);
   });
 
