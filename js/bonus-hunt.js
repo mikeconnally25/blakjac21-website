@@ -3705,7 +3705,7 @@ function initAdminForm() {
           await loadSlotCatalog();
           hideSyncScriptFallback();
           setCatalogSyncStatus(
-            `Imported ${data.slots.length} slots. ${formatCatalogCountSummary()}`,
+            `Imported ${result.unique || result.count || data.slots.length} slots. ${formatCatalogCountSummary()}`,
             "success"
           );
 
