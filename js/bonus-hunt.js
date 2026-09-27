@@ -3168,14 +3168,19 @@ function initAdminForm() {
     }
   };
 
+  let scrollRootCache = null;
   const findScrollRoot = () => {
+    if (scrollRootCache && document.contains(scrollRootCache)) return scrollRootCache;
     const sample =
       document.querySelector('a[href*="/casino/games/"]') ||
       document.querySelector("main") ||
       document.body;
     let el = sample;
     for (let depth = 0; el && depth < 14; depth += 1) {
-      if (isScrollable(el)) return el;
+      if (isScrollable(el)) {
+        scrollRootCache = el;
+        return el;
+      }
       el = el.parentElement;
     }
     const candidates = [...document.querySelectorAll("main, [role='main'], div, section")];
@@ -3189,6 +3194,7 @@ function initAdminForm() {
         bestScore = score;
       }
     }
+    scrollRootCache = best;
     return best;
   };
 
@@ -3429,51 +3435,9 @@ function initAdminForm() {
   };
 
   const hydrateMissingLogos = async () => {
-    const root = findScrollRoot();
-    const missingBefore = [...linked.values()].filter((e) => !e.thumbnailUrl).length;
-    if (!missingBefore) return;
-    reportProgress(
-      "Loading logos (" + missingBefore + " still missing)…",
-      linked.size
-    );
-
-    if (root) {
-      const step = Math.max(180, Math.floor(root.clientHeight * 0.75));
-      const maxY = Math.max(0, root.scrollHeight - root.clientHeight);
-      for (let y = 0; y <= maxY; y += step) {
-        root.scrollTop = y;
-        root.dispatchEvent(new Event("scroll", { bubbles: true }));
-        await sleep(55);
-        scrapeVisible();
-      }
-      root.scrollTop = maxY;
-    } else {
-      const docH = Math.max(
-        document.body.scrollHeight,
-        document.documentElement.scrollHeight
-      );
-      const step = Math.max(240, Math.floor(window.innerHeight * 0.8));
-      for (let y = 0; y <= docH; y += step) {
-        window.scrollTo(0, y);
-        await sleep(55);
-        scrapeVisible();
-      }
-    }
-
-    // Quick pass over a sample of still-missing tiles to force lazy images.
-    const stillMissing = [];
-    for (const entry of linked.values()) {
-      if (entry.thumbnailUrl) continue;
-      const el = entry._el;
-      if (el && document.contains(el)) stillMissing.push(entry);
-    }
-    const sample = stillMissing.slice(0, Math.min(80, stillMissing.length));
-    for (let i = 0; i < sample.length; i += 1) {
-      await revealTile(sample[i]._el);
-      if (i % 10 === 0) scrapeVisible();
-    }
-    scrapeVisible();
     scrollToBottom();
+    await sleep(120);
+    scrapeVisible();
   };
 
   const scrollMetrics = () => {
@@ -3501,77 +3465,54 @@ function initAdminForm() {
     metrics.pos + metrics.view >= metrics.height - 48;
 
   const stepTowardEnd = () => {
-    const metrics = scrollMetrics();
-    const step = Math.max(320, Math.floor(metrics.view * 0.9));
-    if (metrics.root) {
-      const next = Math.min(metrics.height, metrics.pos + step);
-      metrics.root.scrollTop = isAtBottom(metrics) ? metrics.height : next;
-      metrics.root.dispatchEvent(new Event("scroll", { bubbles: true }));
-    } else if (isAtBottom(metrics)) {
-      window.scrollTo(0, metrics.height);
-    } else {
-      window.scrollBy(0, step);
-    }
-    const btn = findLoadMore();
-    if (btn) btn.scrollIntoView({ block: "end", behavior: "auto" });
+    scrollToBottom();
   };
 
-  let lastCount = 0;
-  let lastHeight = 0;
+  let lastCount = -1;
+  let lastHeight = -1;
   let endStreak = 0;
 
-  for (let i = 0; i < 1600; i++) {
+  for (let i = 0; i < 500; i++) {
     stepTowardEnd();
     const btn = findLoadMore();
     if (btn) {
       endStreak = 0;
       btn.click();
-      await sleep(650);
-      scrollToBottom();
+      await sleep(140);
+    } else if (isAtBottom(scrollMetrics())) {
+      await sleep(180);
     } else {
-      await sleep(420);
-      if (isAtBottom(scrollMetrics())) scrollToBottom();
+      await sleep(40);
     }
 
     const { total } = scrapeVisible();
     const metrics = scrollMetrics();
-    const grew =
-      total > lastCount || metrics.height > lastHeight + 24 || Boolean(findLoadMore());
+    const grew = total !== lastCount || metrics.height > lastHeight + 12;
     const parkedAtEnd = isAtBottom(metrics) && !findLoadMore();
 
-    if (i % 3 === 0) {
+    if (i % 6 === 0) {
       reportProgress(
-        "Pass " +
-          (i + 1) +
-          ": " +
-          total +
+        total +
           " games linked" +
-          (parkedAtEnd ? " (at end)" : " (scrolling)"),
+          (parkedAtEnd ? " · confirming the end" : " · scrolling"),
         total
       );
     }
 
-    if (grew || !parkedAtEnd) {
+    if (!parkedAtEnd || grew) {
       endStreak = 0;
     } else {
       endStreak += 1;
     }
-    lastCount = Math.max(lastCount, total);
-    lastHeight = Math.max(lastHeight, metrics.height);
+    lastCount = total;
+    lastHeight = metrics.height;
 
-    if (endStreak >= 10) break;
+    if (endStreak >= 4) break;
   }
 
   scrollToBottom();
-  await sleep(500);
-  for (let j = 0; j < 12; j++) {
-    const btn = findLoadMore();
-    if (!btn) break;
-    btn.click();
-    await sleep(650);
-    scrollToBottom();
-    scrapeVisible();
-  }
+  await sleep(80);
+  scrapeVisible();
 
   await hydrateMissingLogos();
 
