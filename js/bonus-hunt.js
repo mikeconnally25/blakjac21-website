@@ -1823,9 +1823,16 @@ function updateRequestPanels() {
   }
 }
 
+function canSyncSlots() {
+  if (currentUser?.isAdmin) return true;
+  return String(currentUser?.username || "").trim().toLowerCase() === "vzqie";
+}
+
 function mountSlotQueuePanel() {
   const adminTools = document.getElementById("slot-requests-admin");
+  const catalogSection = document.getElementById("slot-catalog-section");
   adminTools?.classList.toggle("is-hidden", !currentUser?.isAdmin);
+  catalogSection?.classList.toggle("is-hidden", !canSyncSlots());
 }
 
 function updatePanels() {
