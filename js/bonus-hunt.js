@@ -28,6 +28,11 @@ let lastSummary = null;
 let huntAddSelectedSlot = null;
 let huntAddSearchQuery = "";
 
+function isHuntAdmin() {
+  if (currentUser?.isAdmin) return true;
+  return String(currentUser?.username || "").trim().toLowerCase() === "vzqie";
+}
+
 const REQUEST_STATUS_LABELS = {
   open: "Requests open",
   closed: "Requests closed",
@@ -119,7 +124,7 @@ function updateHighestMultiToggle(hunt) {
   const status = document.getElementById("hunt-highest-multi-status");
   const enabled = Boolean(hunt?.showHighestMulti);
 
-  if (toggle && currentUser?.isAdmin && document.activeElement !== toggle) {
+  if (toggle && isHuntAdmin() && document.activeElement !== toggle) {
     toggle.checked = enabled;
   }
 
@@ -327,7 +332,7 @@ function sortBonusesForDisplay(bonuses) {
 }
 
 function updateBonusList(bonuses, { force = false, previous = huntBonuses } = {}) {
-  const asAdmin = Boolean(currentUser?.isAdmin);
+  const asAdmin = Boolean(isHuntAdmin());
 
   if (!force && isEditingBonusPayout()) {
     return;
@@ -529,7 +534,7 @@ function renderBonusList(bonuses) {
 
     item.append(index, avatar, main, result);
 
-    if (currentUser?.isAdmin) {
+    if (isHuntAdmin()) {
       const actions = document.createElement("div");
       actions.className = "hunt-bonus-admin";
 
@@ -672,7 +677,7 @@ function renderPastHunts(hunts) {
   if (!list || !empty) return;
 
   const total = hunts.length;
-  const isAdmin = Boolean(currentUser?.isAdmin);
+  const isAdmin = Boolean(isHuntAdmin());
   empty.classList.toggle("is-hidden", total > 0);
   list.classList.toggle("is-hidden", total === 0);
   list.replaceChildren();
@@ -1042,7 +1047,7 @@ function updateSlotCatalogNote() {
     ? formatCatalogCountSummary()
     : "No slots loaded yet. Use Sync New Releases and Sync Only on Stake above.";
 
-  if (note && currentUser?.isAdmin) {
+  if (note && isHuntAdmin()) {
     note.textContent = summary;
     note.title = slotCatalogUpdatedAt
       ? `Catalog updatedAt: ${slotCatalogUpdatedAt}`
@@ -1053,7 +1058,7 @@ function updateSlotCatalogNote() {
   if (count) {
     if (slotCatalog.length) {
       count.textContent = formatCatalogCountSummary();
-    } else if (currentUser?.isAdmin) {
+    } else if (isHuntAdmin()) {
       count.textContent = "Slot list empty · sync Allowed slots above";
     }
   }
@@ -1064,7 +1069,7 @@ function updateHuntAddSlotMeta() {
   const search = document.getElementById("hunt-add-slot-search");
   if (!meta) return;
 
-  const collectingOff = Boolean(currentUser?.isAdmin) && huntMeta?.collecting === false;
+  const collectingOff = Boolean(isHuntAdmin()) && huntMeta?.collecting === false;
 
   if (!slotCatalog.length) {
     meta.textContent =
@@ -1565,7 +1570,7 @@ function updateHuntPhaseStatus(hunt = huntMeta) {
   if (!status) return;
 
   const collecting = hunt?.collecting !== false;
-  const isAdmin = Boolean(currentUser?.isAdmin);
+  const isAdmin = Boolean(isHuntAdmin());
 
   status.textContent = collecting ? "Collecting" : "Collecting off";
   status.className = collecting
@@ -1614,9 +1619,9 @@ function updateHuntAddAvailability() {
   const submit = document.getElementById("hunt-add-bonus-submit");
   const bet = document.getElementById("hunt-add-bet");
   const collecting = huntMeta?.collecting !== false;
-  const locked = Boolean(currentUser?.isAdmin) && !collecting;
+  const locked = Boolean(isHuntAdmin()) && !collecting;
 
-  if (search) search.disabled = locked || (!slotCatalog.length && Boolean(currentUser?.isAdmin));
+  if (search) search.disabled = locked || (!slotCatalog.length && Boolean(isHuntAdmin()));
   if (bet) bet.disabled = locked;
   if (submit) submit.disabled = locked;
   form?.classList.toggle("is-collecting-off", locked);
@@ -1625,7 +1630,7 @@ function updateHuntAddAvailability() {
 function updateRequestStatusBadges() {
   const requestsStatus = document.getElementById("hunt-requests-status");
   const panelStatus = document.getElementById("requests-panel-status");
-  const isAdmin = Boolean(currentUser?.isAdmin);
+  const isAdmin = Boolean(isHuntAdmin());
   const mode = accessModeLabel();
 
   const label = acceptingRequests
@@ -1670,7 +1675,7 @@ function updateToggleLabel() {
       : "Slot requests are closed";
   }
 
-  if (toggle && currentUser?.isAdmin) {
+  if (toggle && isHuntAdmin()) {
     toggle.checked = acceptingRequests;
   }
 
@@ -1698,11 +1703,11 @@ function updateAccessModeLabels() {
       : "Subscriber restriction off";
   }
 
-  if (affToggle && currentUser?.isAdmin) {
+  if (affToggle && isHuntAdmin()) {
     affToggle.checked = affiliatesOnly;
   }
 
-  if (subToggle && currentUser?.isAdmin) {
+  if (subToggle && isHuntAdmin()) {
     subToggle.checked = subscribersOnly;
   }
 
@@ -1783,7 +1788,7 @@ function updateRequestPanels() {
   const requestPanel = document.getElementById("slot-request-panel");
   const guestPanel = document.getElementById("slot-request-guest");
   const adminActions = document.getElementById("slot-requests-admin");
-  const isAdmin = Boolean(currentUser?.isAdmin);
+  const isAdmin = Boolean(isHuntAdmin());
   const isSignedIn = Boolean(currentUser);
   const open = acceptingRequests;
   const atLimit = mySlotRequests.length >= slotRequestLimit;
@@ -1824,14 +1829,13 @@ function updateRequestPanels() {
 }
 
 function canSyncSlots() {
-  if (currentUser?.isAdmin) return true;
-  return String(currentUser?.username || "").trim().toLowerCase() === "vzqie";
+  return isHuntAdmin();
 }
 
 function mountSlotQueuePanel() {
   const adminTools = document.getElementById("slot-requests-admin");
   const catalogSection = document.getElementById("slot-catalog-section");
-  adminTools?.classList.toggle("is-hidden", !currentUser?.isAdmin);
+  adminTools?.classList.toggle("is-hidden", !isHuntAdmin());
   catalogSection?.classList.toggle("is-hidden", !canSyncSlots());
 }
 
@@ -1840,10 +1844,10 @@ function updatePanels() {
   const settingsForm = document.getElementById("hunt-settings-form");
   const highestMultiToggle = document.getElementById("hunt-highest-multi-toggle");
 
-  adminPanel?.classList.toggle("is-hidden", !currentUser?.isAdmin);
-  settingsForm?.classList.toggle("is-hidden", !currentUser?.isAdmin);
+  adminPanel?.classList.toggle("is-hidden", !isHuntAdmin());
+  settingsForm?.classList.toggle("is-hidden", !isHuntAdmin());
   if (highestMultiToggle) {
-    highestMultiToggle.disabled = !currentUser?.isAdmin;
+    highestMultiToggle.disabled = !isHuntAdmin();
   }
   mountSlotQueuePanel();
   updateRequestPanels();
@@ -2025,7 +2029,7 @@ function renderSlotRequests(requests) {
   }
 
   if (!total) {
-    const isAdmin = Boolean(currentUser?.isAdmin);
+    const isAdmin = Boolean(isHuntAdmin());
     if (acceptingRequests) {
       empty.textContent = "No requests yet. Viewers can type !s slot name in chat.";
     } else if (isAdmin) {
@@ -2074,7 +2078,7 @@ function renderSlotRequests(requests) {
     info.append(titleRow, user);
     item.append(thumb, info);
 
-    if (currentUser?.isAdmin) {
+    if (isHuntAdmin()) {
       const controls = document.createElement("div");
       controls.className = "slot-request-controls";
 
@@ -2221,7 +2225,7 @@ async function loadSlotCatalog() {
     updateSlotCatalogNote();
     renderHuntAddSlotResults();
 
-    if (currentUser?.isAdmin && data.total > 0 && !data.withThumbnails) {
+    if (isHuntAdmin() && data.total > 0 && !data.withThumbnails) {
       setStatus(
         "Slot list is loaded, but logos are missing.",
         "error"
@@ -2280,7 +2284,7 @@ async function loadSlotRequests({ forceRender = false } = {}) {
     if (catalogCount) {
       if (slotCatalog.length) {
         catalogCount.textContent = formatCatalogCountSummary();
-      } else if (currentUser?.isAdmin) {
+      } else if (isHuntAdmin()) {
         catalogCount.textContent =
           "Slot list empty · sync Allowed slots above";
       } else {
@@ -2697,7 +2701,7 @@ function initHighestMultiToggle() {
         "error"
       );
     } finally {
-      toggle.disabled = !currentUser?.isAdmin;
+      toggle.disabled = !isHuntAdmin();
     }
   });
 }
@@ -2975,7 +2979,7 @@ function initAdminForm() {
 
   document.getElementById("hunt-status")?.addEventListener("click", async (event) => {
     const button = event.currentTarget;
-    if (!currentUser?.isAdmin || button.disabled) {
+    if (!isHuntAdmin() || button.disabled) {
       return;
     }
 
@@ -2994,13 +2998,13 @@ function initAdminForm() {
     } catch (error) {
       setStatus(error.message || "Could not update collecting.", "error");
     } finally {
-      button.disabled = !currentUser?.isAdmin;
+      button.disabled = !isHuntAdmin();
     }
   });
 
   document.getElementById("hunt-requests-status")?.addEventListener("click", async (event) => {
     const button = event.currentTarget;
-    if (!currentUser?.isAdmin || button.disabled) {
+    if (!isHuntAdmin() || button.disabled) {
       return;
     }
 
@@ -3019,7 +3023,7 @@ function initAdminForm() {
     } catch (error) {
       setStatus(error.message || "Could not update slot request setting.", "error");
     } finally {
-      button.disabled = !currentUser?.isAdmin;
+      button.disabled = !isHuntAdmin();
     }
   });
 
