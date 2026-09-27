@@ -3472,61 +3472,99 @@ function initAdminForm() {
     scrollToBottom();
   };
 
-  let lastCount = 0;
-  let stable = 0;
-  let missingBtnStreak = 0;
-  let sawLoadMore = false;
+  const scrollMetrics = () => {
+    const root = findScrollRoot();
+    if (root) {
+      return {
+        root,
+        pos: root.scrollTop,
+        view: root.clientHeight,
+        height: root.scrollHeight,
+      };
+    }
+    return {
+      root: null,
+      pos: window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0,
+      view: window.innerHeight,
+      height: Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+      ),
+    };
+  };
 
-  for (let i = 0; i < 400; i++) {
-    scrollToBottom();
+  const isAtBottom = (metrics) =>
+    metrics.pos + metrics.view >= metrics.height - 48;
+
+  const stepTowardEnd = () => {
+    const metrics = scrollMetrics();
+    const step = Math.max(320, Math.floor(metrics.view * 0.9));
+    if (metrics.root) {
+      const next = Math.min(metrics.height, metrics.pos + step);
+      metrics.root.scrollTop = isAtBottom(metrics) ? metrics.height : next;
+      metrics.root.dispatchEvent(new Event("scroll", { bubbles: true }));
+    } else if (isAtBottom(metrics)) {
+      window.scrollTo(0, metrics.height);
+    } else {
+      window.scrollBy(0, step);
+    }
+    const btn = findLoadMore();
+    if (btn) btn.scrollIntoView({ block: "end", behavior: "auto" });
+  };
+
+  let lastCount = 0;
+  let lastHeight = 0;
+  let endStreak = 0;
+
+  for (let i = 0; i < 1600; i++) {
+    stepTowardEnd();
     const btn = findLoadMore();
     if (btn) {
-      sawLoadMore = true;
-      missingBtnStreak = 0;
+      endStreak = 0;
       btn.click();
-      await sleep(520);
+      await sleep(650);
       scrollToBottom();
-      const again = findLoadMore();
-      if (again) {
-        again.click();
-        await sleep(320);
-      }
     } else {
-      missingBtnStreak += 1;
-      await sleep(380);
-      scrollToBottom();
+      await sleep(420);
+      if (isAtBottom(scrollMetrics())) scrollToBottom();
     }
 
     const { total } = scrapeVisible();
-    if (i % 4 === 0 || !btn) {
+    const metrics = scrollMetrics();
+    const grew =
+      total > lastCount || metrics.height > lastHeight + 24 || Boolean(findLoadMore());
+    const parkedAtEnd = isAtBottom(metrics) && !findLoadMore();
+
+    if (i % 3 === 0) {
       reportProgress(
         "Pass " +
           (i + 1) +
           ": " +
           total +
           " games linked" +
-          (btn ? " (Load More)" : " (auto-scroll)"),
+          (parkedAtEnd ? " (at end)" : " (scrolling)"),
         total
       );
     }
 
-    if (total === lastCount) {
-      stable += 1;
-      const quietEnough = sawLoadMore ? missingBtnStreak >= 4 : missingBtnStreak >= 8;
-      if (stable >= 5 && quietEnough) break;
+    if (grew || !parkedAtEnd) {
+      endStreak = 0;
     } else {
-      stable = 0;
-      lastCount = total;
+      endStreak += 1;
     }
+    lastCount = Math.max(lastCount, total);
+    lastHeight = Math.max(lastHeight, metrics.height);
+
+    if (endStreak >= 10) break;
   }
 
   scrollToBottom();
-  await sleep(350);
-  for (let j = 0; j < 3; j++) {
+  await sleep(500);
+  for (let j = 0; j < 12; j++) {
     const btn = findLoadMore();
     if (!btn) break;
     btn.click();
-    await sleep(450);
+    await sleep(650);
     scrollToBottom();
     scrapeVisible();
   }
@@ -3848,8 +3886,7 @@ function initAdminForm() {
         : `${label}: clipboard blocked — copy the script from the box below, then paste in the Stake console.`
     );
 
-    const timeoutMs =
-      groupSlug === "only-on-stake" ? 20 * 60 * 1000 : 12 * 60 * 1000;
+    const timeoutMs = 25 * 60 * 1000;
     const status = await Promise.race([
       pollSyncToken(tokenData.token, { timeoutMs }),
       waitForSyncCompletion(tokenData.token),
