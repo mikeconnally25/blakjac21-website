@@ -403,4 +403,13 @@ async function loadOverlay() {
 }
 
 loadOverlay();
-setInterval(loadOverlay, POLL_MS);
+setInterval(() => {
+  if (document.hidden) return;
+  loadOverlay();
+}, POLL_MS);
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    loadOverlay();
+  }
+});

@@ -2687,9 +2687,16 @@ function initJoin() {
 function startPolling() {
   if (pollTimer) window.clearInterval(pollTimer);
   pollTimer = window.setInterval(() => {
+    if (document.hidden) return;
     refreshStatus().catch(() => {});
   }, 5000);
 }
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    refreshStatus().catch(() => {});
+  }
+});
 
 window.addEventListener("auth:change", async (event) => {
   currentUser = event.detail?.user || null;

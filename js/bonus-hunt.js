@@ -2,6 +2,8 @@ let currentUser = null;
 let bonusListRenderedAsAdmin = false;
 let pollTimer = null;
 let slotPollTimer = null;
+const HUNT_POLL_MS = 15000;
+const CATALOG_POLL_MS = 3 * 60 * 1000;
 let slotCatalog = [];
 let slotGroups = [];
 let slotCatalogUpdatedAt = null;
@@ -2460,11 +2462,15 @@ function schedulePolling() {
     clearInterval(slotPollTimer);
   }
 
-  pollTimer = setInterval(loadBonusHunt, 5000);
-  slotPollTimer = setInterval(() => {
-    loadSlotCatalog();
+  pollTimer = setInterval(() => {
+    if (document.hidden) return;
+    loadBonusHunt();
     loadSlotRequests();
-  }, 5000);
+  }, HUNT_POLL_MS);
+  slotPollTimer = setInterval(() => {
+    if (document.hidden) return;
+    loadSlotCatalog();
+  }, CATALOG_POLL_MS);
 }
 
 async function saveBonusPayout(id, rawPayout, button) {

@@ -353,7 +353,6 @@ async function loadLeaderboard({ quiet = false } = {}) {
   try {
     const response = await fetch("/api/leaderboard", {
       credentials: "same-origin",
-      cache: "no-store",
     });
 
     const data = await response.json();
@@ -385,9 +384,16 @@ function scheduleLeaderboardPolling() {
   }
 
   pollTimer = setInterval(() => {
+    if (document.hidden) return;
     void loadLeaderboard({ quiet: true });
-  }, 5000);
+  }, 15000);
 }
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    void loadLeaderboard({ quiet: true });
+  }
+});
 
 loadLeaderboard();
 scheduleLeaderboardPolling();

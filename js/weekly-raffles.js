@@ -460,9 +460,15 @@
   function schedulePoll() {
     if (pollTimer) clearInterval(pollTimer);
     pollTimer = setInterval(() => {
+      if (document.hidden) return;
       loadStatus().catch(() => {});
-    }, 8000);
+    }, 15000);
   }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") return;
+    loadStatus().catch(() => {});
+  });
 
   document.addEventListener("auth:change", (event) => {
     currentUser = event.detail?.user || null;

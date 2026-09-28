@@ -324,12 +324,19 @@ function updateEndingBalanceInput() {
   input.value = String(endingBalance);
 }
 
+function guessPollMs() {
+  return isRoundActive() ? 5000 : 15000;
+}
+
 function scheduleGuessesPolling() {
   if (guessesPollTimer) {
     clearInterval(guessesPollTimer);
   }
 
-  guessesPollTimer = setInterval(loadGuesses, 5000);
+  guessesPollTimer = setInterval(() => {
+    if (document.hidden) return;
+    loadGuesses();
+  }, guessPollMs());
 }
 
 function renderGuessesList(guesses) {
@@ -527,8 +534,10 @@ function schedulePolling() {
     clearInterval(pollTimer);
   }
 
-  const interval = 5000;
-  pollTimer = setInterval(loadGameStatus, interval);
+  pollTimer = setInterval(() => {
+    if (document.hidden) return;
+    loadGameStatus();
+  }, guessPollMs());
 }
 
 async function loadGameStatus() {
@@ -549,6 +558,10 @@ async function loadGameStatus() {
     if (wasActive && !isRoundActive() && wasEnabled) {
       setGuessStatus("Time is up! Guessing is now closed.", "success");
       await loadGuesses();
+    }
+
+    if (wasActive !== isRoundActive()) {
+      scheduleGuessesPolling();
     }
 
     updateToggleLabel();

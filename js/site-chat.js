@@ -291,6 +291,7 @@
       clearInterval(pollTimer);
     }
     pollTimer = setInterval(() => {
+      if (document.hidden) return;
       void loadMessages();
     }, POLL_MS);
   }

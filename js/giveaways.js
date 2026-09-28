@@ -716,7 +716,10 @@ function schedulePolling() {
   }
 
   const interval = canSeeWinnerChat ? 2000 : 5000;
-  pollTimer = setInterval(loadGiveawayStatus, interval);
+  pollTimer = setInterval(() => {
+    if (document.hidden) return;
+    loadGiveawayStatus();
+  }, interval);
 }
 
 async function loadGiveawayStatus() {
