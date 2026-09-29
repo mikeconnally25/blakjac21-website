@@ -6511,6 +6511,10 @@ ul {
   overflow: hidden;
 }
 
+.home-page .house-games {
+  padding-top: 1.5rem;
+}
+
 .home-page .hero {
   padding-top: 1.5rem;
   padding-bottom: 3rem;

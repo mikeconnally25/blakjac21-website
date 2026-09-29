@@ -29,11 +29,11 @@
           </button>
 
           <ul class="nav-links">
-            <li><a href="#watch">Watch</a></li>
+            <li><a href="#house-games">House Games</a></li>
             <li class="is-hidden" id="admin-nav-commands">
         <a href="/commands/">Commands</a>
       </li>
-            <li><a href="#house-games">House Games</a></li>
+            <li><a href="#watch">Watch</a></li>
             <li><a href="#links">Links</a></li>
             <li class="is-hidden" id="admin-nav-accounts">
               <a href="/accounts/">Accounts</a>
@@ -71,40 +71,6 @@
 
       <main>
         <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
-
-        <section class="hero section" id="watch">
-          <div class="section-atmosphere" aria-hidden="true"></div>
-          <div class="container hero-player">
-            <div class="watch-header">
-              <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
-              <h1 id="watch-title">Live Stream</h1>
-              <p id="watch-subtitle">Loading latest stream...</p>
-            </div>
-
-            <div class="player-wrap theme-surface" id="player-container">
-              <iframe
-                id="kick-player"
-                class="player-frame is-hidden"
-                title="BLAKJAC21 Kick live stream"
-                allow="autoplay; fullscreen; picture-in-picture"
-                allowfullscreen
-              ></iframe>
-              <video
-                id="vod-player"
-                class="player-frame is-hidden"
-                controls
-                playsinline
-                preload="metadata"
-              ></video>
-              <div id="player-offline" class="player-offline is-hidden">
-                <p>No stream or VOD available right now.</p>
-                <a href="https://kick.com/blakjac21" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                  Visit Channel
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
 
         <section class="house-games section" id="house-games">
           <div class="section-atmosphere" aria-hidden="true"></div>
@@ -280,6 +246,40 @@
                     <div class="hg-keno-paytable-body" id="hg-keno-paytable-body"></div>
                   </aside>
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="hero section" id="watch">
+          <div class="section-atmosphere" aria-hidden="true"></div>
+          <div class="container hero-player">
+            <div class="watch-header">
+              <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
+              <h1 id="watch-title">Live Stream</h1>
+              <p id="watch-subtitle">Loading latest stream...</p>
+            </div>
+
+            <div class="player-wrap theme-surface" id="player-container">
+              <iframe
+                id="kick-player"
+                class="player-frame is-hidden"
+                title="BLAKJAC21 Kick live stream"
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowfullscreen
+              ></iframe>
+              <video
+                id="vod-player"
+                class="player-frame is-hidden"
+                controls
+                playsinline
+                preload="metadata"
+              ></video>
+              <div id="player-offline" class="player-offline is-hidden">
+                <p>No stream or VOD available right now.</p>
+                <a href="https://kick.com/blakjac21" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                  Visit Channel
+                </a>
               </div>
             </div>
           </div>
