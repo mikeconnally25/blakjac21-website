@@ -210,6 +210,47 @@ function initMobileNav() {
   });
 }
 
+function ensureMenuSubnav() {
+  const header = document.querySelector("header.header");
+  if (!header) return;
+
+  const tabs = [
+    ["/leaderboard/", "Leaderboard"],
+    ["/weekly-raffles/", "Weekly Raffles"],
+    ["/level-up-rewards/", "Level Up"],
+    ["/giveaways/", "Giveaways"],
+    ["/guess-the-balance/", "Guess Balance"],
+    ["/bonus-hunt/", "Bonus Hunt"],
+    ["/slot-tournaments/", "Tournaments"],
+    ["/store/", "Store"],
+  ];
+  let nav = header.querySelector(".menu-subnav");
+  if (!nav) {
+    nav = document.createElement("nav");
+    nav.className = "menu-subnav";
+    nav.id = "menu";
+    nav.setAttribute("aria-label", "Menu");
+    const row = document.createElement("div");
+    row.className = "container menu-subnav-row";
+    for (const [href, label] of tabs) {
+      const link = document.createElement("a");
+      link.href = href;
+      link.textContent = label;
+      row.appendChild(link);
+    }
+    nav.appendChild(row);
+    header.appendChild(nav);
+  }
+
+  const path = window.location.pathname;
+  nav.querySelectorAll("a").forEach((link) => {
+    const href = link.getAttribute("href") || "";
+    if (href !== "/" && (path === href || path.startsWith(href))) {
+      link.setAttribute("aria-current", "page");
+    }
+  });
+}
+
 function ensureFooterContact() {
   const footerInner = document.querySelector(".footer-inner");
   if (!footerInner || document.getElementById("footer-contact")) return;
@@ -239,6 +280,7 @@ const yearEl = document.getElementById("year");
 if (yearEl) {
   yearEl.textContent = String(new Date().getFullYear());
 }
+ensureMenuSubnav();
 ensureFooterContact();
 
 initMobileNav();
