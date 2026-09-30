@@ -946,7 +946,7 @@ function initAwardChatForm() {
       await loadMe();
       renderAll();
       setAwardChatStatus(
-        `Awarded ${data.amount > 0 ? "+" : ""}${data.amount} UncCoins to ${data.awarded} chatters (last ${data.withinMinutes}m).`,
+        `Awarded ${data.amount > 0 ? "+" : ""}${data.amount} UncCoins to ${data.awarded} chatters who typed UncSack (last ${data.withinMinutes}m).`,
         "success"
       );
     } catch (error) {

@@ -130,6 +130,7 @@
             <p class="store-section-copy">
               Award UncCoins, manage rewards, and fulfill the queue.
               Chat: <code>!points @user 100</code> or <code>!pointsall 100</code>.
+              Bulk awards only include people who typed <code>UncSack</code>.
             </p>
           </div>
 
@@ -171,7 +172,7 @@
 
                 <form class="store-admin-form" id="store-award-chat-form">
                   <p class="store-panel-label">Award chat</p>
-                  <p class="store-section-copy">UncCoins for Kick chatters active in the last N minutes.</p>
+                  <p class="store-section-copy">UncCoins for chatters who typed UncSack in the last N minutes.</p>
                   <div class="store-admin-grid store-award-chat-grid">
                     <div class="store-field">
                       <label class="guess-label" for="store-award-chat-amount">UncCoins</label>
@@ -183,7 +184,7 @@
                     </div>
                   </div>
                   <button type="submit" class="btn btn-sm btn-primary" id="store-award-chat-submit">
-                    Award chatters
+                    Award UncSack
                   </button>
                   <p class="store-award-chat-status is-hidden" id="store-award-chat-status" role="status"></p>
                 </form>
