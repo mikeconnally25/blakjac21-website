@@ -477,7 +477,7 @@ function renderAccounts(users) {
 
     const pointsLabel = document.createElement("span");
     pointsLabel.className = "accounts-kick-id";
-    pointsLabel.textContent = `Points: ${Number(user.points) || 0}`;
+    pointsLabel.textContent = `UncCoins: ${Number(user.points) || 0}`;
 
     const pointsInput = document.createElement("input");
     pointsInput.type = "number";
@@ -489,7 +489,7 @@ function renderAccounts(users) {
     pointsBtn.type = "button";
     pointsBtn.className = "btn btn-sm btn-primary accounts-points-award";
     pointsBtn.textContent = "Award";
-    pointsBtn.title = "Award (or subtract with a negative amount) points";
+    pointsBtn.title = "Award (or subtract with a negative amount) UncCoins";
     pointsBtn.addEventListener("click", () => {
       void awardAccountPoints(user.kickUserId, pointsInput.value, pointsBtn);
     });
@@ -817,12 +817,12 @@ async function setAccountStakeUsername(kickUserId, stakeUsername, saveButton, ca
 async function awardAccountPoints(kickUserId, amountValue, button) {
   const amount = Number(amountValue);
   if (!Number.isFinite(amount) || amount === 0) {
-    setAccountsStatus("Enter a non-zero points amount.", "error");
+    setAccountsStatus("Enter a non-zero UncCoins amount.", "error");
     return;
   }
 
   if (button) button.disabled = true;
-  setAccountsStatus(amount > 0 ? "Awarding points..." : "Adjusting points...");
+  setAccountsStatus(amount > 0 ? "Awarding UncCoins..." : "Adjusting UncCoins...");
 
   try {
     const response = await fetch("/api/points/award", {
@@ -838,27 +838,27 @@ async function awardAccountPoints(kickUserId, amountValue, button) {
     } catch {
       setAccountsStatus(
         response.ok
-          ? "Could not update points."
-          : `Could not update points (${response.status}).`,
+          ? "Could not update UncCoins."
+          : `Could not update UncCoins (${response.status}).`,
         "error"
       );
       return;
     }
 
     if (!response.ok) {
-      setAccountsStatus(data.error || "Could not update points.", "error");
+      setAccountsStatus(data.error || "Could not update UncCoins.", "error");
       return;
     }
 
     allUsers = data.users || [];
     altClusters = data.altClusters || [];
     setAccountsStatus(
-      `Points updated. Balance: ${data.balance?.points ?? 0}.`,
+      `UncCoins updated. Balance: ${data.balance?.points ?? 0}.`,
       "success"
     );
     renderFilteredAccounts();
   } catch {
-    setAccountsStatus("Could not update points.", "error");
+    setAccountsStatus("Could not update UncCoins.", "error");
   } finally {
     if (button) button.disabled = false;
   }

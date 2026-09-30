@@ -175,7 +175,7 @@
     banner.innerHTML = `
       <div class="hg-win-banner-inner">
         <span class="hg-win-banner-label">You win</span>
-        <span class="hg-win-banner-detail">+${payout} pts · ${hits} hit${hits === 1 ? "" : "s"}${mult ? ` · ${mult}` : ""}</span>
+        <span class="hg-win-banner-detail">+${payout} UncCoins · ${hits} hit${hits === 1 ? "" : "s"}${mult ? ` · ${mult}` : ""}</span>
       </div>
     `;
     banner.classList.remove("is-hidden");
@@ -197,7 +197,7 @@
     banner.innerHTML = `
       <div class="hg-win-banner-inner">
         <span class="hg-win-banner-label">You win</span>
-        <span class="hg-win-banner-detail">+${payout} pts · ${spin} ${color}</span>
+        <span class="hg-win-banner-detail">+${payout} UncCoins · ${spin} ${color}</span>
       </div>
     `;
     banner.classList.remove("is-hidden");
@@ -277,7 +277,7 @@
     if (state?.result) {
       const label = RESULT_LABEL[state.result] || state.result;
       const payout =
-        state.payout > 0 ? ` · +${formatPoints(state.payout)} pts` : "";
+        state.payout > 0 ? ` · +${formatPoints(state.payout)} UncCoins` : "";
       result.textContent = `${label}${payout}`;
       result.className = `hg-result hg-bj-result is-${state.result}`;
     } else {
@@ -607,7 +607,7 @@
         input.title = "No max bet for your account";
       } else {
         input.max = String(maxBet);
-        input.title = `Max bet ${maxBet} pts`;
+        input.title = `Max bet ${maxBet} UncCoins`;
         const value = Math.floor(Number(input.value));
         if (Number.isFinite(value) && value > maxBet) {
           input.value = String(maxBet);
@@ -678,7 +678,7 @@
     const button = $("hg-self-credit-btn");
     const amount = Math.floor(Number(input?.value || 0));
     if (!Number.isFinite(amount) || amount < 1) {
-      setStatus("Enter at least 1 point to add.", { error: true });
+      setStatus("Enter at least 1 UncCoin to add.", { error: true });
       return;
     }
     if (button) button.disabled = true;
@@ -691,13 +691,13 @@
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(data.error || "Could not add points.");
+        throw new Error(data.error || "Could not add UncCoins.");
       }
       setBalance(data.points);
       syncSelfCreditUi(true);
-      setStatus(`Added ${formatPoints(data.added)} points.`);
+      setStatus(`Added ${formatPoints(data.added)} UncCoins.`);
     } catch (error) {
-      setStatus(error.message || "Could not add points.", { error: true });
+      setStatus(error.message || "Could not add UncCoins.", { error: true });
     } finally {
       if (button) button.disabled = false;
     }
@@ -968,7 +968,7 @@
     if (rouletteNumbers.size) {
       const total = unit * rouletteNumbers.size;
       const list = [...rouletteNumbers].sort((a, b) => a - b).join(", ");
-      label.textContent = `${rouletteNumbers.size} number${rouletteNumbers.size === 1 ? "" : "s"} selected (${list}) · total ${formatPoints(total)} pts`;
+      label.textContent = `${rouletteNumbers.size} number${rouletteNumbers.size === 1 ? "" : "s"} selected (${list}) · total ${formatPoints(total)} UncCoins`;
       return;
     }
     if (rouletteOutside) {
@@ -980,7 +980,7 @@
         low: "1–18",
         high: "19–36",
       };
-      label.textContent = `Betting ${names[rouletteOutside] || rouletteOutside} · ${formatPoints(unit)} pts`;
+      label.textContent = `Betting ${names[rouletteOutside] || rouletteOutside} · ${formatPoints(unit)} UncCoins`;
       return;
     }
     label.textContent = "Pick up to 12 numbers, or one outside bet";
@@ -1285,7 +1285,7 @@
     }
 
     if (sub) {
-      sub.textContent = `${riskLabel} · ${pickCount} pick${pickCount === 1 ? "" : "s"} · bet ${formatPoints(bet)} pts`;
+      sub.textContent = `${riskLabel} · ${pickCount} pick${pickCount === 1 ? "" : "s"} · bet ${formatPoints(bet)} UncCoins`;
     }
 
     const rows = Object.entries(activeTable)
@@ -1296,7 +1296,7 @@
           <div class="hg-keno-pay-row">
             <span class="hg-keno-pay-hits">${formatKenoHitsLabel(hits)}</span>
             <span class="hg-keno-pay-mult">${formatKenoMult(mult)}x</span>
-            <span class="hg-keno-pay-pts">${formatPoints(payout)} pts</span>
+            <span class="hg-keno-pay-pts">${formatPoints(payout)} UncCoins</span>
           </div>
         `;
       })
@@ -1545,7 +1545,7 @@
       highlightRouletteResult(data.spin);
       const color = data.color || rouletteColor(data.spin);
       const outcome = data.won
-        ? `Win · +${formatPoints(data.payout)} pts`
+        ? `Win · +${formatPoints(data.payout)} UncCoins`
         : "Lose";
       if (el) {
         el.innerHTML = `<span class="hg-roulette-ball is-${color}">${data.spin}</span><span class="hg-roulette-copy">${color} · ${outcome}</span>`;
@@ -1606,7 +1606,7 @@
           ? `${String(data.risk).charAt(0).toUpperCase()}${String(data.risk).slice(1)} · `
           : "";
         const outcome = data.won
-          ? `Win · ${riskLabel}${data.hitCount} hit · ${data.multiplier}x · +${formatPoints(data.payout)} pts`
+          ? `Win · ${riskLabel}${data.hitCount} hit · ${data.multiplier}x · +${formatPoints(data.payout)} UncCoins`
           : `${riskLabel}${data.hitCount} hit · no payout`;
         el.textContent = outcome;
       }

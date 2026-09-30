@@ -31,7 +31,7 @@ function setStoreStatus(message, tone = "") {
 }
 
 function formatPoints(value) {
-  return `${Number(value) || 0} pts`;
+  return `${Number(value) || 0} UncCoins`;
 }
 
 function renderBalance() {
@@ -71,9 +71,9 @@ function renderBuyForm() {
     if (buyPackages.length > 1) {
       copy.textContent = "Choose a package · pay with crypto";
     } else if (pkg) {
-      copy.textContent = `${Number(pkg.points).toLocaleString()} points for ${formatUsd(pkg.usd)} · pay with crypto`;
+      copy.textContent = `${Number(pkg.points).toLocaleString()} UncCoins for ${formatUsd(pkg.usd)} · pay with crypto`;
     } else {
-      copy.textContent = "2,000 points for $15 · pay with crypto";
+      copy.textContent = "2,000 UncCoins for $15 · pay with crypto";
     }
   }
 
@@ -86,11 +86,11 @@ function renderBuyForm() {
     return;
   }
   if (buyConfig.enabled === false) {
-    note.textContent = "Buying points is paused right now. Check back later.";
+    note.textContent = "Buying UncCoins is paused right now. Check back later.";
     return;
   }
   if (!currentUser) {
-    note.textContent = "Sign in with Kick to buy points.";
+    note.textContent = "Sign in with Kick to buy UncCoins.";
     return;
   }
   note.textContent = "Tap a package to checkout.";
@@ -109,7 +109,7 @@ function renderBuyPackages() {
 
     const pts = document.createElement("span");
     pts.className = "store-buy-package-pts";
-    pts.textContent = `${Number(pkg.points).toLocaleString()} pts`;
+    pts.textContent = `${Number(pkg.points).toLocaleString()} UncCoins`;
 
     const sep = document.createElement("span");
     sep.className = "store-buy-package-sep";
@@ -130,8 +130,8 @@ function renderBuyPackages() {
           !buyConfig.configured
             ? "Crypto purchases are not configured yet."
             : buyConfig.enabled === false
-              ? "Buying points is paused right now."
-              : "Sign in with Kick to buy points.",
+              ? "Buying UncCoins is paused right now."
+              : "Sign in with Kick to buy UncCoins.",
           "error"
         );
         return;
@@ -248,7 +248,7 @@ function renderCatalog() {
 
     const cost = document.createElement("p");
     cost.className = "store-reward-card-cost";
-    cost.innerHTML = `<strong>${Number(item.cost) || 0}</strong> <span>pts</span>`;
+    cost.innerHTML = `<strong>${Number(item.cost) || 0}</strong> <span>UncCoins</span>`;
 
     body.append(eyebrow, title, cost);
 
@@ -271,7 +271,7 @@ function renderCatalog() {
       redeem.title = "Redemptions disabled for this account";
       row.classList.add("is-locked");
     } else if (pointsBalance < item.cost) {
-      redeem.title = "Not enough points";
+      redeem.title = "Not enough UncCoins";
       row.classList.add("is-locked");
     }
     redeem.addEventListener("click", () => {
@@ -546,8 +546,8 @@ function renderBuyToggle() {
   toggle.checked = buyConfig.enabled !== false;
   status.textContent =
     buyConfig.enabled !== false
-      ? "Buy points is open"
-      : "Buy points is paused";
+      ? "Buy UncCoins is open"
+      : "Buy UncCoins is paused";
 }
 
 function renderAll() {
@@ -584,7 +584,7 @@ async function loadMe() {
     cache: "no-store",
   });
   if (!response.ok) {
-    throw new Error("Could not load points balance.");
+    throw new Error("Could not load UncCoins balance.");
   }
   const data = await response.json();
   pointsBalance = Number(data.balance?.points) || 0;
@@ -748,7 +748,7 @@ async function cancelRedemption(id, button) {
     pendingQueue = Array.isArray(data.redemptions) ? data.redemptions : [];
     await loadMe();
     renderAll();
-    setStoreStatus("Redemption cancelled and points refunded.", "success");
+    setStoreStatus("Redemption cancelled and UncCoins refunded.", "success");
     document
       .getElementById("store-history-panel")
       ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -903,11 +903,11 @@ function handlePurchaseReturnQuery() {
 
   if (purchase === "success") {
     setStoreStatus(
-      "Payment received. Points credit after the crypto payment confirms — refresh in a moment if your balance has not updated yet.",
+      "Payment received. UncCoins credit after the crypto payment confirms — refresh in a moment if your balance has not updated yet.",
       "success"
     );
   } else if (purchase === "cancel") {
-    setStoreStatus("Purchase cancelled. No points were charged.", "error");
+    setStoreStatus("Purchase cancelled. No UncCoins were charged.", "error");
   }
 
   params.delete("purchase");
@@ -946,7 +946,7 @@ function initAwardChatForm() {
       await loadMe();
       renderAll();
       setAwardChatStatus(
-        `Awarded ${data.amount > 0 ? "+" : ""}${data.amount} points to ${data.awarded} chatters (last ${data.withinMinutes}m).`,
+        `Awarded ${data.amount > 0 ? "+" : ""}${data.amount} UncCoins to ${data.awarded} chatters (last ${data.withinMinutes}m).`,
         "success"
       );
     } catch (error) {
@@ -979,7 +979,7 @@ function initBuyToggle() {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(data.error || "Could not update buy points.");
+        throw new Error(data.error || "Could not update buy UncCoins.");
       }
       buyConfig.enabled = data.enabled !== false;
       renderBuyToggle();
@@ -987,15 +987,15 @@ function initBuyToggle() {
       renderBuyPackages();
       setStoreStatus(
         buyConfig.enabled
-          ? "Buy points resumed."
-          : "Buy points paused.",
+          ? "Buy UncCoins resumed."
+          : "Buy UncCoins paused.",
         "success"
       );
     } catch (error) {
       buyConfig.enabled = previous;
       toggle.checked = previous;
       renderBuyToggle();
-      setStoreStatus(error.message || "Could not update buy points.", "error");
+      setStoreStatus(error.message || "Could not update buy UncCoins.", "error");
     } finally {
       toggle.disabled = false;
     }

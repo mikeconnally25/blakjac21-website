@@ -1,8 +1,8 @@
-# Buy store points with NOWPayments
+# Buy UncCoins with NOWPayments
 
-> **Status:** Active — Buy points UI is on `/store/`. Backend credits after verified IPN.
+> **Status:** Active — Buy UncCoins UI is on `/store/`. Backend credits after verified IPN.
 
-Crypto checkout for channel points via hosted NOWPayments invoices.
+Crypto checkout for UncCoins via hosted NOWPayments invoices.
 
 ## Setup checklist
 
@@ -29,7 +29,7 @@ Crypto checkout for channel points via hosted NOWPayments invoices.
 | `NOWPAYMENTS_API_KEY` | Yes | API key from the NOWPayments dashboard |
 | `NOWPAYMENTS_IPN_SECRET` | Yes | IPN secret used to verify `x-nowpayments-sig` |
 | `NOWPAYMENTS_SANDBOX` | No | Set to `1` to use `api-sandbox.nowpayments.io` |
-| `POINTS_USD_RATE` | No | Points per $1 USD (default `100`) |
+| `POINTS_USD_RATE` | No | UncCoins per $1 USD (default `100`) |
 | `SITE_URL` | Recommended on Vercel | Public site origin for IPN + success/cancel URLs |
 
 Also requires existing Upstash Redis env vars so purchase orders persist.
@@ -41,10 +41,10 @@ After checkout, NOWPayments redirects to:
 - Success: `/store/?purchase=success`
 - Cancel: `/store/?purchase=cancel`
 
-The store UI shows a status message, strips the query, and refreshes balance. Points credit only on signed IPN status `finished` or `confirmed` (idempotent on `payment_id`).
+The store UI shows a status message, strips the query, and refreshes balance. UncCoins credit only on signed IPN status `finished` or `confirmed` (idempotent on `payment_id`).
 
 ## Pricing
 
-- Fixed packages: 2,000 points for $15 · 10,000 points for $75
+- Fixed packages: 2,000 UncCoins for $15 · 10,000 UncCoins for $75
 - Custom amounts are disabled
 - Charged in USD (`price_currency: usd`); user picks coin on NOWPayments
