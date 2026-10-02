@@ -98,7 +98,7 @@ ul {
   position: absolute;
   inset: -12%;
   opacity: 0.82;
-  background-image: url("/css/casino-pattern.svg");
+  background-image: url("/css/casino-pattern.svg?v=3");
   background-size: 420px 420px;
   animation: casino-drift 110s linear infinite;
 }

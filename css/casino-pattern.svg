@@ -1,18 +1,93 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="420" height="420" viewBox="0 0 420 420">
-  <g font-family="Georgia, Times New Roman, serif">
-    <text x="18" y="68" fill="#9ae4ff" font-size="52" opacity="0.95">&#9824;</text>
-    <text x="246" y="148" fill="#ff6b7a" font-size="46" opacity="0.9">&#9829;</text>
-    <text x="88" y="246" fill="#f0d48a" font-size="44" opacity="0.92">&#9830;</text>
-    <text x="278" y="338" fill="#9ae4ff" font-size="50" opacity="0.88">&#9827;</text>
-    <text x="22" y="368" fill="#ff6b7a" font-size="28" opacity="0.7">&#9830;</text>
-    <text x="168" y="96" fill="#f0d48a" font-size="24" opacity="0.65">&#9827;</text>
-    <text x="182" y="404" fill="#9ae4ff" font-size="26" opacity="0.6">&#9824;</text>
+  <defs>
+    <symbol id="spade" viewBox="0 0 64 64">
+      <path fill="currentColor" d="M32 3C16 22 7 33 7 43c0 9 7 15 16 15 4.2 0 7.2-2.2 9-5.4 1.8 3.2 4.8 5.4 9 5.4 9 0 16-6 16-15 0-10-9-21-25-40z"/>
+      <path fill="currentColor" d="M26.6 51h10.8l2.5 11H24.1z"/>
+    </symbol>
+    <symbol id="heart" viewBox="0 0 64 64">
+      <path fill="currentColor" d="M32 57C14 43 7 34 7 24.5 7 15.2 13.6 9 21.8 9c4.6 0 8.4 2.3 10.2 6.4C33.8 11.3 37.6 9 42.2 9 50.4 9 57 15.2 57 24.5 57 34 50 43 32 57z"/>
+    </symbol>
+    <symbol id="diamond" viewBox="0 0 64 64">
+      <polygon fill="currentColor" points="32,3 58,32 32,61 6,32"/>
+    </symbol>
+    <symbol id="club" viewBox="0 0 64 64">
+      <circle fill="currentColor" cx="32" cy="18" r="11.5"/>
+      <circle fill="currentColor" cx="18.5" cy="34.5" r="11.5"/>
+      <circle fill="currentColor" cx="45.5" cy="34.5" r="11.5"/>
+      <path fill="currentColor" d="M26.8 36.5h10.4l2.7 16.5H24.1z"/>
+    </symbol>
+    <radialGradient id="chip-green" cx="38%" cy="32%" r="68%">
+      <stop offset="0%" stop-color="#3d9a6c"/>
+      <stop offset="55%" stop-color="#1c6244"/>
+      <stop offset="100%" stop-color="#0e3a28"/>
+    </radialGradient>
+    <radialGradient id="chip-red" cx="38%" cy="32%" r="68%">
+      <stop offset="0%" stop-color="#e15a64"/>
+      <stop offset="58%" stop-color="#a82330"/>
+      <stop offset="100%" stop-color="#6d121b"/>
+    </radialGradient>
+    <radialGradient id="rim-gold" cx="40%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#f3de9a"/>
+      <stop offset="45%" stop-color="#d7b15a"/>
+      <stop offset="100%" stop-color="#8d6a24"/>
+    </radialGradient>
+    <radialGradient id="rim-ivory" cx="40%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#fff8ea"/>
+      <stop offset="50%" stop-color="#f0e0c0"/>
+      <stop offset="100%" stop-color="#cbb892"/>
+    </radialGradient>
+    <symbol id="spots" viewBox="-40 -40 80 80">
+      <g fill="#f8f1dc">
+        <rect x="-3.6" y="-38" width="7.2" height="12" rx="1.4"/>
+        <rect x="-3.6" y="-38" width="7.2" height="12" rx="1.4" transform="rotate(45)"/>
+        <rect x="-3.6" y="-38" width="7.2" height="12" rx="1.4" transform="rotate(90)"/>
+        <rect x="-3.6" y="-38" width="7.2" height="12" rx="1.4" transform="rotate(135)"/>
+        <rect x="-3.6" y="-38" width="7.2" height="12" rx="1.4" transform="rotate(180)"/>
+        <rect x="-3.6" y="-38" width="7.2" height="12" rx="1.4" transform="rotate(225)"/>
+        <rect x="-3.6" y="-38" width="7.2" height="12" rx="1.4" transform="rotate(270)"/>
+        <rect x="-3.6" y="-38" width="7.2" height="12" rx="1.4" transform="rotate(315)"/>
+      </g>
+    </symbol>
+  </defs>
+
+  <use href="#spade" x="8" y="6" width="62" height="62" color="#9ae4ff"/>
+  <use href="#heart" x="248" y="86" width="54" height="54" color="#ff6d7c"/>
+  <use href="#diamond" x="78" y="188" width="52" height="52" color="#f0d48a"/>
+  <use href="#club" x="268" y="262" width="60" height="60" color="#8fdfff"/>
+  <use href="#diamond" x="16" y="332" width="30" height="30" color="#ff6d7c"/>
+  <use href="#club" x="162" y="62" width="26" height="26" color="#f0d48a"/>
+  <use href="#spade" x="176" y="372" width="28" height="28" color="#9ae4ff"/>
+
+  <g transform="translate(332 8)">
+    <circle cx="36" cy="36" r="36" fill="url(#rim-gold)"/>
+    <use href="#spots" x="0" y="0" width="72" height="72"/>
+    <circle cx="36" cy="36" r="27.5" fill="url(#chip-green)"/>
+    <circle cx="36" cy="36" r="24" fill="none" stroke="#f3de9a" stroke-width="1.5"/>
+    <circle cx="36" cy="36" r="20.5" fill="none" stroke="#fff6df" stroke-width="0.7" opacity="0.55"/>
+    <circle cx="36" cy="36" r="15" fill="#123c2b"/>
+    <circle cx="36" cy="36" r="13.2" fill="none" stroke="#e6c56a" stroke-width="1.1"/>
+    <use href="#diamond" x="26.5" y="26.5" width="19" height="19" color="#f3de9a"/>
+    <path d="M16 18a22 22 0 0 1 38-2" fill="none" stroke="#fff" stroke-width="2" opacity="0.28" stroke-linecap="round"/>
   </g>
-  <g fill="none">
-    <circle cx="360" cy="52" r="22" stroke="#f0d48a" stroke-width="2.4" opacity="0.85"/>
-    <circle cx="360" cy="52" r="13" stroke="#9ae4ff" stroke-width="2" opacity="0.75"/>
-    <circle cx="52" cy="188" r="17" stroke="#ff6b7a" stroke-width="2.1" opacity="0.72"/>
-    <circle cx="52" cy="188" r="9" stroke="#f0d48a" stroke-width="1.7" opacity="0.68"/>
+
+  <g transform="translate(6 148)">
+    <circle cx="28" cy="28" r="28" fill="url(#rim-ivory)"/>
+    <g fill="#8e1d28">
+      <rect x="24.8" y="1.2" width="6.4" height="9" rx="1.2"/>
+      <rect x="24.8" y="1.2" width="6.4" height="9" rx="1.2" transform="rotate(45 28 28)"/>
+      <rect x="24.8" y="1.2" width="6.4" height="9" rx="1.2" transform="rotate(90 28 28)"/>
+      <rect x="24.8" y="1.2" width="6.4" height="9" rx="1.2" transform="rotate(135 28 28)"/>
+      <rect x="24.8" y="1.2" width="6.4" height="9" rx="1.2" transform="rotate(180 28 28)"/>
+      <rect x="24.8" y="1.2" width="6.4" height="9" rx="1.2" transform="rotate(225 28 28)"/>
+      <rect x="24.8" y="1.2" width="6.4" height="9" rx="1.2" transform="rotate(270 28 28)"/>
+      <rect x="24.8" y="1.2" width="6.4" height="9" rx="1.2" transform="rotate(315 28 28)"/>
+    </g>
+    <circle cx="28" cy="28" r="21.5" fill="url(#chip-red)"/>
+    <circle cx="28" cy="28" r="18.6" fill="none" stroke="#fff4e4" stroke-width="1.3"/>
+    <circle cx="28" cy="28" r="16" fill="none" stroke="#f6d7a2" stroke-width="0.7" opacity="0.6"/>
+    <circle cx="28" cy="28" r="11.5" fill="#7c1822"/>
+    <circle cx="28" cy="28" r="10" fill="none" stroke="#f3de9a" stroke-width="1"/>
+    <use href="#heart" x="20.5" y="20.2" width="15" height="15" color="#f8e7c0"/>
+    <path d="M12 13a16 16 0 0 1 30-1" fill="none" stroke="#fff" stroke-width="1.6" opacity="0.26" stroke-linecap="round"/>
   </g>
-  <circle cx="360" cy="52" r="4" fill="#9ae4ff" opacity="0.85"/>
 </svg>
