@@ -72,13 +72,40 @@
       <main>
         <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
 
+        <div class="live-strip" id="live-strip">
+          <div class="container live-strip-row">
+            <a class="live-strip-item" id="live-strip-stream" href="#watch">
+              <span class="live-strip-dot" id="live-strip-dot" aria-hidden="true"></span>
+              <span id="live-strip-stream-label">Checking stream</span>
+            </a>
+            <a class="live-strip-item" href="/giveaways/">
+              <span id="live-strip-giveaway-label">Giveaway</span>
+            </a>
+            <a class="live-strip-item" href="/weekly-raffles/">
+              <span id="live-strip-raffle-label">Weekly raffle</span>
+            </a>
+            <a class="live-strip-item is-hidden" id="live-strip-points" href="/store/">
+              <span id="live-strip-points-label">UncCoins</span>
+            </a>
+          </div>
+        </div>
+
         <section class="house-games section" id="house-games">
           <div class="section-atmosphere" aria-hidden="true"></div>
-          <div class="container house-games-inner">
+          <div class="container">
+            <div class="house-games-card theme-surface bj21-panel">
+            <div class="house-games-card-top">
             <div class="section-header left house-games-header">
               <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
               <h2>House Games</h2>
               <p>Gamble UncCoins on blackjack, roulette, and keno. Wins go straight back to your balance.</p>
+            </div>
+
+            <div class="house-games-tabs" role="tablist" aria-label="House games">
+              <button type="button" class="house-games-tab is-active" data-hg-game="blackjack" role="tab" aria-selected="true">Blackjack</button>
+              <button type="button" class="house-games-tab" data-hg-game="roulette" role="tab" aria-selected="false">Roulette</button>
+              <button type="button" class="house-games-tab" data-hg-game="keno" role="tab" aria-selected="false">Keno</button>
+            </div>
             </div>
 
             <div class="house-games-toolbar">
@@ -91,19 +118,31 @@
                 <input class="guess-input hg-bet-input" id="hg-self-credit-amount" type="number" min="1" step="1" value="1000" title="No amount limit" />
                 <button type="button" class="btn btn-sm btn-primary" id="hg-self-credit-btn">Add</button>
               </div>
-              <div class="house-games-tabs" role="tablist" aria-label="House games">
-                <button type="button" class="house-games-tab is-active" data-hg-game="blackjack" role="tab" aria-selected="true">Blackjack</button>
-                <button type="button" class="house-games-tab" data-hg-game="roulette" role="tab" aria-selected="false">Roulette</button>
-                <button type="button" class="house-games-tab" data-hg-game="keno" role="tab" aria-selected="false">Keno</button>
-              </div>
             </div>
 
             <p class="house-games-status is-hidden" id="hg-status" role="status" aria-live="polite"></p>
 
-            <div class="house-games-guest bj21-panel theme-surface" id="hg-guest">
-              <span class="bj21-panel-glow" aria-hidden="true"></span>
-              <p>Sign in with Kick to wager UncCoins.</p>
-              <a href="/api/auth/login" class="btn btn-primary">Sign in with Kick</a>
+            <div class="house-games-guest" id="hg-guest">
+              <div class="hg-bj-table hg-guest-preview" aria-hidden="true">
+                <div class="hg-bj-felt">
+                  <p class="hg-bj-banner">BLAKJAC<span>21</span> · BLACKJACK PAYS 3 TO 2</p>
+                  <div class="hg-hand hg-hand-dealer">
+                    <p class="hg-hand-label">Dealer</p>
+                    <div class="hg-cards">
+                      <span class="hg-card is-hidden-card"></span>
+                      <span class="hg-card is-hidden-card"></span>
+                    </div>
+                  </div>
+                  <div class="hg-hand hg-hand-player">
+                    <div class="hg-cards">
+                      <span class="hg-card"><span class="hg-card-rank">A</span><span class="hg-card-suit">♠</span></span>
+                      <span class="hg-card"><span class="hg-card-rank">K</span><span class="hg-card-suit">♠</span></span>
+                    </div>
+                    <p class="hg-hand-label">You</p>
+                  </div>
+                </div>
+              </div>
+              <p class="house-games-guest-note"><a href="/api/auth/login">Sign in with Kick</a> to wager UncCoins.</p>
             </div>
 
             <div class="house-games-stage is-hidden" id="hg-stage">
@@ -248,6 +287,7 @@
                 </div>
               </div>
             </div>
+            </div>
           </div>
         </section>
 
@@ -255,9 +295,15 @@
           <div class="section-atmosphere" aria-hidden="true"></div>
           <div class="container hero-player">
             <div class="watch-header">
-              <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
-              <h1 id="watch-title">Live Stream</h1>
-              <p id="watch-subtitle">Loading latest stream...</p>
+              <div class="watch-heading">
+                <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
+                <h1 id="watch-title">Live Stream</h1>
+                <p class="watch-meta">
+                  <span id="watch-subtitle">Loading latest stream...</span>
+                  <span id="watch-age"></span>
+                </p>
+              </div>
+              <a id="watch-kick" class="btn btn-sm btn-outline" href="https://kick.com/blakjac21" target="_blank" rel="noopener noreferrer">Watch on Kick</a>
             </div>
 
             <div class="player-wrap theme-surface" id="player-container">
@@ -277,9 +323,6 @@
               ></video>
               <div id="player-offline" class="player-offline is-hidden">
                 <p>No stream or VOD available right now.</p>
-                <a href="https://kick.com/blakjac21" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                  Visit Channel
-                </a>
               </div>
             </div>
           </div>
@@ -349,7 +392,10 @@
         <div class="site-chat-header">
           <div>
             <p class="site-chat-eyebrow">Community</p>
-            <h2 class="site-chat-title">Chat</h2>
+            <div class="site-chat-title-row">
+              <span class="site-chat-live" aria-hidden="true"></span>
+              <h2 class="site-chat-title">Chat</h2>
+            </div>
           </div>
           <button
             type="button"
@@ -381,8 +427,7 @@
           </form>
 
           <div class="site-chat-signin" id="site-chat-signin">
-            <p>Sign in with Kick to chat with the community.</p>
-            <a href="/api/auth/login" class="btn btn-sm btn-kick">Sign in with Kick</a>
+            <p class="site-chat-signin-note"><a href="/api/auth/login">Sign in with Kick</a> to chat.</p>
           </div>
 
           <p class="site-chat-status is-hidden" id="site-chat-status" role="status" aria-live="polite"></p>
