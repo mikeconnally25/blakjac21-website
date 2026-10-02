@@ -315,6 +315,14 @@ function renderAccounts(users) {
       badges.append(subBadge);
     }
 
+    if (user.altExempt) {
+      const exemptBadge = document.createElement("span");
+      exemptBadge.className = "accounts-alt-badge is-primary";
+      exemptBadge.textContent = "ALT EXEMPT";
+      exemptBadge.title = "This account will not be flagged or auto-banned as an alt";
+      badges.append(exemptBadge);
+    }
+
     if (!user.altImmune && (user.possibleAlts || []).length > 0) {
       const altBadge = document.createElement("span");
       altBadge.className = user.altSoftBlocked
@@ -363,13 +371,10 @@ function renderAccounts(users) {
       banToggle.className = user.banned
         ? "btn btn-sm btn-primary accounts-ban-toggle"
         : "btn btn-sm btn-outline accounts-ban-toggle";
-      const isAltBan = user.banned && String(user.banReason || "") === "alt";
       banToggle.textContent = user.banned ? "Unban" : "Ban";
-      banToggle.title = isAltBan
-        ? "Alt bans re-apply automatically while accounts still share an IP"
-        : user.banned
-          ? "Allow this account to sign in again"
-          : "Block this account from signing in";
+      banToggle.title = user.banned
+        ? "Unban this account and stop it from being flagged as an alt"
+        : "Block this account from signing in";
       banToggle.addEventListener("click", () => {
         void setAccountBanned(user.kickUserId, !user.banned, banToggle);
       });
@@ -506,6 +511,8 @@ function renderAccounts(users) {
       let status;
       if (user.banned && String(user.banReason || "") === "alt") {
         status = `Permanently banned as an alt of ${primaryName}. Cannot sign in again.`;
+      } else if (user.altExempt) {
+        status = "This account will not be flagged as an alt.";
       } else if (user.altSoftBlocked) {
         status = `Alt of ${primaryName} — will be auto-banned.`;
       } else {
@@ -709,7 +716,12 @@ async function setAccountBanned(kickUserId, banned, button) {
 
     allUsers = data.users || [];
     altClusters = data.altClusters || [];
-    setAccountsStatus(banned ? "Account banned." : "Account unbanned.", "success");
+    setAccountsStatus(
+      banned
+        ? "Account banned."
+        : "Account unbanned. It will not be flagged as an alt.",
+      "success"
+    );
     renderFilteredAccounts();
   } catch {
     setAccountsStatus("Could not update ban status.", "error");
