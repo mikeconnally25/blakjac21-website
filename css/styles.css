@@ -72,6 +72,8 @@ ul {
   pointer-events: none;
   z-index: -1;
   background:
+    radial-gradient(ellipse 55% 42% at 8% 108%, rgba(10, 72, 52, 0.42), transparent 62%),
+    radial-gradient(ellipse 42% 36% at 96% 88%, rgba(92, 18, 32, 0.22), transparent 58%),
     radial-gradient(ellipse 60% 40% at 12% 0%, rgba(88, 201, 243, 0.14), transparent 60%),
     radial-gradient(ellipse 50% 35% at 88% 8%, rgba(0, 51, 77, 0.42), transparent 55%),
     radial-gradient(ellipse 45% 30% at 50% 100%, rgba(88, 201, 243, 0.08), transparent 50%),
@@ -82,12 +84,31 @@ ul {
   content: "";
   position: absolute;
   inset: 0;
-  opacity: 0.16;
+  opacity: 0.1;
   background-image:
     linear-gradient(rgba(88, 201, 243, 0.08) 1px, transparent 1px),
     linear-gradient(90deg, rgba(88, 201, 243, 0.08) 1px, transparent 1px);
   background-size: 56px 56px;
   mask-image: radial-gradient(ellipse 70% 55% at 50% 20%, #000 20%, transparent 75%);
+}
+
+.bg-glow::after {
+  content: "";
+  position: absolute;
+  inset: -12%;
+  opacity: 0.42;
+  background-image: url("/css/casino-pattern.svg");
+  background-size: 420px 420px;
+  animation: casino-drift 110s linear infinite;
+}
+
+@keyframes casino-drift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 420px 210px;
+  }
 }
 
 .accent {
@@ -314,7 +335,8 @@ ul {
 
 @media (prefers-reduced-motion: reduce) {
   .live-strip-dot.is-live,
-  .site-chat-live {
+  .site-chat-live,
+  .bg-glow::after {
     animation: none;
   }
 }
