@@ -174,15 +174,25 @@ ul {
 }
 
 .nav-links a:not(.btn) {
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  font-weight: 500;
-  transition: color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(88, 201, 243, 0.22);
+  background: rgba(8, 16, 28, 0.72);
+  color: rgba(226, 236, 245, 0.92);
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: color 0.2s ease, border-color 0.2s ease;
 }
 
 .nav-links a:not(.btn):hover,
 .nav-links a:not(.btn):focus-visible {
   color: var(--accent-bright);
+  border-color: rgba(126, 216, 255, 0.55);
 }
 
 .nav-toggle {
@@ -218,7 +228,7 @@ ul {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 0.15rem;
+  gap: 0.45rem;
   min-height: 3.05rem;
   padding: 0.3rem 0.4rem 0.3rem 0.85rem;
   overflow-x: auto;
@@ -242,31 +252,30 @@ ul {
 .menu-subnav a {
   position: relative;
   flex: 0 0 auto;
-  padding: 0.28rem 0.72rem 0.34rem;
-  border-radius: var(--radius-sm);
-  color: rgba(226, 236, 245, 0.9);
-  font-family: var(--font-display);
-  font-size: 1.28rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  line-height: 1;
-  text-transform: uppercase;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(88, 201, 243, 0.22);
+  background: rgba(8, 16, 28, 0.72);
+  color: rgba(226, 236, 245, 0.92);
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
   white-space: nowrap;
-  transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .menu-subnav a:hover,
 .menu-subnav a:focus-visible {
   color: var(--accent-bright);
-  background: rgba(88, 201, 243, 0.08);
+  border-color: rgba(126, 216, 255, 0.55);
 }
 
 .menu-subnav a[aria-current="page"] {
   color: var(--text);
-  background: rgba(88, 201, 243, 0.22);
-  box-shadow:
-    inset 0 -2px 0 var(--accent),
-    0 0 18px rgba(88, 201, 243, 0.35);
+  border-color: rgba(126, 216, 255, 0.7);
+  background: rgba(88, 201, 243, 0.18);
+  box-shadow: 0 0 16px rgba(88, 201, 243, 0.28);
 }
 
 .live-strip {
@@ -285,44 +294,8 @@ ul {
   display: none;
 }
 
-.live-strip-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  flex: 0 0 auto;
-  padding: 0.4rem 0.75rem;
-  border-radius: 999px;
-  border: 1px solid rgba(88, 201, 243, 0.22);
-  background: rgba(8, 16, 28, 0.72);
-  color: rgba(226, 236, 245, 0.92);
-  font-size: 0.86rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-.live-strip-item:hover,
-.live-strip-item:focus-visible {
-  color: var(--accent-bright);
-  border-color: rgba(126, 216, 255, 0.55);
-}
-
 .live-strip-item.is-hidden {
   display: none;
-}
-
-.live-strip-dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: rgba(148, 180, 198, 0.7);
-  flex-shrink: 0;
-}
-
-.live-strip-dot.is-live {
-  background: #3dde7a;
-  box-shadow: 0 0 0 0 rgba(61, 222, 122, 0.65);
-  animation: live-strip-pulse 1.8s ease-out infinite;
 }
 
 @keyframes live-strip-pulse {
@@ -335,7 +308,7 @@ ul {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .live-strip-dot.is-live,
+  .btn-pill-dot.is-live,
   .site-chat-live,
   .bg-glow::after {
     animation: none;
@@ -347,21 +320,30 @@ ul {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.85rem 1.35rem;
+  gap: 0.45rem;
+  padding: 0.4rem 0.75rem;
   border-radius: 999px;
+  border: 1px solid rgba(88, 201, 243, 0.22);
+  background: rgba(8, 16, 28, 0.72);
+  color: rgba(226, 236, 245, 0.92);
   font-weight: 600;
-  font-size: 0.95rem;
-  border: 1px solid transparent;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  font-size: 0.86rem;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  appearance: none;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .btn:hover,
 .btn:focus-visible {
-  transform: translateY(-1px);
+  color: var(--accent-bright);
+  border-color: rgba(126, 216, 255, 0.55);
 }
 
 .btn-primary {
+  border-color: transparent;
   background: linear-gradient(135deg, var(--accent-bright), var(--accent));
   color: var(--teal-deep);
   box-shadow: 0 8px 32px rgba(88, 201, 243, 0.28);
@@ -369,24 +351,68 @@ ul {
 
 .btn-primary:hover,
 .btn-primary:focus-visible {
+  color: var(--teal-deep);
+  border-color: transparent;
   box-shadow: 0 12px 40px rgba(88, 201, 243, 0.4);
 }
 
 .btn-outline {
-  border-color: var(--border);
-  background: rgba(88, 201, 243, 0.04);
-  color: var(--text);
+  border-color: rgba(88, 201, 243, 0.22);
+  background: rgba(8, 16, 28, 0.72);
+  color: rgba(226, 236, 245, 0.92);
 }
 
 .btn-outline:hover,
 .btn-outline:focus-visible {
-  border-color: rgba(88, 201, 243, 0.45);
-  background: rgba(88, 201, 243, 0.1);
+  color: var(--accent-bright);
+  border-color: rgba(126, 216, 255, 0.55);
+  background: rgba(8, 16, 28, 0.72);
 }
 
 .btn-sm {
-  padding: 0.6rem 1rem;
-  font-size: 0.875rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.86rem;
+}
+
+.btn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 0 0 auto;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(88, 201, 243, 0.22);
+  background: rgba(8, 16, 28, 0.72);
+  color: rgba(226, 236, 245, 0.92);
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  appearance: none;
+}
+
+.btn-pill:hover,
+.btn-pill:focus-visible {
+  color: var(--accent-bright);
+  border-color: rgba(126, 216, 255, 0.55);
+}
+
+.btn-pill-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: rgba(148, 180, 198, 0.7);
+  flex-shrink: 0;
+}
+
+.btn-pill-dot.is-live {
+  background: #3dde7a;
+  box-shadow: 0 0 0 0 rgba(61, 222, 122, 0.65);
+  animation: live-strip-pulse 1.8s ease-out infinite;
 }
 
 .btn-block {
@@ -394,6 +420,7 @@ ul {
 }
 
 .btn-kick {
+  border-color: transparent;
   background: #53fc18;
   color: #041100;
   box-shadow: 0 8px 24px rgba(83, 252, 24, 0.22);
@@ -401,6 +428,8 @@ ul {
 
 .btn-kick:hover,
 .btn-kick:focus-visible {
+  color: #041100;
+  border-color: transparent;
   box-shadow: 0 12px 32px rgba(83, 252, 24, 0.32);
 }
 
@@ -7033,16 +7062,16 @@ ul {
 
 .house-games-tab {
   appearance: none;
-  border: 1px solid rgba(88, 201, 243, 0.28);
-  background: rgba(8, 16, 28, 0.55);
-  color: rgba(226, 236, 245, 0.88);
-  font-family: var(--font-display);
-  font-size: 1.45rem;
+  border: 1px solid rgba(88, 201, 243, 0.22);
+  background: rgba(8, 16, 28, 0.72);
+  color: rgba(226, 236, 245, 0.92);
+  font-family: inherit;
+  font-size: 0.86rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 0.45rem 1.15rem 0.35rem;
-  border-radius: var(--radius-sm);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
   cursor: pointer;
   transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
 }
@@ -7130,24 +7159,25 @@ ul {
 
 .hg-keno-risk-btn {
   appearance: none;
-  border: 0;
-  background: transparent;
-  color: var(--text-muted);
+  border: 1px solid rgba(88, 201, 243, 0.22);
+  background: rgba(8, 16, 28, 0.72);
+  color: rgba(226, 236, 245, 0.92);
   font: inherit;
-  font-size: 0.8rem;
+  font-size: 0.86rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
-  padding: 0.55rem 0.45rem;
-  border-radius: 8px;
+  letter-spacing: 0.02em;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
   cursor: pointer;
-  transition: background 0.16s ease, color 0.16s ease;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
 }
 
 .hg-keno-risk-btn:hover,
 .hg-keno-risk-btn:focus-visible {
-  color: var(--text);
+  color: var(--accent-bright);
   outline: none;
-  background: rgba(126, 216, 255, 0.08);
+  border-color: rgba(126, 216, 255, 0.55);
+  background: rgba(8, 16, 28, 0.72);
 }
 
 .hg-keno-risk-btn.is-active {
