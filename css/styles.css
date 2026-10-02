@@ -72,8 +72,9 @@ ul {
   pointer-events: none;
   z-index: -1;
   background:
-    radial-gradient(ellipse 55% 42% at 8% 108%, rgba(10, 72, 52, 0.42), transparent 62%),
-    radial-gradient(ellipse 42% 36% at 96% 88%, rgba(92, 18, 32, 0.22), transparent 58%),
+    radial-gradient(ellipse 55% 42% at 8% 108%, rgba(16, 110, 78, 0.55), transparent 62%),
+    radial-gradient(ellipse 42% 36% at 96% 88%, rgba(140, 28, 48, 0.38), transparent 58%),
+    radial-gradient(ellipse 28% 22% at 70% 18%, rgba(231, 194, 122, 0.12), transparent 70%),
     radial-gradient(ellipse 60% 40% at 12% 0%, rgba(88, 201, 243, 0.14), transparent 60%),
     radial-gradient(ellipse 50% 35% at 88% 8%, rgba(0, 51, 77, 0.42), transparent 55%),
     radial-gradient(ellipse 45% 30% at 50% 100%, rgba(88, 201, 243, 0.08), transparent 50%),
@@ -96,7 +97,7 @@ ul {
   content: "";
   position: absolute;
   inset: -12%;
-  opacity: 0.42;
+  opacity: 0.82;
   background-image: url("/css/casino-pattern.svg");
   background-size: 420px 420px;
   animation: casino-drift 110s linear infinite;
