@@ -70,20 +70,25 @@
           <p>Draw two active viewers at random and put their slot calls head to head. No keyword.</p>
         </header>
 
-        <p class="one-v-one-pool" id="one-v-one-pool">Checking active viewers…</p>
+        <div class="one-v-one-toolbar">
+          <p class="one-v-one-pool btn-pill" id="one-v-one-pool">
+            <span class="btn-pill-dot" id="one-v-one-pool-dot" aria-hidden="true"></span>
+            <span id="one-v-one-pool-text">Checking active viewers…</span>
+          </p>
 
-        <form class="one-v-one-admin bj21-panel is-hidden" id="one-v-one-admin">
-          <div class="one-v-one-admin-actions">
-            <button type="submit" class="btn btn-primary" id="one-v-one-set">Draw 2</button>
-            <button type="button" class="btn btn-outline" id="one-v-one-clear">Clear</button>
-          </div>
-          <p class="one-v-one-note" id="one-v-one-admin-note" role="status"></p>
-        </form>
+          <form class="one-v-one-admin is-hidden" id="one-v-one-admin">
+            <div class="one-v-one-admin-actions">
+              <button type="submit" class="btn btn-primary" id="one-v-one-set">Draw 2</button>
+              <button type="button" class="btn btn-outline" id="one-v-one-clear">Clear</button>
+            </div>
+            <p class="one-v-one-note" id="one-v-one-admin-note" role="status"></p>
+          </form>
+        </div>
 
-        <div class="one-v-one-board" id="one-v-one-board">
-          <article class="one-v-one-side bj21-panel" id="one-v-one-side-left"></article>
-          <p class="one-v-one-vs" aria-hidden="true">VS</p>
-          <article class="one-v-one-side bj21-panel" id="one-v-one-side-right"></article>
+        <div class="one-v-one-board bj21-panel" id="one-v-one-board">
+          <article class="one-v-one-side" id="one-v-one-side-left"></article>
+          <div class="one-v-one-vs" aria-hidden="true"><span>VS</span></div>
+          <article class="one-v-one-side" id="one-v-one-side-right"></article>
         </div>
 
         <section class="one-v-one-chat bj21-panel" aria-label="Kick chat">
@@ -91,8 +96,10 @@
             <span class="site-chat-live" aria-hidden="true"></span>
             <h2>Kick chat</h2>
           </div>
-          <div class="one-v-one-chat-log" id="one-v-one-chat" role="log" aria-live="polite"></div>
-          <p class="one-v-one-chat-empty" id="one-v-one-chat-empty">No Kick chat in the last 30 minutes.</p>
+          <div class="one-v-one-chat-well">
+            <div class="one-v-one-chat-log" id="one-v-one-chat" role="log" aria-live="polite"></div>
+            <p class="one-v-one-chat-empty" id="one-v-one-chat-empty">No Kick chat in the last 30 minutes.</p>
+          </div>
         </section>
       </div>
     </section>

@@ -5,13 +5,17 @@ function formatBet(bet) {
   return `$${Number(bet).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 }
 
-function renderSide(element, side, label) {
+function renderSide(element, side, seatLabel) {
   if (!element) return;
   element.replaceChildren();
 
+  const seat = document.createElement("p");
+  seat.className = "one-v-one-seat";
+  seat.textContent = seatLabel;
+
   const heading = document.createElement("h2");
   heading.className = "one-v-one-name";
-  heading.textContent = side?.username || label;
+  heading.textContent = side?.username || "Open seat";
 
   const list = document.createElement("ul");
   list.className = "one-v-one-calls";
@@ -54,7 +58,7 @@ function renderSide(element, side, label) {
     }
   }
 
-  element.append(heading, list);
+  element.append(seat, heading, list);
 }
 
 let kickChatSignature = "";
@@ -104,16 +108,18 @@ function renderOneVOne(data) {
   oneVOneIsAdmin = Boolean(data?.isAdmin);
   document.getElementById("one-v-one-admin")?.classList.toggle("is-hidden", !oneVOneIsAdmin);
 
-  const pool = document.getElementById("one-v-one-pool");
-  if (pool) {
+  const poolText = document.getElementById("one-v-one-pool-text");
+  const poolDot = document.getElementById("one-v-one-pool-dot");
+  if (poolText) {
     const count = Number(data?.activeCount) || 0;
     const minutes = Number(data?.activeMinutes) || 5;
     const label = count === 1 ? "viewer" : "viewers";
-    pool.textContent = `${count} active ${label} in the last ${minutes} minutes`;
+    poolText.textContent = `${count} active ${label} in the last ${minutes} minutes`;
+    poolDot?.classList.toggle("is-live", count > 0);
   }
 
-  renderSide(document.getElementById("one-v-one-side-left"), data?.matchup?.left, "Viewer 1");
-  renderSide(document.getElementById("one-v-one-side-right"), data?.matchup?.right, "Viewer 2");
+  renderSide(document.getElementById("one-v-one-side-left"), data?.matchup?.left, "Left");
+  renderSide(document.getElementById("one-v-one-side-right"), data?.matchup?.right, "Right");
   renderKickChat(data?.chat, data?.matchup);
 }
 
