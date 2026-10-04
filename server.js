@@ -37,6 +37,7 @@ import {
 import { handleKickWebhook } from "./lib/kick-webhook.js";
 import {
   handleOneVOneClear,
+  handleOneVOneRemove,
   handleOneVOneSet,
   handleOneVOneStatus,
 } from "./lib/one-v-one-handlers.js";
@@ -360,6 +361,7 @@ app.get("/api/commands/replies", (req, res) => handleBotRepliesGet(req, res));
 app.post("/api/commands/replies", (req, res) => handleBotRepliesSave(req, res));
 app.get("/api/one-v-one/status", (req, res) => handleOneVOneStatus(req, res));
 app.post("/api/one-v-one/set", (req, res) => handleOneVOneSet(req, res));
+app.post("/api/one-v-one/remove", (req, res) => handleOneVOneRemove(req, res));
 app.post("/api/one-v-one/clear", (req, res) => handleOneVOneClear(req, res));
 
 app.listen(PORT, () => {

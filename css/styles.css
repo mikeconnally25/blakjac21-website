@@ -875,6 +875,11 @@ ul {
   gap: 0.55rem;
 }
 
+.one-v-one-admin-actions .btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 .one-v-one-pool {
   margin: 0;
   cursor: default;

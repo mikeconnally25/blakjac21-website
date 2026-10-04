@@ -67,7 +67,7 @@
         <header class="section-header left">
           <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
           <h1 class="theme-heading">1v1</h1>
-          <p>Draw two active viewers at random. Each one requests a slot in chat, and it shows here with the logo.</p>
+          <p>Draw one or two active viewers at random. Each one requests a slot in chat, and it shows here with the logo.</p>
         </header>
 
         <div class="one-v-one-toolbar">
@@ -79,8 +79,11 @@
 
           <form class="one-v-one-admin is-hidden" id="one-v-one-admin">
             <div class="one-v-one-admin-actions">
-              <button type="submit" class="btn btn-primary" id="one-v-one-set">Draw 2</button>
-              <button type="button" class="btn btn-outline" id="one-v-one-clear">Clear</button>
+              <button type="submit" class="btn btn-primary" name="count" value="1">Draw 1</button>
+              <button type="submit" class="btn btn-primary" name="count" value="2">Draw 2</button>
+              <button type="button" class="btn btn-outline" id="one-v-one-remove-left" disabled>Remove left</button>
+              <button type="button" class="btn btn-outline" id="one-v-one-remove-right" disabled>Remove right</button>
+              <button type="button" class="btn btn-outline" id="one-v-one-clear">Reset</button>
             </div>
             <p class="one-v-one-note" id="one-v-one-admin-note" role="status"></p>
           </form>

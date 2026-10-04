@@ -122,6 +122,10 @@ function renderOneVOne(data) {
 
   renderSide(document.getElementById("one-v-one-side-left"), data?.matchup?.left, "Left");
   renderSide(document.getElementById("one-v-one-side-right"), data?.matchup?.right, "Right");
+  const removeLeft = document.getElementById("one-v-one-remove-left");
+  const removeRight = document.getElementById("one-v-one-remove-right");
+  if (removeLeft) removeLeft.disabled = !data?.matchup?.left;
+  if (removeRight) removeRight.disabled = !data?.matchup?.right;
   renderKickChat(data?.chat, data?.matchup);
 }
 
@@ -142,16 +146,37 @@ async function loadOneVOne() {
 async function saveOneVOne(event) {
   event.preventDefault();
   setOneVOneNote("");
+  const count = Number(event.submitter?.value) === 1 ? 1 : 2;
 
   try {
     const response = await fetch("/api/one-v-one/set", {
       method: "POST",
       credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ count }),
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Could not draw the 1v1.");
     renderOneVOne(data);
-    setOneVOneNote("Drew 2 viewers.");
+    setOneVOneNote(count === 1 ? "Drew 1 viewer." : "Drew 2 viewers.");
+  } catch (error) {
+    setOneVOneNote(error.message, true);
+  }
+}
+
+async function removeOneVOne(side) {
+  setOneVOneNote("");
+  try {
+    const response = await fetch("/api/one-v-one/remove", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ side }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Could not remove that viewer.");
+    renderOneVOne(data);
+    setOneVOneNote(side === "left" ? "Removed the left viewer." : "Removed the right viewer.");
   } catch (error) {
     setOneVOneNote(error.message, true);
   }
@@ -165,15 +190,17 @@ async function clearOneVOne() {
       credentials: "same-origin",
     });
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Could not clear the 1v1.");
+    if (!response.ok) throw new Error(data.error || "Could not reset the 1v1.");
     renderOneVOne(data);
-    setOneVOneNote("1v1 cleared.");
+    setOneVOneNote("1v1 reset.");
   } catch (error) {
     setOneVOneNote(error.message, true);
   }
 }
 
 document.getElementById("one-v-one-admin")?.addEventListener("submit", saveOneVOne);
+document.getElementById("one-v-one-remove-left")?.addEventListener("click", () => removeOneVOne("left"));
+document.getElementById("one-v-one-remove-right")?.addEventListener("click", () => removeOneVOne("right"));
 document.getElementById("one-v-one-clear")?.addEventListener("click", clearOneVOne);
 window.addEventListener("auth:change", () => {
   loadOneVOne().catch((error) => setOneVOneNote(error.message, true));
