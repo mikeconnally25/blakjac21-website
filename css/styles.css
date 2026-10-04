@@ -958,21 +958,31 @@ ul {
   list-style: none;
 }
 
-.one-v-one-call {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.55rem 0.65rem;
-  border-radius: var(--radius-sm);
-  background: rgba(8, 16, 28, 0.55);
+.one-v-one-pick {
+  display: grid;
+  gap: 0.55rem;
 }
 
-.one-v-one-thumb {
-  width: 4.2rem;
-  height: 2.6rem;
+.one-v-one-logo {
+  display: grid;
+  place-items: center;
+  justify-self: center;
+  width: min(100%, 9.5rem);
+  aspect-ratio: 3 / 4;
+  border-radius: 12px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(88, 201, 243, 0.16), rgba(0, 0, 0, 0.28));
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  letter-spacing: 0.06em;
+  color: var(--accent-bright);
+}
+
+.one-v-one-logo img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 6px;
-  flex-shrink: 0;
 }
 
 .one-v-one-slot,
@@ -984,6 +994,11 @@ ul {
 .one-v-one-slot {
   font-weight: 600;
   line-height: 1.25;
+  text-align: center;
+}
+
+.one-v-one-pick .one-v-one-meta {
+  text-align: center;
 }
 
 .one-v-one-meta,

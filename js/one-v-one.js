@@ -1,10 +1,5 @@
 let oneVOneIsAdmin = false;
 
-function formatBet(bet) {
-  if (bet === null || bet === undefined || Number.isNaN(Number(bet))) return "";
-  return `$${Number(bet).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-}
-
 function renderSide(element, side, seatLabel) {
   if (!element) return;
   element.replaceChildren();
@@ -20,42 +15,49 @@ function renderSide(element, side, seatLabel) {
   const list = document.createElement("ul");
   list.className = "one-v-one-calls";
 
-  const calls = side?.calls || [];
-  if (!calls.length) {
+  const slot = side?.slot;
+  if (!slot) {
     const empty = document.createElement("li");
     empty.className = "one-v-one-empty";
-    empty.textContent = side ? "No slot calls right now." : "Waiting for a draw.";
+    empty.textContent = side ? "Request a slot in chat." : "Waiting for a draw.";
     list.appendChild(empty);
   } else {
-    for (const call of calls) {
-      const item = document.createElement("li");
-      item.className = "one-v-one-call";
+    const item = document.createElement("li");
+    item.className = "one-v-one-pick";
 
-      if (call.thumbnailUrl) {
-        const image = document.createElement("img");
-        image.className = "one-v-one-thumb";
-        image.src = call.thumbnailUrl;
-        image.alt = "";
-        item.appendChild(image);
-      }
+    const logo = document.createElement("div");
+    logo.className = "one-v-one-logo";
+    const initials = String(slot.slotName || "Slot")
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join("");
 
-      const copy = document.createElement("div");
-      const title = document.createElement("p");
-      title.className = "one-v-one-slot";
-      title.textContent = call.slotName || "Slot";
-      copy.appendChild(title);
-
-      const meta = [call.provider, formatBet(call.bet)].filter(Boolean).join(" · ");
-      if (meta) {
-        const detail = document.createElement("p");
-        detail.className = "one-v-one-meta";
-        detail.textContent = meta;
-        copy.appendChild(detail);
-      }
-
-      item.appendChild(copy);
-      list.appendChild(item);
+    if (slot.thumbnailUrl) {
+      const image = document.createElement("img");
+      image.src = slot.thumbnailUrl;
+      image.alt = "";
+      image.addEventListener("error", () => {
+        image.remove();
+        logo.textContent = initials;
+      });
+      logo.appendChild(image);
+    } else {
+      logo.textContent = initials;
     }
+
+    const title = document.createElement("p");
+    title.className = "one-v-one-slot";
+    title.textContent = slot.slotName || "Slot";
+
+    item.append(logo, title);
+    if (slot.provider) {
+      const detail = document.createElement("p");
+      detail.className = "one-v-one-meta";
+      detail.textContent = slot.provider;
+      item.appendChild(detail);
+    }
+    list.appendChild(item);
   }
 
   element.append(seat, heading, list);
