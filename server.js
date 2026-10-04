@@ -35,6 +35,11 @@ import {
   handleKickTestSlotCommand,
 } from "./lib/bonus-hunt-handlers.js";
 import { handleKickWebhook } from "./lib/kick-webhook.js";
+import {
+  handleOneVOneClear,
+  handleOneVOneSet,
+  handleOneVOneStatus,
+} from "./lib/one-v-one-handlers.js";
 import { handleKickBotLogin, handleKickBotStatus } from "./lib/kick-bot-auth-handlers.js";
 import { handleKickCredentialsCheck } from "./lib/kick-credentials-check.js";
 import { handleKickSetupStatus } from "./lib/kick-setup-status.js";
@@ -353,6 +358,9 @@ app.post("/api/chat", (req, res) => handleChatSend(req, res));
 app.post("/api/chat/remove", (req, res) => handleChatRemove(req, res));
 app.get("/api/commands/replies", (req, res) => handleBotRepliesGet(req, res));
 app.post("/api/commands/replies", (req, res) => handleBotRepliesSave(req, res));
+app.get("/api/one-v-one/status", (req, res) => handleOneVOneStatus(req, res));
+app.post("/api/one-v-one/set", (req, res) => handleOneVOneSet(req, res));
+app.post("/api/one-v-one/clear", (req, res) => handleOneVOneClear(req, res));
 
 app.listen(PORT, () => {
   console.log(`BLAKJAC21 site running at http://localhost:${PORT}`);

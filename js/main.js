@@ -244,6 +244,7 @@ function ensureMenuSubnav() {
     ["/giveaways/", "Giveaways"],
     ["/guess-the-balance/", "Guess Balance"],
     ["/bonus-hunt/", "Bonus Hunt"],
+    ["/one-v-one/", "1v1"],
     ["/slot-tournaments/", "Tournaments"],
     ["/store/", "Store"],
   ];

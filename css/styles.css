@@ -837,6 +837,127 @@ ul {
   max-width: 42rem;
 }
 
+.one-v-one-shell {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.one-v-one-admin {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.one-v-one-picks {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 0.65rem 0.85rem;
+  align-items: center;
+}
+
+.one-v-one-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.one-v-one-note {
+  margin: 0;
+  min-height: 1.2em;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.one-v-one-note.is-error {
+  color: #ff8f8f;
+}
+
+.one-v-one-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.one-v-one-vs {
+  margin: 0;
+  align-self: center;
+  font-family: var(--font-display);
+  font-size: 3rem;
+  line-height: 0.9;
+  letter-spacing: 0.04em;
+  color: var(--accent-bright);
+}
+
+.one-v-one-side {
+  display: grid;
+  gap: 0.85rem;
+  align-content: start;
+  padding: 1rem 1.05rem 1.15rem;
+}
+
+.one-v-one-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  line-height: 0.9;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.one-v-one-calls {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.one-v-one-call {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius-sm);
+  background: rgba(8, 16, 28, 0.55);
+}
+
+.one-v-one-thumb {
+  width: 4.2rem;
+  height: 2.6rem;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.one-v-one-slot,
+.one-v-one-meta,
+.one-v-one-empty {
+  margin: 0;
+}
+
+.one-v-one-slot {
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.one-v-one-meta,
+.one-v-one-empty {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+@media (max-width: 800px) {
+  .one-v-one-picks,
+  .one-v-one-board {
+    grid-template-columns: 1fr;
+  }
+
+  .one-v-one-vs {
+    justify-self: center;
+  }
+}
+
 .back-link {
   display: inline-block;
   margin-bottom: 1.5rem;
