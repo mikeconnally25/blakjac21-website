@@ -112,13 +112,17 @@ function renderOneVOne(data) {
 
   const poolText = document.getElementById("one-v-one-pool-text");
   const poolDot = document.getElementById("one-v-one-pool-dot");
+  const entriesToggle = document.getElementById("one-v-one-entries-toggle");
+  const entriesOpen = Boolean(data?.entriesOpen);
   if (poolText) {
-    const count = Number(data?.activeCount) || 0;
-    const minutes = Number(data?.activeMinutes) || 5;
-    const label = count === 1 ? "viewer" : "viewers";
-    poolText.textContent = `${count} active ${label} in the last ${minutes} minutes`;
-    poolDot?.classList.toggle("is-live", count > 0);
+    const count = Number(data?.entryCount) || 0;
+    const label = count === 1 ? "entrant" : "entrants";
+    poolText.textContent = entriesOpen
+      ? `${count} ${label} · type 1v1 in chat`
+      : `${count} ${label} · entries closed`;
+    poolDot?.classList.toggle("is-live", entriesOpen);
   }
+  if (entriesToggle) entriesToggle.textContent = entriesOpen ? "Close entries" : "Open entries";
 
   renderSide(document.getElementById("one-v-one-side-left"), data?.matchup?.left, "Left");
   renderSide(document.getElementById("one-v-one-side-right"), data?.matchup?.right, "Right");
@@ -198,7 +202,44 @@ async function clearOneVOne() {
   }
 }
 
+async function toggleOneVOneEntries() {
+  setOneVOneNote("");
+  const open = document.getElementById("one-v-one-entries-toggle")?.textContent !== "Close entries";
+  try {
+    const response = await fetch("/api/one-v-one/entries", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ open }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Could not update entries.");
+    renderOneVOne(data);
+    setOneVOneNote(open ? "Entries are open. Chat 1v1 to join." : "Entries are closed.");
+  } catch (error) {
+    setOneVOneNote(error.message, true);
+  }
+}
+
+async function clearOneVOneEntries() {
+  setOneVOneNote("");
+  try {
+    const response = await fetch("/api/one-v-one/entries/clear", {
+      method: "POST",
+      credentials: "same-origin",
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Could not clear entrants.");
+    renderOneVOne(data);
+    setOneVOneNote("Entrants cleared.");
+  } catch (error) {
+    setOneVOneNote(error.message, true);
+  }
+}
+
 document.getElementById("one-v-one-admin")?.addEventListener("submit", saveOneVOne);
+document.getElementById("one-v-one-entries-toggle")?.addEventListener("click", toggleOneVOneEntries);
+document.getElementById("one-v-one-entries-clear")?.addEventListener("click", clearOneVOneEntries);
 document.getElementById("one-v-one-remove-left")?.addEventListener("click", () => removeOneVOne("left"));
 document.getElementById("one-v-one-remove-right")?.addEventListener("click", () => removeOneVOne("right"));
 document.getElementById("one-v-one-clear")?.addEventListener("click", clearOneVOne);

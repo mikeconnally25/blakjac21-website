@@ -67,18 +67,20 @@
         <header class="section-header left">
           <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
           <h1 class="theme-heading">1v1</h1>
-          <p>Draw one or two active viewers at random. Each one requests a slot in chat, and it shows here with the logo.</p>
+          <p>Open entries, then site accounts type 1v1 in chat. Draw one or two of them. Each one requests a slot, and it shows here with the logo.</p>
         </header>
 
         <div class="one-v-one-toolbar">
           <p class="one-v-one-pool btn-pill" id="one-v-one-pool">
             <span class="btn-pill-dot" id="one-v-one-pool-dot" aria-hidden="true"></span>
-            <span id="one-v-one-pool-text">Checking active viewers…</span>
+            <span id="one-v-one-pool-text">Checking entrants…</span>
           </p>
           <a class="btn btn-sm btn-outline" href="/one-v-one/overlay/">OBS widget</a>
 
           <form class="one-v-one-admin is-hidden" id="one-v-one-admin">
             <div class="one-v-one-admin-actions">
+              <button type="button" class="btn btn-outline" id="one-v-one-entries-toggle">Open entries</button>
+              <button type="button" class="btn btn-outline" id="one-v-one-entries-clear">Clear entrants</button>
               <button type="submit" class="btn btn-primary" name="count" value="1">Draw 1</button>
               <button type="submit" class="btn btn-primary" name="count" value="2">Draw 2</button>
               <button type="button" class="btn btn-outline" id="one-v-one-remove-left" disabled>Remove left</button>
