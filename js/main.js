@@ -61,15 +61,6 @@ function formatStreamAge(timestamp) {
   return `${Math.round(hours / 24)}d ago`;
 }
 
-function setLiveStripStream(mode, label) {
-  const item = document.getElementById("live-strip-stream");
-  const text = document.getElementById("live-strip-stream-label");
-  const dot = document.getElementById("live-strip-dot");
-  if (text) text.textContent = label;
-  item?.classList.toggle("is-live", mode === "live");
-  dot?.classList.toggle("is-live", mode === "live");
-}
-
 function updatePlayerHeader({ watchTitle, watchSubtitle, watchAge = "" }) {
   const watchTitleEl = document.getElementById("watch-title");
   const watchSubtitleEl = document.getElementById("watch-subtitle");
@@ -96,7 +87,6 @@ function showLivePlayer(livestream) {
     watchSubtitle: sessionTitle,
     watchAge: "Live now",
   });
-  setLiveStripStream("live", "Live now");
 }
 
 function showVodPlayer(vod) {
@@ -128,7 +118,6 @@ function showVodPlayer(vod) {
     watchSubtitle: sessionTitle,
     watchAge: formatStreamAge(getVodTimestamp(vod)),
   });
-  setLiveStripStream("vod", "Latest VOD");
 }
 
 function showOfflineState() {
@@ -141,7 +130,6 @@ function showOfflineState() {
     watchSubtitle: "No stream or VOD right now.",
     watchAge: "",
   });
-  setLiveStripStream("offline", "Offline");
 }
 
 async function fetchKickJson(path) {
@@ -319,81 +307,7 @@ ensureMenuSubnav();
 ensureFooterContact();
 
 initMobileNav();
-function formatCountdown(ms) {
-  const total = Math.max(0, Math.floor(Number(ms) / 1000));
-  const days = Math.floor(total / 86400);
-  const hours = Math.floor((total % 86400) / 3600);
-  const mins = Math.floor((total % 3600) / 60);
-  if (days > 0) return `${days}d ${hours}h`;
-  if (hours > 0) return `${hours}h ${mins}m`;
-  return `${mins}m`;
-}
-
-async function loadLiveStrip() {
-  const giveawayEl = document.getElementById("live-strip-giveaway-label");
-  const raffleEl = document.getElementById("live-strip-raffle-label");
-  const pointsItem = document.getElementById("live-strip-points");
-  const pointsEl = document.getElementById("live-strip-points-label");
-  if (!giveawayEl && !raffleEl && !pointsItem) return;
-
-  try {
-    const response = await fetch("/api/giveaways/status", { cache: "no-store" });
-    if (response.ok && giveawayEl) {
-      const data = await response.json();
-      if (data.open) {
-        const keyword = data.keyword ? ` · ${data.keyword}` : "";
-        const count = Number(data.entryCount) || 0;
-        giveawayEl.textContent = `Giveaway${keyword} · ${count}`;
-      } else {
-        giveawayEl.textContent = "Giveaway closed";
-      }
-    }
-  } catch {
-    /* keep the last label */
-  }
-
-  try {
-    const response = await fetch("/api/weekly-raffles/status", { cache: "no-store" });
-    if (response.ok && raffleEl) {
-      const data = await response.json();
-      const week = data.week || {};
-      if (week.active && week.remainingMs > 0) {
-        raffleEl.textContent = `Raffle · ${formatCountdown(week.remainingMs)}`;
-      } else if (week.started && !week.active) {
-        raffleEl.textContent = "Raffle ended";
-      } else {
-        raffleEl.textContent = "Raffle closed";
-      }
-    }
-  } catch {
-    /* keep the last label */
-  }
-
-  try {
-    const response = await fetch("/api/points/me", {
-      cache: "no-store",
-      credentials: "same-origin",
-    });
-    if (response.ok && pointsItem && pointsEl) {
-      const data = await response.json();
-      const points = Number(data.balance?.points);
-      if (Number.isFinite(points)) {
-        pointsEl.textContent = `${points.toLocaleString()} UncCoins`;
-        pointsItem.classList.remove("is-hidden");
-      }
-    } else {
-      pointsItem?.classList.add("is-hidden");
-    }
-  } catch {
-    pointsItem?.classList.add("is-hidden");
-  }
-}
 
 if (document.getElementById("player-container")) {
   loadPlayer();
-}
-
-if (document.getElementById("live-strip")) {
-  loadLiveStrip();
-  window.setInterval(loadLiveStrip, 60000);
 }

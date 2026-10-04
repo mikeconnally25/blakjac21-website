@@ -240,26 +240,6 @@ ul {
   box-shadow: 0 0 16px rgba(88, 201, 243, 0.28);
 }
 
-.live-strip {
-  padding: 0.85rem 0 0;
-}
-
-.live-strip-row {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.live-strip-row::-webkit-scrollbar {
-  display: none;
-}
-
-.live-strip-item.is-hidden {
-  display: none;
-}
-
 @keyframes live-strip-pulse {
   70% {
     box-shadow: 0 0 0 0.4rem rgba(61, 222, 122, 0);
