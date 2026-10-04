@@ -95,6 +95,16 @@
   overflow: hidden;
 }
 
+.overlay-preview-frame.is-wide {
+  min-height: auto;
+}
+
+.overlay-preview-frame.is-wide iframe {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 8 / 3;
+}
+
 .overlay-preview-setup {
   padding: 1.35rem 1.4rem;
 }
@@ -168,5 +178,11 @@
     width: 100%;
     max-width: 26rem;
     height: 32rem;
+  }
+
+  .overlay-preview-frame.is-wide iframe {
+    max-width: none;
+    height: auto;
+    aspect-ratio: 8 / 3;
   }
 }
