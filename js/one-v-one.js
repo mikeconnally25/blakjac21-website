@@ -57,6 +57,49 @@ function renderSide(element, side, label) {
   element.append(heading, list);
 }
 
+let kickChatSignature = "";
+
+function renderKickChat(messages, matchup) {
+  const log = document.getElementById("one-v-one-chat");
+  const empty = document.getElementById("one-v-one-chat-empty");
+  if (!log) return;
+
+  const items = Array.isArray(messages) ? messages : [];
+  const signature = items.map((message) => message.id).join("|");
+  empty?.classList.toggle("is-hidden", items.length > 0);
+  if (signature === kickChatSignature) return;
+
+  const nearBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 48;
+  kickChatSignature = signature;
+  log.replaceChildren();
+
+  const drawn = new Set(
+    [matchup?.left?.username, matchup?.right?.username]
+      .filter(Boolean)
+      .map((name) => name.toLowerCase())
+  );
+
+  for (const message of items) {
+    const row = document.createElement("article");
+    const username = message.username || "viewer";
+    row.className = "one-v-one-chat-row";
+    if (drawn.has(username.toLowerCase())) row.classList.add("is-drawn");
+
+    const name = document.createElement("span");
+    name.className = "one-v-one-chat-name";
+    name.textContent = username;
+
+    const text = document.createElement("p");
+    text.className = "one-v-one-chat-text";
+    text.textContent = message.text || "";
+
+    row.append(name, text);
+    log.appendChild(row);
+  }
+
+  if (nearBottom) log.scrollTop = log.scrollHeight;
+}
+
 function renderOneVOne(data) {
   oneVOneIsAdmin = Boolean(data?.isAdmin);
   document.getElementById("one-v-one-admin")?.classList.toggle("is-hidden", !oneVOneIsAdmin);
@@ -64,13 +107,14 @@ function renderOneVOne(data) {
   const pool = document.getElementById("one-v-one-pool");
   if (pool) {
     const count = Number(data?.activeCount) || 0;
-    const minutes = Number(data?.activeMinutes) || 15;
+    const minutes = Number(data?.activeMinutes) || 5;
     const label = count === 1 ? "viewer" : "viewers";
     pool.textContent = `${count} active ${label} in the last ${minutes} minutes`;
   }
 
   renderSide(document.getElementById("one-v-one-side-left"), data?.matchup?.left, "Viewer 1");
   renderSide(document.getElementById("one-v-one-side-right"), data?.matchup?.right, "Viewer 2");
+  renderKickChat(data?.chat, data?.matchup);
 }
 
 function setOneVOneNote(message, isError) {

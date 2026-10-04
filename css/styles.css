@@ -952,6 +952,77 @@ ul {
   font-size: 0.88rem;
 }
 
+.one-v-one-chat {
+  position: relative;
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem 1.05rem 1.15rem;
+}
+
+.one-v-one-chat-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.one-v-one-chat-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  line-height: 0.9;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.one-v-one-chat-log {
+  display: grid;
+  align-content: start;
+  gap: 0.45rem;
+  max-height: 22rem;
+  min-height: 12rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.one-v-one-chat-empty {
+  position: absolute;
+  inset: 3.2rem 1rem 1rem;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: var(--text-muted);
+  text-align: center;
+  pointer-events: none;
+}
+
+.one-v-one-chat-empty.is-hidden {
+  display: none;
+}
+
+.one-v-one-chat-row {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.45rem 0.15rem;
+}
+
+.one-v-one-chat-row.is-drawn {
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  background: rgba(88, 201, 243, 0.1);
+}
+
+.one-v-one-chat-name {
+  color: var(--accent-bright);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.one-v-one-chat-text {
+  margin: 0;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 800px) {
   .one-v-one-picks,
   .one-v-one-board {
