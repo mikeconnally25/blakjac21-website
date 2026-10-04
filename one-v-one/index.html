@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="1v1 — pick two chatters and line up their slot calls on BLAKJAC21." />
+  <meta name="description" content="1v1 — draw two active viewers and line up their slot calls on BLAKJAC21." />
   <title>1v1 | BLAKJAC21</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -67,18 +67,14 @@
         <header class="section-header left">
           <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
           <h1 class="theme-heading">1v1</h1>
-          <p>Pick two chatters and put their slot calls head to head.</p>
+          <p>Draw two active viewers at random and put their slot calls head to head. No keyword.</p>
         </header>
 
+        <p class="one-v-one-pool" id="one-v-one-pool">Checking active viewers…</p>
+
         <form class="one-v-one-admin bj21-panel is-hidden" id="one-v-one-admin">
-          <div class="one-v-one-picks">
-            <label class="guess-label" for="one-v-one-left">Chatter 1</label>
-            <select class="guess-input" id="one-v-one-left"></select>
-            <label class="guess-label" for="one-v-one-right">Chatter 2</label>
-            <select class="guess-input" id="one-v-one-right"></select>
-          </div>
           <div class="one-v-one-admin-actions">
-            <button type="submit" class="btn btn-primary" id="one-v-one-set">Set 1v1</button>
+            <button type="submit" class="btn btn-primary" id="one-v-one-set">Draw 2</button>
             <button type="button" class="btn btn-outline" id="one-v-one-clear">Clear</button>
           </div>
           <p class="one-v-one-note" id="one-v-one-admin-note" role="status"></p>
