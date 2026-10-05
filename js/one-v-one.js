@@ -222,7 +222,36 @@ function renderOneVOne(data) {
   const winTwo = document.getElementById("one-v-one-win-2");
   if (winOne) winOne.disabled = settled || !data?.matchup?.left;
   if (winTwo) winTwo.disabled = settled || !data?.matchup?.right;
+  renderBetList(data?.bets);
   renderKickChat(data?.chat, data?.matchup);
+}
+
+function renderBetList(bets) {
+  const rows = Array.isArray(bets) ? bets : [];
+  for (const side of [1, 2]) {
+    const list = document.getElementById(`one-v-one-bets-${side}`);
+    const empty = document.getElementById(`one-v-one-bets-${side}-empty`);
+    if (!list) continue;
+    const team = rows.filter((bet) => Number(bet.side) === side);
+    empty?.classList.toggle("is-hidden", team.length > 0);
+    list.replaceChildren();
+    for (const bet of team) {
+      const item = document.createElement("li");
+      item.className = "one-v-one-bet-row";
+      if (bet.mine) item.classList.add("is-mine");
+
+      const name = document.createElement("span");
+      name.className = "one-v-one-bet-user";
+      name.textContent = bet.username || "viewer";
+
+      const amount = document.createElement("span");
+      amount.className = "one-v-one-bet-stake";
+      amount.textContent = formatCoins(bet.amount);
+
+      item.append(name, amount);
+      list.appendChild(item);
+    }
+  }
 }
 
 function setOneVOneNote(message, isError) {
