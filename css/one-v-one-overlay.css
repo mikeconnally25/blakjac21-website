@@ -140,6 +140,14 @@ body {
   min-width: 0;
 }
 
+.ovo-seat {
+  margin: 0 0 0.15rem;
+  color: var(--text-muted, #9aa8b8);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+
 .ovo-name {
   overflow: hidden;
   font-family: var(--font-display);

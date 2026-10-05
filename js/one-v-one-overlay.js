@@ -28,9 +28,13 @@ function slotInitials(name) {
     .join("");
 }
 
-function renderOverlaySide(element, side) {
+function renderOverlaySide(element, side, seatLabel) {
   if (!element) return;
   element.replaceChildren();
+
+  const seat = document.createElement("p");
+  seat.className = "ovo-seat";
+  seat.textContent = seatLabel;
 
   const logo = document.createElement("div");
   logo.className = "ovo-logo";
@@ -39,7 +43,7 @@ function renderOverlaySide(element, side) {
   const name = document.createElement("h2");
   name.className = "ovo-name";
   name.textContent = side?.username || "Open seat";
-  copy.appendChild(name);
+  copy.append(seat, name);
 
   const slot = side?.slot;
   if (!slot) {
@@ -98,8 +102,8 @@ function renderOverlay(data) {
   const signature = matchupSignature(matchup);
   if (signature === overlaySignature) return;
   overlaySignature = signature;
-  renderOverlaySide(document.getElementById("ovo-left"), matchup.left);
-  renderOverlaySide(document.getElementById("ovo-right"), matchup.right);
+  renderOverlaySide(document.getElementById("ovo-left"), matchup.left, "1");
+  renderOverlaySide(document.getElementById("ovo-right"), matchup.right, "2");
 }
 
 async function loadOverlay() {

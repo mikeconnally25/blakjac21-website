@@ -67,7 +67,7 @@
         <header class="section-header left">
           <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
           <h1 class="theme-heading">1v1</h1>
-          <p>Open entries, then site accounts type 1v1 in chat. Draw one or two of them. Each one requests a slot, and it shows here with the logo.</p>
+          <p>Open entries, then site accounts type 1v1 in chat. Draw one or two of them. Each one requests a slot, and it shows here with the logo. Signed-in viewers can bet UncCoins on side 1 or side 2.</p>
         </header>
 
         <div class="one-v-one-toolbar">
@@ -83,8 +83,10 @@
               <button type="button" class="btn btn-outline" id="one-v-one-entries-clear">Clear entrants</button>
               <button type="submit" class="btn btn-primary" name="count" value="1">Draw 1</button>
               <button type="submit" class="btn btn-primary" name="count" value="2">Draw 2</button>
-              <button type="button" class="btn btn-outline" id="one-v-one-remove-left" disabled>Remove left</button>
-              <button type="button" class="btn btn-outline" id="one-v-one-remove-right" disabled>Remove right</button>
+              <button type="button" class="btn btn-outline" id="one-v-one-remove-left" disabled>Remove 1</button>
+              <button type="button" class="btn btn-outline" id="one-v-one-remove-right" disabled>Remove 2</button>
+              <button type="button" class="btn btn-outline" id="one-v-one-win-1">1 wins</button>
+              <button type="button" class="btn btn-outline" id="one-v-one-win-2">2 wins</button>
               <button type="button" class="btn btn-outline" id="one-v-one-clear">Reset</button>
             </div>
             <p class="one-v-one-note" id="one-v-one-admin-note" role="status"></p>
@@ -96,6 +98,7 @@
           <div class="one-v-one-vs" aria-hidden="true"><span>VS</span></div>
           <article class="one-v-one-side" id="one-v-one-side-right"></article>
         </div>
+        <p class="one-v-one-note" id="one-v-one-bet-note" role="status"></p>
 
         <section class="one-v-one-chat bj21-panel" aria-label="Kick chat">
           <div class="one-v-one-chat-head">

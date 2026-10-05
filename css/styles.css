@@ -937,6 +937,39 @@ ul {
   background: rgba(5, 12, 20, 0.55);
 }
 
+.one-v-one-side.is-winner {
+  border-color: rgba(126, 216, 255, 0.55);
+}
+
+.one-v-one-bet {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.one-v-one-pot,
+.one-v-one-mine,
+.one-v-one-won {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.one-v-one-pot {
+  color: var(--accent-bright);
+}
+
+.one-v-one-bet-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.one-v-one-bet-amount {
+  width: 100%;
+  min-width: 0;
+}
+
 .one-v-one-seat {
   margin: 0;
   color: var(--text-muted);

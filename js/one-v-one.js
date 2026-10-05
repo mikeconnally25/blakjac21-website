@@ -1,8 +1,74 @@
 let oneVOneIsAdmin = false;
 
-function renderSide(element, side, seatLabel) {
+function formatCoins(amount) {
+  return `${Number(amount) || 0} UncCoin${Number(amount) === 1 ? "" : "s"}`;
+}
+
+function renderBet(element, { number, occupied, pool, myBet, winner, signedIn }, keepValue) {
+  if (!occupied && !pool && winner !== number) return;
+  const block = document.createElement("div");
+  block.className = "one-v-one-bet";
+
+  const pot = document.createElement("p");
+  pot.className = "one-v-one-pot";
+  pot.textContent = `Pool · ${formatCoins(pool)}`;
+  block.appendChild(pot);
+
+  if (myBet?.side === number) {
+    const mine = document.createElement("p");
+    mine.className = "one-v-one-mine";
+    mine.textContent = `Your bet · ${formatCoins(myBet.amount)}`;
+    block.appendChild(mine);
+  }
+
+  if (winner === number) {
+    const won = document.createElement("p");
+    won.className = "one-v-one-won";
+    won.textContent = "Winner";
+    block.appendChild(won);
+  } else if (!winner && occupied) {
+    if (signedIn) {
+      const form = document.createElement("form");
+      form.className = "one-v-one-bet-form";
+      form.dataset.side = String(number);
+
+      const input = document.createElement("input");
+      input.className = "guess-input one-v-one-bet-amount";
+      input.type = "number";
+      input.min = "1";
+      input.max = "5000";
+      input.step = "1";
+      input.inputMode = "numeric";
+      input.placeholder = "Amount";
+      input.setAttribute("aria-label", `UncCoins to bet on side ${number}`);
+      if (keepValue) input.value = keepValue;
+
+      const button = document.createElement("button");
+      button.type = "submit";
+      button.className = "btn btn-sm btn-primary";
+      button.textContent = `Bet ${number}`;
+
+      form.append(input, button);
+      block.appendChild(form);
+    } else {
+      const link = document.createElement("a");
+      link.className = "btn btn-sm btn-kick";
+      link.href = "/api/auth/login";
+      link.textContent = "Sign in to bet";
+      block.appendChild(link);
+    }
+  }
+
+  element.appendChild(block);
+  if (keepValue) element.querySelector(".one-v-one-bet-amount")?.focus();
+}
+
+function renderSide(element, side, seatLabel, bet) {
   if (!element) return;
+  const previous = element.querySelector(".one-v-one-bet-amount");
+  const keepValue = previous && document.activeElement === previous ? previous.value : "";
   element.replaceChildren();
+  element.classList.toggle("is-winner", bet?.winner === Number(seatLabel));
 
   const seat = document.createElement("p");
   seat.className = "one-v-one-seat";
@@ -61,6 +127,7 @@ function renderSide(element, side, seatLabel) {
   }
 
   element.append(seat, heading, list);
+  renderBet(element, bet, keepValue);
 }
 
 let kickChatSignature = "";
@@ -124,12 +191,37 @@ function renderOneVOne(data) {
   }
   if (entriesToggle) entriesToggle.textContent = entriesOpen ? "Close entries" : "Open entries";
 
-  renderSide(document.getElementById("one-v-one-side-left"), data?.matchup?.left, "Left");
-  renderSide(document.getElementById("one-v-one-side-right"), data?.matchup?.right, "Right");
+  const bet = {
+    pools: data?.pools || { one: 0, two: 0 },
+    myBet: data?.myBet || null,
+    winner: data?.winner || null,
+    signedIn: Boolean(data?.signedIn),
+  };
+  renderSide(document.getElementById("one-v-one-side-left"), data?.matchup?.left, "1", {
+    number: 1,
+    occupied: Boolean(data?.matchup?.left),
+    pool: bet.pools.one,
+    myBet: bet.myBet,
+    winner: bet.winner,
+    signedIn: bet.signedIn,
+  });
+  renderSide(document.getElementById("one-v-one-side-right"), data?.matchup?.right, "2", {
+    number: 2,
+    occupied: Boolean(data?.matchup?.right),
+    pool: bet.pools.two,
+    myBet: bet.myBet,
+    winner: bet.winner,
+    signedIn: bet.signedIn,
+  });
   const removeLeft = document.getElementById("one-v-one-remove-left");
   const removeRight = document.getElementById("one-v-one-remove-right");
+  const settled = Boolean(data?.winner);
   if (removeLeft) removeLeft.disabled = !data?.matchup?.left;
   if (removeRight) removeRight.disabled = !data?.matchup?.right;
+  const winOne = document.getElementById("one-v-one-win-1");
+  const winTwo = document.getElementById("one-v-one-win-2");
+  if (winOne) winOne.disabled = settled || !data?.matchup?.left;
+  if (winTwo) winTwo.disabled = settled || !data?.matchup?.right;
   renderKickChat(data?.chat, data?.matchup);
 }
 
@@ -180,7 +272,7 @@ async function removeOneVOne(side) {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Could not remove that viewer.");
     renderOneVOne(data);
-    setOneVOneNote(side === "left" ? "Removed the left viewer." : "Removed the right viewer.");
+    setOneVOneNote(side === "1" ? "Removed side 1." : "Removed side 2.");
   } catch (error) {
     setOneVOneNote(error.message, true);
   }
@@ -237,12 +329,63 @@ async function clearOneVOneEntries() {
   }
 }
 
+function setBetNote(message, isError) {
+  const note = document.getElementById("one-v-one-bet-note");
+  if (!note) return;
+  note.textContent = message || "";
+  note.classList.toggle("is-error", Boolean(isError));
+}
+
+async function placeBet(event) {
+  event.preventDefault();
+  const form = event.target;
+  const amount = form.querySelector(".one-v-one-bet-amount")?.value;
+  setBetNote("");
+  try {
+    const response = await fetch("/api/one-v-one/bet", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ side: form.dataset.side, amount }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Could not place that bet.");
+    renderOneVOne(data);
+    setBetNote(`Bet placed on side ${form.dataset.side}.`);
+  } catch (error) {
+    setBetNote(error.message, true);
+  }
+}
+
+async function settleOneVOne(side) {
+  setOneVOneNote("");
+  try {
+    const response = await fetch("/api/one-v-one/settle", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ side }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Could not settle the 1v1.");
+    renderOneVOne(data);
+    setOneVOneNote(side === "1" ? "Side 1 wins. Pools paid." : "Side 2 wins. Pools paid.");
+  } catch (error) {
+    setOneVOneNote(error.message, true);
+  }
+}
+
 document.getElementById("one-v-one-admin")?.addEventListener("submit", saveOneVOne);
 document.getElementById("one-v-one-entries-toggle")?.addEventListener("click", toggleOneVOneEntries);
 document.getElementById("one-v-one-entries-clear")?.addEventListener("click", clearOneVOneEntries);
-document.getElementById("one-v-one-remove-left")?.addEventListener("click", () => removeOneVOne("left"));
-document.getElementById("one-v-one-remove-right")?.addEventListener("click", () => removeOneVOne("right"));
+document.getElementById("one-v-one-remove-left")?.addEventListener("click", () => removeOneVOne("1"));
+document.getElementById("one-v-one-remove-right")?.addEventListener("click", () => removeOneVOne("2"));
+document.getElementById("one-v-one-win-1")?.addEventListener("click", () => settleOneVOne("1"));
+document.getElementById("one-v-one-win-2")?.addEventListener("click", () => settleOneVOne("2"));
 document.getElementById("one-v-one-clear")?.addEventListener("click", clearOneVOne);
+document.getElementById("one-v-one-board")?.addEventListener("submit", (event) => {
+  if (event.target?.classList?.contains("one-v-one-bet-form")) placeBet(event);
+});
 window.addEventListener("auth:change", () => {
   loadOneVOne().catch((error) => setOneVOneNote(error.message, true));
 });

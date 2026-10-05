@@ -36,11 +36,13 @@ import {
 } from "./lib/bonus-hunt-handlers.js";
 import { handleKickWebhook } from "./lib/kick-webhook.js";
 import {
+  handleOneVOneBet,
   handleOneVOneClear,
   handleOneVOneEntries,
   handleOneVOneEntriesClear,
   handleOneVOneRemove,
   handleOneVOneSet,
+  handleOneVOneSettle,
   handleOneVOneStatus,
 } from "./lib/one-v-one-handlers.js";
 import { handleKickBotLogin, handleKickBotStatus } from "./lib/kick-bot-auth-handlers.js";
@@ -366,6 +368,8 @@ app.post("/api/one-v-one/entries", (req, res) => handleOneVOneEntries(req, res))
 app.post("/api/one-v-one/entries/clear", (req, res) => handleOneVOneEntriesClear(req, res));
 app.post("/api/one-v-one/set", (req, res) => handleOneVOneSet(req, res));
 app.post("/api/one-v-one/remove", (req, res) => handleOneVOneRemove(req, res));
+app.post("/api/one-v-one/bet", (req, res) => handleOneVOneBet(req, res));
+app.post("/api/one-v-one/settle", (req, res) => handleOneVOneSettle(req, res));
 app.post("/api/one-v-one/clear", (req, res) => handleOneVOneClear(req, res));
 
 app.listen(PORT, () => {
