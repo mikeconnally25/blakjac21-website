@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=round" />
+  <link rel="stylesheet" href="/css/styles.css?v=access" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -79,8 +79,31 @@
             <p class="one-v-one-balance btn-pill is-hidden" id="one-v-one-balance">You have 0 UncCoins</p>
           </div>
           <a class="btn btn-sm btn-outline" href="/one-v-one/overlay/">OBS widget</a>
+          <p class="one-v-one-note is-hidden" id="one-v-one-access-note"></p>
 
           <form class="one-v-one-admin is-hidden" id="one-v-one-admin">
+            <div class="one-v-one-access">
+              <label class="one-v-one-access-row">
+                <span>
+                  <span class="one-v-one-access-label">AFF only</span>
+                  <span class="one-v-one-access-status" id="one-v-one-aff-status">Affiliate restriction off</span>
+                </span>
+                <span class="toggle">
+                  <input type="checkbox" id="one-v-one-aff-toggle" aria-labelledby="one-v-one-aff-status" />
+                  <span class="toggle-slider" aria-hidden="true"></span>
+                </span>
+              </label>
+              <label class="one-v-one-access-row">
+                <span>
+                  <span class="one-v-one-access-label">SUB only</span>
+                  <span class="one-v-one-access-status" id="one-v-one-sub-status">Subscriber restriction off</span>
+                </span>
+                <span class="toggle">
+                  <input type="checkbox" id="one-v-one-sub-toggle" aria-labelledby="one-v-one-sub-status" />
+                  <span class="toggle-slider" aria-hidden="true"></span>
+                </span>
+              </label>
+            </div>
             <div class="one-v-one-admin-actions">
               <button type="button" class="btn btn-outline" id="one-v-one-entries-toggle">Open entries</button>
               <button type="button" class="btn btn-outline" id="one-v-one-entries-clear">Clear entrants</button>
@@ -164,6 +187,6 @@
 
   <script src="/js/main.js"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/one-v-one.js?v=round"></script>
+  <script src="/js/one-v-one.js?v=access"></script>
 </body>
 </html>

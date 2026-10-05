@@ -187,13 +187,52 @@ function renderOneVOne(data) {
   const poolDot = document.getElementById("one-v-one-pool-dot");
   const entriesToggle = document.getElementById("one-v-one-entries-toggle");
   const entriesOpen = Boolean(data?.entriesOpen);
+  const affiliatesOnly = Boolean(data?.affiliatesOnly);
+  const subscribersOnly = Boolean(data?.subscribersOnly);
   if (poolText) {
     const count = Number(data?.entryCount) || 0;
     const label = count === 1 ? "entrant" : "entrants";
+    const mode =
+      affiliatesOnly && subscribersOnly
+        ? " · AFF/SUB"
+        : affiliatesOnly
+          ? " · AFF"
+          : subscribersOnly
+            ? " · SUB"
+            : "";
     poolText.textContent = entriesOpen
-      ? `${count} ${label} · type 1v1 in chat`
-      : `${count} ${label} · entries closed`;
+      ? `${count} ${label}${mode} · type 1v1 in chat`
+      : `${count} ${label}${mode} · entries closed`;
     poolDot?.classList.toggle("is-live", entriesOpen);
+  }
+  const affStatus = document.getElementById("one-v-one-aff-status");
+  const subStatus = document.getElementById("one-v-one-sub-status");
+  const affToggle = document.getElementById("one-v-one-aff-toggle");
+  const subToggle = document.getElementById("one-v-one-sub-toggle");
+  const accessNote = document.getElementById("one-v-one-access-note");
+  if (affStatus) {
+    affStatus.textContent = affiliatesOnly
+      ? "Only verified affiliates can enter"
+      : "Affiliate restriction off";
+  }
+  if (subStatus) {
+    subStatus.textContent = subscribersOnly
+      ? "Only Kick subscribers can enter"
+      : "Subscriber restriction off";
+  }
+  if (affToggle) affToggle.checked = affiliatesOnly;
+  if (subToggle) subToggle.checked = subscribersOnly;
+  if (accessNote) {
+    const note =
+      affiliatesOnly && subscribersOnly
+        ? "AFF/SUB only — verified BLAKJAC21 affiliates or active Kick subscribers can enter."
+        : affiliatesOnly
+          ? "AFF only — verified BLAKJAC21 affiliates can enter."
+          : subscribersOnly
+            ? "SUB only — active Kick subscribers can enter."
+            : "";
+    accessNote.textContent = note;
+    accessNote.classList.toggle("is-hidden", !note);
   }
   if (entriesToggle) entriesToggle.textContent = entriesOpen ? "Close entries" : "Open entries";
 
@@ -459,7 +498,42 @@ async function settleOneVOne(side) {
 }
 
 document.getElementById("one-v-one-admin")?.addEventListener("submit", saveOneVOne);
+async function setOneVOneAccess(patch) {
+  setOneVOneNote("");
+  try {
+    const response = await fetch("/api/one-v-one/access", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Could not update that restriction.");
+    renderOneVOne(data);
+    const affiliatesOnly = Boolean(data.affiliatesOnly);
+    const subscribersOnly = Boolean(data.subscribersOnly);
+    if (affiliatesOnly && subscribersOnly) {
+      setOneVOneNote("AFF/SUB only. Affiliates or subscribers can enter.");
+    } else if (affiliatesOnly) {
+      setOneVOneNote("AFF only. Verified affiliates can enter.");
+    } else if (subscribersOnly) {
+      setOneVOneNote("SUB only. Kick subscribers can enter.");
+    } else {
+      setOneVOneNote("Affiliate and subscriber restrictions are off.");
+    }
+  } catch (error) {
+    setOneVOneNote(error.message, true);
+    loadOneVOne().catch(() => {});
+  }
+}
+
 document.getElementById("one-v-one-entries-toggle")?.addEventListener("click", toggleOneVOneEntries);
+document.getElementById("one-v-one-aff-toggle")?.addEventListener("change", (event) => {
+  setOneVOneAccess({ affiliatesOnly: Boolean(event.target.checked) });
+});
+document.getElementById("one-v-one-sub-toggle")?.addEventListener("change", (event) => {
+  setOneVOneAccess({ subscribersOnly: Boolean(event.target.checked) });
+});
 document.getElementById("one-v-one-entries-clear")?.addEventListener("click", clearOneVOneEntries);
 document.getElementById("one-v-one-remove-left")?.addEventListener("click", () => removeOneVOne("1"));
 document.getElementById("one-v-one-remove-right")?.addEventListener("click", () => removeOneVOne("2"));

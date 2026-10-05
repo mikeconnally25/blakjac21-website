@@ -876,9 +876,44 @@ ul {
 
 .one-v-one-admin {
   display: flex;
+  flex: 1 1 100%;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.65rem 0.85rem;
+}
+
+.one-v-one-access {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.4rem;
+  flex-basis: 100%;
+}
+
+.one-v-one-access-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.one-v-one-access-label,
+.one-v-one-access-status {
+  display: block;
+}
+
+.one-v-one-access-label {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.one-v-one-access-status {
+  font-size: 0.88rem;
+}
+
+.one-v-one-toolbar > .one-v-one-note {
+  flex-basis: 100%;
 }
 
 .one-v-one-picks {
