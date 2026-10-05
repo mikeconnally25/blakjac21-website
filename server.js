@@ -37,9 +37,11 @@ import {
 import { handleKickWebhook } from "./lib/kick-webhook.js";
 import {
   handleOneVOneBet,
+  handleOneVOneBetTimer,
   handleOneVOneClear,
   handleOneVOneEntries,
   handleOneVOneEntriesClear,
+  handleOneVOneRematch,
   handleOneVOneRemove,
   handleOneVOneSet,
   handleOneVOneSettle,
@@ -369,6 +371,8 @@ app.post("/api/one-v-one/entries/clear", (req, res) => handleOneVOneEntriesClear
 app.post("/api/one-v-one/set", (req, res) => handleOneVOneSet(req, res));
 app.post("/api/one-v-one/remove", (req, res) => handleOneVOneRemove(req, res));
 app.post("/api/one-v-one/bet", (req, res) => handleOneVOneBet(req, res));
+app.post("/api/one-v-one/bets", (req, res) => handleOneVOneBetTimer(req, res));
+app.post("/api/one-v-one/rematch", (req, res) => handleOneVOneRematch(req, res));
 app.post("/api/one-v-one/settle", (req, res) => handleOneVOneSettle(req, res));
 app.post("/api/one-v-one/clear", (req, res) => handleOneVOneClear(req, res));
 

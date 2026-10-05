@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=you2" />
+  <link rel="stylesheet" href="/css/styles.css?v=round" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -67,7 +67,7 @@
         <header class="section-header left">
           <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
           <h1 class="theme-heading">1v1</h1>
-          <p>Open entries, then site accounts type 1v1 in chat. Draw one or two of them. Each one requests a slot, and it shows here with the logo. Chatters bet with !bet 100 team 1 or !bet 100 team 2. A win pays 2x. The other team loses that bet.</p>
+          <p>Open entries, then site accounts type 1v1 in chat. Draw one or two of them. Each one requests a slot, and it shows here with the logo. Open the bet timer, then chatters bet with !bet 100 team 1 or !bet 100 team 2. A win pays 2x. The other team loses that bet.</p>
         </header>
 
         <div class="one-v-one-toolbar">
@@ -90,6 +90,15 @@
               <button type="button" class="btn btn-outline" id="one-v-one-remove-right" disabled>Remove 2</button>
               <button type="button" class="btn btn-outline" id="one-v-one-win-1">1 wins</button>
               <button type="button" class="btn btn-outline" id="one-v-one-win-2">2 wins</button>
+              <button type="button" class="btn btn-outline" id="one-v-one-new-opponent" disabled>New opponent</button>
+              <select class="one-v-one-bet-seconds" id="one-v-one-bet-seconds" aria-label="Bet timer length">
+                <option value="30">30s</option>
+                <option value="60" selected>60s</option>
+                <option value="90">90s</option>
+                <option value="120">2 min</option>
+              </select>
+              <button type="button" class="btn btn-outline" id="one-v-one-bets-open">Open bets</button>
+              <button type="button" class="btn btn-outline" id="one-v-one-bets-close" disabled>Close bets</button>
               <button type="button" class="btn btn-outline" id="one-v-one-clear">Reset</button>
             </div>
             <p class="one-v-one-note" id="one-v-one-admin-note" role="status"></p>
@@ -104,6 +113,8 @@
         <p class="one-v-one-note" id="one-v-one-bet-note" role="status"></p>
 
         <section class="one-v-one-bets bj21-panel" aria-label="Bets">
+          <p class="one-v-one-bets-timer" id="one-v-one-bets-timer">Bets closed</p>
+          <div class="one-v-one-bets-row">
           <div class="one-v-one-bets-side">
             <span class="one-v-one-bets-label">1</span>
             <strong class="one-v-one-bets-total" id="one-v-one-bets-1-total">0</strong>
@@ -118,6 +129,7 @@
             <span class="one-v-one-bets-label">You</span>
             <strong class="one-v-one-bets-total" id="one-v-one-you-total">0</strong>
             <span class="one-v-one-bets-unit">UncCoins</span>
+          </div>
           </div>
         </section>
 
@@ -152,6 +164,6 @@
 
   <script src="/js/main.js"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/one-v-one.js?v=you"></script>
+  <script src="/js/one-v-one.js?v=round"></script>
 </body>
 </html>

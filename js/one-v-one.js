@@ -4,7 +4,7 @@ function formatCoins(amount) {
   return `${Number(amount) || 0} UncCoin${Number(amount) === 1 ? "" : "s"}`;
 }
 
-function renderBet(element, { number, occupied, pool, myBet, winner, signedIn }, keepValue) {
+function renderBet(element, { number, occupied, pool, myBet, winner, signedIn, betsOpen }, keepValue) {
   if (!occupied && !pool && winner !== number) return;
   const block = document.createElement("div");
   block.className = "one-v-one-bet";
@@ -26,7 +26,7 @@ function renderBet(element, { number, occupied, pool, myBet, winner, signedIn },
     won.className = "one-v-one-won";
     won.textContent = "Winner";
     block.appendChild(won);
-  } else if (!winner && occupied) {
+  } else if (!winner && occupied && betsOpen) {
     if (signedIn) {
       const form = document.createElement("form");
       form.className = "one-v-one-bet-form";
@@ -57,6 +57,11 @@ function renderBet(element, { number, occupied, pool, myBet, winner, signedIn },
       link.textContent = "Sign in to bet";
       block.appendChild(link);
     }
+  } else if (!winner && occupied) {
+    const closed = document.createElement("p");
+    closed.className = "one-v-one-pot";
+    closed.textContent = "Bets closed";
+    block.appendChild(closed);
   }
 
   element.appendChild(block);
@@ -202,15 +207,20 @@ function renderOneVOne(data) {
   }
   const you = document.getElementById("one-v-one-you");
   const youTotal = document.getElementById("one-v-one-you-total");
-  document.querySelector(".one-v-one-bets")?.classList.toggle("has-you", showBalance);
+  document.querySelector(".one-v-one-bets-row")?.classList.toggle("has-you", showBalance);
   you?.classList.toggle("is-hidden", !showBalance);
   if (youTotal && showBalance) youTotal.textContent = balanceText;
 
+  lastOneVOne = data;
+  betsCloseAt = Number(data?.betsCloseAt) || 0;
+  const betsOpen = betsCloseAt > Date.now();
+  betsWereOpen = betsOpen;
   const bet = {
     pools: data?.pools || { one: 0, two: 0 },
     myBet: data?.myBet || null,
     winner: data?.winner || null,
     signedIn: Boolean(data?.signedIn),
+    betsOpen,
   };
   renderSide(document.getElementById("one-v-one-side-left"), data?.matchup?.left, "1", {
     number: 1,
@@ -219,6 +229,7 @@ function renderOneVOne(data) {
     myBet: bet.myBet,
     winner: bet.winner,
     signedIn: bet.signedIn,
+    betsOpen,
   });
   renderSide(document.getElementById("one-v-one-side-right"), data?.matchup?.right, "2", {
     number: 2,
@@ -227,6 +238,7 @@ function renderOneVOne(data) {
     myBet: bet.myBet,
     winner: bet.winner,
     signedIn: bet.signedIn,
+    betsOpen,
   });
   const removeLeft = document.getElementById("one-v-one-remove-left");
   const removeRight = document.getElementById("one-v-one-remove-right");
@@ -237,6 +249,12 @@ function renderOneVOne(data) {
   const winTwo = document.getElementById("one-v-one-win-2");
   if (winOne) winOne.disabled = settled || !data?.matchup?.left;
   if (winTwo) winTwo.disabled = settled || !data?.matchup?.right;
+  const bothSeated = Boolean(data?.matchup?.left) && Boolean(data?.matchup?.right);
+  const newOpponent = document.getElementById("one-v-one-new-opponent");
+  const openBets = document.getElementById("one-v-one-bets-open");
+  if (newOpponent) newOpponent.disabled = !settled;
+  if (openBets) openBets.disabled = settled || !bothSeated;
+  paintBetsTimer();
   renderBetList(betsFromKickChat(data?.chat, data?.bets));
   renderKickChat(data?.chat, data?.matchup);
 }
@@ -306,6 +324,7 @@ async function saveOneVOne(event) {
   event.preventDefault();
   setOneVOneNote("");
   const count = Number(event.submitter?.value) === 1 ? 1 : 2;
+  const heldWinner = count === 1 && Boolean(document.querySelector(".one-v-one-side.is-winner"));
 
   try {
     const response = await fetch("/api/one-v-one/set", {
@@ -317,7 +336,8 @@ async function saveOneVOne(event) {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Could not draw the 1v1.");
     renderOneVOne(data);
-    setOneVOneNote(count === 1 ? "Drew 1 viewer." : "Drew 2 viewers.");
+    if (heldWinner) setOneVOneNote(rematchNote(data));
+    else setOneVOneNote(count === 1 ? "Drew 1 viewer." : "Drew 2 viewers.");
   } catch (error) {
     setOneVOneNote(error.message, true);
   }
@@ -443,9 +463,76 @@ document.getElementById("one-v-one-entries-toggle")?.addEventListener("click", t
 document.getElementById("one-v-one-entries-clear")?.addEventListener("click", clearOneVOneEntries);
 document.getElementById("one-v-one-remove-left")?.addEventListener("click", () => removeOneVOne("1"));
 document.getElementById("one-v-one-remove-right")?.addEventListener("click", () => removeOneVOne("2"));
+function rematchNote(data) {
+  const both = Boolean(data?.matchup?.left) && Boolean(data?.matchup?.right);
+  return both
+    ? "Winner held. Drew a new opponent."
+    : "Winner held. Need another entrant to draw an opponent.";
+}
+
+async function drawNewOpponent() {
+  setOneVOneNote("");
+  try {
+    const response = await fetch("/api/one-v-one/rematch", {
+      method: "POST",
+      credentials: "same-origin",
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Could not draw a new opponent.");
+    renderOneVOne(data);
+    setOneVOneNote(rematchNote(data));
+  } catch (error) {
+    setOneVOneNote(error.message, true);
+  }
+}
+
+async function setBetTimer(open) {
+  setOneVOneNote("");
+  const seconds = Number(document.getElementById("one-v-one-bet-seconds")?.value) || 60;
+  try {
+    const response = await fetch("/api/one-v-one/bets", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ open, seconds }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Could not update the bet timer.");
+    renderOneVOne(data);
+    setOneVOneNote(open ? `Bets are open for ${seconds} seconds.` : "Bets are closed.");
+  } catch (error) {
+    setOneVOneNote(error.message, true);
+  }
+}
+
+let lastOneVOne = null;
+let betsCloseAt = 0;
+let betsWereOpen = false;
+
+function formatBetClock(ms) {
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const minutes = Math.floor(total / 60);
+  const seconds = String(total % 60).padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
+
+function paintBetsTimer() {
+  const el = document.getElementById("one-v-one-bets-timer");
+  const open = betsCloseAt > Date.now();
+  if (el) {
+    el.classList.toggle("is-live", open);
+    el.textContent = open ? `Bets close in ${formatBetClock(betsCloseAt - Date.now())}` : "Bets closed";
+  }
+  const closeBets = document.getElementById("one-v-one-bets-close");
+  if (closeBets) closeBets.disabled = !open;
+}
+
 document.getElementById("one-v-one-win-1")?.addEventListener("click", () => settleOneVOne("1"));
 document.getElementById("one-v-one-win-2")?.addEventListener("click", () => settleOneVOne("2"));
 document.getElementById("one-v-one-clear")?.addEventListener("click", clearOneVOne);
+document.getElementById("one-v-one-new-opponent")?.addEventListener("click", drawNewOpponent);
+document.getElementById("one-v-one-bets-open")?.addEventListener("click", () => setBetTimer(true));
+document.getElementById("one-v-one-bets-close")?.addEventListener("click", () => setBetTimer(false));
 document.getElementById("one-v-one-board")?.addEventListener("submit", (event) => {
   if (event.target?.classList?.contains("one-v-one-bet-form")) placeBet(event);
 });
@@ -457,3 +544,11 @@ loadOneVOne().catch((error) => setOneVOneNote(error.message, true));
 window.setInterval(() => {
   loadOneVOne().catch(() => {});
 }, 5000);
+window.setInterval(() => {
+  const open = betsCloseAt > Date.now();
+  paintBetsTimer();
+  if (betsWereOpen && !open && lastOneVOne) {
+    betsWereOpen = false;
+    renderOneVOne(lastOneVOne);
+  }
+}, 250);
