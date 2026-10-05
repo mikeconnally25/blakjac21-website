@@ -132,7 +132,15 @@ ul {
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  justify-content: flex-end;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  min-width: 0;
+  gap: 0.45rem 0.75rem;
+}
+
+.nav-links > li {
+  flex-shrink: 0;
 }
 
 .nav-links a:not(.btn) {
@@ -398,12 +406,14 @@ ul {
 .auth-member {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   gap: 0.65rem;
 }
 
 .auth-user {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   gap: 0.5rem;
 }
 
@@ -419,6 +429,7 @@ ul {
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--text);
+  white-space: nowrap;
 }
 
 .auth-admin-badge {
@@ -467,6 +478,7 @@ ul {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   line-height: 1.2;
+  white-space: nowrap;
   cursor: pointer;
   flex-shrink: 0;
 }
