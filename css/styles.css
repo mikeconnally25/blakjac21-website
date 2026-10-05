@@ -1057,7 +1057,6 @@ ul {
   font-size: 0.88rem;
 }
 
-.one-v-one-bets,
 .one-v-one-chat {
   position: relative;
   display: grid;
@@ -1066,45 +1065,49 @@ ul {
 }
 
 .one-v-one-bets {
-  align-content: start;
-}
-
-.one-v-one-bets-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.85rem;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  padding: 0.7rem 1rem 0.7rem 1.15rem;
 }
 
-.one-v-one-bets-team {
-  display: grid;
-  justify-items: center;
-  gap: 0.2rem;
-  padding: 0.85rem 0.75rem 0.95rem;
-  border-radius: calc(var(--radius-sm) + 2px);
-  border: 1px solid rgba(88, 201, 243, 0.14);
-  background: rgba(5, 12, 20, 0.55);
+.one-v-one-bets-side {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.55rem;
+  min-width: 0;
 }
 
-.one-v-one-bets-label {
+.one-v-one-bets-side + .one-v-one-bets-side {
+  border-left: 1px solid rgba(88, 201, 243, 0.16);
+}
+
+.one-v-one-bets-label,
+.one-v-one-bets-total,
+.one-v-one-bets-unit {
   margin: 0;
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
 }
 
+.one-v-one-bets-label,
 .one-v-one-bets-total {
-  margin: 0;
-  color: var(--accent-bright);
   font-family: var(--font-display);
-  font-size: clamp(2.4rem, 5vw, 3.4rem);
   line-height: 0.9;
   letter-spacing: 0.03em;
 }
 
+.one-v-one-bets-label {
+  color: var(--text-muted);
+  font-size: 1.7rem;
+}
+
+.one-v-one-bets-total {
+  color: var(--accent-bright);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 600;
+}
+
 .one-v-one-bets-unit {
-  margin: 0;
   color: var(--text-muted);
   font-size: 0.82rem;
   font-weight: 600;
@@ -1192,8 +1195,14 @@ ul {
 @media (max-width: 800px) {
   .one-v-one-picks,
   .one-v-one-board,
-  .one-v-one-bets-grid {
+  .one-v-one-bets {
     grid-template-columns: 1fr;
+  }
+
+  .one-v-one-bets-side + .one-v-one-bets-side {
+    border-left: 0;
+    border-top: 1px solid rgba(88, 201, 243, 0.16);
+    padding-top: 0.65rem;
   }
 
   .one-v-one-vs {
