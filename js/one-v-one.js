@@ -192,13 +192,19 @@ function renderOneVOne(data) {
   }
   if (entriesToggle) entriesToggle.textContent = entriesOpen ? "Close entries" : "Open entries";
 
+  const points = data?.balance;
+  const showBalance = Boolean(data?.signedIn) && typeof points === "number" && Number.isFinite(points);
+  const balanceText = showBalance ? points.toLocaleString() : "0";
   const balanceEl = document.getElementById("one-v-one-balance");
   if (balanceEl) {
-    const points = Number(data?.balance);
-    const showBalance = Boolean(data?.signedIn) && Number.isFinite(points);
     balanceEl.classList.toggle("is-hidden", !showBalance);
-    if (showBalance) balanceEl.textContent = `You have ${points.toLocaleString()} UncCoins`;
+    if (showBalance) balanceEl.textContent = `You have ${balanceText} UncCoins`;
   }
+  const you = document.getElementById("one-v-one-you");
+  const youTotal = document.getElementById("one-v-one-you-total");
+  document.querySelector(".one-v-one-bets")?.classList.toggle("has-you", showBalance);
+  you?.classList.toggle("is-hidden", !showBalance);
+  if (youTotal && showBalance) youTotal.textContent = balanceText;
 
   const bet = {
     pools: data?.pools || { one: 0, two: 0 },

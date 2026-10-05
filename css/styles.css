@@ -1078,6 +1078,10 @@ ul {
   padding: 0.7rem 1rem 0.7rem 1.15rem;
 }
 
+.one-v-one-bets.has-you {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
 .one-v-one-bets-side {
   display: flex;
   align-items: baseline;
