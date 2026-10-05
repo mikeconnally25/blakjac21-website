@@ -1057,6 +1057,7 @@ ul {
   font-size: 0.88rem;
 }
 
+.one-v-one-bets,
 .one-v-one-chat {
   position: relative;
   display: grid;
@@ -1064,30 +1065,8 @@ ul {
   padding: 1rem 1.05rem 1.15rem;
 }
 
-.one-v-one-chat-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(16rem, 0.9fr);
-  gap: 0.85rem;
-  align-items: stretch;
-}
-
 .one-v-one-bets {
-  display: grid;
   align-content: start;
-  gap: 0.65rem;
-  min-width: 0;
-  padding: 0.7rem 0.8rem;
-  border-radius: calc(var(--radius-sm) + 2px);
-  border: 1px solid rgba(88, 201, 243, 0.12);
-  background: rgba(5, 10, 16, 0.62);
-}
-
-.one-v-one-bets-title {
-  margin: 0;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
 }
 
 .one-v-one-bets-team-head {
@@ -1111,7 +1090,7 @@ ul {
 
 .one-v-one-bets-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.85rem;
 }
 
@@ -1254,8 +1233,7 @@ ul {
 @media (max-width: 800px) {
   .one-v-one-picks,
   .one-v-one-board,
-  .one-v-one-bets-grid,
-  .one-v-one-chat-layout {
+  .one-v-one-bets-grid {
     grid-template-columns: 1fr;
   }
 
