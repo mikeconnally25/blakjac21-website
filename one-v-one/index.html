@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=bets3" />
+  <link rel="stylesheet" href="/css/styles.css?v=balance" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -71,10 +71,13 @@
         </header>
 
         <div class="one-v-one-toolbar">
-          <p class="one-v-one-pool btn-pill" id="one-v-one-pool">
-            <span class="btn-pill-dot" id="one-v-one-pool-dot" aria-hidden="true"></span>
-            <span id="one-v-one-pool-text">Checking entrants…</span>
-          </p>
+          <div class="one-v-one-toolbar-status">
+            <p class="one-v-one-pool btn-pill" id="one-v-one-pool">
+              <span class="btn-pill-dot" id="one-v-one-pool-dot" aria-hidden="true"></span>
+              <span id="one-v-one-pool-text">Checking entrants…</span>
+            </p>
+            <p class="one-v-one-balance btn-pill is-hidden" id="one-v-one-balance">You have 0 UncCoins</p>
+          </div>
           <a class="btn btn-sm btn-outline" href="/one-v-one/overlay/">OBS widget</a>
 
           <form class="one-v-one-admin is-hidden" id="one-v-one-admin">

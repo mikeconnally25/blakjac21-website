@@ -867,6 +867,13 @@ ul {
   gap: 0.75rem 1rem;
 }
 
+.one-v-one-toolbar-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+}
+
 .one-v-one-admin {
   display: flex;
   flex-wrap: wrap;

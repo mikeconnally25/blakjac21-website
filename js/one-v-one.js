@@ -192,6 +192,14 @@ function renderOneVOne(data) {
   }
   if (entriesToggle) entriesToggle.textContent = entriesOpen ? "Close entries" : "Open entries";
 
+  const balanceEl = document.getElementById("one-v-one-balance");
+  if (balanceEl) {
+    const points = Number(data?.balance);
+    const showBalance = Boolean(data?.signedIn) && Number.isFinite(points);
+    balanceEl.classList.toggle("is-hidden", !showBalance);
+    if (showBalance) balanceEl.textContent = `You have ${points.toLocaleString()} UncCoins`;
+  }
+
   const bet = {
     pools: data?.pools || { one: 0, two: 0 },
     myBet: data?.myBet || null,
