@@ -157,6 +157,7 @@ function renderKickChat(messages, matchup) {
     const username = message.username || "viewer";
     row.className = "one-v-one-chat-row";
     if (drawn.has(username.toLowerCase())) row.classList.add("is-drawn");
+    if (parseChatBet(message.text)) row.classList.add("is-bet");
 
     const name = document.createElement("span");
     name.className = "one-v-one-chat-name";
@@ -222,8 +223,43 @@ function renderOneVOne(data) {
   const winTwo = document.getElementById("one-v-one-win-2");
   if (winOne) winOne.disabled = settled || !data?.matchup?.left;
   if (winTwo) winTwo.disabled = settled || !data?.matchup?.right;
-  renderBetList(data?.bets);
+  renderBetList(betsFromKickChat(data?.chat, data?.bets));
   renderKickChat(data?.chat, data?.matchup);
+}
+
+function parseChatBet(text) {
+  const match = String(text || "").trim().match(/^!bet\s+(\d+)\s+team\s*([12])\s*$/i);
+  if (!match) return null;
+  const amount = Number(match[1]);
+  if (!Number.isFinite(amount) || amount < 1) return null;
+  return { amount, side: Number(match[2]) };
+}
+
+function betsFromKickChat(messages, stored) {
+  const merged = new Map();
+  for (const message of Array.isArray(messages) ? messages : []) {
+    const parsed = parseChatBet(message.text);
+    if (!parsed) continue;
+    const username = message.username || "viewer";
+    const key = username.toLowerCase();
+    const existing = merged.get(key);
+    if (existing && existing.side === parsed.side) existing.amount += parsed.amount;
+    else if (!existing) {
+      merged.set(key, { username, side: parsed.side, amount: parsed.amount, mine: false });
+    }
+  }
+
+  for (const bet of Array.isArray(stored) ? stored : []) {
+    const username = bet.username || "viewer";
+    merged.set(username.toLowerCase(), {
+      username,
+      side: Number(bet.side),
+      amount: Number(bet.amount) || 0,
+      mine: Boolean(bet.mine),
+    });
+  }
+
+  return [...merged.values()];
 }
 
 function renderBetList(bets) {
@@ -231,8 +267,11 @@ function renderBetList(bets) {
   for (const side of [1, 2]) {
     const list = document.getElementById(`one-v-one-bets-${side}`);
     const empty = document.getElementById(`one-v-one-bets-${side}-empty`);
+    const total = document.getElementById(`one-v-one-bets-${side}-total`);
     if (!list) continue;
     const team = rows.filter((bet) => Number(bet.side) === side);
+    const stake = team.reduce((sum, bet) => sum + (Number(bet.amount) || 0), 0);
+    if (total) total.textContent = formatCoins(stake);
     empty?.classList.toggle("is-hidden", team.length > 0);
     list.replaceChildren();
     for (const bet of team) {
