@@ -1069,86 +1069,45 @@ ul {
   align-content: start;
 }
 
-.one-v-one-bets-team-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin-bottom: 0.45rem;
-}
-
-.one-v-one-bets-team-head h3 {
-  margin: 0;
-}
-
-.one-v-one-bets-team-head p {
-  margin: 0;
-  color: var(--accent-bright);
-  font-size: 0.92rem;
-  font-weight: 700;
-}
-
 .one-v-one-bets-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.85rem;
 }
 
-.one-v-one-bets-team h3 {
+.one-v-one-bets-team {
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+  padding: 0.85rem 0.75rem 0.95rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(88, 201, 243, 0.14);
+  background: rgba(5, 12, 20, 0.55);
+}
+
+.one-v-one-bets-label {
   margin: 0;
-  color: var(--accent-bright);
-  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
-.one-v-one-bets-list {
-  display: grid;
-  gap: 0.35rem;
+.one-v-one-bets-total {
   margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.one-v-one-bet-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.45rem 0.65rem;
-  border-radius: 10px;
-  border: 1px solid rgba(88, 201, 243, 0.12);
-  background: rgba(5, 10, 16, 0.62);
-}
-
-.one-v-one-bet-row.is-mine {
-  border-color: rgba(126, 216, 255, 0.45);
-}
-
-.one-v-one-bet-user {
-  min-width: 0;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.one-v-one-bet-stake {
-  flex-shrink: 0;
   color: var(--accent-bright);
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  line-height: 0.9;
+  letter-spacing: 0.03em;
 }
 
-.one-v-one-bets-empty {
+.one-v-one-bets-unit {
   margin: 0;
   color: var(--text-muted);
-  font-size: 0.88rem;
-}
-
-.one-v-one-bets-empty.is-hidden {
-  display: none;
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .one-v-one-chat-head {

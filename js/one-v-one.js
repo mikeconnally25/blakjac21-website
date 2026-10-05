@@ -265,31 +265,12 @@ function betsFromKickChat(messages, stored) {
 function renderBetList(bets) {
   const rows = Array.isArray(bets) ? bets : [];
   for (const side of [1, 2]) {
-    const list = document.getElementById(`one-v-one-bets-${side}`);
-    const empty = document.getElementById(`one-v-one-bets-${side}-empty`);
     const total = document.getElementById(`one-v-one-bets-${side}-total`);
-    if (!list) continue;
-    const team = rows.filter((bet) => Number(bet.side) === side);
-    const stake = team.reduce((sum, bet) => sum + (Number(bet.amount) || 0), 0);
-    if (total) total.textContent = formatCoins(stake);
-    empty?.classList.toggle("is-hidden", team.length > 0);
-    list.replaceChildren();
-    for (const bet of team) {
-      const item = document.createElement("li");
-      item.className = "one-v-one-bet-row";
-      if (bet.mine) item.classList.add("is-mine");
-
-      const name = document.createElement("span");
-      name.className = "one-v-one-bet-user";
-      name.textContent = bet.username || "viewer";
-
-      const amount = document.createElement("span");
-      amount.className = "one-v-one-bet-stake";
-      amount.textContent = formatCoins(bet.amount);
-
-      item.append(name, amount);
-      list.appendChild(item);
-    }
+    if (!total) continue;
+    const stake = rows
+      .filter((bet) => Number(bet.side) === side)
+      .reduce((sum, bet) => sum + (Number(bet.amount) || 0), 0);
+    total.textContent = stake.toLocaleString();
   }
 }
 
