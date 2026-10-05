@@ -11,7 +11,7 @@ function renderBet(element, { number, occupied, pool, myBet, winner, signedIn },
 
   const pot = document.createElement("p");
   pot.className = "one-v-one-pot";
-  pot.textContent = `Pool · ${formatCoins(pool)}`;
+  pot.textContent = `Pool · ${formatCoins(pool)} · win pays 2x`;
   block.appendChild(pot);
 
   if (myBet?.side === number) {
@@ -46,7 +46,7 @@ function renderBet(element, { number, occupied, pool, myBet, winner, signedIn },
       const button = document.createElement("button");
       button.type = "submit";
       button.className = "btn btn-sm btn-primary";
-      button.textContent = `Bet ${number}`;
+      button.textContent = `Bet team ${number}`;
 
       form.append(input, button);
       block.appendChild(form);
@@ -369,7 +369,7 @@ async function settleOneVOne(side) {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Could not settle the 1v1.");
     renderOneVOne(data);
-    setOneVOneNote(side === "1" ? "Side 1 wins. Pools paid." : "Side 2 wins. Pools paid.");
+    setOneVOneNote(side === "1" ? "Team 1 wins. Winning bets paid 2x." : "Team 2 wins. Winning bets paid 2x.");
   } catch (error) {
     setOneVOneNote(error.message, true);
   }
