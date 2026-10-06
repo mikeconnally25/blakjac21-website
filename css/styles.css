@@ -895,7 +895,7 @@ ul {
 
 .one-v-one-access-label,
 .one-v-one-access-status {
-  display: block;
+  display: inline;
 }
 
 .one-v-one-access-label {
@@ -906,7 +906,13 @@ ul {
 }
 
 .one-v-one-access-status {
+  color: var(--text);
   font-size: 0.88rem;
+}
+
+.one-v-one-access-status::before {
+  content: " · ";
+  color: var(--text-muted);
 }
 
 .one-v-one-toolbar > .one-v-one-note {
