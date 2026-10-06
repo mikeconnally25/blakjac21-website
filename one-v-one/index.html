@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=stake" />
+  <link rel="stylesheet" href="/css/styles.css?v=admin" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -82,47 +82,70 @@
           <p class="one-v-one-note is-hidden" id="one-v-one-access-note"></p>
 
           <form class="one-v-one-admin is-hidden" id="one-v-one-admin">
-            <div class="one-v-one-access">
-              <label class="one-v-one-access-row">
-                <span>
-                  <span class="one-v-one-access-label">AFF only</span>
-                  <span class="one-v-one-access-status" id="one-v-one-aff-status">Affiliate restriction off</span>
-                </span>
-                <span class="toggle">
-                  <input type="checkbox" id="one-v-one-aff-toggle" aria-labelledby="one-v-one-aff-status" />
-                  <span class="toggle-slider" aria-hidden="true"></span>
-                </span>
-              </label>
-              <label class="one-v-one-access-row">
-                <span>
-                  <span class="one-v-one-access-label">SUB only</span>
-                  <span class="one-v-one-access-status" id="one-v-one-sub-status">Subscriber restriction off</span>
-                </span>
-                <span class="toggle">
-                  <input type="checkbox" id="one-v-one-sub-toggle" aria-labelledby="one-v-one-sub-status" />
-                  <span class="toggle-slider" aria-hidden="true"></span>
-                </span>
-              </label>
-            </div>
             <div class="one-v-one-admin-actions">
-              <button type="button" class="btn btn-outline" id="one-v-one-entries-toggle">Open entries</button>
-              <button type="button" class="btn btn-outline" id="one-v-one-entries-clear">Clear entrants</button>
-              <button type="submit" class="btn btn-primary" name="count" value="1">Draw 1</button>
-              <button type="submit" class="btn btn-primary" name="count" value="2">Draw 2</button>
-              <button type="button" class="btn btn-outline" id="one-v-one-remove-left" disabled>Remove 1</button>
-              <button type="button" class="btn btn-outline" id="one-v-one-remove-right" disabled>Remove 2</button>
-              <button type="button" class="btn btn-outline" id="one-v-one-win-1">1 wins</button>
-              <button type="button" class="btn btn-outline" id="one-v-one-win-2">2 wins</button>
-              <button type="button" class="btn btn-outline" id="one-v-one-new-opponent" disabled>New opponent</button>
-              <select class="one-v-one-bet-seconds" id="one-v-one-bet-seconds" aria-label="Bet timer length">
-                <option value="30">30s</option>
-                <option value="60" selected>60s</option>
-                <option value="90">90s</option>
-                <option value="120">2 min</option>
-              </select>
-              <button type="button" class="btn btn-outline" id="one-v-one-bets-open">Open bets</button>
-              <button type="button" class="btn btn-outline" id="one-v-one-bets-close" disabled>Close bets</button>
-              <button type="button" class="btn btn-outline" id="one-v-one-clear">Reset</button>
+              <section class="one-v-one-admin-group" aria-labelledby="one-v-one-admin-entries">
+                <p class="one-v-one-admin-label" id="one-v-one-admin-entries">Entries</p>
+                <div class="one-v-one-admin-buttons">
+                  <button type="button" class="btn btn-outline" id="one-v-one-entries-toggle">Open entries</button>
+                  <button type="button" class="btn btn-outline" id="one-v-one-entries-clear">Clear entrants</button>
+                </div>
+                <div class="one-v-one-access">
+                  <label class="one-v-one-access-row">
+                    <span>
+                      <span class="one-v-one-access-label">AFF only</span>
+                      <span class="one-v-one-access-status" id="one-v-one-aff-status">Off</span>
+                    </span>
+                    <span class="toggle">
+                      <input type="checkbox" id="one-v-one-aff-toggle" />
+                      <span class="toggle-slider" aria-hidden="true"></span>
+                    </span>
+                  </label>
+                  <label class="one-v-one-access-row">
+                    <span>
+                      <span class="one-v-one-access-label">SUB only</span>
+                      <span class="one-v-one-access-status" id="one-v-one-sub-status">Off</span>
+                    </span>
+                    <span class="toggle">
+                      <input type="checkbox" id="one-v-one-sub-toggle" />
+                      <span class="toggle-slider" aria-hidden="true"></span>
+                    </span>
+                  </label>
+                </div>
+              </section>
+
+              <section class="one-v-one-admin-group" aria-labelledby="one-v-one-admin-draw">
+                <p class="one-v-one-admin-label" id="one-v-one-admin-draw">Draw</p>
+                <div class="one-v-one-admin-buttons">
+                  <button type="submit" class="btn btn-primary" name="count" value="1">Draw 1</button>
+                  <button type="submit" class="btn btn-primary" name="count" value="2">Draw 2</button>
+                  <button type="button" class="btn btn-outline" id="one-v-one-remove-left" disabled>Remove 1</button>
+                  <button type="button" class="btn btn-outline" id="one-v-one-remove-right" disabled>Remove 2</button>
+                </div>
+              </section>
+
+              <section class="one-v-one-admin-group" aria-labelledby="one-v-one-admin-result">
+                <p class="one-v-one-admin-label" id="one-v-one-admin-result">Result</p>
+                <div class="one-v-one-admin-buttons">
+                  <button type="button" class="btn btn-outline" id="one-v-one-win-1">1 wins</button>
+                  <button type="button" class="btn btn-outline" id="one-v-one-win-2">2 wins</button>
+                  <button type="button" class="btn btn-outline" id="one-v-one-new-opponent" disabled>New opponent</button>
+                  <button type="button" class="btn btn-outline" id="one-v-one-clear">Reset</button>
+                </div>
+              </section>
+
+              <section class="one-v-one-admin-group" aria-labelledby="one-v-one-admin-bets">
+                <p class="one-v-one-admin-label" id="one-v-one-admin-bets">Bets</p>
+                <div class="one-v-one-admin-buttons">
+                  <select class="one-v-one-bet-seconds" id="one-v-one-bet-seconds" aria-label="Bet timer length">
+                    <option value="30">30s</option>
+                    <option value="60" selected>60s</option>
+                    <option value="90">90s</option>
+                    <option value="120">2 min</option>
+                  </select>
+                  <button type="button" class="btn btn-outline" id="one-v-one-bets-open">Open bets</button>
+                  <button type="button" class="btn btn-outline" id="one-v-one-bets-close" disabled>Close bets</button>
+                </div>
+              </section>
             </div>
             <p class="one-v-one-note" id="one-v-one-admin-note" role="status"></p>
           </form>
@@ -187,6 +210,6 @@
 
   <script src="/js/main.js"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/one-v-one.js?v=stake"></script>
+  <script src="/js/one-v-one.js?v=admin"></script>
 </body>
 </html>

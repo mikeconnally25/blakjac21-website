@@ -271,16 +271,8 @@ function renderOneVOne(data) {
   const affToggle = document.getElementById("one-v-one-aff-toggle");
   const subToggle = document.getElementById("one-v-one-sub-toggle");
   const accessNote = document.getElementById("one-v-one-access-note");
-  if (affStatus) {
-    affStatus.textContent = affiliatesOnly
-      ? "Only verified affiliates can enter"
-      : "Affiliate restriction off";
-  }
-  if (subStatus) {
-    subStatus.textContent = subscribersOnly
-      ? "Only Kick subscribers can enter"
-      : "Subscriber restriction off";
-  }
+  if (affStatus) affStatus.textContent = affiliatesOnly ? "Verified affiliates" : "Off";
+  if (subStatus) subStatus.textContent = subscribersOnly ? "Kick subscribers" : "Off";
   if (affToggle) affToggle.checked = affiliatesOnly;
   if (subToggle) subToggle.checked = subscribersOnly;
   if (accessNote) {
