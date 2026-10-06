@@ -28,7 +28,12 @@ function slotInitials(name) {
     .join("");
 }
 
-function renderOverlaySide(element, side, seatLabel) {
+function formatPrize(pool) {
+  const payout = Math.max(0, Math.floor(Number(pool) || 0)) * 2;
+  return `Prize · ${payout.toLocaleString("en-US")} UncCoins`;
+}
+
+function renderOverlaySide(element, side, seatLabel, pool) {
   if (!element) return;
   element.replaceChildren();
 
@@ -80,13 +85,19 @@ function renderOverlaySide(element, side, seatLabel) {
     }
   }
 
+  const prize = document.createElement("p");
+  prize.className = "ovo-prize";
+  prize.textContent = formatPrize(pool);
+  copy.appendChild(prize);
+
   element.append(logo, copy);
 }
 
-function matchupSignature(matchup) {
+function matchupSignature(matchup, pools) {
   const sideKey = (side) =>
     [side?.username || "", side?.slot?.slotName || "", side?.slot?.provider || "", side?.slot?.thumbnailUrl || ""].join("|");
-  return `${sideKey(matchup?.left)}::${sideKey(matchup?.right)}`;
+  const prizeKey = `${Number(pools?.one) || 0}|${Number(pools?.two) || 0}`;
+  return `${sideKey(matchup?.left)}::${sideKey(matchup?.right)}::${prizeKey}`;
 }
 
 function renderOverlay(data) {
@@ -99,11 +110,12 @@ function renderOverlay(data) {
     return;
   }
 
-  const signature = matchupSignature(matchup);
+  const pools = data?.pools || { one: 0, two: 0 };
+  const signature = matchupSignature(matchup, pools);
   if (signature === overlaySignature) return;
   overlaySignature = signature;
-  renderOverlaySide(document.getElementById("ovo-left"), matchup.left, "1");
-  renderOverlaySide(document.getElementById("ovo-right"), matchup.right, "2");
+  renderOverlaySide(document.getElementById("ovo-left"), matchup.left, "1", pools.one);
+  renderOverlaySide(document.getElementById("ovo-right"), matchup.right, "2", pools.two);
 }
 
 async function loadOverlay() {
@@ -111,7 +123,7 @@ async function loadOverlay() {
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || "Could not load the 1v1.");
   if (demoMode && !data?.matchup?.left && !data?.matchup?.right) {
-    renderOverlay({ matchup: demoMatchup });
+    renderOverlay({ matchup: demoMatchup, pools: { one: 800, two: 450 } });
     return;
   }
   renderOverlay(data);
