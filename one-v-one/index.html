@@ -85,11 +85,17 @@
             <div class="one-v-one-admin-actions">
               <section class="one-v-one-admin-group" aria-labelledby="one-v-one-admin-entries">
                 <p class="one-v-one-admin-label" id="one-v-one-admin-entries">Entries</p>
-                <div class="one-v-one-admin-buttons">
-                  <button type="button" class="btn btn-outline" id="one-v-one-entries-toggle">Open entries</button>
-                  <button type="button" class="btn btn-outline" id="one-v-one-entries-clear">Clear entrants</button>
-                </div>
                 <div class="one-v-one-access">
+                  <label class="one-v-one-access-row">
+                    <span>
+                      <span class="one-v-one-access-label">1v1</span>
+                      <span class="one-v-one-access-status" id="one-v-one-live-status">Off</span>
+                    </span>
+                    <span class="toggle">
+                      <input type="checkbox" id="one-v-one-entries-toggle" />
+                      <span class="toggle-slider" aria-hidden="true"></span>
+                    </span>
+                  </label>
                   <label class="one-v-one-access-row">
                     <span>
                       <span class="one-v-one-access-label">AFF only</span>
@@ -110,6 +116,9 @@
                       <span class="toggle-slider" aria-hidden="true"></span>
                     </span>
                   </label>
+                </div>
+                <div class="one-v-one-admin-buttons">
+                  <button type="button" class="btn btn-outline" id="one-v-one-entries-clear">Clear entrants</button>
                 </div>
               </section>
 
@@ -210,6 +219,6 @@
 
   <script src="/js/main.js"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/one-v-one.js?v=admin"></script>
+  <script src="/js/one-v-one.js?v=live"></script>
 </body>
 </html>

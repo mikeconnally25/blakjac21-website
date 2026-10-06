@@ -247,6 +247,7 @@ function renderOneVOne(data) {
   const poolText = document.getElementById("one-v-one-pool-text");
   const poolDot = document.getElementById("one-v-one-pool-dot");
   const entriesToggle = document.getElementById("one-v-one-entries-toggle");
+  const liveStatus = document.getElementById("one-v-one-live-status");
   const entriesOpen = Boolean(data?.entriesOpen);
   const affiliatesOnly = Boolean(data?.affiliatesOnly);
   const subscribersOnly = Boolean(data?.subscribersOnly);
@@ -287,7 +288,8 @@ function renderOneVOne(data) {
     accessNote.textContent = note;
     accessNote.classList.toggle("is-hidden", !note);
   }
-  if (entriesToggle) entriesToggle.textContent = entriesOpen ? "Close entries" : "Open entries";
+  if (entriesToggle) entriesToggle.checked = entriesOpen;
+  if (liveStatus) liveStatus.textContent = entriesOpen ? "On" : "Off";
 
   const points = data?.balance;
   const showBalance = Boolean(data?.signedIn) && typeof points === "number" && Number.isFinite(points);
@@ -469,9 +471,9 @@ async function clearOneVOne() {
   }
 }
 
-async function toggleOneVOneEntries() {
+async function toggleOneVOneEntries(event) {
   setOneVOneNote("");
-  const open = document.getElementById("one-v-one-entries-toggle")?.textContent !== "Close entries";
+  const open = Boolean(event.target.checked);
   try {
     const response = await fetch("/api/one-v-one/entries", {
       method: "POST",
@@ -480,11 +482,14 @@ async function toggleOneVOneEntries() {
       body: JSON.stringify({ open }),
     });
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Could not update entries.");
+    if (!response.ok) throw new Error(data.error || "Could not update the 1v1.");
     renderOneVOne(data);
-    setOneVOneNote(open ? "Entries are open. Chat 1v1 to join." : "Entries are closed.");
+    if (!open) setOneVOneNote("1v1 is off.");
+    else if (data.announced) setOneVOneNote("1v1 is on. Kick chat was told to type 1v1.");
+    else setOneVOneNote("1v1 is on, but the chat message did not send.", true);
   } catch (error) {
     setOneVOneNote(error.message, true);
+    loadOneVOne().catch(() => {});
   }
 }
 
@@ -580,7 +585,7 @@ async function setOneVOneAccess(patch) {
   }
 }
 
-document.getElementById("one-v-one-entries-toggle")?.addEventListener("click", toggleOneVOneEntries);
+document.getElementById("one-v-one-entries-toggle")?.addEventListener("change", toggleOneVOneEntries);
 document.getElementById("one-v-one-aff-toggle")?.addEventListener("change", (event) => {
   setOneVOneAccess({ affiliatesOnly: Boolean(event.target.checked) });
 });
