@@ -1152,9 +1152,15 @@ function renderHuntAddSlotResults() {
 
   if (!slotCatalog.length) {
     results.classList.add("is-hidden");
-    empty.classList.remove("is-hidden");
-    empty.textContent =
-      "Slot catalog is empty. Sync Allowed slots in Requests admin first.";
+    empty.classList.add("is-hidden");
+    empty.textContent = "";
+    return;
+  }
+
+  if (!query) {
+    results.classList.add("is-hidden");
+    empty.classList.add("is-hidden");
+    empty.textContent = "";
     return;
   }
 
@@ -1194,8 +1200,7 @@ function renderHuntAddSlotResults() {
     });
   });
 
-  // Empty query = browse the catalog; typed query = filtered matches.
-  const limited = matches.slice(0, query ? 40 : 30);
+  const limited = matches.slice(0, 40);
 
   if (!limited.length) {
     results.classList.add("is-hidden");
@@ -2732,18 +2737,6 @@ function initAdminForm() {
       renderHuntAddSelectedSlot();
     }
     renderHuntAddSlotResults();
-  });
-
-  addSearch?.addEventListener("focus", () => {
-    if (!huntAddSelectedSlot) {
-      renderHuntAddSlotResults();
-    }
-  });
-
-  addSearch?.addEventListener("click", () => {
-    if (!huntAddSelectedSlot) {
-      renderHuntAddSlotResults();
-    }
   });
 
   addResults?.addEventListener("click", (event) => {
