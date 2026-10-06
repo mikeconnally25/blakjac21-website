@@ -1052,6 +1052,24 @@ ul {
   text-transform: uppercase;
 }
 
+button.one-v-one-name {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(88, 201, 243, 0.4);
+  text-underline-offset: 0.12em;
+}
+
+button.one-v-one-name:hover,
+button.one-v-one-name:focus-visible {
+  color: var(--accent-bright);
+  outline: none;
+}
+
 .one-v-one-calls {
   display: grid;
   gap: 0.65rem;

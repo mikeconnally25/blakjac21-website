@@ -79,9 +79,14 @@ function renderSide(element, side, seatLabel, bet) {
   seat.className = "one-v-one-seat";
   seat.textContent = seatLabel;
 
-  const heading = document.createElement("h2");
+  const heading = document.createElement(side?.username ? "button" : "h2");
   heading.className = "one-v-one-name";
   heading.textContent = side?.username || "Open seat";
+  if (side?.username) {
+    heading.type = "button";
+    heading.title = "View Stake username";
+    heading.addEventListener("click", () => showSeatProfile(side));
+  }
 
   const list = document.createElement("ul");
   list.className = "one-v-one-calls";
@@ -134,6 +139,62 @@ function renderSide(element, side, seatLabel, bet) {
   element.append(seat, heading, list);
   renderBet(element, bet, keepValue);
 }
+
+function ensureSeatProfile() {
+  let modal = document.getElementById("one-v-one-profile");
+  if (modal) return modal;
+
+  modal = document.createElement("div");
+  modal.id = "one-v-one-profile";
+  modal.className = "winner-profile-modal is-hidden";
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+  modal.setAttribute("aria-labelledby", "one-v-one-profile-title");
+  modal.innerHTML = `
+    <div class="winner-profile-backdrop" data-one-v-one-profile-close="true"></div>
+    <div class="winner-profile-dialog">
+      <p class="giveaways-eyebrow">1v1 account</p>
+      <h3 class="winner-profile-title" id="one-v-one-profile-title">Account</h3>
+      <dl class="winner-profile-fields">
+        <div class="winner-profile-field">
+          <dt>Kick</dt>
+          <dd id="one-v-one-profile-kick">—</dd>
+        </div>
+        <div class="winner-profile-field">
+          <dt>Stake</dt>
+          <dd id="one-v-one-profile-stake">—</dd>
+        </div>
+      </dl>
+      <button type="button" class="btn btn-sm btn-outline" data-one-v-one-profile-close="true">Close</button>
+    </div>
+  `;
+  document.body.append(modal);
+  modal.addEventListener("click", (event) => {
+    if (event.target?.closest?.("[data-one-v-one-profile-close]")) hideSeatProfile();
+  });
+  return modal;
+}
+
+function hideSeatProfile() {
+  document.getElementById("one-v-one-profile")?.classList.add("is-hidden");
+}
+
+function showSeatProfile(side) {
+  if (!side?.username) return;
+  const modal = ensureSeatProfile();
+  const title = document.getElementById("one-v-one-profile-title");
+  const kick = document.getElementById("one-v-one-profile-kick");
+  const stake = document.getElementById("one-v-one-profile-stake");
+  const username = String(side.username).trim();
+  if (title) title.textContent = username;
+  if (kick) kick.textContent = username;
+  if (stake) stake.textContent = String(side.stakeUsername || "").trim() || "Not linked";
+  modal.classList.remove("is-hidden");
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") hideSeatProfile();
+});
 
 let kickChatSignature = "";
 
