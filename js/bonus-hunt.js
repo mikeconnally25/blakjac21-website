@@ -3256,6 +3256,21 @@ function initAdminForm() {
     return openerOrigins[0] || "*";
   };
 
+  const notifyFailure = (error) => {
+    window[lockKey] = false;
+    const message = (error && error.message) || String(error || "Sync failed");
+    console.error("Sync failed:", message);
+    try {
+      if (!window.opener || window.opener.closed) return;
+      window.opener.postMessage(
+        { source: "bh-slot-sync-failed", token, message },
+        pickOpenerTarget()
+      );
+    } catch {
+      /* ignore */
+    }
+  };
+
   const uploadViaOpener = (slots) =>
     new Promise((resolve, reject) => {
       if (!window.opener || window.opener.closed) {
@@ -3298,12 +3313,14 @@ function initAdminForm() {
 
   const path = String(location.pathname || "").toLowerCase();
   const expectedPath = "/casino/group/" + groupSlug;
-  if (!path.includes(expectedPath)) {
-    throw new Error(
-      "Wrong Stake page. Open https://stake.com" +
+  if (!path.includes(expectedPath) && !path.includes("/casino")) {
+    const wrongPage = new Error(
+      "Open https://stake.com" +
         expectedPath +
         " , wait for it to load, then paste this script again."
     );
+    notifyFailure(wrongPage);
+    throw wrongPage;
   }
 
   const skip = new Set(["poker", "roulette", "blackjack", "baccarat", "dice", "mines", "plinko", "limbo", "keno", "wheel", "hilo", "crash"]);
@@ -3471,24 +3488,157 @@ function initAdminForm() {
     metrics.pos + metrics.view >= metrics.height - 48;
 
   const stepTowardEnd = () => {
-    scrollToBottom();
+    const metrics = scrollMetrics();
+    const step = Math.max(280, Math.floor(metrics.view * 0.8));
+    const next = metrics.pos + step;
+    if (metrics.root) {
+      metrics.root.scrollTop = next;
+      metrics.root.dispatchEvent(new Event("scroll", { bubbles: true }));
+    } else {
+      window.scrollTo(0, next);
+      document.documentElement.scrollTop = next;
+      document.body.scrollTop = next;
+    }
+    const btn = findLoadMore();
+    if (btn) btn.scrollIntoView({ block: "center", behavior: "auto" });
   };
 
+  const loadGroupFromApi = async () => {
+    const endpoint = location.origin.replace(/\\/$/, "") + "/_api/graphql";
+    const query =
+      "query SlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!) {" +
+      " slugKuratorGroup(slug: $slug) {" +
+      " name slug gameCount" +
+      " groupGamesList(limit: $limit, offset: $offset) {" +
+      " game { name slug thumbnailUrl groupGames { group { translation type slug } } }" +
+      " } } }";
+    const pageSize = 40;
+    const collected = new Map();
+    let rawCount = 0;
+    let gameCount = 0;
+
+    for (let offset = 0; offset < 8000; offset += pageSize) {
+      let response;
+      try {
+        response = await fetch(endpoint, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            accept: "application/json",
+            "content-type": "application/json",
+            "x-language": "en",
+            "x-operation-name": "SlugKuratorGroup",
+            "x-operation-type": "query",
+          },
+          body: JSON.stringify({
+            query,
+            variables: { slug: groupSlug, limit: pageSize, offset },
+          }),
+        });
+      } catch (error) {
+        console.warn("Stake list request failed.", error);
+        return null;
+      }
+
+      const contentType = response.headers.get("content-type") || "";
+      if (!response.ok || contentType.indexOf("json") === -1) {
+        console.warn("Stake list unavailable.", response.status);
+        return null;
+      }
+
+      const data = await response.json().catch(() => null);
+      const group = data && data.data && data.data.slugKuratorGroup;
+      if (!group) {
+        const apiMessage =
+          data && data.errors && data.errors[0] && data.errors[0].message;
+        console.warn("Stake list query failed.", apiMessage || data);
+        return null;
+      }
+
+      gameCount = Number(group.gameCount) || gameCount;
+      const list = Array.isArray(group.groupGamesList) ? group.groupGamesList : [];
+      if (!list.length) break;
+
+      let added = 0;
+      for (const entry of list) {
+        rawCount += 1;
+        const game = (entry && entry.game) || entry || {};
+        const slug = String(game.slug || "").trim().toLowerCase();
+        if (!slug || skip.has(slug) || collected.has(slug)) continue;
+        const providerGroup = (game.groupGames || []).find((item) => {
+          const type = String((item && item.group && item.group.type) || "").toLowerCase();
+          return type === "provider" || type === "gameprovider";
+        });
+        const provider = String(
+          (providerGroup && providerGroup.group && providerGroup.group.translation) || ""
+        ).trim();
+        collected.set(slug, {
+          name: String(game.name || slug).replace(/\\s+/g, " ").trim() || slug,
+          slug,
+          groupSlug,
+          provider: provider || undefined,
+          thumbnailUrl: game.thumbnailUrl ? String(game.thumbnailUrl) : undefined,
+        });
+        added += 1;
+      }
+
+      reportProgress(collected.size + " games from Stake", collected.size);
+
+      if (gameCount && rawCount >= gameCount) break;
+      if (list.length < pageSize) break;
+      if (!added) {
+        console.warn("Stake list pagination stalled. Scrolling the page instead.");
+        return null;
+      }
+    }
+
+    if (!collected.size) return null;
+    if (gameCount && rawCount < gameCount) {
+      console.warn(
+        "Stake list stopped at " + rawCount + " of " + gameCount + ". Scrolling the page instead."
+      );
+      return null;
+    }
+    return [...collected.values()];
+  };
+
+  let apiSlots = null;
+  try {
+    reportProgress("Loading the full ${label} list from Stake…", 0);
+    apiSlots = await loadGroupFromApi();
+  } catch (error) {
+    console.warn("Stake list sync failed. Scrolling the page instead.", error);
+    apiSlots = null;
+  }
+
+  if (apiSlots) {
+    for (const slot of apiSlots) linked.set(slot.slug, slot);
+    reportProgress(linked.size + " games loaded from Stake", linked.size);
+  } else {
+  if (!path.includes(expectedPath)) {
+    const wrongPage = new Error(
+      "Stake's list did not load. Open https://stake.com" +
+        expectedPath +
+        " , wait for the games to appear, then paste this script again."
+    );
+    notifyFailure(wrongPage);
+    throw wrongPage;
+  }
   let lastCount = -1;
   let lastHeight = -1;
   let endStreak = 0;
 
-  for (let i = 0; i < 500; i++) {
+  for (let i = 0; i < 800; i++) {
     stepTowardEnd();
     const btn = findLoadMore();
     if (btn) {
       endStreak = 0;
       btn.click();
-      await sleep(140);
+      await sleep(220);
     } else if (isAtBottom(scrollMetrics())) {
-      await sleep(180);
+      await sleep(350);
     } else {
-      await sleep(40);
+      await sleep(80);
     }
 
     const { total } = scrapeVisible();
@@ -3496,7 +3646,7 @@ function initAdminForm() {
     const grew = total !== lastCount || metrics.height > lastHeight + 12;
     const parkedAtEnd = isAtBottom(metrics) && !findLoadMore();
 
-    if (i % 6 === 0) {
+    if (i % 4 === 0) {
       reportProgress(
         total +
           " games linked" +
@@ -3513,14 +3663,14 @@ function initAdminForm() {
     lastCount = total;
     lastHeight = metrics.height;
 
-    if (endStreak >= 4) break;
+    if (endStreak >= 8) break;
   }
 
   scrollToBottom();
-  await sleep(80);
+  await sleep(200);
   scrapeVisible();
-
   await hydrateMissingLogos();
+  }
 
   const slots = [];
   let withLogos = 0;
@@ -3531,9 +3681,11 @@ function initAdminForm() {
   }
 
   if (!slots.length) {
-    throw new Error(
-      "No games found on this page. Wait for Stake to finish loading (pass Cloudflare if shown), then paste the script again."
+    const empty = new Error(
+      "No games found. Wait for Stake to finish loading (pass Cloudflare if shown), then paste the script again."
     );
+    notifyFailure(empty);
+    throw empty;
   }
 
   reportProgress(
@@ -3551,7 +3703,7 @@ function initAdminForm() {
     }
     console.log("Done. Uploaded " + slots.length + " ${label} slots (" + (data.withThumbnails || withLogos) + " logos). Return to Bonus Hunt.");
   } catch (error) {
-    console.error("Upload failed:", error.message || error);
+    notifyFailure(error);
     throw error;
   } finally {
     window[lockKey] = false;
@@ -3622,6 +3774,12 @@ function initAdminForm() {
         if (typeof data.message === "string" && data.message.trim()) {
           setCatalogSyncStatus(data.message.trim());
         }
+        return;
+      }
+      if (data?.source === "bh-slot-sync-failed" && data.token) {
+        const message = data.message || "Sync failed.";
+        setCatalogSyncStatus(message, "error");
+        resolveSyncCompletion(data.token, { error: message });
         return;
       }
       if (data?.source !== "bh-slot-sync" || !data.token || !Array.isArray(data.slots)) {
@@ -3843,6 +4001,9 @@ function initAdminForm() {
       waitForSyncCompletion(tokenData.token),
     ]);
     syncCompletionWaiters.delete(tokenData.token);
+    if (status?.error) {
+      throw new Error(status.error);
+    }
 
     await loadSlotCatalog();
     hideSyncScriptFallback();
