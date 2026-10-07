@@ -15,6 +15,8 @@
   let rouletteIdleLastTs = 0;
   let kenoPicks = new Set();
   let kenoDrawing = false;
+  let topDollarSpinning = false;
+  let topDollarBonus = false;
   let busy = false;
   let dealing = false;
 
@@ -1703,6 +1705,171 @@
     $("hg-keno-play")?.addEventListener("click", () => {
       void playKeno();
     });
+
+    paintTopDollarReel(0, "seven");
+    paintTopDollarReel(1, "dollar");
+    paintTopDollarReel(2, "bar3");
+    $("hg-td-spin")?.addEventListener("click", () => {
+      void spinTopDollar();
+    });
+    $("hg-td-take")?.addEventListener("click", () => {
+      void actTopDollar("take");
+    });
+    $("hg-td-climb")?.addEventListener("click", () => {
+      void actTopDollar("climb");
+    });
+  }
+
+  function topDollarFace(symbol) {
+    const face = document.createElement("span");
+    face.className = `hg-td-face is-${symbol || "blank"}`;
+    if (symbol === "dollar") {
+      const bill = document.createElement("span");
+      bill.className = "hg-td-bill";
+      bill.textContent = "$";
+      face.append(bill);
+      return face;
+    }
+    if (symbol === "seven") {
+      face.textContent = "7";
+      return face;
+    }
+    const bars = symbol === "bar" ? 1 : symbol === "bar2" ? 2 : symbol === "bar3" ? 3 : 0;
+    if (bars) {
+      for (let line = 0; line < bars; line += 1) {
+        const row = document.createElement("span");
+        row.textContent = "BAR";
+        face.append(row);
+      }
+      return face;
+    }
+    return face;
+  }
+
+  function paintTopDollarReel(index, symbol) {
+    const reel = document.querySelector(`[data-td-reel="${index}"]`);
+    if (!reel) return;
+    reel.replaceChildren(topDollarFace(symbol));
+  }
+
+  function setTopDollarResult(text, kind) {
+    const result = $("hg-td-result");
+    if (!result) return;
+    result.textContent = text || "";
+    result.classList.toggle("is-win", kind === "win" || kind === "bonus");
+    result.classList.toggle("is-lose", kind === "lose");
+    result.classList.toggle("is-bust", kind === "bust");
+  }
+
+  function showTopDollarBonus(bonus) {
+    const panel = $("hg-td-bonus");
+    if (!bonus?.active) {
+      topDollarBonus = false;
+      panel?.classList.add("is-hidden");
+      const spin = $("hg-td-spin");
+      if (spin) spin.disabled = false;
+      return;
+    }
+    topDollarBonus = true;
+    panel?.classList.remove("is-hidden");
+    const offer = $("hg-td-offer");
+    const amount = $("hg-td-offer-amount");
+    const climb = $("hg-td-climb");
+    const spin = $("hg-td-spin");
+    if (offer) offer.textContent = `${bonus.multiplier}x`;
+    if (amount) amount.textContent = `${formatPoints(bonus.offer)} UncCoins`;
+    if (climb) {
+      climb.disabled = !bonus.canClimb;
+      climb.textContent = bonus.canClimb ? "Climb" : "Top bill";
+    }
+    if (spin) spin.disabled = true;
+  }
+
+  async function animateTopDollarReels(symbols) {
+    const cycle = ["bar", "seven", "dollar", "bar2", "blank", "bar3", "bar"];
+    const delays = [680, 920, 1180];
+    if (prefersReducedMotion()) {
+      symbols.forEach((symbol, index) => paintTopDollarReel(index, symbol));
+      return;
+    }
+    await Promise.all(
+      symbols.map(
+        (symbol, index) =>
+          new Promise((resolve) => {
+            const started = performance.now();
+            const tick = (now) => {
+              const elapsed = now - started;
+              if (elapsed >= delays[index]) {
+                paintTopDollarReel(index, symbol);
+                resolve();
+                return;
+              }
+              paintTopDollarReel(index, cycle[Math.floor(elapsed / 60) % cycle.length]);
+              requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+          })
+      )
+    );
+  }
+
+  async function spinTopDollar() {
+    if (busy || topDollarSpinning || topDollarBonus) return;
+    const bet = Math.floor(Number($("hg-td-bet")?.value || 0));
+    topDollarSpinning = true;
+    const spin = $("hg-td-spin");
+    if (spin) spin.disabled = true;
+    setTopDollarResult("Spinning", "");
+    const data = await play({ game: "top-dollar", action: "spin", bet });
+    if (!data) {
+      topDollarSpinning = false;
+      if (spin) spin.disabled = topDollarBonus;
+      return;
+    }
+    await animateTopDollarReels(data.reels || ["blank", "blank", "blank"]);
+    topDollarSpinning = false;
+    if (data.bonus?.active) {
+      setTopDollarResult("Top Dollar", "bonus");
+      showTopDollarBonus(data.bonus);
+      return;
+    }
+    if (data.payout > 0) {
+      setTopDollarResult(`${data.label} · ${formatPoints(data.payout)} UncCoins`, "win");
+    } else {
+      setTopDollarResult("No line", "lose");
+    }
+    if (spin) spin.disabled = false;
+  }
+
+  async function actTopDollar(action) {
+    if (busy || !topDollarBonus) return;
+    const data = await play({ game: "top-dollar", action });
+    if (!data) return;
+    if (data.bonus?.active) {
+      setTopDollarResult(`${data.multiplier}x`, "bonus");
+      showTopDollarBonus(data.bonus);
+      return;
+    }
+    showTopDollarBonus(null);
+    if (data.bust) {
+      setTopDollarResult(`Missed · ${formatPoints(data.payout)} UncCoins`, "bust");
+      return;
+    }
+    setTopDollarResult(`Took ${data.multiplier}x · ${formatPoints(data.payout)} UncCoins`, "win");
+  }
+
+  async function resumeTopDollar() {
+    const data = await play({ game: "top-dollar", action: "status" });
+    if (!data?.active) {
+      showTopDollarBonus(null);
+      return;
+    }
+    paintTopDollarReel(0, "dollar");
+    paintTopDollarReel(1, "dollar");
+    paintTopDollarReel(2, "dollar");
+    setTopDollarResult("Top Dollar", "bonus");
+    showTopDollarBonus(data);
+    if (!bjSessionId) switchGame("top-dollar");
   }
 
   async function loadAuth() {
@@ -1736,6 +1903,7 @@
     if (currentUser?.kickUserId) {
       await loadBalance();
       await resumeActiveBlackjack();
+      await resumeTopDollar();
     }
   }
 
@@ -1743,7 +1911,7 @@
     currentUser = event.detail?.user || null;
     syncAuthUi();
     if (currentUser?.kickUserId) {
-      void loadBalance().then(() => resumeActiveBlackjack());
+      void loadBalance().then(() => resumeActiveBlackjack().then(() => resumeTopDollar()));
     }
   });
 

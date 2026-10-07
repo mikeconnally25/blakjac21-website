@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css?v=topdollar1" />
 </head>
 <body class="home-page">
   <div class="bg-glow" aria-hidden="true"></div>
@@ -82,13 +82,14 @@
             <div class="section-header left house-games-header">
               <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
               <h2>House Games</h2>
-              <p>Gamble UncCoins on blackjack, roulette, and keno. Wins go straight back to your balance.</p>
+              <p>Gamble UncCoins on blackjack, roulette, keno, and Top Dollar. Wins go straight back to your balance.</p>
             </div>
 
             <div class="house-games-tabs" role="tablist" aria-label="House games">
               <button type="button" class="house-games-tab is-active" data-hg-game="blackjack" role="tab" aria-selected="true">Blackjack</button>
               <button type="button" class="house-games-tab" data-hg-game="roulette" role="tab" aria-selected="false">Roulette</button>
               <button type="button" class="house-games-tab" data-hg-game="keno" role="tab" aria-selected="false">Keno</button>
+              <button type="button" class="house-games-tab" data-hg-game="top-dollar" role="tab" aria-selected="false">Top Dollar</button>
             </div>
             </div>
 
@@ -270,6 +271,45 @@
                   </aside>
                 </div>
               </div>
+
+              <div class="house-game-panel" data-hg-panel="top-dollar" id="hg-top-dollar" hidden>
+                <div class="hg-td">
+                  <div class="hg-td-cabinet">
+                    <p class="hg-td-marquee">Top Dollar</p>
+                    <div class="hg-td-reels" id="hg-td-reels" aria-label="Top Dollar reels">
+                      <div class="hg-td-window"><div class="hg-td-reel" data-td-reel="0"></div></div>
+                      <div class="hg-td-window"><div class="hg-td-reel" data-td-reel="1"></div></div>
+                      <div class="hg-td-window"><div class="hg-td-reel" data-td-reel="2"></div></div>
+                    </div>
+                    <div class="hg-td-bonus is-hidden" id="hg-td-bonus">
+                      <p class="hg-td-bonus-kicker">Top Dollar</p>
+                      <p class="hg-td-bonus-offer" id="hg-td-offer">10x</p>
+                      <p class="hg-td-bonus-amount" id="hg-td-offer-amount"></p>
+                      <div class="hg-td-bonus-actions">
+                        <button type="button" class="btn btn-primary" id="hg-td-take">Take</button>
+                        <button type="button" class="btn btn-outline" id="hg-td-climb">Climb</button>
+                      </div>
+                      <p class="hg-td-bonus-note">Climb goes for the next bill. A miss pays 10x.</p>
+                    </div>
+                  </div>
+                  <div class="hg-td-side">
+                    <div class="hg-bet-row">
+                      <label class="guess-label" for="hg-td-bet">Bet</label>
+                      <input class="guess-input hg-bet-input" id="hg-td-bet" type="number" min="1" max="5000" step="1" value="10" />
+                      <button type="button" class="btn btn-primary" id="hg-td-spin">Spin</button>
+                    </div>
+                    <p class="hg-td-result" id="hg-td-result" aria-live="polite"></p>
+                    <ul class="hg-td-pays">
+                      <li><span>7 7 7</span><strong>20x</strong></li>
+                      <li><span>Triple bar</span><strong>10x</strong></li>
+                      <li><span>Double bar</span><strong>6x</strong></li>
+                      <li><span>Bar</span><strong>4x</strong></li>
+                      <li><span>Any bar</span><strong>2x</strong></li>
+                      <li><span>$ $ $</span><strong>Bonus</strong></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
             </div>
           </div>
@@ -423,7 +463,7 @@
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js"></script>
   <script src="js/main.js?v=slotstats1"></script>
   <script src="js/auth.js"></script>
-  <script src="js/house-games.js"></script>
+  <script src="js/house-games.js?v=topdollar1"></script>
   <script src="js/site-chat.js"></script>
 </body>
 </html>

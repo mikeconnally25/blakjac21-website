@@ -8446,6 +8446,215 @@ button.one-v-one-name:focus-visible {
   gap: 0.5rem;
 }
 
+.hg-td {
+  display: grid;
+  grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.hg-td-cabinet {
+  position: relative;
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.85rem;
+  border-radius: 1.1rem;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(232, 196, 92, 0.18), transparent 42%),
+    linear-gradient(180deg, #1a3a28 0%, #0d2218 100%);
+  border: 1px solid rgba(232, 196, 92, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(8, 24, 16, 0.65);
+}
+
+.hg-td-marquee {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f3d98a;
+}
+
+.hg-td-reels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.hg-td-window {
+  height: 6.4rem;
+  overflow: hidden;
+  border-radius: 0.7rem;
+  background: linear-gradient(180deg, #f7f1df, #d9d0b4 45%, #f4efe2);
+  box-shadow: inset 0 0 0 2px rgba(42, 32, 12, 0.35);
+}
+
+.hg-td-reel {
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.hg-td-reel.is-spinning .hg-td-face {
+  filter: blur(1.5px);
+}
+
+.hg-td-face {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.hg-td-face.is-blank {
+  background: repeating-linear-gradient(
+    180deg,
+    transparent,
+    transparent 0.55rem,
+    rgba(90, 78, 48, 0.08) 0.6rem
+  );
+}
+
+.hg-td-face.is-bar,
+.hg-td-face.is-bar2,
+.hg-td-face.is-bar3 {
+  color: #1b140c;
+  font-size: 1.15rem;
+}
+
+.hg-td-face.is-bar2,
+.hg-td-face.is-bar3 {
+  gap: 0.08rem;
+  align-content: center;
+  font-size: 0.92rem;
+  line-height: 1;
+}
+
+.hg-td-face.is-seven {
+  color: #c81e1e;
+  font-size: 3.2rem;
+  line-height: 1;
+  text-shadow: 0 2px 0 rgba(80, 8, 8, 0.25);
+}
+
+.hg-td-face.is-dollar {
+  color: #6a4a08;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(255, 236, 170, 0.95), rgba(212, 168, 52, 0.2) 70%);
+}
+
+.hg-td-bill {
+  width: 4.3rem;
+  min-height: 2.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0.35rem;
+  border: 2px solid #8a6a1d;
+  background: linear-gradient(160deg, #fff4c8, #e2b84a);
+  color: #5c4308;
+  font-size: 1.55rem;
+  line-height: 1;
+  box-shadow: inset 0 0 0 2px rgba(255, 248, 220, 0.7);
+}
+
+.hg-td-bonus {
+  position: absolute;
+  inset: 0.55rem;
+  z-index: 2;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 0.25rem;
+  padding: 0.8rem;
+  border-radius: 0.9rem;
+  text-align: center;
+  background: rgba(8, 18, 12, 0.9);
+  border: 1px solid rgba(243, 217, 138, 0.55);
+}
+
+.hg-td-bonus-kicker,
+.hg-td-bonus-note {
+  margin: 0;
+  color: #f3d98a;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hg-td-bonus-offer {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 0.9;
+  color: #fff6d4;
+}
+
+.hg-td-bonus-amount {
+  margin: 0 0 0.35rem;
+  color: #d7ecdf;
+  font-size: 0.92rem;
+}
+
+.hg-td-bonus-actions {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.hg-td-side {
+  display: grid;
+  gap: 0.7rem;
+  align-content: start;
+}
+
+.hg-td-result {
+  margin: 0;
+  min-height: 1.3rem;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.hg-td-result.is-win {
+  color: #6de0a4;
+}
+
+.hg-td-result.is-lose,
+.hg-td-result.is-bust {
+  color: #ff8f8f;
+}
+
+.hg-td-pays {
+  display: grid;
+  gap: 0.28rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hg-td-pays li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.28rem 0.55rem;
+  border-radius: 0.4rem;
+  background: rgba(6, 12, 18, 0.45);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.hg-td-pays strong {
+  color: var(--text);
+  font-weight: 650;
+}
+
 .hg-result {
   margin: 0;
   min-height: 1.35rem;
@@ -8472,6 +8681,10 @@ button.one-v-one-name:focus-visible {
 }
 
 @media (max-width: 720px) {
+  .hg-td {
+    grid-template-columns: 1fr;
+  }
+
   .hg-bj-table {
     border-radius: 2rem 2rem 1.4rem 1.4rem;
     padding: 0.65rem;
