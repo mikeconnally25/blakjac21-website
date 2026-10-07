@@ -1853,6 +1853,7 @@ function updatePanels() {
 
   adminPanel?.classList.toggle("is-hidden", !isHuntAdmin());
   settingsForm?.classList.toggle("is-hidden", !isHuntAdmin());
+  document.getElementById("spin-overlay-admin")?.classList.toggle("is-hidden", !isHuntAdmin());
   if (highestMultiToggle) {
     highestMultiToggle.disabled = !isHuntAdmin();
   }
@@ -2632,6 +2633,158 @@ async function removeBonusEntry(id, button) {
   }
 }
 
+let openingSlots = [];
+
+function setOpeningStatus(message, tone = "") {
+  const status = document.getElementById("spin-open-status");
+  if (!status) return;
+  status.textContent = message;
+  status.classList.toggle("is-hidden", !message);
+  status.classList.toggle("is-error", tone === "error");
+  status.classList.toggle("is-success", tone === "success");
+}
+
+function renderOpeningList() {
+  const list = document.getElementById("spin-open-list");
+  const clearBtn = document.getElementById("spin-open-clear");
+  if (!list) return;
+  list.replaceChildren();
+  clearBtn?.classList.toggle("is-hidden", openingSlots.length === 0);
+  if (!openingSlots.length) {
+    const empty = document.createElement("li");
+    empty.className = "spin-open-empty";
+    empty.textContent = "Nothing on the overlay.";
+    list.append(empty);
+    return;
+  }
+
+  for (const slot of openingSlots) {
+    const item = document.createElement("li");
+    item.className = "spin-open-row";
+    const name = document.createElement("span");
+    name.textContent = slot.name;
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "btn btn-sm btn-outline";
+    remove.textContent = "Remove";
+    remove.addEventListener("click", () => {
+      updateOpening({ action: "remove", id: slot.id }).catch((error) => {
+        setOpeningStatus(error.message, "error");
+      });
+    });
+    item.append(name, remove);
+    list.append(item);
+  }
+}
+
+async function refreshOpeningList() {
+  const response = await fetch("/api/slot-stats-live", { cache: "no-store", credentials: "same-origin" });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || "Could not load overlay slots.");
+  openingSlots = Array.isArray(data.slots) ? data.slots : [];
+  renderOpeningList();
+}
+
+async function updateOpening(body) {
+  const response = await fetch("/api/slot-stats-opening", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || "Could not update the overlay.");
+  openingSlots = Array.isArray(data.slots) ? data.slots : [];
+  renderOpeningList();
+  setOpeningStatus(body.action === "clear" ? "Overlay cleared." : "Overlay updated.", "success");
+}
+
+function renderOpeningSearch() {
+  const results = document.getElementById("spin-open-results");
+  const empty = document.getElementById("spin-open-empty");
+  const search = document.getElementById("spin-open-search");
+  if (!results || !empty) return;
+  const query = search?.value.trim().toLowerCase() || "";
+  const tokens = query.split(/\s+/).filter(Boolean);
+  results.replaceChildren();
+  if (!query) {
+    results.classList.add("is-hidden");
+    empty.classList.add("is-hidden");
+    return;
+  }
+
+  const matches = [];
+  const seen = new Set();
+  for (const slot of slotCatalog) {
+    const slug = String(slot.slug || "").toLowerCase();
+    if (slug && seen.has(slug)) continue;
+    const haystack = [slot.name, slot.slug, slot.provider].filter(Boolean).join(" ").toLowerCase();
+    if (!tokens.every((token) => haystack.includes(token))) continue;
+    if (slug) seen.add(slug);
+    matches.push(slot);
+  }
+  matches.sort((a, b) => {
+    const aName = String(a.name || "").toLowerCase();
+    const bName = String(b.name || "").toLowerCase();
+    const aStarts = aName.startsWith(query) ? 0 : 1;
+    const bStarts = bName.startsWith(query) ? 0 : 1;
+    if (aStarts !== bStarts) return aStarts - bStarts;
+    return aName.localeCompare(bName);
+  });
+  const limited = matches.slice(0, 12);
+  if (!limited.length) {
+    results.classList.add("is-hidden");
+    empty.classList.remove("is-hidden");
+    empty.textContent = slotCatalog.length ? "No matching slots." : "Sync slots from Allowed slots first.";
+    return;
+  }
+
+  empty.classList.add("is-hidden");
+  results.classList.remove("is-hidden");
+  for (const slot of limited) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "hunt-add-slot-option";
+    const label = document.createElement("span");
+    label.className = "hunt-add-slot-option-name";
+    label.textContent = slot.name;
+    const note = document.createElement("span");
+    note.className = "hunt-add-slot-option-provider";
+    note.textContent = [slot.groupLabel, slot.provider].filter(Boolean).join(" · ");
+    const copy = document.createElement("span");
+    copy.className = "hunt-add-slot-option-copy";
+    copy.append(label, note);
+    button.append(copy);
+    button.addEventListener("click", () => {
+      const input = document.getElementById("spin-open-search");
+      if (input) input.value = "";
+      renderOpeningSearch();
+      updateOpening({ action: "add", slug: slot.slug, name: slot.name }).catch((error) => {
+        setOpeningStatus(error.message, "error");
+      });
+    });
+    results.append(button);
+  }
+}
+
+function initOpeningAdmin() {
+  const search = document.getElementById("spin-open-search");
+  search?.addEventListener("input", renderOpeningSearch);
+  search?.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    const buttons = document.querySelectorAll("#spin-open-results button");
+    if (buttons.length === 1) buttons[0].click();
+  });
+  document.getElementById("spin-open-clear")?.addEventListener("click", () => {
+    updateOpening({ action: "clear" }).catch((error) => setOpeningStatus(error.message, "error"));
+  });
+  window.setInterval(() => {
+    if (document.getElementById("spin-overlay-admin")?.classList.contains("is-hidden")) return;
+    refreshOpeningList().catch(() => {});
+  }, 2000);
+}
+
 function bindOverlayCopy(sourcePath, inputId, buttonId, statusId) {
   const sourceUrl = new URL(sourcePath, window.location.origin).href;
   const urlInput = document.getElementById(inputId);
@@ -2671,6 +2824,7 @@ function initOverlayPreview() {
     "spin-overlay-copy",
     "spin-overlay-copy-status"
   );
+  initOpeningAdmin();
 }
 
 async function setShowHighestMulti(nextValue) {

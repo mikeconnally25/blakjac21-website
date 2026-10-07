@@ -1,4 +1,4 @@
-const POLL_MS = 5000;
+const POLL_MS = 2000;
 
 const DEMO_SLOTS = [
   {

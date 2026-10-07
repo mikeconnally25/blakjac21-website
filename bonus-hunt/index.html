@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=spin1" />
+  <link rel="stylesheet" href="/css/styles.css?v=spin2" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -537,10 +537,26 @@
               <p class="section-eyebrow" id="spin-overlay-heading">OBS overlay</p>
               <h3 class="hunt-overlay-title">Now spinning</h3>
               <p class="admin-panel-text">
-                Bonuses still waiting to open, with each slot’s biggest win, biggest multiplier, and total bonuses.
+                Type the slot you are opening. It shows here and on the OBS overlay with its biggest win, biggest multiplier, and total bonuses.
               </p>
             </div>
             <a href="/slot-stats/overlay/" class="btn btn-sm btn-outline">Open full preview</a>
+          </div>
+          <div class="spin-open-admin is-hidden" id="spin-overlay-admin">
+            <label class="guess-label" for="spin-open-search">Slot you're opening</label>
+            <input
+              class="guess-input"
+              id="spin-open-search"
+              type="search"
+              placeholder="Type a slot name…"
+              autocomplete="off"
+              enterkeyhint="search"
+            />
+            <p class="hunt-add-slot-empty is-hidden" id="spin-open-empty"></p>
+            <div class="hunt-add-slot-results is-hidden" id="spin-open-results" role="listbox" aria-label="Matching slots"></div>
+            <p class="guess-status is-hidden" id="spin-open-status" role="status"></p>
+            <ul class="spin-open-list" id="spin-open-list"></ul>
+            <button type="button" class="btn btn-sm btn-outline is-hidden" id="spin-open-clear">Clear overlay</button>
           </div>
           <div class="spin-overlay-preview" aria-label="Now spinning overlay preview">
             <iframe
@@ -549,7 +565,7 @@
               loading="lazy"
             ></iframe>
           </div>
-          <p class="admin-panel-text">The panel stays empty until a bonus is added, then hides after every bonus is opened.</p>
+          <p class="admin-panel-text">The overlay updates within a couple of seconds. It hides when the list is cleared.</p>
           <div class="hunt-overlay-admin-url">
             <label class="guess-label" for="spin-overlay-url">OBS browser source URL</label>
             <div class="hunt-overlay-admin-url-row">
@@ -580,6 +596,6 @@
 
   <script src="/js/main.js?v=slotstats1"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/bonus-hunt.js?v=spin1"></script>
+  <script src="/js/bonus-hunt.js?v=spin2"></script>
 </body>
 </html>
