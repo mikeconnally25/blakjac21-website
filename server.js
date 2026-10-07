@@ -49,7 +49,7 @@ import {
   handleOneVOneStatus,
 } from "./lib/one-v-one-handlers.js";
 import { handleKickBotLogin, handleKickBotStatus } from "./lib/kick-bot-auth-handlers.js";
-import { handleSlotStatsGet } from "./lib/slot-stats.js";
+import { handleSlotStatsGet, handleSlotStatsLive } from "./lib/slot-stats.js";
 import { handleKickCredentialsCheck } from "./lib/kick-credentials-check.js";
 import { handleKickSetupStatus } from "./lib/kick-setup-status.js";
 import {
@@ -203,6 +203,7 @@ app.get("/api/bonus-hunt/slots/sync-status", (req, res) =>
   handleBonusHuntSlotsSyncStatus(req, res)
 );
 app.get("/api/slot-stats", (req, res) => handleSlotStatsGet(req, res));
+app.get("/api/slot-stats-live", (req, res) => handleSlotStatsLive(req, res));
 app.get("/api/bonus-hunt/requests", (req, res) =>
   handleBonusHuntRequestsList(req, res)
 );
