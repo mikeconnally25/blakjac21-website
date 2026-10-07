@@ -49,12 +49,7 @@ import {
   handleOneVOneStatus,
 } from "./lib/one-v-one-handlers.js";
 import { handleKickBotLogin, handleKickBotStatus } from "./lib/kick-bot-auth-handlers.js";
-import {
-  handleStakeSessionClear,
-  handleStakeSessionImport,
-  handleStakeSessionStart,
-  handleStakeSessionStatus,
-} from "./lib/stake-session-handlers.js";
+import { handleSlotStatsGet } from "./lib/slot-stats.js";
 import { handleKickCredentialsCheck } from "./lib/kick-credentials-check.js";
 import { handleKickSetupStatus } from "./lib/kick-setup-status.js";
 import {
@@ -207,11 +202,7 @@ app.post("/api/bonus-hunt/slots/sync-token", (req, res) =>
 app.get("/api/bonus-hunt/slots/sync-status", (req, res) =>
   handleBonusHuntSlotsSyncStatus(req, res)
 );
-app.post("/api/stake-session/start", (req, res) => handleStakeSessionStart(req, res));
-app.get("/api/stake-session/status", (req, res) => handleStakeSessionStatus(req, res));
-app.post("/api/stake-session/import", (req, res) => handleStakeSessionImport(req, res));
-app.options("/api/stake-session/import", (req, res) => handleStakeSessionImport(req, res));
-app.post("/api/stake-session/clear", (req, res) => handleStakeSessionClear(req, res));
+app.get("/api/slot-stats", (req, res) => handleSlotStatsGet(req, res));
 app.get("/api/bonus-hunt/requests", (req, res) =>
   handleBonusHuntRequestsList(req, res)
 );

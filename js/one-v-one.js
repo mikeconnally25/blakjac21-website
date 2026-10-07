@@ -243,8 +243,6 @@ function renderKickChat(messages, matchup) {
 function renderOneVOne(data) {
   oneVOneIsAdmin = Boolean(data?.isAdmin);
   document.getElementById("one-v-one-admin")?.classList.toggle("is-hidden", !oneVOneIsAdmin);
-  document.getElementById("stake-session-1v1")?.classList.toggle("is-hidden", !oneVOneIsAdmin);
-  if (oneVOneIsAdmin) window.mountStakeSessions?.();
 
   const poolText = document.getElementById("one-v-one-pool-text");
   const poolDot = document.getElementById("one-v-one-pool-dot");

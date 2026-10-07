@@ -5180,55 +5180,87 @@ button.one-v-one-name:focus-visible {
   gap: 0.7rem;
 }
 
-.stake-session {
+.slot-stats-shell {
   display: grid;
-  gap: 0.45rem;
-  margin-top: 0.85rem;
+  gap: 1rem;
+  max-width: 46rem;
 }
 
-.stake-session-actions {
+.slot-stats-panel {
+  display: grid;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.slot-stats-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
 }
 
-.stake-session-summary,
-.stake-session-empty {
+.slot-stats-filter {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: transparent;
+  color: inherit;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.86rem;
+}
+
+.slot-stats-filter.is-active {
+  border-color: rgba(126, 216, 255, 0.7);
+  background: rgba(126, 216, 255, 0.12);
+}
+
+.slot-stats-empty {
   margin: 0;
   color: var(--text-muted, #8ba4b6);
-  font-size: 0.86rem;
+  font-size: 0.9rem;
 }
 
-.stake-session-list {
-  list-style: none;
+.slot-stats-name {
   margin: 0;
-  padding: 0;
+  font-size: 1.8rem;
+}
+
+.slot-stats-grid {
   display: grid;
-  gap: 0.3rem;
-  max-height: 16rem;
-  overflow: auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
 }
 
-.stake-session-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: 0.65rem;
-  align-items: baseline;
-  font-size: 0.86rem;
+.slot-stats-stat {
+  margin: 0;
+  padding: 0.8rem 0.85rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(6, 10, 16, 0.45);
 }
 
-.stake-session-game {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.slot-stats-stat p {
+  margin: 0 0 0.25rem;
+  color: var(--text-muted, #8ba4b6);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.stake-session-win {
-  color: #8ee7b0;
+.slot-stats-stat strong {
+  font-size: 1.45rem;
+  font-weight: 700;
 }
 
-.stake-session-loss {
-  color: #ffb0b0;
+.hunt-add-slot-option.is-selected {
+  border-color: rgba(126, 216, 255, 0.45);
+  background: rgba(126, 216, 255, 0.08);
+}
+
+@media (max-width: 640px) {
+  .slot-stats-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .hunt-add-bonus-row {

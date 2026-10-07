@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Leaderboard — top viewers and stream game standings on BLAKJAC21." />
-  <title>Leaderboard | BLAKJAC21</title>
+  <meta name="description" content="Slot stats for BLAKJAC21 bonus buys on New Releases and Only on Stake." />
+  <title>Slot Stats | BLAKJAC21</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css" />
+  <link rel="stylesheet" href="/css/styles.css?v=slotstats1" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -30,7 +30,7 @@
         <li><a href="/#watch">Watch</a></li>
         <li class="is-hidden" id="admin-nav-commands">
         <a href="/commands/">Commands</a>
-      </li>
+        </li>
         <li><a href="/#menu">Menu</a></li>
         <li><a href="/#house-games">House Games</a></li>
         <li><a href="/#links">Links</a></li>
@@ -59,55 +59,62 @@
   <main>
     <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
 
-    <section class="section page-section leaderboard-page">
+    <section class="section page-section">
       <div class="section-atmosphere" aria-hidden="true"></div>
-      <div class="container leaderboard-shell">
+      <div class="container slot-stats-shell" id="slot-stats">
         <a href="/#menu" class="back-link">← Back to menu</a>
 
         <header class="leaderboard-hero">
           <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
-          <div class="leaderboard-hero-row">
-            <h1 class="leaderboard-heading">Leaderboard</h1>
-            <p class="leaderboard-period is-hidden" id="leaderboard-period"></p>
-          </div>
-          <p class="leaderboard-lede">Top 10 wagered on code <strong>BLAKJAC21</strong>.</p>
+          <h1 class="leaderboard-heading">Slot Stats</h1>
+          <p class="leaderboard-lede">
+            Search New Releases and Only on Stake. Stats are the bonuses logged on Bonus Hunt.
+          </p>
         </header>
 
-        <div class="leaderboard-prizes-wrap bj21-panel-inset">
-          <p class="leaderboard-banner">$5,000 MONTHLY LEADERBOARD</p>
-        </div>
-
-        <p class="guess-status is-hidden" id="leaderboard-status" role="status" aria-live="polite"></p>
-
-        <div class="podium-panel bj21-panel is-hidden" id="leaderboard-podium-panel">
+        <div class="bj21-panel slot-stats-panel">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <div class="leaderboard-panel-header">
-            <p class="section-eyebrow">Top three</p>
-            <h2 class="leaderboard-panel-title">Podium</h2>
+          <label class="guess-label" for="slot-stats-search">Search slot</label>
+          <input
+            class="guess-input"
+            id="slot-stats-search"
+            type="search"
+            placeholder="Type a slot name…"
+            autocomplete="off"
+            enterkeyhint="search"
+          />
+
+          <div class="slot-stats-filters" role="tablist" aria-label="Slot lists">
+            <button type="button" class="slot-stats-filter is-active" data-slot-stats-group="all" role="tab" aria-selected="true">All</button>
+            <button type="button" class="slot-stats-filter" data-slot-stats-group="new-releases" role="tab" aria-selected="false">New Releases</button>
+            <button type="button" class="slot-stats-filter" data-slot-stats-group="only-on-stake" role="tab" aria-selected="false">Only on Stake</button>
           </div>
-          <div class="podium-stage" id="leaderboard-podium-stage" aria-label="Top 3 wagered players"></div>
+
+          <p class="guess-status is-hidden" id="slot-stats-status" role="status"></p>
+          <p class="slot-stats-empty" id="slot-stats-empty">Type a slot name from New Releases or Only on Stake.</p>
+          <div class="hunt-add-slot-results is-hidden" id="slot-stats-results" role="listbox" aria-label="Matching slots"></div>
         </div>
 
-        <div class="leaderboard-board bj21-panel">
+        <div class="bj21-panel slot-stats-panel is-hidden" id="slot-stats-detail">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <div class="leaderboard-panel-header">
-            <div>
-              <p class="section-eyebrow">Rankings</p>
-              <h2 class="leaderboard-panel-title">Full board</h2>
-            </div>
+          <p class="section-eyebrow" id="slot-stats-meta"></p>
+          <h2 class="slot-stats-name" id="slot-stats-name"></h2>
+          <div class="slot-stats-grid">
+            <article class="slot-stats-stat">
+              <p>Biggest win</p>
+              <strong id="slot-stats-win">—</strong>
+            </article>
+            <article class="slot-stats-stat">
+              <p>Biggest x</p>
+              <strong id="slot-stats-x">—</strong>
+            </article>
+            <article class="slot-stats-stat">
+              <p>Bonuses</p>
+              <strong id="slot-stats-count">0</strong>
+            </article>
           </div>
-
-          <div class="leaderboard-table-head is-hidden" id="leaderboard-table-head">
-            <span>Rank</span>
-            <span>Player</span>
-            <span>Wagered</span>
-            <span>Prize</span>
-          </div>
-
-          <p class="leaderboard-empty" id="leaderboard-empty">No leaderboard entries yet.</p>
-
-          <ol class="leaderboard-list is-hidden" id="leaderboard-list"></ol>
         </div>
+        <p class="slot-stats-empty" id="slot-stats-detail-empty">Pick a slot to see the biggest win, biggest multiplier, and total bonuses.</p>
       </div>
     </section>
   </main>
@@ -129,6 +136,6 @@
 
   <script src="/js/main.js?v=slotstats1"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/leaderboard.js"></script>
+  <script src="/js/slot-stats.js?v=slotstats1"></script>
 </body>
 </html>
