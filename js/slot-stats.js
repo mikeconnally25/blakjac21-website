@@ -14,12 +14,20 @@ function slotStatsRoot() {
   return document.getElementById("slot-stats");
 }
 
-function formatWin(value) {
-  return value === null || value === undefined ? "—" : money.format(value);
+function formatBet(value) {
+  return value === null || value === undefined || !Number.isFinite(Number(value))
+    ? ""
+    : ` (${money.format(value)})`;
 }
 
-function formatX(value) {
-  return value === null || value === undefined ? "—" : `${Number(value).toLocaleString("en-US")}x`;
+function formatWin(value, bet) {
+  return value === null || value === undefined ? "—" : `${money.format(value)}${formatBet(bet)}`;
+}
+
+function formatX(value, bet) {
+  return value === null || value === undefined
+    ? "—"
+    : `${Number(value).toLocaleString("en-US")}x${formatBet(bet)}`;
 }
 
 function renderSlotStatsDetail(match) {
@@ -39,13 +47,15 @@ function renderSlotStatsDetail(match) {
   const meta = document.getElementById("slot-stats-meta");
   const win = document.getElementById("slot-stats-win");
   const multi = document.getElementById("slot-stats-x");
+  const average = document.getElementById("slot-stats-average");
   const count = document.getElementById("slot-stats-count");
   if (name) name.textContent = match.name;
   if (meta) {
     meta.textContent = [match.groupLabel, match.provider].filter(Boolean).join(" · ");
   }
-  if (win) win.textContent = formatWin(match.biggestWin);
-  if (multi) multi.textContent = formatX(match.biggestX);
+  if (win) win.textContent = formatWin(match.biggestWin, match.biggestWinBet);
+  if (multi) multi.textContent = formatX(match.biggestX, match.biggestXBet);
+  if (average) average.textContent = formatX(match.averageX);
   if (count) count.textContent = String(match.bonusCount || 0);
 }
 

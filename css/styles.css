@@ -5227,7 +5227,7 @@ button.one-v-one-name:focus-visible {
 
 .slot-stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.7rem;
 }
 
@@ -5248,13 +5248,20 @@ button.one-v-one-name:focus-visible {
 }
 
 .slot-stats-stat strong {
-  font-size: 1.45rem;
+  font-size: 1.25rem;
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .hunt-add-slot-option.is-selected {
   border-color: rgba(126, 216, 255, 0.45);
   background: rgba(126, 216, 255, 0.08);
+}
+
+@media (max-width: 900px) {
+  .slot-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 640px) {
