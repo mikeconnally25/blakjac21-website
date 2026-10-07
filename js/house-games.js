@@ -1823,6 +1823,7 @@
     const data = await play({ game: "top-dollar", action: "spin", bet });
     if (!data) {
       topDollarSpinning = false;
+      setTopDollarResult("", "");
       if (spin) spin.disabled = topDollarBonus;
       return;
     }
