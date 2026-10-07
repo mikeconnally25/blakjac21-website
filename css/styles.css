@@ -5180,6 +5180,57 @@ button.one-v-one-name:focus-visible {
   gap: 0.7rem;
 }
 
+.stake-session {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+}
+
+.stake-session-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.stake-session-summary,
+.stake-session-empty {
+  margin: 0;
+  color: var(--text-muted, #8ba4b6);
+  font-size: 0.86rem;
+}
+
+.stake-session-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+  max-height: 16rem;
+  overflow: auto;
+}
+
+.stake-session-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.65rem;
+  align-items: baseline;
+  font-size: 0.86rem;
+}
+
+.stake-session-game {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stake-session-win {
+  color: #8ee7b0;
+}
+
+.stake-session-loss {
+  color: #ffb0b0;
+}
+
 .hunt-add-bonus-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

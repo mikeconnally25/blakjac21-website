@@ -1853,6 +1853,7 @@ function updatePanels() {
 
   adminPanel?.classList.toggle("is-hidden", !isHuntAdmin());
   settingsForm?.classList.toggle("is-hidden", !isHuntAdmin());
+  window.mountStakeSessions?.();
   if (highestMultiToggle) {
     highestMultiToggle.disabled = !isHuntAdmin();
   }
