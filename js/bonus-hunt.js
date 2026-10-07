@@ -2632,11 +2632,11 @@ async function removeBonusEntry(id, button) {
   }
 }
 
-function initOverlayPreview() {
-  const sourceUrl = new URL("/bonus-hunt/overlay/source.html", window.location.origin).href;
-  const urlInput = document.getElementById("hunt-overlay-url");
-  const copyBtn = document.getElementById("hunt-overlay-copy");
-  const copyStatus = document.getElementById("hunt-overlay-copy-status");
+function bindOverlayCopy(sourcePath, inputId, buttonId, statusId) {
+  const sourceUrl = new URL(sourcePath, window.location.origin).href;
+  const urlInput = document.getElementById(inputId);
+  const copyBtn = document.getElementById(buttonId);
+  const copyStatus = document.getElementById(statusId);
 
   if (urlInput) {
     urlInput.value = sourceUrl;
@@ -2656,6 +2656,21 @@ function initOverlayPreview() {
       }
     }
   });
+}
+
+function initOverlayPreview() {
+  bindOverlayCopy(
+    "/bonus-hunt/overlay/source.html",
+    "hunt-overlay-url",
+    "hunt-overlay-copy",
+    "hunt-overlay-copy-status"
+  );
+  bindOverlayCopy(
+    "/slot-stats/overlay/source.html",
+    "spin-overlay-url",
+    "spin-overlay-copy",
+    "spin-overlay-copy-status"
+  );
 }
 
 async function setShowHighestMulti(nextValue) {
