@@ -1715,8 +1715,8 @@
     $("hg-td-take")?.addEventListener("click", () => {
       void actTopDollar("take");
     });
-    $("hg-td-climb")?.addEventListener("click", () => {
-      void actTopDollar("climb");
+    $("hg-td-again")?.addEventListener("click", () => {
+      void actTopDollar("again");
     });
   }
 
@@ -1724,10 +1724,14 @@
     const face = document.createElement("span");
     face.className = `hg-td-face is-${symbol || "blank"}`;
     if (symbol === "dollar") {
-      const bill = document.createElement("span");
-      bill.className = "hg-td-bill";
-      bill.textContent = "$";
-      face.append(bill);
+      const logo = document.createElement("span");
+      logo.className = "hg-td-logo";
+      const top = document.createElement("span");
+      top.textContent = "TOP";
+      const dollar = document.createElement("span");
+      dollar.textContent = "DOLLAR";
+      logo.append(top, dollar);
+      face.append(logo);
       return face;
     }
     if (symbol === "seven") {
@@ -1738,6 +1742,7 @@
     if (bars) {
       for (let line = 0; line < bars; line += 1) {
         const row = document.createElement("span");
+        row.className = "hg-td-bar";
         row.textContent = "BAR";
         face.append(row);
       }
@@ -1761,6 +1766,21 @@
     result.classList.toggle("is-bust", kind === "bust");
   }
 
+  function renderTopDollarNotes(bonus) {
+    const row = $("hg-td-notes");
+    if (!row) return;
+    const lit = new Set(bonus?.notes || []);
+    const values = bonus?.noteValues || [5, 10, 15, 20, 25, 50, 100, 250, 500, 1000];
+    row.replaceChildren();
+    for (const value of values) {
+      const note = document.createElement("span");
+      note.className = "hg-td-note";
+      note.classList.toggle("is-lit", lit.has(value));
+      note.textContent = String(value);
+      row.append(note);
+    }
+  }
+
   function showTopDollarBonus(bonus) {
     const panel = $("hg-td-bonus");
     if (!bonus?.active) {
@@ -1774,14 +1794,29 @@
     panel?.classList.remove("is-hidden");
     const offer = $("hg-td-offer");
     const amount = $("hg-td-offer-amount");
-    const climb = $("hg-td-climb");
+    const label = $("hg-td-offer-label");
+    const advice = $("hg-td-advice");
+    const again = $("hg-td-again");
     const spin = $("hg-td-spin");
-    if (offer) offer.textContent = `${bonus.multiplier}x`;
-    if (amount) amount.textContent = `${formatPoints(bonus.offer)} UncCoins`;
-    if (climb) {
-      climb.disabled = !bonus.canClimb;
-      climb.textContent = bonus.canClimb ? "Climb" : "Top bill";
+    if (offer) {
+      offer.textContent = `${Number(bonus.multiplier).toLocaleString("en-US")}x`;
+      offer.classList.remove("is-flash");
+      void offer.offsetWidth;
+      offer.classList.add("is-flash");
     }
+    if (amount) amount.textContent = `${formatPoints(bonus.offer)} UncCoins`;
+    if (label) {
+      label.textContent = bonus.jackpot
+        ? "Jackpot"
+        : `Offer ${bonus.offerNumber} of ${bonus.offersTotal || 4}`;
+    }
+    renderTopDollarNotes(bonus);
+    if (advice) {
+      const take = bonus.advice !== "again" || !bonus.canTryAgain;
+      advice.textContent = take ? "Best play: Take offer" : "Best play: Try again";
+      advice.classList.toggle("is-take", take);
+    }
+    if (again) again.disabled = !bonus.canTryAgain;
     if (spin) spin.disabled = true;
   }
 
@@ -1834,7 +1869,9 @@
       showTopDollarBonus(data.bonus);
       return;
     }
-    if (data.payout > 0) {
+    if (data.jackpot) {
+      setTopDollarResult(`Jackpot · ${formatPoints(data.payout)} UncCoins`, "win");
+    } else if (data.payout > 0) {
       setTopDollarResult(`${data.label} · ${formatPoints(data.payout)} UncCoins`, "win");
     } else {
       setTopDollarResult("No line", "lose");
@@ -1847,16 +1884,13 @@
     const data = await play({ game: "top-dollar", action });
     if (!data) return;
     if (data.bonus?.active) {
-      setTopDollarResult(`${data.multiplier}x`, "bonus");
+      setTopDollarResult(`Offer ${data.bonus.offerNumber}`, "bonus");
       showTopDollarBonus(data.bonus);
       return;
     }
     showTopDollarBonus(null);
-    if (data.bust) {
-      setTopDollarResult(`Missed · ${formatPoints(data.payout)} UncCoins`, "bust");
-      return;
-    }
-    setTopDollarResult(`Took ${data.multiplier}x · ${formatPoints(data.payout)} UncCoins`, "win");
+    const label = data.jackpot ? "Jackpot" : `Took ${Number(data.multiplier).toLocaleString("en-US")}x`;
+    setTopDollarResult(`${label} · ${formatPoints(data.payout)} UncCoins`, "win");
   }
 
   async function resumeTopDollar() {
