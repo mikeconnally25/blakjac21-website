@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=slotstats2" />
+  <link rel="stylesheet" href="/css/styles.css?v=slotstats3" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -59,69 +59,73 @@
   <main>
     <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
 
-    <section class="section page-section">
+    <section class="section page-section slot-stats-page">
       <div class="section-atmosphere" aria-hidden="true"></div>
       <div class="container slot-stats-shell" id="slot-stats">
-        <a href="/#menu" class="back-link">← Back to menu</a>
-
-        <header class="leaderboard-hero">
-          <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
-          <h1 class="leaderboard-heading">Slot Stats</h1>
-          <p class="leaderboard-lede">
-            Search New Releases and Only on Stake. Stats are the bonuses logged on Bonus Hunt.
-          </p>
-          <p class="leaderboard-lede">
-            <a href="/slot-stats/overlay/">OBS overlay</a> for the slots still spinning in the live hunt.
-          </p>
+        <header class="slot-stats-head">
+          <div>
+            <a href="/#menu" class="back-link">← Back to menu</a>
+            <h1 class="slot-stats-title">Slot Stats</h1>
+            <p class="slot-stats-lede">Bonuses logged on New Releases and Only on Stake.</p>
+          </div>
+          <a class="slot-stats-overlay-link" href="/slot-stats/overlay/">OBS overlay</a>
         </header>
 
         <div class="bj21-panel slot-stats-panel">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <label class="guess-label" for="slot-stats-search">Search slot</label>
-          <input
-            class="guess-input"
-            id="slot-stats-search"
-            type="search"
-            placeholder="Type a slot name…"
-            autocomplete="off"
-            enterkeyhint="search"
-          />
-
-          <div class="slot-stats-filters" role="tablist" aria-label="Slot lists">
-            <button type="button" class="slot-stats-filter is-active" data-slot-stats-group="all" role="tab" aria-selected="true">All</button>
-            <button type="button" class="slot-stats-filter" data-slot-stats-group="new-releases" role="tab" aria-selected="false">New Releases</button>
-            <button type="button" class="slot-stats-filter" data-slot-stats-group="only-on-stake" role="tab" aria-selected="false">Only on Stake</button>
+          <div class="slot-stats-toolbar">
+            <label class="sr-only" for="slot-stats-search">Search slot</label>
+            <input
+              class="guess-input"
+              id="slot-stats-search"
+              type="search"
+              placeholder="Type a slot name…"
+              autocomplete="off"
+              enterkeyhint="search"
+            />
+            <div class="slot-stats-filters" role="tablist" aria-label="Slot lists">
+              <button type="button" class="slot-stats-filter is-active" data-slot-stats-group="all" role="tab" aria-selected="true">All</button>
+              <button type="button" class="slot-stats-filter" data-slot-stats-group="new-releases" role="tab" aria-selected="false">New Releases</button>
+              <button type="button" class="slot-stats-filter" data-slot-stats-group="only-on-stake" role="tab" aria-selected="false">Only on Stake</button>
+            </div>
           </div>
 
           <p class="guess-status is-hidden" id="slot-stats-status" role="status"></p>
+
+          <div class="slot-stats-detail is-hidden" id="slot-stats-detail">
+            <div class="slot-stats-picked">
+              <span class="slot-stats-picked-thumb" id="slot-stats-thumb" aria-hidden="true"></span>
+              <div>
+                <h2 class="slot-stats-name" id="slot-stats-name"></h2>
+                <p class="slot-stats-meta" id="slot-stats-meta"></p>
+              </div>
+            </div>
+            <div class="slot-stats-grid">
+              <article class="slot-stats-stat">
+                <p>Biggest win</p>
+                <strong id="slot-stats-win">—</strong>
+                <span id="slot-stats-win-bet"></span>
+              </article>
+              <article class="slot-stats-stat">
+                <p>Biggest x</p>
+                <strong id="slot-stats-x">—</strong>
+                <span id="slot-stats-x-bet"></span>
+              </article>
+              <article class="slot-stats-stat">
+                <p>Average x</p>
+                <strong id="slot-stats-average">—</strong>
+              </article>
+              <article class="slot-stats-stat">
+                <p>Bonuses</p>
+                <strong id="slot-stats-count">0</strong>
+              </article>
+            </div>
+          </div>
+
           <p class="slot-stats-empty" id="slot-stats-empty">Type a slot name from New Releases or Only on Stake.</p>
+          <p class="slot-stats-empty is-hidden" id="slot-stats-detail-empty">Select a match.</p>
           <div class="hunt-add-slot-results is-hidden" id="slot-stats-results" role="listbox" aria-label="Matching slots"></div>
         </div>
-
-        <div class="bj21-panel slot-stats-panel is-hidden" id="slot-stats-detail">
-          <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <p class="section-eyebrow" id="slot-stats-meta"></p>
-          <h2 class="slot-stats-name" id="slot-stats-name"></h2>
-          <div class="slot-stats-grid">
-            <article class="slot-stats-stat">
-              <p>Biggest win</p>
-              <strong id="slot-stats-win">—</strong>
-            </article>
-            <article class="slot-stats-stat">
-              <p>Biggest x</p>
-              <strong id="slot-stats-x">—</strong>
-            </article>
-            <article class="slot-stats-stat">
-              <p>Average x</p>
-              <strong id="slot-stats-average">—</strong>
-            </article>
-            <article class="slot-stats-stat">
-              <p>Bonuses</p>
-              <strong id="slot-stats-count">0</strong>
-            </article>
-          </div>
-        </div>
-        <p class="slot-stats-empty" id="slot-stats-detail-empty">Pick a slot to see the biggest win, biggest multiplier, average multiplier, and total bonuses.</p>
       </div>
     </section>
   </main>
@@ -143,6 +147,6 @@
 
   <script src="/js/main.js?v=slotstats1"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/slot-stats.js?v=slotstats2"></script>
+  <script src="/js/slot-stats.js?v=slotstats3"></script>
 </body>
 </html>

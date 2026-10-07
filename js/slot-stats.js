@@ -17,17 +17,15 @@ function slotStatsRoot() {
 function formatBet(value) {
   return value === null || value === undefined || !Number.isFinite(Number(value))
     ? ""
-    : ` (${money.format(value)})`;
+    : `(${money.format(value)})`;
 }
 
-function formatWin(value, bet) {
-  return value === null || value === undefined ? "—" : `${money.format(value)}${formatBet(bet)}`;
+function formatWin(value) {
+  return value === null || value === undefined ? "—" : money.format(value);
 }
 
-function formatX(value, bet) {
-  return value === null || value === undefined
-    ? "—"
-    : `${Number(value).toLocaleString("en-US")}x${formatBet(bet)}`;
+function formatX(value) {
+  return value === null || value === undefined ? "—" : `${Number(value).toLocaleString("en-US")}x`;
 }
 
 function renderSlotStatsDetail(match) {
@@ -37,7 +35,7 @@ function renderSlotStatsDetail(match) {
 
   if (!match) {
     detail.classList.add("is-hidden");
-    empty.classList.remove("is-hidden");
+    empty.classList.toggle("is-hidden", slotStatsState.matches.length === 0);
     return;
   }
 
@@ -45,16 +43,32 @@ function renderSlotStatsDetail(match) {
   detail.classList.remove("is-hidden");
   const name = document.getElementById("slot-stats-name");
   const meta = document.getElementById("slot-stats-meta");
+  const thumb = document.getElementById("slot-stats-thumb");
   const win = document.getElementById("slot-stats-win");
+  const winBet = document.getElementById("slot-stats-win-bet");
   const multi = document.getElementById("slot-stats-x");
+  const multiBet = document.getElementById("slot-stats-x-bet");
   const average = document.getElementById("slot-stats-average");
   const count = document.getElementById("slot-stats-count");
   if (name) name.textContent = match.name;
   if (meta) {
     meta.textContent = [match.groupLabel, match.provider].filter(Boolean).join(" · ");
   }
-  if (win) win.textContent = formatWin(match.biggestWin, match.biggestWinBet);
-  if (multi) multi.textContent = formatX(match.biggestX, match.biggestXBet);
+  if (thumb) {
+    thumb.replaceChildren();
+    if (match.thumbnailUrl) {
+      const image = document.createElement("img");
+      image.alt = "";
+      image.src = match.thumbnailUrl;
+      thumb.append(image);
+    } else {
+      thumb.textContent = match.name.slice(0, 1).toUpperCase();
+    }
+  }
+  if (win) win.textContent = formatWin(match.biggestWin);
+  if (winBet) winBet.textContent = match.biggestWin == null ? "" : formatBet(match.biggestWinBet);
+  if (multi) multi.textContent = formatX(match.biggestX);
+  if (multiBet) multiBet.textContent = match.biggestX == null ? "" : formatBet(match.biggestXBet);
   if (average) average.textContent = formatX(match.averageX);
   if (count) count.textContent = String(match.bonusCount || 0);
 }
