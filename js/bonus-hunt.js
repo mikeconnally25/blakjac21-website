@@ -2634,6 +2634,7 @@ async function removeBonusEntry(id, button) {
 }
 
 let openingSlots = [];
+let openingEpoch = 0;
 
 function setOpeningStatus(message, tone = "") {
   const status = document.getElementById("spin-open-status");
@@ -2678,14 +2679,18 @@ function renderOpeningList() {
 }
 
 async function refreshOpeningList() {
+  const epoch = openingEpoch;
   const response = await fetch("/api/slot-stats-live", { cache: "no-store", credentials: "same-origin" });
   const data = await response.json().catch(() => ({}));
+  if (epoch !== openingEpoch) return;
   if (!response.ok) throw new Error(data.error || "Could not load overlay slots.");
   openingSlots = Array.isArray(data.slots) ? data.slots : [];
   renderOpeningList();
 }
 
 async function updateOpening(body) {
+  openingEpoch += 1;
+  const epoch = openingEpoch;
   const response = await fetch("/api/slot-stats-opening", {
     method: "POST",
     credentials: "same-origin",
@@ -2694,6 +2699,7 @@ async function updateOpening(body) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || "Could not update the overlay.");
+  if (epoch !== openingEpoch) return;
   openingSlots = Array.isArray(data.slots) ? data.slots : [];
   renderOpeningList();
   setOpeningStatus(body.action === "clear" ? "Overlay cleared." : "Overlay updated.", "success");

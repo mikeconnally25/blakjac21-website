@@ -11,7 +11,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/css/styles.css?v=slotstats1" />
-    <link rel="stylesheet" href="/css/bonus-hunt-overlay-preview.css" />
+    <link rel="stylesheet" href="/css/bonus-hunt-overlay-preview.css?v=spin3" />
   </head>
   <body class="overlay-preview-page">
     <div class="bg-glow" aria-hidden="true"></div>
@@ -24,7 +24,7 @@
           <p class="overlay-preview-eyebrow">OBS browser source</p>
           <h1>Now Spinning</h1>
           <p class="overlay-preview-subtitle">
-            Shows the slots you type in on Bonus Hunt, with each slot’s biggest win, biggest multiplier, and total bonuses.
+            Shows up to 2 slots you type in on Bonus Hunt, side by side, with each slot’s biggest win, biggest multiplier, and total bonuses.
           </p>
         </div>
       </header>
@@ -32,7 +32,7 @@
       <div class="overlay-preview-layout">
         <section class="overlay-preview-stage" aria-label="Overlay preview">
           <div class="overlay-preview-stage-label">Sample preview</div>
-          <div class="overlay-preview-frame">
+          <div class="overlay-preview-frame is-spin">
             <iframe
               id="overlay-preview-frame"
               title="Slot stats overlay preview"
@@ -47,7 +47,7 @@
           <ol class="overlay-preview-steps">
             <li>In OBS, add a <strong>Browser Source</strong>.</li>
             <li>Paste the URL below. Leave off <strong>?demo=1</strong>.</li>
-            <li>Set width <strong>420</strong> and height <strong>480</strong>.</li>
+            <li>Set width <strong>760</strong> and height <strong>320</strong> so both slots fit.</li>
             <li>The panel hides itself when you clear the list.</li>
           </ol>
 

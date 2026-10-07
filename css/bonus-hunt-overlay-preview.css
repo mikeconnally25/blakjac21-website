@@ -95,6 +95,11 @@
   overflow: hidden;
 }
 
+.overlay-preview-frame.is-spin iframe {
+  width: min(100%, 44rem);
+  height: 18rem;
+}
+
 .overlay-preview-frame.is-wide {
   min-height: auto;
 }

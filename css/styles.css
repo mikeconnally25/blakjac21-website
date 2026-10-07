@@ -5654,8 +5654,8 @@ button.one-v-one-name:focus-visible {
 }
 
 .spin-overlay-preview iframe {
-  width: min(100%, 26rem);
-  height: 22rem;
+  width: min(100%, 44rem);
+  height: 18rem;
   border: 0;
   background: transparent;
 }

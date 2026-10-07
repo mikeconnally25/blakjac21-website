@@ -84,6 +84,7 @@ function renderLiveSlots({ slots = [], hiddenCount = 0 } = {}) {
 
   const visible = Array.isArray(slots) ? slots : [];
   root.classList.toggle("is-hidden", visible.length === 0);
+  root.classList.toggle("is-pair", visible.length > 1);
   list.replaceChildren();
 
   if (more) {
