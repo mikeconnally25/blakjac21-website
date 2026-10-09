@@ -13416,3 +13416,88 @@ button.one-v-one-name:focus-visible {
   }
 }
 
+/* Rail is the site page language: titles, stat chips, and hairline rows. */
+.page-section :is(
+  h1,
+  .theme-heading,
+  .store-heading,
+  .giveaways-hero-title,
+  .weekly-raffle-title,
+  .level-up-heading,
+  .accounts-hero-title,
+  .slot-stats-title,
+  .slot-tournaments-heading
+),
+.home-page .section-header h2,
+#watch-title {
+  font-size: clamp(2.8rem, 6vw, 4.4rem);
+  line-height: 0.88;
+  letter-spacing: 0.04em;
+  background: var(--heading-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.store-balance,
+.giveaways-hero-status,
+.accounts-hero-stat,
+.house-games-balance {
+  border-radius: 12px;
+  border: 1px solid rgba(88, 201, 243, 0.14);
+  background: rgba(8, 16, 24, 0.55);
+  box-shadow: none;
+}
+
+.store-balance-value,
+.accounts-hero-stat-value,
+.house-games-balance-value {
+  color: var(--text);
+  font-size: 1.65rem;
+  font-weight: 600;
+}
+
+.accounts-hero-stat-value {
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.guess-entry,
+.accounts-entry,
+.giveaways-entry,
+.store-row {
+  border: 0;
+  border-top: 1px solid rgba(88, 201, 243, 0.08);
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.guess-entry:hover,
+.accounts-entry:hover,
+.giveaways-rolling-viewport:not(.is-rolling) .giveaways-entry:hover,
+.store-row:hover {
+  border-color: transparent;
+  background: rgba(126, 216, 255, 0.06);
+  transform: none;
+  box-shadow: none;
+}
+
+.store-reward-card {
+  background: transparent;
+  border-color: rgba(88, 201, 243, 0.1);
+  box-shadow: none;
+}
+
+.store-reward-card::before {
+  display: none;
+}
+
+.store-reward-card:hover {
+  background: rgba(126, 216, 255, 0.06);
+  transform: none;
+}
+

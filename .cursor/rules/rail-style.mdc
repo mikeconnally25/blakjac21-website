@@ -1,0 +1,17 @@
+---
+description: Rail style — the leaderboard look. Use when the user says Rail, the Rail style, or asks to match the leaderboard page.
+alwaysApply: false
+---
+
+# Rail style
+
+The site page look, first built on the leaderboard. Headers, stat chips, and list rows already use it. Use the full version (podium, share bars, gold prizes) when the user asks for Rail on another board. Keep that page’s data and actions.
+
+- Header: small uppercase eyebrow, large Teko gradient title, one short line under it. Stats sit in a row of chips (tiny uppercase label, Teko value). No wide banner.
+- One `bj21-panel` for the main list. Title on the left, pill search on the right when the list can be filtered.
+- Rows are one table, not separate cards. Hairline dividers, transparent background, light cyan fill on hover and when open.
+- Columns: Teko rank, name, thin share bar, tabular amount, gold prize. Detail text (gap, status) shows on hover, focus, or click.
+- Top three, when the page has them: silver, gold, bronze cards. Gold is centered and slightly taller. Round metal rank badge, amount, prize, thin bar. Clicking a card opens that row.
+- Metals: gold `#e8c56b`, silver `#c5d0dc`, bronze `#d08a4c`. Other bars use the site cyan. A matching signed-in user gets a `You` pill and a cyan inset edge.
+- First paint may rise in and fill bars once. Skip that motion when the user prefers reduced motion.
+- Reference: `leaderboard/index.html`, the `.lb-*` rules in `css/styles.css`, and `js/leaderboard.js`.
