@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=rail1" />
+  <link rel="stylesheet" href="/css/styles.css?v=huntrand1" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -408,6 +408,13 @@
                 <p class="requests-hub-catalog" id="slot-catalog-count">Loading slots...</p>
               </div>
 
+              <div class="requests-hub-pick">
+                <button type="button" class="btn btn-sm btn-primary" id="slot-requests-pick" disabled>
+                  Pick random
+                </button>
+                <p class="requests-hub-pick-result is-hidden" id="slot-requests-pick-result" role="status" aria-live="polite"></p>
+              </div>
+
               <div id="slot-requests-viewer-mount">
                 <div class="requests-hub-list-wrap hunt-admin-queue-list">
                   <p class="requests-hub-empty" id="slot-requests-empty">No slot requests yet.</p>
@@ -596,6 +603,6 @@
 
   <script src="/js/main.js?v=slotstats1"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/bonus-hunt.js?v=spin3"></script>
+  <script src="/js/bonus-hunt.js?v=huntrand1"></script>
 </body>
 </html>

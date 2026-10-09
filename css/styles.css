@@ -6769,6 +6769,27 @@ button.one-v-one-name:focus-visible {
   border-bottom: none;
 }
 
+.requests-hub-pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.75rem;
+}
+
+.requests-hub-pick-result {
+  margin: 0;
+  color: #e8c56b;
+  font-weight: 700;
+}
+
+.slot-request-entry.is-picked {
+  margin-inline: -0.35rem;
+  padding-inline: 0.35rem;
+  border-radius: 8px;
+  background: rgba(232, 197, 107, 0.1);
+  box-shadow: inset 3px 0 0 #e8c56b;
+}
+
 .slot-request-thumb {
   flex-shrink: 0;
   width: 2.15rem;

@@ -13,6 +13,8 @@ let affiliatesOnly = false;
 let subscribersOnly = false;
 let huntBonuses = [];
 let slotRequests = [];
+let pickedRequestId = null;
+let pickRolling = false;
 let mySlotRequests = [];
 let slotRequestLimit = 3;
 const pendingSlotRequestRemovals = new Set();
@@ -2036,6 +2038,13 @@ function renderSlotRequests(requests) {
     count.textContent = total === 1 ? "1 request" : `${total} requests`;
   }
 
+  const pickButton = document.getElementById("slot-requests-pick");
+  if (pickButton) pickButton.disabled = pickRolling || total === 0;
+  if (!total || !requests.some((request) => request.id === pickedRequestId)) {
+    pickedRequestId = null;
+    document.getElementById("slot-requests-pick-result")?.classList.add("is-hidden");
+  }
+
   if (!total) {
     const isAdmin = Boolean(isHuntAdmin());
     if (acceptingRequests) {
@@ -2057,6 +2066,7 @@ function renderSlotRequests(requests) {
     const item = document.createElement("li");
     item.className = "slot-request-entry";
     item.dataset.requestId = request.id;
+    if (request.id === pickedRequestId) item.classList.add("is-picked");
 
     const thumb = createSlotRequestThumb(request.slotName, thumbnailUrl);
 
@@ -2203,6 +2213,55 @@ function renderSlotRequests(requests) {
 
     list.append(item);
   });
+}
+
+function wait(ms) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
+async function pickRandomSlotRequest() {
+  if (pickRolling || !slotRequests.length) return;
+
+  const others = slotRequests.filter((request) => request.id !== pickedRequestId);
+  const pool = others.length ? others : slotRequests;
+  const winner = pool[Math.floor(Math.random() * pool.length)];
+  const button = document.getElementById("slot-requests-pick");
+  const result = document.getElementById("slot-requests-pick-result");
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  pickRolling = true;
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Picking…";
+  }
+
+  if (!reduced && slotRequests.length > 1) {
+    const steps = Math.min(10, slotRequests.length * 2);
+    for (let step = 0; step < steps; step += 1) {
+      pickedRequestId = slotRequests[step % slotRequests.length].id;
+      document.querySelectorAll(".slot-request-entry").forEach((row) => {
+        row.classList.toggle("is-picked", row.dataset.requestId === pickedRequestId);
+      });
+      await wait(60 + step * 16);
+    }
+  }
+
+  pickedRequestId = winner.id;
+  pickRolling = false;
+  renderSlotRequests(slotRequests);
+
+  const row = document.querySelector(
+    `.slot-request-entry[data-request-id="${CSS.escape(winner.id)}"]`
+  );
+  row?.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
+
+  if (result) {
+    result.textContent = `${winner.slotName} · ${winner.username}`;
+    result.classList.remove("is-hidden");
+  }
+  if (button) button.textContent = "Pick random";
 }
 
 async function loadSlotCatalog() {
@@ -4207,6 +4266,10 @@ function initAdminForm() {
     } finally {
       button.disabled = false;
     }
+  });
+
+  document.getElementById("slot-requests-pick")?.addEventListener("click", () => {
+    void pickRandomSlotRequest();
   });
 
   document.getElementById("slot-requests-clear")?.addEventListener("click", async (event) => {
