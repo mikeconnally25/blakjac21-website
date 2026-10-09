@@ -220,11 +220,23 @@ function renderCatalog() {
   if (!activeItems.length) {
     empty.classList.remove("is-hidden");
     list.classList.add("is-hidden");
+    document.getElementById("store-catalog-note")?.classList.add("is-hidden");
     return;
   }
 
   empty.classList.add("is-hidden");
   list.classList.remove("is-hidden");
+
+  const descriptions = activeItems.map((item) => String(item.description || "").trim());
+  const sharedDescription =
+    descriptions[0] && descriptions.every((text) => text === descriptions[0])
+      ? descriptions[0]
+      : "";
+  const note = document.getElementById("store-catalog-note");
+  if (note) {
+    note.textContent = sharedDescription;
+    note.classList.toggle("is-hidden", !sharedDescription);
+  }
 
   activeItems.forEach((item, index) => {
     const row = document.createElement("li");
@@ -238,10 +250,6 @@ function renderCatalog() {
     const body = document.createElement("div");
     body.className = "store-reward-card-body";
 
-    const eyebrow = document.createElement("p");
-    eyebrow.className = "store-reward-card-eyebrow";
-    eyebrow.textContent = "Reward";
-
     const title = document.createElement("h3");
     title.className = "store-reward-card-title";
     title.textContent = item.title;
@@ -250,12 +258,13 @@ function renderCatalog() {
     cost.className = "store-reward-card-cost";
     cost.innerHTML = `<strong>${Number(item.cost) || 0}</strong> <span>UncCoins</span>`;
 
-    body.append(eyebrow, title, cost);
+    body.append(title, cost);
 
-    if (item.description) {
+    const ownDescription = String(item.description || "").trim();
+    if (ownDescription && ownDescription !== sharedDescription) {
       const description = document.createElement("p");
       description.className = "store-reward-card-description";
-      description.textContent = item.description;
+      description.textContent = ownDescription;
       body.append(description);
     }
 
