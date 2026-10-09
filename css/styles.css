@@ -2307,6 +2307,97 @@ button.one-v-one-name:focus-visible {
   font-weight: 650;
 }
 
+.lb-rules-toggle {
+  margin-top: 0.85rem;
+}
+
+.lb-rules {
+  display: grid;
+  gap: 0.7rem;
+  margin: -0.35rem 0 1.35rem;
+}
+
+.lb-rules.is-hidden {
+  display: none;
+}
+
+.lb-rule {
+  padding: 0.95rem 1.05rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(16, 22, 32, 0.72);
+}
+
+.lb-rule-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.lb-rule-icon {
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  color: #e8c56b;
+}
+
+.lb-rule-icon svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.lb-rule-icon.is-ok {
+  color: #7dff9a;
+}
+
+.lb-rule-icon.is-warn {
+  color: #f0c14a;
+}
+
+.lb-rule h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.lb-rule p,
+.lb-rule li {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.lb-rule a {
+  color: var(--accent-bright);
+}
+
+.lb-rule strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.lb-rule ul {
+  margin: 0.15rem 0 0.55rem;
+  padding-left: 1.15rem;
+  display: grid;
+  gap: 0.28rem;
+}
+
+.lb-rule .is-full {
+  color: #7dff9a;
+}
+
+.lb-rule .is-half {
+  color: #f0c14a;
+}
+
+.lb-rule .is-low {
+  color: #ff8d8d;
+}
+
 .lb-meta {
   display: flex;
   flex-wrap: wrap;

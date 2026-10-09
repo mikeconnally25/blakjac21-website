@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=rail1" />
+  <link rel="stylesheet" href="/css/styles.css?v=lbrules1" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -69,6 +69,9 @@
             <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
             <h1 class="lb-title">Leaderboard</h1>
             <p class="lb-lede">Top 10 wagered on code <strong>BLAKJAC21</strong>.</p>
+            <button type="button" class="btn btn-sm btn-outline lb-rules-toggle" id="leaderboard-rules-toggle" aria-expanded="false" aria-controls="leaderboard-rules">
+              Competition rules
+            </button>
           </div>
           <div class="lb-meta">
             <div class="lb-stat">
@@ -85,6 +88,41 @@
             </div>
           </div>
         </header>
+
+        <div class="lb-rules is-hidden" id="leaderboard-rules">
+          <article class="lb-rule">
+            <div class="lb-rule-head">
+              <span class="lb-rule-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 3h10v2a5 5 0 0 1-4 4.9V12h3v2H8v-2h3v-2.1A5 5 0 0 1 7 5V3Zm2 2v.2a3 3 0 0 0 2 2.8 3 3 0 0 0 2-2.8V5H9Zm-4 14h14v2H5v-2Z"/></svg>
+              </span>
+              <h2>How to Participate</h2>
+            </div>
+            <p>Play on <a href="https://stake.com" target="_blank" rel="noopener noreferrer">Stake.com</a> using the affiliate code <strong>BLAKJAC21</strong>. All wagers automatically count towards your leaderboard position.</p>
+          </article>
+          <article class="lb-rule">
+            <div class="lb-rule-head">
+              <span class="lb-rule-icon is-ok" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1.2 14.2-4-4 1.4-1.4 2.6 2.6 5-5 1.4 1.4-6.4 6.4Z"/></svg>
+              </span>
+              <h2>Eligible Games</h2>
+            </div>
+            <p>All game types count: Casino slots, Live games, Sports betting, and Stake Originals.</p>
+          </article>
+          <article class="lb-rule">
+            <div class="lb-rule-head">
+              <span class="lb-rule-icon is-warn" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 3.2 1.8 21h20.4L12 3.2ZM11 10h2v5h-2v-5Zm0 6.5h2V19h-2v-2.5Z"/></svg>
+              </span>
+              <h2>New Wager Counting Rules</h2>
+            </div>
+            <ul>
+              <li>Games with RTP ≤98%: <strong class="is-full">100% of wagered amount counts</strong></li>
+              <li>Games with RTP &gt;98%: <strong class="is-half">50% of wagered amount counts</strong></li>
+              <li>Games with RTP ≥99%: <strong class="is-low">10% of wagered amount counts</strong></li>
+            </ul>
+            <p>This adjustment discourages high RTP game abuse and ensures fairer competition.</p>
+          </article>
+        </div>
 
         <p class="guess-status is-hidden" id="leaderboard-status" role="status" aria-live="polite"></p>
 
@@ -134,6 +172,6 @@
 
   <script src="/js/main.js?v=slotstats1"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/leaderboard.js?v=lbboard1"></script>
+  <script src="/js/leaderboard.js?v=lbrules1"></script>
 </body>
 </html>

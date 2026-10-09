@@ -420,6 +420,14 @@ function scheduleLeaderboardPolling() {
   }, 15000);
 }
 
+document.getElementById("leaderboard-rules-toggle")?.addEventListener("click", () => {
+  const panel = document.getElementById("leaderboard-rules");
+  const button = document.getElementById("leaderboard-rules-toggle");
+  if (!panel || !button) return;
+  const open = panel.classList.toggle("is-hidden") === false;
+  button.setAttribute("aria-expanded", open ? "true" : "false");
+});
+
 document.getElementById("leaderboard-filter")?.addEventListener("input", (event) => {
   filterQuery = event.target.value || "";
   applyFilter();
