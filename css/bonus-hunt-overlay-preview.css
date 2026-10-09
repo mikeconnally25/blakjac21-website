@@ -95,9 +95,13 @@
   overflow: hidden;
 }
 
+.overlay-preview-frame.is-spin {
+  min-height: 0;
+}
+
 .overlay-preview-frame.is-spin iframe {
-  width: min(100%, 44rem);
-  height: 18rem;
+  width: min(100%, 26rem);
+  height: 16rem;
 }
 
 .overlay-preview-frame.is-wide {
@@ -183,6 +187,11 @@
     width: 100%;
     max-width: 26rem;
     height: 32rem;
+  }
+
+  .overlay-preview-frame.is-spin iframe {
+    max-width: 26rem;
+    height: 16rem;
   }
 
   .overlay-preview-frame.is-wide iframe {

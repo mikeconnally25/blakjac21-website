@@ -36,10 +36,6 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-.ss-overlay.is-pair {
-  width: 44rem;
-}
-
 .ss-overlay.is-hidden {
   display: none;
 }
@@ -100,11 +96,6 @@ body {
 .ss-list {
   display: grid;
   gap: 0.45rem;
-}
-
-.ss-overlay.is-pair .ss-list {
-  grid-template-columns: 1fr 1fr;
-  gap: 0.85rem;
 }
 
 .ss-row {
