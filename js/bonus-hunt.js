@@ -2249,7 +2249,6 @@ async function pickRandomSlotRequest() {
   }
 
   pickedRequestId = winner.id;
-  pickRolling = false;
   renderSlotRequests(slotRequests);
 
   const row = document.querySelector(
@@ -2261,7 +2260,91 @@ async function pickRandomSlotRequest() {
     result.textContent = `${winner.slotName} · ${winner.username}`;
     result.classList.remove("is-hidden");
   }
+
+  if (isHuntAdmin()) {
+    if (button) button.textContent = "Adding…";
+    try {
+      const added = await pushPickedRequestToOpening(winner);
+      if (!added && result) {
+        result.textContent = `${winner.slotName} · ${winner.username}`;
+      }
+    } catch (error) {
+      if (result) result.textContent = error.message || "Could not update the overlay.";
+    }
+  }
+
+  pickRolling = false;
+  renderSlotRequests(slotRequests);
   if (button) button.textContent = "Pick random";
+}
+
+function askWhichOpeningSlotToRemove(incomingName) {
+  const modal = document.getElementById("spin-replace-modal");
+  const choices = document.getElementById("spin-replace-choices");
+  const copy = document.getElementById("spin-replace-copy");
+  if (!modal || !choices) return Promise.resolve(null);
+
+  if (copy) {
+    copy.textContent = `Now spinning already has 2 slots. Choose which one comes off so ${incomingName} can go on.`;
+  }
+  choices.replaceChildren();
+  for (const slot of openingSlots) {
+    const choice = document.createElement("button");
+    choice.type = "button";
+    choice.className = "btn btn-outline spin-replace-choice";
+    choice.dataset.removeId = slot.id;
+    choice.textContent = slot.name;
+    choices.append(choice);
+  }
+  modal.classList.remove("is-hidden");
+
+  return new Promise((resolve) => {
+    const finish = (id) => {
+      modal.classList.add("is-hidden");
+      modal.removeEventListener("click", onClick);
+      document.removeEventListener("keydown", onKey);
+      resolve(id);
+    };
+    const onClick = (event) => {
+      const choice = event.target.closest("[data-remove-id]");
+      if (choice) {
+        finish(choice.dataset.removeId);
+        return;
+      }
+      if (event.target.closest("[data-spin-replace-cancel]")) finish(null);
+    };
+    const onKey = (event) => {
+      if (event.key === "Escape") finish(null);
+    };
+    modal.addEventListener("click", onClick);
+    document.addEventListener("keydown", onKey);
+    choices.querySelector("button")?.focus();
+  });
+}
+
+async function pushPickedRequestToOpening(request) {
+  const catalogSlot = findCatalogSlot(request);
+  const slug = catalogSlot?.slug || request.slotSlug;
+  const name = catalogSlot?.name || request.slotName;
+  if (!slug || !name) {
+    throw new Error("That request is not a catalog slot yet.");
+  }
+
+  await refreshOpeningList();
+  const slugKey = String(slug).toLowerCase();
+  const already = openingSlots.some((slot) => String(slot.slug || "").toLowerCase() === slugKey);
+  if (!already && openingSlots.length >= 2) {
+    const removeId = await askWhichOpeningSlotToRemove(name);
+    if (!removeId) return false;
+    await updateOpening({ action: "remove", id: removeId });
+  }
+
+  await updateOpening({ action: "add", slug, name });
+  document.getElementById("spin-overlay-board")?.scrollIntoView({
+    block: "nearest",
+    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+  });
+  return true;
 }
 
 async function loadSlotCatalog() {

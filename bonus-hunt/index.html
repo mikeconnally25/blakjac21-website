@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=spinpad1" />
+  <link rel="stylesheet" href="/css/styles.css?v=spinpick1" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -601,8 +601,19 @@
     </div>
   </footer>
 
+  <div class="spin-replace-modal is-hidden" id="spin-replace-modal" role="dialog" aria-modal="true" aria-labelledby="spin-replace-title">
+    <div class="spin-replace-backdrop" data-spin-replace-cancel></div>
+    <div class="spin-replace-dialog bj21-panel">
+      <p class="section-eyebrow">Now spinning</p>
+      <h2 class="spin-replace-title" id="spin-replace-title">Which slot should come off?</h2>
+      <p class="spin-replace-copy" id="spin-replace-copy"></p>
+      <div class="spin-replace-choices" id="spin-replace-choices"></div>
+      <button type="button" class="btn btn-sm btn-outline" id="spin-replace-cancel" data-spin-replace-cancel>Don't add</button>
+    </div>
+  </div>
+
   <script src="/js/main.js?v=slotstats1"></script>
   <script src="/js/auth.js"></script>
-  <script src="/js/bonus-hunt.js?v=spinfit1"></script>
+  <script src="/js/bonus-hunt.js?v=spinpick1"></script>
 </body>
 </html>

@@ -6783,6 +6783,67 @@ button.one-v-one-name:focus-visible {
   box-shadow: inset 3px 0 0 #e8c56b;
 }
 
+.spin-replace-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.spin-replace-modal.is-hidden {
+  display: none;
+}
+
+.spin-replace-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 10, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.spin-replace-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 24rem);
+  display: grid;
+  gap: 0.7rem;
+  padding: 1.05rem 1.1rem 1.1rem 1.2rem;
+}
+
+.spin-replace-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: var(--heading-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.spin-replace-copy {
+  margin: 0;
+  color: var(--text-muted, #8ba4b6);
+  font-size: 0.92rem;
+}
+
+.spin-replace-choices {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.spin-replace-choice {
+  width: 100%;
+  justify-content: flex-start;
+  white-space: normal;
+  text-align: left;
+}
+
 .slot-request-thumb {
   flex-shrink: 0;
   width: 2.15rem;
