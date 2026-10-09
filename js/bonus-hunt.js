@@ -2876,7 +2876,31 @@ function bindOverlayCopy(sourcePath, inputId, buttonId, statusId) {
   });
 }
 
+function fitSpinOverlayPreview() {
+  const frame = document.querySelector(".spin-overlay-preview iframe");
+  const wrap = frame?.closest(".spin-overlay-preview");
+  if (!frame || !wrap) return;
+
+  const overlay = frame.contentDocument?.getElementById("ss-overlay");
+  const hidden = !overlay || overlay.classList.contains("is-hidden");
+  wrap.classList.toggle("is-empty", hidden);
+  if (hidden) return;
+
+  const box = overlay.getBoundingClientRect();
+  frame.style.width = `${Math.ceil(box.width)}px`;
+  frame.style.height = `${Math.ceil(box.height)}px`;
+}
+
+function initSpinOverlayPreviewFit() {
+  const frame = document.querySelector(".spin-overlay-preview iframe");
+  if (!frame) return;
+  frame.addEventListener("load", fitSpinOverlayPreview);
+  window.setInterval(fitSpinOverlayPreview, 1000);
+  fitSpinOverlayPreview();
+}
+
 function initOverlayPreview() {
+  initSpinOverlayPreviewFit();
   bindOverlayCopy(
     "/bonus-hunt/overlay/source.html",
     "hunt-overlay-url",
