@@ -3832,51 +3832,6 @@ button.one-v-one-name:focus-visible {
   font-size: 1rem;
 }
 
-.giveaways-hero-status {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  min-width: 10.5rem;
-  padding: 0.85rem 1rem;
-  border-radius: 999px;
-  border: 1px solid rgba(88, 201, 243, 0.18);
-  background: rgba(10, 15, 20, 0.55);
-}
-
-.giveaways-status-dot {
-  width: 0.7rem;
-  height: 0.7rem;
-  border-radius: 50%;
-  background: #6b8294;
-  box-shadow: 0 0 0 4px rgba(107, 130, 148, 0.18);
-}
-
-.giveaways-hero-status[data-state="open"] .giveaways-status-dot {
-  background: #53fc18;
-  box-shadow: 0 0 0 4px rgba(83, 252, 24, 0.16);
-  animation: giveaways-pulse 1.8s ease-in-out infinite;
-}
-
-.giveaways-hero-status[data-state="winner"] .giveaways-status-dot {
-  background: #f0c98e;
-  box-shadow: 0 0 0 4px rgba(240, 201, 142, 0.18);
-}
-
-.giveaways-status-label {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.giveaways-status-value {
-  margin: 0.05rem 0 0;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
 .giveaways-admin {
   display: grid;
   gap: 1.15rem;
@@ -4761,16 +4716,6 @@ button.one-v-one-name:focus-visible {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes giveaways-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 4px rgba(83, 252, 24, 0.14);
-  }
-  50% {
-    box-shadow: 0 0 0 7px rgba(83, 252, 24, 0.08);
   }
 }
 
@@ -13615,7 +13560,6 @@ button.one-v-one-name:focus-visible {
 }
 
 .store-balance,
-.giveaways-hero-status,
 .accounts-hero-stat,
 .house-games-balance {
   border-radius: 12px;

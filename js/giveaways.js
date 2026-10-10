@@ -188,25 +188,6 @@ function updateSubscribersOnlyLabel() {
   }
 }
 
-function updateHeroStatus() {
-  const status = document.getElementById("giveaways-hero-status");
-  const value = document.getElementById("giveaways-status-value");
-  if (!status || !value) return;
-
-  const mode = accessModeLabel();
-
-  if (giveawayWinner) {
-    status.dataset.state = "winner";
-    value.textContent = `Winner · ${giveawayWinner.username}`;
-  } else if (giveawaysOpen) {
-    status.dataset.state = "open";
-    value.textContent = mode ? `Open · ${mode} only` : "Open";
-  } else {
-    status.dataset.state = "closed";
-    value.textContent = mode ? `Closed · ${mode} only` : "Closed";
-  }
-}
-
 function buildEntryItem(entry, index) {
   const item = document.createElement("li");
   item.className = "giveaways-entry";
@@ -677,7 +658,6 @@ function updatePanels() {
   updateToggleLabel();
   updateAffiliatesOnlyLabel();
   updateSubscribersOnlyLabel();
-  updateHeroStatus();
   renderEntries();
   updateRevealPanel();
 }
