@@ -849,9 +849,19 @@ ul {
   max-width: 42rem;
 }
 
+.one-v-one-page.page-section {
+  padding-top: 1.15rem;
+}
+
 .one-v-one-shell {
   display: grid;
-  gap: 1.15rem;
+  gap: 0.7rem;
+}
+
+.one-v-one-shell .section-header p {
+  max-width: 48rem;
+  font-size: 0.86rem;
+  line-height: 1.4;
 }
 
 .one-v-one-shell .back-link,
@@ -928,16 +938,16 @@ ul {
 
 .one-v-one-admin-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
 }
 
 .one-v-one-admin-group {
   display: grid;
   align-content: start;
-  gap: 0.65rem;
+  gap: 0.45rem;
   min-width: 0;
-  padding: 0.75rem 0.8rem 0.85rem;
+  padding: 0.55rem 0.65rem 0.65rem;
   border-radius: calc(var(--radius-sm) + 2px);
   border: 1px solid rgba(88, 201, 243, 0.16);
   background: rgba(5, 12, 20, 0.4);
@@ -991,10 +1001,10 @@ ul {
 
 .one-v-one-board {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 4.75rem minmax(0, 1fr);
-  gap: 0.85rem;
+  grid-template-columns: minmax(0, 1fr) 3.2rem minmax(0, 1fr);
+  gap: 0.55rem;
   align-items: stretch;
-  padding: 1rem;
+  padding: 0.7rem;
 }
 
 .one-v-one-vs {
@@ -1006,14 +1016,14 @@ ul {
 .one-v-one-vs span {
   display: grid;
   place-items: center;
-  width: 3.6rem;
-  height: 3.6rem;
+  width: 2.55rem;
+  height: 2.55rem;
   border-radius: 50%;
   border: 1px solid rgba(126, 216, 255, 0.5);
   background: radial-gradient(circle at 40% 32%, rgba(126, 216, 255, 0.28), rgba(8, 16, 28, 0.92));
   box-shadow: 0 0 28px rgba(88, 201, 243, 0.2);
   font-family: var(--font-display);
-  font-size: 1.7rem;
+  font-size: 1.2rem;
   line-height: 1;
   letter-spacing: 0.04em;
   color: var(--accent-bright);
@@ -1021,10 +1031,10 @@ ul {
 
 .one-v-one-side {
   display: grid;
-  gap: 0.75rem;
+  gap: 0.45rem;
   align-content: start;
-  min-height: 9.5rem;
-  padding: 0.95rem 1rem 1.05rem;
+  min-height: 0;
+  padding: 0.7rem 0.75rem 0.75rem;
   border-radius: calc(var(--radius-sm) + 2px);
   border: 1px solid rgba(88, 201, 243, 0.14);
   background: rgba(5, 12, 20, 0.55);
@@ -1075,7 +1085,7 @@ ul {
 .one-v-one-name {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-size: clamp(1.55rem, 2.6vw, 2.05rem);
   line-height: 0.9;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1101,7 +1111,7 @@ button.one-v-one-name:focus-visible {
 
 .one-v-one-calls {
   display: grid;
-  gap: 0.65rem;
+  gap: 0.4rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1109,21 +1119,27 @@ button.one-v-one-name:focus-visible {
 
 .one-v-one-pick {
   display: grid;
-  gap: 0.55rem;
+  grid-template-columns: 4.4rem minmax(0, 1fr);
+  grid-template-areas:
+    "logo slot"
+    "logo meta";
+  gap: 0.1rem 0.65rem;
+  align-items: center;
 }
 
 .one-v-one-logo {
+  grid-area: logo;
   display: grid;
   place-items: center;
-  justify-self: center;
-  width: min(100%, 9.5rem);
+  justify-self: start;
+  width: 4.4rem;
   aspect-ratio: 3 / 4;
   border-radius: 12px;
   overflow: hidden;
   background:
     radial-gradient(circle at 50% 40%, rgba(88, 201, 243, 0.16), rgba(0, 0, 0, 0.28));
   font-family: var(--font-display);
-  font-size: 2.2rem;
+  font-size: 1.35rem;
   letter-spacing: 0.06em;
   color: var(--accent-bright);
 }
@@ -1141,13 +1157,19 @@ button.one-v-one-name:focus-visible {
 }
 
 .one-v-one-slot {
+  grid-area: slot;
   font-weight: 600;
-  line-height: 1.25;
-  text-align: center;
+  line-height: 1.2;
+  text-align: left;
 }
 
 .one-v-one-pick .one-v-one-meta {
-  text-align: center;
+  grid-area: meta;
+  text-align: left;
+}
+
+.one-v-one-empty {
+  grid-column: 1 / -1;
 }
 
 .one-v-one-meta,
@@ -1159,8 +1181,8 @@ button.one-v-one-name:focus-visible {
 .one-v-one-chat {
   position: relative;
   display: grid;
-  gap: 0.75rem;
-  padding: 1rem 1.05rem 1.15rem;
+  gap: 0.5rem;
+  padding: 0.7rem 0.8rem 0.8rem;
 }
 
 .one-v-one-bets {
@@ -1220,12 +1242,12 @@ button.one-v-one-name:focus-visible {
 
 .one-v-one-bets-label {
   color: var(--text-muted);
-  font-size: 1.7rem;
+  font-size: 1.35rem;
 }
 
 .one-v-one-bets-total {
   color: var(--accent-bright);
-  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-size: clamp(1.55rem, 3vw, 2.1rem);
   font-weight: 600;
 }
 
@@ -1244,7 +1266,7 @@ button.one-v-one-name:focus-visible {
 .one-v-one-chat-head h2 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.8rem;
+  font-size: 1.45rem;
   line-height: 0.9;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1262,9 +1284,9 @@ button.one-v-one-name:focus-visible {
   display: grid;
   align-content: start;
   gap: 0.15rem;
-  max-height: 22rem;
-  min-height: 12rem;
-  padding: 0.7rem 0.8rem;
+  max-height: 13rem;
+  min-height: 7.5rem;
+  padding: 0.5rem 0.65rem;
   overflow-y: auto;
   overscroll-behavior: contain;
   border-radius: calc(var(--radius-sm) + 2px);
@@ -1312,6 +1334,12 @@ button.one-v-one-name:focus-visible {
   margin: 0;
   line-height: 1.4;
   overflow-wrap: anywhere;
+}
+
+@media (max-width: 1100px) {
+  .one-v-one-admin-actions {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (max-width: 800px) {
@@ -13630,6 +13658,11 @@ button.one-v-one-name:focus-visible {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+.one-v-one-page .theme-heading {
+  margin-bottom: 0.35rem;
+  font-size: clamp(2.2rem, 4vw, 3rem);
 }
 
 .store-balance,
