@@ -1932,9 +1932,24 @@ button.one-v-one-name:focus-visible {
 .guess-balance-page .admin-panel.bj21-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "clock balance"
+    "toggles toggles";
   gap: 0.55rem 1rem;
   margin-bottom: 0.55rem;
   padding: 0.7rem 0.85rem;
+}
+
+.guess-balance-page .admin-duration-section {
+  grid-area: clock;
+}
+
+.guess-balance-page .admin-panel > .admin-panel-section:not(.admin-duration-section) {
+  grid-area: balance;
+}
+
+.guess-balance-page .guess-admin-toggles {
+  grid-area: toggles;
 }
 
 .guess-balance-page .admin-panel-section,
@@ -1955,7 +1970,6 @@ button.one-v-one-name:focus-visible {
 }
 
 .guess-balance-page .guess-admin-toggles {
-  grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.4rem;
@@ -2099,7 +2113,14 @@ button.one-v-one-name:focus-visible {
 }
 
 @media (max-width: 720px) {
-  .guess-balance-page .admin-panel.bj21-panel,
+  .guess-balance-page .admin-panel.bj21-panel {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "clock"
+      "balance"
+      "toggles";
+  }
+
   .guess-balance-page .guess-admin-toggles,
   .guess-balance-page .guess-form {
     grid-template-columns: 1fr;
