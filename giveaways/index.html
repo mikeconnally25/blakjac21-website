@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=rail1" />
+  <link rel="stylesheet" href="/css/styles.css?v=giveawaytop1" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -76,6 +76,62 @@
             <div>
               <p class="giveaways-status-label">Status</p>
               <p class="giveaways-status-value" id="giveaways-status-value">Closed</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="giveaways-spotlight">
+          <div class="giveaways-card">
+            <div class="giveaways-header">
+              <div>
+                <p class="giveaways-eyebrow">Live drop</p>
+                <h2 class="giveaways-title">Active giveaway</h2>
+              </div>
+            </div>
+
+            <p class="giveaways-empty" id="giveaways-empty">
+              No active giveaway right now. Watch live on Kick and check back when the next keyword drops.
+            </p>
+
+            <div class="giveaways-open is-hidden" id="giveaways-open">
+              <p class="giveaways-open-label">Type this in Kick chat</p>
+              <p class="giveaways-keyword-chip" id="giveaways-keyword-display">keyword</p>
+              <p class="giveaways-open-copy" id="giveaways-open-copy">
+                One entry per viewer. Exact match only. Linked Stake required to win.
+              </p>
+              <p class="giveaways-aff-note is-hidden" id="giveaways-access-note"></p>
+            </div>
+          </div>
+
+          <div class="giveaways-card giveaways-reveal-card">
+            <div class="giveaways-header">
+              <div>
+                <p class="giveaways-eyebrow">Case opening</p>
+                <h2 class="giveaways-title">Reveal winner</h2>
+              </div>
+              <span class="giveaways-count" id="giveaways-reveal-count">Need entrants</span>
+            </div>
+
+            <p class="giveaways-empty" id="giveaways-reveal-empty">
+              Entrants will fill the reel once people join. Spin the case to lock in a winner. Only linked Stake accounts can win.
+            </p>
+
+            <div class="case-reel is-hidden" id="case-reel" aria-live="polite">
+              <div class="case-reel-burst" id="case-reel-burst" aria-hidden="true"></div>
+              <div class="case-reel-fade case-reel-fade-left" aria-hidden="true"></div>
+              <div class="case-reel-fade case-reel-fade-right" aria-hidden="true"></div>
+              <div class="case-reel-marker" aria-hidden="true"></div>
+              <div class="case-reel-window">
+                <div class="case-reel-track" id="case-reel-track"></div>
+              </div>
+            </div>
+
+            <p class="case-reel-result is-hidden" id="case-reel-result"></p>
+
+            <div class="giveaways-reveal-actions is-hidden" id="giveaways-reveal-actions">
+              <button type="button" class="btn btn-primary giveaways-reveal-btn" id="giveaways-reveal-btn">
+                Reveal Winner
+              </button>
             </div>
           </div>
         </div>
@@ -182,62 +238,6 @@
                 <div class="giveaways-rolling-fade giveaways-rolling-fade-top" aria-hidden="true"></div>
                 <div class="giveaways-rolling-fade giveaways-rolling-fade-bottom" aria-hidden="true"></div>
                 <ol class="giveaways-rolling-track" id="giveaways-list"></ol>
-              </div>
-            </div>
-          </div>
-
-          <div class="giveaways-layout-main">
-            <div class="giveaways-card">
-              <div class="giveaways-header">
-                <div>
-                  <p class="giveaways-eyebrow">Live drop</p>
-                  <h2 class="giveaways-title">Active giveaway</h2>
-                </div>
-              </div>
-
-              <p class="giveaways-empty" id="giveaways-empty">
-                No active giveaway right now. Watch live on Kick and check back when the next keyword drops.
-              </p>
-
-              <div class="giveaways-open is-hidden" id="giveaways-open">
-                <p class="giveaways-open-label">Type this in Kick chat</p>
-                <p class="giveaways-keyword-chip" id="giveaways-keyword-display">keyword</p>
-                <p class="giveaways-open-copy" id="giveaways-open-copy">
-                  One entry per viewer. Exact match only. Linked Stake required to win.
-                </p>
-                <p class="giveaways-aff-note is-hidden" id="giveaways-access-note"></p>
-              </div>
-            </div>
-
-            <div class="giveaways-card giveaways-reveal-card">
-              <div class="giveaways-header">
-                <div>
-                  <p class="giveaways-eyebrow">Case opening</p>
-                  <h2 class="giveaways-title">Reveal winner</h2>
-                </div>
-                <span class="giveaways-count" id="giveaways-reveal-count">Need entrants</span>
-              </div>
-
-              <p class="giveaways-empty" id="giveaways-reveal-empty">
-                Entrants will fill the reel once people join. Spin the case to lock in a winner. Only linked Stake accounts can win.
-              </p>
-
-              <div class="case-reel is-hidden" id="case-reel" aria-live="polite">
-                <div class="case-reel-burst" id="case-reel-burst" aria-hidden="true"></div>
-                <div class="case-reel-fade case-reel-fade-left" aria-hidden="true"></div>
-                <div class="case-reel-fade case-reel-fade-right" aria-hidden="true"></div>
-                <div class="case-reel-marker" aria-hidden="true"></div>
-                <div class="case-reel-window">
-                  <div class="case-reel-track" id="case-reel-track"></div>
-                </div>
-              </div>
-
-              <p class="case-reel-result is-hidden" id="case-reel-result"></p>
-
-              <div class="giveaways-reveal-actions is-hidden" id="giveaways-reveal-actions">
-                <button type="button" class="btn btn-primary giveaways-reveal-btn" id="giveaways-reveal-btn">
-                  Reveal Winner
-                </button>
               </div>
             </div>
           </div>

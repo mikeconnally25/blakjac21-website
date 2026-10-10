@@ -3936,9 +3936,17 @@ button.one-v-one-name:focus-visible {
   flex: 1 1 14rem;
 }
 
+.giveaways-spotlight {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.72fr) minmax(0, 1.45fr);
+  gap: 1.25rem;
+  align-items: start;
+  margin-bottom: 1.25rem;
+}
+
 .giveaways-layout {
   display: grid;
-  grid-template-columns: minmax(16rem, 0.9fr) minmax(0, 1.45fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.25rem;
   align-items: start;
 }
@@ -4767,6 +4775,7 @@ button.one-v-one-name:focus-visible {
 }
 
 @media (max-width: 900px) {
+  .giveaways-spotlight,
   .giveaways-layout,
   .giveaways-admin-grid {
     grid-template-columns: 1fr;
