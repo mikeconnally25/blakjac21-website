@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=stakecopy1" />
+  <link rel="stylesheet" href="/css/styles.css?v=gtbcompact1" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -116,49 +116,51 @@
             </div>
           </div>
 
-          <div class="admin-panel-row">
-            <div>
-              <p class="admin-panel-label">Admin controls</p>
-              <p class="admin-panel-text" id="game-toggle-status">Guessing is off</p>
+          <div class="guess-admin-toggles">
+            <div class="admin-panel-row">
+              <div>
+                <p class="admin-panel-label">Admin controls</p>
+                <p class="admin-panel-text" id="game-toggle-status">Guessing is off</p>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="game-toggle" aria-labelledby="game-toggle-status" />
+                <span class="toggle-slider" aria-hidden="true"></span>
+              </label>
             </div>
-            <label class="toggle">
-              <input type="checkbox" id="game-toggle" aria-labelledby="game-toggle-status" />
-              <span class="toggle-slider" aria-hidden="true"></span>
-            </label>
-          </div>
 
-          <div class="admin-panel-row giveaways-admin-aff">
-            <div>
-              <p class="admin-panel-label">AFF only</p>
-              <p class="admin-panel-text" id="game-aff-toggle-status">
-                Affiliate restriction off
-              </p>
+            <div class="admin-panel-row">
+              <div>
+                <p class="admin-panel-label">AFF only</p>
+                <p class="admin-panel-text" id="game-aff-toggle-status">
+                  Affiliate restriction off
+                </p>
+              </div>
+              <label class="toggle">
+                <input
+                  type="checkbox"
+                  id="game-aff-toggle"
+                  aria-labelledby="game-aff-toggle-status"
+                />
+                <span class="toggle-slider" aria-hidden="true"></span>
+              </label>
             </div>
-            <label class="toggle">
-              <input
-                type="checkbox"
-                id="game-aff-toggle"
-                aria-labelledby="game-aff-toggle-status"
-              />
-              <span class="toggle-slider" aria-hidden="true"></span>
-            </label>
-          </div>
 
-          <div class="admin-panel-row giveaways-admin-aff">
-            <div>
-              <p class="admin-panel-label">SUB only</p>
-              <p class="admin-panel-text" id="game-sub-toggle-status">
-                Subscriber restriction off
-              </p>
+            <div class="admin-panel-row">
+              <div>
+                <p class="admin-panel-label">SUB only</p>
+                <p class="admin-panel-text" id="game-sub-toggle-status">
+                  Subscriber restriction off
+                </p>
+              </div>
+              <label class="toggle">
+                <input
+                  type="checkbox"
+                  id="game-sub-toggle"
+                  aria-labelledby="game-sub-toggle-status"
+                />
+                <span class="toggle-slider" aria-hidden="true"></span>
+              </label>
             </div>
-            <label class="toggle">
-              <input
-                type="checkbox"
-                id="game-sub-toggle"
-                aria-labelledby="game-sub-toggle-status"
-              />
-              <span class="toggle-slider" aria-hidden="true"></span>
-            </label>
           </div>
 
           <div class="admin-panel-section">

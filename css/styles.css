@@ -1893,6 +1893,219 @@ button.one-v-one-name:focus-visible {
   align-items: flex-start;
 }
 
+.guess-balance-page.page-section {
+  padding-top: 1.15rem;
+}
+
+.guess-balance-page .back-link {
+  margin-bottom: 0.4rem;
+}
+
+.guess-balance-page .guess-balance-hero {
+  margin-bottom: 0.65rem;
+}
+
+.guess-balance-page .section-eyebrow {
+  margin-bottom: 0.15rem;
+  font-size: 0.78rem;
+}
+
+.guess-balance-page .section-header h2 {
+  margin-bottom: 0.2rem;
+  font-size: clamp(2rem, 4vw, 2.7rem);
+}
+
+.guess-balance-page .section-header p,
+.guess-balance-page .game-panel-text,
+.guess-balance-page .admin-panel-text {
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.guess-balance-page .admin-duration-section > .admin-panel-text,
+.guess-balance-page #ending-balance-status + .admin-panel-text,
+.guess-balance-page .admin-panel-section > .admin-panel-text,
+.guess-balance-page #game-panel-member > .game-panel-text {
+  display: none;
+}
+
+.guess-balance-page .admin-panel.bj21-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.55rem 1rem;
+  margin-bottom: 0.55rem;
+  padding: 0.7rem 0.85rem;
+}
+
+.guess-balance-page .admin-panel-section,
+.guess-balance-page .admin-duration-section,
+.guess-balance-page .admin-panel-section:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+  gap: 0.35rem;
+  align-content: start;
+}
+
+.guess-balance-page .admin-panel-section .guess-panel-title,
+.guess-balance-page .guess-panel-title,
+.guess-balance-page .guesses-heading {
+  margin-bottom: 0.2rem;
+  font-size: 1.2rem;
+}
+
+.guess-balance-page .guess-admin-toggles {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.guess-balance-page .guess-admin-toggles .admin-panel-row {
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid rgba(88, 201, 243, 0.12);
+  border-radius: 10px;
+}
+
+.guess-balance-page .guess-admin-toggles .admin-panel-text {
+  font-size: 0.72rem;
+}
+
+.guess-balance-page .digital-clock-screen {
+  min-width: 6.6rem;
+  padding: 0.28rem 0.5rem;
+}
+
+.guess-balance-page .digital-clock-minutes,
+.guess-balance-page .digital-clock-colon,
+.guess-balance-page .digital-clock-seconds {
+  font-size: 1.45rem;
+}
+
+.guess-balance-page .digital-clock-step {
+  width: 1.65rem;
+  height: 1.65rem;
+  font-size: 1rem;
+}
+
+.guess-balance-page .game-panel.bj21-panel {
+  padding: 0.7rem 0.85rem;
+}
+
+.guess-balance-page .game-panel + .game-panel,
+.guess-balance-page .admin-panel + .game-panel,
+.guess-balance-page .round-timer + .game-panel,
+.guess-balance-page .round-timer + .admin-panel,
+.guess-balance-page .guesses-panel,
+.guess-balance-page .podium-panel {
+  margin-top: 0.55rem;
+}
+
+.guess-balance-page .game-panel-text {
+  margin: 0.15rem 0 0.45rem;
+}
+
+.guess-balance-page .game-panel-note {
+  margin: 0 0 0.45rem;
+  font-size: 0.82rem;
+}
+
+.guess-balance-page .guess-form {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.45rem 0.55rem;
+}
+
+.guess-balance-page .guess-form .guess-label,
+.guess-balance-page .guess-form .guess-status {
+  grid-column: 1 / -1;
+}
+
+.guess-balance-page .guess-input-row {
+  padding: 0.4rem 0.65rem;
+}
+
+.guess-balance-page .guess-input,
+.guess-balance-page .guess-prefix,
+.guess-balance-page .admin-balance-input .guess-input {
+  font-size: 1rem;
+}
+
+.guess-balance-page .round-timer {
+  margin-bottom: 0.55rem;
+  padding: 0.45rem 0.75rem;
+}
+
+.guess-balance-page .round-timer-value {
+  font-size: 1.45rem;
+}
+
+.guess-balance-page .guesses-panel-header,
+.guess-balance-page .podium-header {
+  margin-bottom: 0.35rem;
+}
+
+.guess-balance-page .guesses-count {
+  margin-top: 0;
+  font-size: 0.75rem;
+}
+
+.guess-balance-page .guesses-empty {
+  padding: 0.45rem 0.6rem;
+  font-size: 0.82rem;
+}
+
+.guess-balance-page .guesses-list {
+  gap: 0.2rem;
+  max-height: 14rem;
+}
+
+.guess-balance-page .guess-entry {
+  padding: 0.32rem 0.55rem;
+  font-size: 0.88rem;
+}
+
+.guess-balance-page .podium-stage {
+  min-height: 0;
+  gap: 0.45rem;
+}
+
+.guess-balance-page .podium-slot {
+  gap: 0.2rem;
+}
+
+.guess-balance-page .podium-block {
+  gap: 0.15rem;
+  padding: 0.45rem 0.4rem 0.4rem;
+}
+
+.guess-balance-page .podium-slot.place-1 .podium-block {
+  min-height: 5.4rem;
+}
+
+.guess-balance-page .podium-slot.place-2 .podium-block {
+  min-height: 4.4rem;
+}
+
+.guess-balance-page .podium-slot.place-3 .podium-block {
+  min-height: 3.6rem;
+}
+
+.guess-balance-page .podium-medal {
+  font-size: 1.05rem;
+}
+
+@media (max-width: 720px) {
+  .guess-balance-page .admin-panel.bj21-panel,
+  .guess-balance-page .guess-admin-toggles,
+  .guess-balance-page .guess-form {
+    grid-template-columns: 1fr;
+  }
+}
+
 .leaderboard-page {
   position: relative;
   padding-top: 2.5rem;
