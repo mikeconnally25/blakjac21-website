@@ -389,23 +389,15 @@ function hideWinnerProfile() {
   modal?.classList.add("is-hidden");
 }
 
-async function copyStakeUsername(value) {
-  if (navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(value);
-      return true;
-    } catch {
-      // Fall through to the selection copy below.
-    }
-  }
-
+function copyStakeUsernameNow(value) {
   const area = document.createElement("textarea");
   area.value = value;
   area.setAttribute("readonly", "");
-  area.style.position = "fixed";
-  area.style.left = "-9999px";
+  area.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;opacity:0;";
   document.body.append(area);
+  area.focus();
   area.select();
+  area.setSelectionRange(0, value.length);
   let copied = false;
   try {
     copied = document.execCommand("copy");
@@ -414,6 +406,18 @@ async function copyStakeUsername(value) {
   }
   area.remove();
   return copied;
+}
+
+async function copyStakeUsername(value) {
+  const copiedNow = copyStakeUsernameNow(value);
+  if (!navigator.clipboard?.writeText) return copiedNow;
+
+  try {
+    await navigator.clipboard.writeText(value);
+    return true;
+  } catch {
+    return copiedNow;
+  }
 }
 
 function showWinnerProfile(winner) {
