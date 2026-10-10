@@ -12,9 +12,9 @@ let pollTimer = null;
 let isRolling = false;
 let lastAnimatedWinnerId = null;
 
-const CASE_ITEM_GAP = 10;
+const CASE_ITEM_GAP = 8;
 const CASE_ROLL_DURATION_MS = 8200;
-const CASE_SETTLE_DURATION_MS = 520;
+const CASE_SETTLE_DURATION_MS = 780;
 const KICK_CHAT_POPOUT_URL = "https://kick.com/popout/blakjac21/chat";
 
 function prefersReducedMotion() {
@@ -25,10 +25,8 @@ function easeOutQuint(t) {
   return 1 - (1 - t) ** 5;
 }
 
-function easeOutBack(t) {
-  const c1 = 1.70158;
-  const c3 = c1 + 1;
-  return 1 + c3 * (t - 1) ** 3 + c1 * (t - 1) ** 2;
+function easeOutCubic(t) {
+  return 1 - (1 - t) ** 3;
 }
 
 function animateTransform(el, fromX, toX, duration, ease) {
@@ -422,7 +420,10 @@ function showWinnerResult(winner, animated = false) {
   }
 
   result.replaceChildren();
-  result.append(document.createTextNode("Winner: "));
+  const resultLabel = document.createElement("span");
+  resultLabel.className = "case-reel-result-label";
+  resultLabel.textContent = "Winner";
+  result.append(resultLabel);
 
   const nameBtn = document.createElement("button");
   nameBtn.type = "button";
@@ -548,10 +549,13 @@ function updateRevealPanel() {
 
   if (count) {
     if (giveawayWinner) {
+      count.dataset.state = "winner";
       count.textContent = "Winner locked";
     } else if (hasEntries) {
+      count.dataset.state = "ready";
       count.textContent = `${giveawayEntries.length} eligible`;
     } else {
+      count.dataset.state = "empty";
       count.textContent = "Need entrants";
     }
   }
@@ -623,7 +627,7 @@ function playCaseReveal(winner, entries) {
       spinX,
       settleX,
       CASE_SETTLE_DURATION_MS,
-      easeOutBack
+      easeOutCubic
     );
 
     celebrateWinnerLand(reel, track);
