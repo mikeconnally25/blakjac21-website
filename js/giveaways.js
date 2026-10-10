@@ -5,9 +5,6 @@ let giveawayAffiliatesOnly = false;
 let giveawaySubscribersOnly = false;
 let giveawayEntries = [];
 let giveawayWinner = null;
-let viewerIsWinner = false;
-let canSeeWinnerChat = false;
-let winnerMessages = [];
 let pollTimer = null;
 let isRolling = false;
 let lastAnimatedWinnerId = null;
@@ -15,7 +12,6 @@ let lastAnimatedWinnerId = null;
 const CASE_ITEM_GAP = 8;
 const CASE_ROLL_DURATION_MS = 8200;
 const CASE_SETTLE_DURATION_MS = 780;
-const KICK_CHAT_POPOUT_URL = "https://kick.com/popout/blakjac21/chat";
 
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -341,8 +337,6 @@ function setReelIdle(entries) {
   });
 }
 
-let lastWinnerChatId = null;
-
 function ensureWinnerProfileModal() {
   let modal = document.getElementById("winner-profile-modal");
   if (modal) return modal;
@@ -441,8 +435,6 @@ function showWinnerResult(winner, animated = false) {
     showWinnerProfile(winner);
   });
   result.append(nameBtn);
-
-  updateWinnerChat(winner, { celebrate: animated });
 }
 
 function clearWinnerResult() {
@@ -452,98 +444,6 @@ function clearWinnerResult() {
   result.classList.remove("is-pop");
   result.replaceChildren();
   hideWinnerProfile();
-  updateWinnerChat(null);
-}
-
-function renderWinnerMessages(messages = []) {
-  const list = document.getElementById("giveaways-winner-messages");
-  const empty = document.getElementById("giveaways-winner-messages-empty");
-  if (!list) return;
-
-  const items = Array.isArray(messages) ? messages : [];
-  list.replaceChildren();
-
-  for (const message of items) {
-    const row = document.createElement("article");
-    row.className = "giveaways-winner-message";
-
-    const meta = document.createElement("div");
-    meta.className = "giveaways-winner-message-meta";
-
-    const user = document.createElement("span");
-    user.className = "giveaways-winner-message-user";
-    user.textContent = message.username || "you";
-
-    meta.append(user);
-
-    const text = document.createElement("p");
-    text.className = "giveaways-winner-message-text";
-    text.textContent = message.text || "";
-
-    row.append(meta, text);
-    list.append(row);
-  }
-
-  empty?.classList.toggle("is-hidden", items.length > 0);
-
-  if (items.length) {
-    list.scrollTop = list.scrollHeight;
-  }
-}
-
-function restartWinnerChatPop(panel) {
-  if (!panel) return;
-
-  panel.classList.remove("is-hidden");
-  panel.classList.remove("is-pop");
-  // Force a style flush so the pop animation can replay.
-  void panel.offsetWidth;
-  panel.classList.add("is-pop");
-
-  window.requestAnimationFrame(() => {
-    panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  });
-}
-
-function updateWinnerChat(winner, { celebrate = false } = {}) {
-  const panel = document.getElementById("giveaways-winner-chat");
-  const nameEl = document.getElementById("giveaways-chat-winner-name");
-  const openLink = document.getElementById("giveaways-kick-chat-open");
-  if (!panel) return;
-
-  const show = Boolean(winner) && canSeeWinnerChat;
-  const winnerId = winner?.id ? String(winner.id) : "";
-  const isNewWinner = Boolean(winnerId) && winnerId !== lastWinnerChatId;
-
-  if (!show) {
-    panel.classList.add("is-hidden");
-    panel.classList.remove("is-pop");
-    lastWinnerChatId = null;
-    winnerMessages = [];
-    renderWinnerMessages([]);
-    return;
-  }
-
-  if (nameEl) {
-    nameEl.textContent = winner.username || "you";
-  }
-
-  panel.classList.remove("is-hidden");
-
-  if (openLink) {
-    openLink.href = KICK_CHAT_POPOUT_URL;
-  }
-
-  if (celebrate || isNewWinner) {
-    // Keep any history already loaded from the status payload (7-day archive).
-    renderWinnerMessages(winnerMessages);
-    lastWinnerChatId = winnerId;
-    restartWinnerChatPop(panel);
-    return;
-  }
-
-  renderWinnerMessages(winnerMessages);
-  lastWinnerChatId = winnerId;
 }
 
 function updateRevealPanel() {
@@ -684,17 +584,9 @@ function applyStatusData(data) {
   giveawaySubscribersOnly = Boolean(data.subscribersOnly);
   giveawayEntries = Array.isArray(data.entries) ? data.entries : [];
   giveawayWinner = data.winner || null;
-  viewerIsWinner = Boolean(data.viewerIsWinner);
-  canSeeWinnerChat = Boolean(
-    data.canSeeWinnerChat ?? data.viewerIsWinner
-  );
-  winnerMessages = Array.isArray(data.winnerMessages) ? data.winnerMessages : [];
 
   if (!giveawayWinner) {
     lastAnimatedWinnerId = null;
-    viewerIsWinner = false;
-    canSeeWinnerChat = false;
-    winnerMessages = [];
   }
 
   return {
@@ -708,7 +600,7 @@ function schedulePolling() {
     clearInterval(pollTimer);
   }
 
-  const interval = canSeeWinnerChat ? 2000 : 5000;
+  const interval = 5000;
   pollTimer = setInterval(() => {
     if (document.hidden) return;
     loadGiveawayStatus();
@@ -728,10 +620,6 @@ async function loadGiveawayStatus() {
 
     const data = await response.json();
     const { winnerChanged } = applyStatusData(data);
-
-    if (winnerChanged) {
-      lastWinnerChatId = null;
-    }
 
     updatePanels();
 
@@ -915,7 +803,6 @@ async function revealWinner() {
   }
 
   applyStatusData(data);
-  lastWinnerChatId = null;
   updatePanels();
   await maybeAnimateWinner(giveawayWinner, giveawayEntries, { force: true });
   setAdminStatus(
