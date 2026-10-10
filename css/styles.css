@@ -3863,9 +3863,22 @@ button.one-v-one-name:focus-visible {
   font-weight: 600;
 }
 
+.giveaways-keyword-editor {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.55rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(88, 201, 243, 0.12);
+}
+
+.giveaways-keyword-editor .admin-panel-text {
+  margin: 0;
+}
+
 .giveaways-admin-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(12rem, 0.8fr);
+  grid-template-columns: minmax(12rem, 16rem);
   gap: 1rem;
   padding-top: 1rem;
   border-top: 1px solid rgba(88, 201, 243, 0.14);

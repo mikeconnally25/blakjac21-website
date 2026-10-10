@@ -701,9 +701,11 @@ async function maybeAnimateWinner(winner, entries, { force = false } = {}) {
 
 function updatePanels() {
   const adminPanel = document.getElementById("giveaways-admin-panel");
+  const keywordEditor = document.getElementById("giveaways-keyword-editor");
   const keywordInput = document.getElementById("giveaways-keyword");
 
   adminPanel?.classList.toggle("is-hidden", !currentUser?.isAdmin);
+  keywordEditor?.classList.toggle("is-hidden", !currentUser?.isAdmin);
 
   if (keywordInput && currentUser?.isAdmin && document.activeElement !== keywordInput) {
     keywordInput.value = giveawayKeyword;
