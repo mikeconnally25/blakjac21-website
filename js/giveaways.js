@@ -389,6 +389,33 @@ function hideWinnerProfile() {
   modal?.classList.add("is-hidden");
 }
 
+async function copyStakeUsername(value) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return true;
+    } catch {
+      // Fall through to the selection copy below.
+    }
+  }
+
+  const area = document.createElement("textarea");
+  area.value = value;
+  area.setAttribute("readonly", "");
+  area.style.position = "fixed";
+  area.style.left = "-9999px";
+  document.body.append(area);
+  area.select();
+  let copied = false;
+  try {
+    copied = document.execCommand("copy");
+  } catch {
+    copied = false;
+  }
+  area.remove();
+  return copied;
+}
+
 function showWinnerProfile(winner) {
   if (!winner) return;
 
@@ -401,7 +428,26 @@ function showWinnerProfile(winner) {
   if (title) title.textContent = username;
   if (kick) kick.textContent = username;
   if (stake) {
-    stake.textContent = String(winner.stakeUsername || "").trim() || "Not linked";
+    const stakeName = String(winner.stakeUsername || "").trim();
+    stake.replaceChildren();
+    if (!stakeName) {
+      stake.textContent = "Not linked";
+    } else {
+      const copyButton = document.createElement("button");
+      copyButton.type = "button";
+      copyButton.className = "winner-profile-copy";
+      copyButton.textContent = stakeName;
+      copyButton.title = "Copy Stake username";
+      copyButton.addEventListener("click", async () => {
+        const copied = await copyStakeUsername(stakeName);
+        copyButton.classList.toggle("is-copied", copied);
+        copyButton.classList.toggle("is-failed", !copied);
+        window.setTimeout(() => {
+          copyButton.classList.remove("is-copied", "is-failed");
+        }, 1400);
+      });
+      stake.append(copyButton);
+    }
   }
 
   modal.classList.remove("is-hidden");

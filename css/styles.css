@@ -4636,6 +4636,43 @@ button.one-v-one-name:focus-visible {
   overflow-wrap: anywhere;
 }
 
+.winner-profile-copy {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.winner-profile-copy:hover,
+.winner-profile-copy:focus-visible {
+  color: #e8c56b;
+  outline: none;
+}
+
+.winner-profile-copy.is-copied::after,
+.winner-profile-copy.is-failed::after {
+  margin-left: 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.winner-profile-copy.is-copied::after {
+  content: "Copied";
+  color: #7dff9a;
+}
+
+.winner-profile-copy.is-failed::after {
+  content: "Could not copy";
+  color: #ff8d8d;
+}
+
 #st-predictor-profile-aff.is-affiliate {
   color: #8dffb0;
 }
