@@ -387,10 +387,8 @@ function createPodiumSlot(place, winner) {
   block.append(medal, user);
 
   if (winner?.stakeUsername) {
-    const stake = document.createElement("span");
-    stake.className = "podium-stake";
-    stake.textContent = winner.stakeUsername;
-    block.append(stake);
+    const stake = window.createStakeCopyButton?.(winner.stakeUsername, "podium-stake");
+    if (stake) block.append(stake);
   }
 
   if (winner) {

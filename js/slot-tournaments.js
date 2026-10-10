@@ -1286,7 +1286,11 @@ function showPredictorProfile(row) {
   if (title) title.textContent = username;
   if (kick) kick.textContent = username;
   if (stake) {
-    stake.textContent = String(row.stakeUsername || "").trim() || "Not linked";
+    const stakeName = String(row.stakeUsername || "").trim();
+    const copyButton = window.createStakeCopyButton?.(stakeName);
+    stake.replaceChildren();
+    if (copyButton) stake.append(copyButton);
+    else stake.textContent = stakeName || "Not linked";
   }
   if (aff) {
     const isAffiliate = Boolean(row.isAffiliate);

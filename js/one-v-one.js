@@ -188,7 +188,13 @@ function showSeatProfile(side) {
   const username = String(side.username).trim();
   if (title) title.textContent = username;
   if (kick) kick.textContent = username;
-  if (stake) stake.textContent = String(side.stakeUsername || "").trim() || "Not linked";
+  if (stake) {
+    const stakeName = String(side.stakeUsername || "").trim();
+    const copyButton = window.createStakeCopyButton?.(stakeName);
+    stake.replaceChildren();
+    if (copyButton) stake.append(copyButton);
+    else stake.textContent = stakeName || "Not linked";
+  }
   modal.classList.remove("is-hidden");
 }
 

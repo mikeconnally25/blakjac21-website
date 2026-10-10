@@ -487,7 +487,7 @@ ul {
   border-color: rgba(83, 252, 24, 0.22);
   background: rgba(83, 252, 24, 0.1);
   color: #9dff73;
-  cursor: default;
+  cursor: pointer;
 }
 
 .auth-stake-badge.is-linked:not(.is-verified) {
@@ -4649,7 +4649,8 @@ button.one-v-one-name:focus-visible {
   overflow-wrap: anywhere;
 }
 
-.winner-profile-copy {
+.winner-profile-copy,
+.stake-copy {
   margin: 0;
   padding: 0;
   border: 0;
@@ -4662,28 +4663,51 @@ button.one-v-one-name:focus-visible {
 }
 
 .winner-profile-copy:hover,
-.winner-profile-copy:focus-visible {
+.winner-profile-copy:focus-visible,
+.stake-copy:hover,
+.stake-copy:focus-visible {
   color: #e8c56b;
   outline: none;
 }
 
+.is-stake-copy {
+  cursor: pointer;
+}
+
 .winner-profile-copy.is-copied::after,
-.winner-profile-copy.is-failed::after {
+.winner-profile-copy.is-failed::after,
+.stake-copy.is-copied::after,
+.stake-copy.is-failed::after,
+.is-stake-copy.is-copied::after,
+.is-stake-copy.is-failed::after {
   margin-left: 0.55rem;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
 }
 
-.winner-profile-copy.is-copied::after {
+.winner-profile-copy.is-copied::after,
+.stake-copy.is-copied::after,
+.is-stake-copy.is-copied::after {
   content: "Copied";
   color: #7dff9a;
 }
 
-.winner-profile-copy.is-failed::after {
+.winner-profile-copy.is-failed::after,
+.stake-copy.is-failed::after,
+.is-stake-copy.is-failed::after {
   content: "Could not copy";
   color: #ff8d8d;
+}
+
+.accounts-kick-id.stake-copy {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 #st-predictor-profile-aff.is-affiliate {

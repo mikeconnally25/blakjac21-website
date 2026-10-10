@@ -28,6 +28,88 @@ function clearAuthQuery() {
 
 let currentAuthUser = null;
 
+function copyPlainTextNow(value) {
+  const area = document.createElement("textarea");
+  area.value = value;
+  area.setAttribute("readonly", "");
+  area.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;opacity:0;";
+  document.body.append(area);
+  area.focus();
+  area.select();
+  area.setSelectionRange(0, value.length);
+  let copied = false;
+  try {
+    copied = document.execCommand("copy");
+  } catch {
+    copied = false;
+  }
+  area.remove();
+  return copied;
+}
+
+async function copyPlainText(value) {
+  const copiedNow = copyPlainTextNow(value);
+  if (!navigator.clipboard?.writeText) return copiedNow;
+
+  try {
+    await navigator.clipboard.writeText(value);
+    return true;
+  } catch {
+    return copiedNow;
+  }
+}
+
+function flashStakeCopy(element, copied) {
+  element.classList.toggle("is-copied", copied);
+  element.classList.toggle("is-failed", !copied);
+  window.setTimeout(() => {
+    element.classList.remove("is-copied", "is-failed");
+  }, 1400);
+}
+
+function bindStakeCopy(element, username) {
+  const name = String(username || "").trim();
+  if (!element || !name) return element;
+
+  element.dataset.stakeCopy = name;
+  element.classList.add("is-stake-copy");
+  if (!element.title) element.title = "Copy Stake username";
+  if (!element.dataset.stakeCopyBound) {
+    element.dataset.stakeCopyBound = "1";
+    if (element.tagName !== "BUTTON" && element.tagName !== "A") {
+      element.setAttribute("role", "button");
+      element.tabIndex = 0;
+      element.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          element.click();
+        }
+      });
+    }
+    element.addEventListener("click", async (event) => {
+      const value = element.dataset.stakeCopy;
+      if (!value) return;
+      event.preventDefault();
+      event.stopPropagation();
+      flashStakeCopy(element, await copyPlainText(value));
+    });
+  }
+  return element;
+}
+
+window.bindStakeCopy = bindStakeCopy;
+
+window.createStakeCopyButton = function createStakeCopyButton(username, className = "") {
+  const name = String(username || "").trim();
+  if (!name) return null;
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = `stake-copy${className ? ` ${className}` : ""}`;
+  button.textContent = name;
+  return bindStakeCopy(button, name);
+};
+
 function ensureStakeLinkModal() {
   if (document.getElementById("stake-link-modal")) {
     return;
@@ -215,11 +297,14 @@ function renderAuthState(user) {
       const isVerified = Boolean(
         user.stakeCodeVerified || user.affGranted
       );
-      stakeBadge.textContent = user.stakeUsername
+      const stakeLabel = user.stakeUsername
         ? isVerified
           ? `Stake: ${user.stakeUsername} (verified)`
           : `Stake: ${user.stakeUsername} (unverified)`
         : "Link Stake";
+      stakeBadge.textContent = stakeLabel;
+      stakeBadge.dataset.stakeLabel = stakeLabel;
+      stakeBadge.title = user.stakeUsername ? "Copy Stake username" : "Link Stake";
       stakeBadge.classList.toggle("is-linked", Boolean(user.stakeUsername));
       stakeBadge.classList.toggle(
         "is-verified",
@@ -276,11 +361,20 @@ function initStakeBadge() {
   badge.type = "button";
   badge.id = "auth-stake-badge";
   badge.className = "auth-stake-badge is-hidden";
-  badge.addEventListener("click", () => {
-    if (currentAuthUser?.stakeUsername) {
+  badge.addEventListener("click", async () => {
+    const name = String(currentAuthUser?.stakeUsername || "").trim();
+    if (!name) {
+      showStakeLinkModal({ forceReset: false });
       return;
     }
-    showStakeLinkModal({ forceReset: false });
+
+    const copied = await copyPlainText(name);
+    badge.textContent = copied ? "Copied" : "Could not copy";
+    window.setTimeout(() => {
+      if (badge.textContent === "Copied" || badge.textContent === "Could not copy") {
+        badge.textContent = badge.dataset.stakeLabel || `Stake: ${name}`;
+      }
+    }, 1200);
   });
 
   authUser.append(badge);

@@ -165,6 +165,11 @@
       // Show full Stake (or Kick) name in the congrats hero.
       name.textContent = stakeName || kickName || "Winner";
       name.classList.toggle("is-stake-reveal", Boolean(stakeName));
+      if (stakeName) window.bindStakeCopy?.(name, stakeName);
+      else {
+        delete name.dataset.stakeCopy;
+        name.classList.remove("is-stake-copy", "is-copied", "is-failed");
+      }
     }
 
     if (sub) {

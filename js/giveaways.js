@@ -389,37 +389,6 @@ function hideWinnerProfile() {
   modal?.classList.add("is-hidden");
 }
 
-function copyStakeUsernameNow(value) {
-  const area = document.createElement("textarea");
-  area.value = value;
-  area.setAttribute("readonly", "");
-  area.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;opacity:0;";
-  document.body.append(area);
-  area.focus();
-  area.select();
-  area.setSelectionRange(0, value.length);
-  let copied = false;
-  try {
-    copied = document.execCommand("copy");
-  } catch {
-    copied = false;
-  }
-  area.remove();
-  return copied;
-}
-
-async function copyStakeUsername(value) {
-  const copiedNow = copyStakeUsernameNow(value);
-  if (!navigator.clipboard?.writeText) return copiedNow;
-
-  try {
-    await navigator.clipboard.writeText(value);
-    return true;
-  } catch {
-    return copiedNow;
-  }
-}
-
 function showWinnerProfile(winner) {
   if (!winner) return;
 
@@ -434,23 +403,11 @@ function showWinnerProfile(winner) {
   if (stake) {
     const stakeName = String(winner.stakeUsername || "").trim();
     stake.replaceChildren();
-    if (!stakeName) {
-      stake.textContent = "Not linked";
-    } else {
-      const copyButton = document.createElement("button");
-      copyButton.type = "button";
-      copyButton.className = "winner-profile-copy";
-      copyButton.textContent = stakeName;
-      copyButton.title = "Copy Stake username";
-      copyButton.addEventListener("click", async () => {
-        const copied = await copyStakeUsername(stakeName);
-        copyButton.classList.toggle("is-copied", copied);
-        copyButton.classList.toggle("is-failed", !copied);
-        window.setTimeout(() => {
-          copyButton.classList.remove("is-copied", "is-failed");
-        }, 1400);
-      });
+    const copyButton = window.createStakeCopyButton?.(stakeName, "winner-profile-copy");
+    if (copyButton) {
       stake.append(copyButton);
+    } else {
+      stake.textContent = stakeName || "Not linked";
     }
   }
 

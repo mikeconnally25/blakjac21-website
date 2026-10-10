@@ -398,15 +398,15 @@ function renderAccounts(users) {
     const stakeRow = document.createElement("div");
     stakeRow.className = "accounts-stake-row";
 
-    const stakeLabel = document.createElement("span");
-    stakeLabel.className = "accounts-kick-id";
-    if (user.stakeUsername) {
-      stakeLabel.textContent = user.stakeCodeVerified
+    const stakeLabel = user.stakeUsername
+      ? window.createStakeCopyButton(user.stakeUsername, "accounts-kick-id")
+      : document.createElement("span");
+    if (!user.stakeUsername) stakeLabel.className = "accounts-kick-id";
+    stakeLabel.textContent = user.stakeUsername
+      ? user.stakeCodeVerified
         ? `Stake: ${user.stakeUsername} (verified)`
-        : `Stake: ${user.stakeUsername} (unverified)`;
-    } else {
-      stakeLabel.textContent = `Kick ID ${user.kickUserId}`;
-    }
+        : `Stake: ${user.stakeUsername} (unverified)`
+      : `Kick ID ${user.kickUserId}`;
 
     const editStakeBtn = document.createElement("button");
     editStakeBtn.type = "button";
