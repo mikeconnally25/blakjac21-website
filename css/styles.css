@@ -1257,6 +1257,69 @@ button.one-v-one-name:focus-visible {
   font-weight: 600;
 }
 
+.one-v-one-betters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.15rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid rgba(88, 201, 243, 0.12);
+}
+
+.one-v-one-betters-label {
+  margin: 0 0 0.3rem;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.one-v-one-betters-list {
+  display: grid;
+  gap: 0.1rem;
+  max-height: 8.5rem;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.one-v-one-better {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.55rem;
+  padding: 0.22rem 0.1rem;
+  border-top: 1px solid rgba(88, 201, 243, 0.08);
+  font-size: 0.88rem;
+}
+
+.one-v-one-better.is-mine .one-v-one-better-name {
+  color: var(--accent-bright);
+}
+
+.one-v-one-better-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.one-v-one-better-amount {
+  flex-shrink: 0;
+  color: #e8c56b;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.one-v-one-betters-empty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
 .one-v-one-chat-head {
   display: flex;
   align-items: center;

@@ -397,12 +397,39 @@ function betsFromKickChat(messages, stored) {
 function renderBetList(bets) {
   const rows = Array.isArray(bets) ? bets : [];
   for (const side of [1, 2]) {
-    const total = document.getElementById(`one-v-one-bets-${side}-total`);
-    if (!total) continue;
-    const stake = rows
+    const sideBets = rows
       .filter((bet) => Number(bet.side) === side)
-      .reduce((sum, bet) => sum + (Number(bet.amount) || 0), 0);
-    total.textContent = stake.toLocaleString();
+      .sort(
+        (a, b) =>
+          (Number(b.amount) || 0) - (Number(a.amount) || 0) ||
+          String(a.username || "").localeCompare(String(b.username || ""))
+      );
+    const total = document.getElementById(`one-v-one-bets-${side}-total`);
+    if (total) {
+      const stake = sideBets.reduce((sum, bet) => sum + (Number(bet.amount) || 0), 0);
+      total.textContent = stake.toLocaleString();
+    }
+
+    const list = document.getElementById(`one-v-one-betters-${side}`);
+    const empty = document.getElementById(`one-v-one-betters-${side}-empty`);
+    if (!list) continue;
+    list.replaceChildren();
+    for (const bet of sideBets) {
+      const item = document.createElement("li");
+      item.className = `one-v-one-better${bet.mine ? " is-mine" : ""}`;
+
+      const name = document.createElement("span");
+      name.className = "one-v-one-better-name";
+      name.textContent = bet.username || "viewer";
+
+      const amount = document.createElement("span");
+      amount.className = "one-v-one-better-amount";
+      amount.textContent = (Number(bet.amount) || 0).toLocaleString();
+
+      item.append(name, amount);
+      list.append(item);
+    }
+    empty?.classList.toggle("is-hidden", sideBets.length > 0);
   }
 }
 
