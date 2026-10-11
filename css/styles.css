@@ -6550,13 +6550,16 @@ button.one-v-one-name:focus-visible {
   flex-shrink: 0;
 }
 
-.spin-open-bet {
-  width: 6.4rem;
-  padding: 0.28rem 0.5rem;
+.bonus-hunt-page .spin-open-bet {
+  width: 7.4rem;
+  min-height: 0;
+  padding: 0.28rem 0.55rem;
 }
 
-.spin-open-bet .guess-prefix,
-.spin-open-bet .guess-input {
+.bonus-hunt-page .spin-open-bet .guess-prefix,
+.bonus-hunt-page .spin-open-bet .guess-input {
+  min-height: 0;
+  padding: 0;
   font-size: 0.92rem;
 }
 
