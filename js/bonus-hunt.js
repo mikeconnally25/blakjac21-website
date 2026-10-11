@@ -2777,6 +2777,11 @@ async function removeBonusEntry(id, button) {
 
 let openingSlots = [];
 let openingEpoch = 0;
+const openingBetDrafts = new Map();
+
+function isEditingOpeningBet() {
+  return document.activeElement?.classList?.contains("spin-open-bet-input") ?? false;
+}
 
 function setOpeningStatus(message, tone = "") {
   const status = document.getElementById("spin-open-status");
@@ -2804,20 +2809,91 @@ function renderOpeningList() {
   for (const slot of openingSlots) {
     const item = document.createElement("li");
     item.className = "spin-open-row";
+
     const name = document.createElement("span");
+    name.className = "spin-open-name";
     name.textContent = slot.name;
+
+    const add = document.createElement("div");
+    add.className = "spin-open-add";
+
+    const betField = document.createElement("div");
+    betField.className = "guess-input-row spin-open-bet";
+
+    const prefix = document.createElement("span");
+    prefix.className = "guess-prefix";
+    prefix.setAttribute("aria-hidden", "true");
+    prefix.textContent = "$";
+
+    const betInput = document.createElement("input");
+    betInput.type = "number";
+    betInput.className = "guess-input spin-open-bet-input";
+    betInput.min = "0.01";
+    betInput.step = "0.01";
+    betInput.inputMode = "decimal";
+    betInput.placeholder = "0.00";
+    betInput.value = openingBetDrafts.get(slot.id) || "";
+    betInput.setAttribute("aria-label", `Bet size for ${slot.name}`);
+    betInput.addEventListener("input", () => {
+      const value = betInput.value.trim();
+      if (value) openingBetDrafts.set(slot.id, value);
+      else openingBetDrafts.delete(slot.id);
+    });
+
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "btn btn-sm btn-primary";
+    addBtn.textContent = "Add bonus";
+    addBtn.addEventListener("click", () => {
+      void addOpeningSlotBonus(slot, betInput, addBtn);
+    });
+
+    betField.append(prefix, betInput);
+    add.append(betField, addBtn);
+
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "btn btn-sm btn-outline";
     remove.textContent = "Remove";
     remove.addEventListener("click", () => {
+      openingBetDrafts.delete(slot.id);
       updateOpening({ action: "remove", id: slot.id }).catch((error) => {
         setOpeningStatus(error.message, "error");
       });
     });
-    item.append(name, remove);
+    item.append(name, add, remove);
     list.append(item);
   }
+}
+
+async function addOpeningSlotBonus(slot, betInput, button) {
+  const betValue = betInput?.value?.trim() || "";
+  const betAmount = Number(betValue);
+  if (!betValue || !Number.isFinite(betAmount) || betAmount < 0.01) {
+    setOpeningStatus("Enter a bet size before adding the bonus.", "error");
+    betInput?.focus();
+    return;
+  }
+
+  const catalogSlot =
+    slotCatalog.find(
+      (entry) => String(entry.slug || "").toLowerCase() === String(slot.slug || "").toLowerCase()
+    ) || null;
+
+  if (button) button.disabled = true;
+  const bonus = await addBonusToHunt({
+    slot: slot.name,
+    bet: betValue,
+    slotSlug: slot.slug,
+    thumbnailUrl: catalogSlot?.thumbnailUrl || slot.thumbnailUrl,
+    provider: catalogSlot?.provider || slot.provider,
+  });
+  if (button) button.disabled = false;
+
+  if (!bonus) return;
+  openingBetDrafts.delete(slot.id);
+  if (betInput) betInput.value = "";
+  setOpeningStatus("Bonus added.", "success");
 }
 
 async function refreshOpeningList() {
@@ -2827,7 +2903,7 @@ async function refreshOpeningList() {
   if (epoch !== openingEpoch) return;
   if (!response.ok) throw new Error(data.error || "Could not load overlay slots.");
   openingSlots = Array.isArray(data.slots) ? data.slots : [];
-  renderOpeningList();
+  if (!isEditingOpeningBet()) renderOpeningList();
 }
 
 async function updateOpening(body) {

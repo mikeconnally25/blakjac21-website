@@ -6531,8 +6531,43 @@ button.one-v-one-name:focus-visible {
 .spin-open-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.55rem;
+}
+
+.spin-open-name {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.spin-open-add {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.spin-open-bet {
+  width: 6.4rem;
+  padding: 0.28rem 0.5rem;
+}
+
+.spin-open-bet .guess-prefix,
+.spin-open-bet .guess-input {
+  font-size: 0.92rem;
+}
+
+@media (max-width: 720px) {
+  .spin-open-row {
+    flex-wrap: wrap;
+  }
+
+  .spin-open-name {
+    flex-basis: 100%;
+  }
 }
 
 .spin-open-empty {
