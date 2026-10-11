@@ -5185,6 +5185,18 @@ button.one-v-one-name:focus-visible {
   overflow-wrap: anywhere;
 }
 
+.hunt-tracker-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.hunt-tracker .bonus-admin-actions {
+  margin-top: 0;
+}
+
 .hunt-status-group {
   display: flex;
   flex-wrap: wrap;

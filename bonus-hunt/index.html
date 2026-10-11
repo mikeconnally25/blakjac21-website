@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=queuespin2" />
+  <link rel="stylesheet" href="/css/styles.css?v=huntend1" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -79,23 +79,33 @@
                   <p class="section-eyebrow">Live session</p>
                   <h3 class="hunt-title" id="hunt-title">Live Hunt</h3>
                 </div>
-                <div class="hunt-status-group" aria-label="Hunt and request status">
-                  <button
-                    type="button"
-                    class="hunt-status hunt-status--collecting hunt-status-toggle"
-                    id="hunt-status"
-                    aria-pressed="true"
-                  >
-                    Collecting
-                  </button>
-                  <button
-                    type="button"
-                    class="hunt-status hunt-status--closed hunt-status-toggle"
-                    id="hunt-requests-status"
-                    aria-pressed="false"
-                  >
-                    Requests closed
-                  </button>
+                <div class="hunt-tracker-actions">
+                  <div class="hunt-status-group" aria-label="Hunt and request status">
+                    <button
+                      type="button"
+                      class="hunt-status hunt-status--collecting hunt-status-toggle"
+                      id="hunt-status"
+                      aria-pressed="true"
+                    >
+                      Collecting
+                    </button>
+                    <button
+                      type="button"
+                      class="hunt-status hunt-status--closed hunt-status-toggle"
+                      id="hunt-requests-status"
+                      aria-pressed="false"
+                    >
+                      Requests closed
+                    </button>
+                  </div>
+                  <div class="bonus-admin-actions is-hidden" id="bonus-admin-actions">
+                    <button type="button" class="btn btn-sm btn-primary" id="bonus-end-hunt">
+                      End hunt
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline" id="bonus-clear-hunt">
+                      Clear hunt
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -499,15 +509,6 @@
               </form>
             </section>
 
-            <div class="bonus-admin-actions">
-              <button type="button" class="btn btn-sm btn-primary" id="bonus-end-hunt">
-                End hunt
-              </button>
-              <button type="button" class="btn btn-sm btn-outline" id="bonus-clear-hunt">
-                Clear hunt
-              </button>
-            </div>
-
             <section class="hunt-overlay-admin bj21-panel-inset" id="hunt-overlay-admin" aria-labelledby="hunt-overlay-heading">
               <div class="hunt-overlay-admin-header">
                 <div>
@@ -616,6 +617,6 @@
 
   <script src="/js/main.js?v=slotstats1"></script>
   <script src="/js/auth.js?v=stakecopy1"></script>
-  <script src="/js/bonus-hunt.js?v=spinbonus1"></script>
+  <script src="/js/bonus-hunt.js?v=huntend1"></script>
 </body>
 </html>

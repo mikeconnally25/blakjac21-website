@@ -1854,6 +1854,7 @@ function updatePanels() {
   const highestMultiToggle = document.getElementById("hunt-highest-multi-toggle");
 
   adminPanel?.classList.toggle("is-hidden", !isHuntAdmin());
+  document.getElementById("bonus-admin-actions")?.classList.toggle("is-hidden", !isHuntAdmin());
   settingsForm?.classList.toggle("is-hidden", !isHuntAdmin());
   document.getElementById("spin-overlay-admin")?.classList.toggle("is-hidden", !isHuntAdmin());
   if (highestMultiToggle) {
