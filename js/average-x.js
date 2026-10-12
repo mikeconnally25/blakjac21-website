@@ -158,13 +158,12 @@ function readDraftFromEditor() {
 }
 
 function renderEditor() {
-  const locked = state?.status === "locked";
   editorEl.innerHTML = draft
     .map(
       (row, index) => `<div class="avgx-row">
         <span>${index + 1}</span>
-        <label>Buy<input class="guess-input" data-cost type="number" min="0.01" step="0.01" value="${escapeHtml(row.cost)}" /></label>
-        <label>Win<input class="guess-input" data-win type="number" min="0" step="0.01" value="${escapeHtml(row.win)}" ${locked || state?.status === "open" ? "" : ""} /></label>
+        <input class="guess-input" data-cost type="number" min="0.01" step="0.01" value="${escapeHtml(row.cost)}" placeholder="Buy" aria-label="Bonus ${index + 1} buy" />
+        <input class="guess-input" data-win type="number" min="0" step="0.01" value="${escapeHtml(row.win)}" placeholder="Win" aria-label="Bonus ${index + 1} win" />
         <button type="button" class="btn btn-sm btn-outline" data-remove="${index}">Remove</button>
       </div>`
     )

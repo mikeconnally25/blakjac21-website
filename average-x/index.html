@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=avgx1" />
+  <link rel="stylesheet" href="/css/styles.css?v=avgx3" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -62,36 +62,29 @@
     <section class="section page-section avgx-page">
       <div class="section-atmosphere" aria-hidden="true"></div>
       <div class="container page-content">
-        <a href="/#menu" class="back-link">← Back to menu</a>
+        <a href="/#menu" class="back-link">← Menu</a>
 
-        <div class="section-header left">
+        <div class="section-header left avgx-hero">
           <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
           <h2>Average X</h2>
-          <p>Log every bonus buy on one slot. Bet UncCoins on the range the final average multiplier lands in.</p>
         </div>
 
         <p class="avgx-status" id="avgx-status" role="status"></p>
 
         <div class="bj21-panel avgx-board">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <div id="avgx-slot" class="avgx-slot">
-            <p class="avgx-empty">No slot is set yet.</p>
+          <div class="avgx-top">
+            <div id="avgx-slot" class="avgx-slot">
+              <p class="avgx-empty">No slot is set yet.</p>
+            </div>
+            <div class="avgx-metrics" id="avgx-metrics"></div>
           </div>
-          <div class="avgx-metrics" id="avgx-metrics"></div>
           <div class="avgx-table-wrap" id="avgx-bonuses"></div>
-        </div>
-
-        <div class="bj21-panel avgx-bet-panel">
-          <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <h3 class="avgx-heading">Bet the average</h3>
-          <p class="avgx-note">The winning range splits the pool. If nobody is on it, every bet is refunded. A number on the line goes to the higher range, so 10.00x is 10x–25x.</p>
           <div class="avgx-ranges" id="avgx-ranges"></div>
+          <p class="avgx-note">Winning range splits the pool. An empty range refunds every bet. 10.00x counts as 10x–25x.</p>
           <form class="avgx-bet-form" id="avgx-bet-form">
-            <label class="avgx-field">
-              <span>UncCoins</span>
-              <input class="guess-input" id="avgx-amount" type="number" min="1" step="1" value="10" inputmode="numeric" />
-            </label>
-            <button class="btn btn-primary" id="avgx-place" type="submit">Place bet</button>
+            <input class="guess-input" id="avgx-amount" type="number" min="1" step="1" value="10" inputmode="numeric" aria-label="UncCoins" />
+            <button class="btn btn-sm btn-primary" id="avgx-place" type="submit">Place bet</button>
           </form>
           <p class="avgx-yours" id="avgx-yours"></p>
           <ul class="avgx-bets" id="avgx-bets"></ul>
@@ -99,22 +92,21 @@
 
         <div class="bj21-panel avgx-admin is-hidden" id="avgx-admin">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <h3 class="avgx-heading">Run the round</h3>
-          <label class="avgx-field">
-            <span>Slot</span>
-            <input class="guess-input" id="avgx-search" type="search" placeholder="Search the slot list" autocomplete="off" />
-          </label>
+          <div class="avgx-admin-head">
+            <h3 class="avgx-heading">Run the round</h3>
+            <input class="guess-input" id="avgx-search" type="search" placeholder="Search slots" autocomplete="off" aria-label="Slot" />
+          </div>
           <div class="avgx-results" id="avgx-results"></div>
           <p class="avgx-picked" id="avgx-picked">No slot picked.</p>
           <div class="avgx-editor" id="avgx-editor"></div>
           <div class="avgx-actions">
-            <button class="btn btn-outline" type="button" id="avgx-add">Add bonus</button>
-            <button class="btn btn-primary" type="button" id="avgx-save">Save round</button>
-            <button class="btn btn-outline" type="button" id="avgx-open">Open bets</button>
-            <button class="btn btn-outline" type="button" id="avgx-close">Close bets</button>
-            <button class="btn btn-outline" type="button" id="avgx-totals">Save totals</button>
-            <button class="btn btn-primary" type="button" id="avgx-settle">Settle</button>
-            <button class="btn btn-outline" type="button" id="avgx-reset">Reset</button>
+            <button class="btn btn-sm btn-outline" type="button" id="avgx-add">Add bonus</button>
+            <button class="btn btn-sm btn-primary" type="button" id="avgx-save">Save round</button>
+            <button class="btn btn-sm btn-outline" type="button" id="avgx-open">Open bets</button>
+            <button class="btn btn-sm btn-outline" type="button" id="avgx-close">Close bets</button>
+            <button class="btn btn-sm btn-outline" type="button" id="avgx-totals">Save totals</button>
+            <button class="btn btn-sm btn-primary" type="button" id="avgx-settle">Settle</button>
+            <button class="btn btn-sm btn-outline" type="button" id="avgx-reset">Reset</button>
           </div>
         </div>
       </div>
@@ -138,6 +130,6 @@
 
   <script src="/js/main.js?v=avgx1"></script>
   <script src="/js/auth.js?v=claim24h"></script>
-  <script src="/js/average-x.js?v=avgx2"></script>
+  <script src="/js/average-x.js?v=avgx3"></script>
 </body>
 </html>
