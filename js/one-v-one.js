@@ -246,7 +246,7 @@ function renderKickChat(messages, matchup) {
   if (nearBottom) log.scrollTop = log.scrollHeight;
 }
 
-function renderOneVOne(data) {
+function renderOneVOne(data, startedAt = 0, authoritative = false) {
   oneVOneIsAdmin = Boolean(data?.isAdmin);
   document.getElementById("one-v-one-admin")?.classList.toggle("is-hidden", !oneVOneIsAdmin);
 
@@ -312,7 +312,7 @@ function renderOneVOne(data) {
   if (youTotal && showBalance) youTotal.textContent = balanceText;
 
   lastOneVOne = data;
-  betsCloseAt = Number(data?.betsCloseAt) || 0;
+  syncBetDeadline(data, startedAt, authoritative);
   const betsOpen = betsCloseAt > Date.now();
   betsWereOpen = betsOpen;
   const bet = {
@@ -441,10 +441,11 @@ function setOneVOneNote(message, isError) {
 }
 
 async function loadOneVOne() {
+  const startedAt = Date.now();
   const response = await fetch("/api/one-v-one/status", { cache: "no-store", credentials: "same-origin" });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || "Could not load the 1v1.");
-  renderOneVOne(data);
+  renderOneVOne(data, startedAt);
 }
 
 async function saveOneVOne(event) {
@@ -654,6 +655,7 @@ async function drawNewOpponent() {
 async function setBetTimer(open) {
   setOneVOneNote("");
   const seconds = Number(document.getElementById("one-v-one-bet-seconds")?.value) || 60;
+  const startedAt = Date.now();
   try {
     const response = await fetch("/api/one-v-one/bets", {
       method: "POST",
@@ -663,7 +665,7 @@ async function setBetTimer(open) {
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Could not update the bet timer.");
-    renderOneVOne(data);
+    renderOneVOne(data, startedAt, true);
     setOneVOneNote(open ? `Bets are open for ${seconds} seconds.` : "Bets are closed.");
   } catch (error) {
     setOneVOneNote(error.message, true);
@@ -673,6 +675,25 @@ async function setBetTimer(open) {
 let lastOneVOne = null;
 let betsCloseAt = 0;
 let betsWereOpen = false;
+let betDeadlineKnownAt = 0;
+
+function syncBetDeadline(data, startedAt, authoritative) {
+  const serverNow = Number(data?.serverNow) || 0;
+  const closeAt = Number(data?.betsCloseAt) || 0;
+  const remaining = serverNow && closeAt ? closeAt - serverNow : 0;
+
+  if (remaining > 500) {
+    betsCloseAt = Date.now() + remaining;
+    betDeadlineKnownAt = Date.now();
+    return;
+  }
+
+  if (!authoritative && startedAt && startedAt < betDeadlineKnownAt && betsCloseAt > Date.now()) {
+    return;
+  }
+
+  betsCloseAt = 0;
+}
 
 function formatBetClock(ms) {
   const total = Math.max(0, Math.ceil(ms / 1000));
@@ -714,6 +735,6 @@ window.setInterval(() => {
   paintBetsTimer();
   if (betsWereOpen && !open && lastOneVOne) {
     betsWereOpen = false;
-    renderOneVOne(lastOneVOne);
+    renderOneVOne({ ...lastOneVOne, betsCloseAt: 0, serverNow: Date.now() }, Date.now());
   }
 }, 250);
