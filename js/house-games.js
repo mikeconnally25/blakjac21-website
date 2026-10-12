@@ -222,7 +222,10 @@
       el.setAttribute("aria-label", "Hidden card");
     } else {
       const suit = SUIT_SYMBOL[card.suit] || card.suit || "";
-      el.innerHTML = `<span class="hg-card-rank">${card.rank}</span><span class="hg-card-suit">${suit}</span>`;
+      const rank = card.rank || "";
+      const corner = `<span class="hg-card-corner"><span class="hg-card-rank">${rank}</span><span class="hg-card-suit">${suit}</span></span>`;
+      const cornerBr = `<span class="hg-card-corner is-br"><span class="hg-card-rank">${rank}</span><span class="hg-card-suit">${suit}</span></span>`;
+      el.innerHTML = `${corner}<span class="hg-card-pip">${suit}</span>${cornerBr}`;
       el.setAttribute("aria-label", `${card.rank} of ${suit}`);
     }
     if (deal || flip) {
