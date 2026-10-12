@@ -9118,7 +9118,9 @@ button.one-v-one-name:focus-visible {
 }
 
 .hg-hand-player {
-  min-width: 8.5rem;
+  flex: 1 1 6.5rem;
+  max-width: 12rem;
+  min-width: 6.5rem;
   margin-top: 0.25rem;
   padding: 0.45rem 0.55rem 0.55rem;
   border-radius: var(--radius-sm);
@@ -9473,6 +9475,71 @@ button.one-v-one-name:focus-visible {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: rgba(246, 231, 188, 0.78);
+}
+
+.hg-bj-side-note {
+  position: relative;
+  z-index: 1;
+  min-height: 0.9rem;
+  margin: 0;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #e8c56b;
+}
+
+.hg-bj-side-note:empty {
+  display: none;
+}
+
+.hg-bj-hands {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+}
+
+.hg-bj-hand-btn {
+  appearance: none;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(126, 216, 255, 0.22);
+  background: rgba(8, 16, 28, 0.72);
+  color: rgba(226, 236, 245, 0.92);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.hg-bj-hand-btn.is-active {
+  color: #102018;
+  border-color: transparent;
+  background: #e8c56b;
+}
+
+.hg-bj-hand-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.hg-bj-sidebets {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem 0.7rem;
+}
+
+.hg-bj-side-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.hg-bj-side-field .hg-bj-bet-input {
+  width: 4.4rem;
 }
 
 .hg-bj-rail {

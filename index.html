@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css?v=bjtable2" />
+  <link rel="stylesheet" href="css/styles.css?v=bjhands1" />
 </head>
 <body class="home-page">
   <div class="bg-glow" aria-hidden="true"></div>
@@ -145,16 +145,33 @@
                               <span class="hg-bj-chip-inner" id="hg-bj-chip-value">10</span>
                             </div>
                             <span class="hg-bj-spot-label">Bet</span>
+                            <p class="hg-bj-side-note" data-hg-side></p>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <div class="hg-bj-rail" role="group" aria-label="Blackjack controls">
+                      <div class="hg-bj-rail" role="group" aria-label="Blackjack controls">
                         <div class="hg-bet-row hg-bj-bet-controls">
                           <label class="hg-bj-rail-label" for="hg-bj-bet">Bet</label>
                           <input class="guess-input hg-bet-input hg-bj-bet-input" id="hg-bj-bet" type="number" min="1" max="5000" step="1" value="10" />
+                          <div class="hg-bj-hands" role="group" aria-label="Hands">
+                            <span class="hg-bj-rail-label">Hands</span>
+                            <button type="button" class="hg-bj-hand-btn is-active" data-hands="1" aria-pressed="true">1</button>
+                            <button type="button" class="hg-bj-hand-btn" data-hands="2" aria-pressed="false">2</button>
+                            <button type="button" class="hg-bj-hand-btn" data-hands="3" aria-pressed="false">3</button>
+                          </div>
                           <button type="button" class="btn btn-primary hg-bj-btn" id="hg-bj-deal">Deal</button>
+                        </div>
+                        <div class="hg-bj-sidebets">
+                          <label class="hg-bj-side-field" for="hg-bj-pair">
+                            <span class="hg-bj-rail-label">Pairs</span>
+                            <input class="guess-input hg-bet-input hg-bj-bet-input" id="hg-bj-pair" type="number" min="0" max="5000" step="1" value="0" title="Optional per hand. Perfect pair 25 to 1, colored pair 12 to 1, mixed pair 6 to 1." />
+                          </label>
+                          <label class="hg-bj-side-field" for="hg-bj-plus3">
+                            <span class="hg-bj-rail-label">21+3</span>
+                            <input class="guess-input hg-bet-input hg-bj-bet-input" id="hg-bj-plus3" type="number" min="0" max="5000" step="1" value="0" title="Optional per hand, using your first two cards and the dealer upcard. Suited trips 100 to 1, straight flush 40 to 1, three of a kind 30 to 1, straight 10 to 1, flush 5 to 1." />
+                          </label>
                         </div>
                         <div class="house-games-actions hg-bj-actions">
                           <button type="button" class="btn btn-sm btn-primary hg-bj-btn" id="hg-bj-hit" disabled>Hit</button>
@@ -453,7 +470,7 @@
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js"></script>
   <script src="js/main.js?v=menuside1"></script>
   <script src="js/auth.js?v=claim24h"></script>
-  <script src="js/house-games.js?v=bjtable1"></script>
+  <script src="js/house-games.js?v=bjhands1"></script>
   <script src="js/site-chat.js"></script>
 </body>
 </html>

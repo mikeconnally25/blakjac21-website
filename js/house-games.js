@@ -1,6 +1,7 @@
 (() => {
   let currentUser = null;
   let bjSessionId = null;
+  let bjHandCount = 1;
   let bjSnapshot = { hands: [[]], dealer: [], activeHand: 0 };
   let rouletteOutside = null;
   let rouletteNumbers = new Set();
@@ -283,7 +284,8 @@
       const label = RESULT_LABEL[state.result] || state.result;
       const payout =
         state.payout > 0 ? ` · +${formatPoints(state.payout)} UncCoins` : "";
-      result.textContent = `${label}${payout}`;
+      const side = state.sideSummary ? ` · ${state.sideSummary}` : "";
+      result.textContent = `${label}${payout}${side}`;
       result.className = `hg-result hg-bj-result is-${state.result}`;
     } else {
       result.textContent = "";
@@ -301,6 +303,8 @@
     const split = $("hg-bj-split");
     const deal = $("hg-bj-deal");
     const bet = $("hg-bj-bet");
+    const pair = $("hg-bj-pair");
+    const plus3 = $("hg-bj-plus3");
     const locked = busy || dealing;
     const playing = Boolean(
       bjControls &&
@@ -315,6 +319,11 @@
     if (split) split.disabled = locked || !bjControls?.canSplit;
     if (deal) deal.disabled = locked || playing;
     if (bet) bet.disabled = locked || playing;
+    if (pair) pair.disabled = locked || playing;
+    if (plus3) plus3.disabled = locked || playing;
+    document.querySelectorAll(".hg-bj-hand-btn").forEach((button) => {
+      button.disabled = locked || playing;
+    });
   }
 
   function ensurePlayerHands(count) {
@@ -333,6 +342,7 @@
             <span class="hg-bj-chip-inner" data-hg-chip>10</span>
           </div>
           <span class="hg-bj-spot-label">Bet</span>
+          <p class="hg-bj-side-note" data-hg-side></p>
         </div>
       `;
       row.appendChild(hand);
@@ -373,6 +383,8 @@
             ? String(Math.floor(Number(betVal)))
             : "—";
       }
+      const side = node.querySelector("[data-hg-side]");
+      if (side) side.textContent = hand?.sideName || "";
       if (!node.querySelector("[data-hg-cards]") && index === 0) {
         const cards = node.querySelector(".hg-cards");
         if (cards) cards.id = "hg-bj-player-cards";
@@ -412,20 +424,30 @@
     const nodes = paintHandShell(state, { hideTotals: true });
     nodes.forEach((node) => clearCards(handCardsContainer(node, Number(node.dataset.handIndex) || 0)));
 
-    const player = hands[0]?.cards || [];
     const dealer = state.dealer?.cards || [];
-    const rounds = Math.max(player.length, dealer.length);
-    const playerContainer = handCardsContainer(nodes[0], 0);
+    const rounds = Math.max(
+      dealer.length,
+      ...hands.map((hand) => (hand?.cards || []).length)
+    );
 
     if (prefersReducedMotion()) {
-      player.forEach((card) => playerContainer.appendChild(createCardEl(card)));
+      nodes.forEach((node, index) => {
+        const container = handCardsContainer(node, index);
+        (hands[index]?.cards || []).forEach((card) => {
+          container.appendChild(createCardEl(card));
+        });
+      });
       dealer.forEach((card) => dealerCards.appendChild(createCardEl(card)));
       return;
     }
 
-    for (let i = 0; i < rounds; i += 1) {
-      if (player[i]) await dealCardTo(playerContainer, player[i]);
-      if (dealer[i]) await dealCardTo(dealerCards, dealer[i]);
+    for (let round = 0; round < rounds; round += 1) {
+      for (let index = 0; index < hands.length; index += 1) {
+        const card = hands[index]?.cards?.[round];
+        if (!card) continue;
+        await dealCardTo(handCardsContainer(nodes[index], index), card);
+      }
+      if (dealer[round]) await dealCardTo(dealerCards, dealer[round]);
     }
     await wait(DEAL_FLIGHT_MS - DEAL_MS);
   }
@@ -550,17 +572,10 @@
   function renderBlackjack(state) {
     if (!state) {
       clearCards($("hg-bj-dealer-cards"));
-      ensurePlayerHands(1);
-      const first = $("hg-bj-player");
-      if (first) {
-        first.classList.add("is-active");
-        first.classList.remove("is-done");
-        clearCards(handCardsContainer(first, 0));
-        const label = first.querySelector(".hg-hand-label");
-        if (label) {
-          label.innerHTML = `You <span data-hg-hand-total id="hg-bj-player-total"></span>`;
-        }
-      }
+      syncSpotPreview();
+      document.querySelectorAll("#hg-bj-player-row .hg-cards").forEach((cards) => {
+        clearCards(cards);
+      });
       setTotals(null, { hide: true });
       setResult(null);
       bjSnapshot = { hands: [[]], dealer: [], activeHand: 0 };
@@ -602,11 +617,33 @@
   }
 
   function syncBjChip() {
+    if (bjSessionId) return;
     const bet = $("hg-bj-bet");
-    const chip = $("hg-bj-chip-value");
-    if (!chip || !bet) return;
+    if (!bet) return;
     const n = Math.floor(Number(bet.value));
-    chip.textContent = Number.isFinite(n) && n > 0 ? String(n) : "—";
+    const label = Number.isFinite(n) && n > 0 ? String(n) : "—";
+    document.querySelectorAll("#hg-bj-player-row [data-hg-chip], #hg-bj-chip-value").forEach((chip) => {
+      chip.textContent = label;
+    });
+    document.querySelectorAll("#hg-bj-player-row [data-hg-side]").forEach((note) => {
+      note.textContent = "";
+    });
+  }
+
+  function syncSpotPreview() {
+    if (bjSessionId) return;
+    ensurePlayerHands(bjHandCount);
+    document.querySelectorAll("#hg-bj-player-row .hg-hand-player").forEach((node, index) => {
+      node.classList.remove("is-active", "is-done");
+      const label = node.querySelector(".hg-hand-label");
+      if (!label) return;
+      if (bjHandCount === 1 && index === 0) {
+        label.innerHTML = `You <span data-hg-hand-total id="hg-bj-player-total"></span>`;
+      } else {
+        label.innerHTML = `Hand ${index + 1} <span data-hg-hand-total></span>`;
+      }
+    });
+    syncBjChip();
   }
 
   function syncBetLimits(maxBet) {
@@ -1466,7 +1503,14 @@
 
   async function dealBlackjack() {
     const bet = Number($("hg-bj-bet")?.value || 0);
-    const data = await play({ game: "blackjack", action: "start", bet });
+    const data = await play({
+      game: "blackjack",
+      action: "start",
+      bet,
+      handCount: bjHandCount,
+      pairBet: Number($("hg-bj-pair")?.value || 0),
+      plus3Bet: Number($("hg-bj-plus3")?.value || 0),
+    });
     if (!data) {
       if (isBlackjackHandGoneError(lastPlayError)) {
         clearBlackjackLocalState();
@@ -1651,6 +1695,18 @@
       void dealBlackjack();
     });
     $("hg-bj-bet")?.addEventListener("input", syncBjChip);
+    document.querySelectorAll(".hg-bj-hand-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (bjSessionId || button.disabled) return;
+        bjHandCount = Number(button.dataset.hands) || 1;
+        document.querySelectorAll(".hg-bj-hand-btn").forEach((item) => {
+          const on = item === button;
+          item.classList.toggle("is-active", on);
+          item.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+        syncSpotPreview();
+      });
+    });
     $("hg-bj-hit")?.addEventListener("click", () => {
       void actBlackjack("hit");
     });
