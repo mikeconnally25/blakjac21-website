@@ -14222,3 +14222,214 @@ button.one-v-one-name:focus-visible {
   transform: none;
 }
 
+.avgx-page .avgx-board,
+.avgx-page .avgx-bet-panel,
+.avgx-page .avgx-admin {
+  margin-top: 1.25rem;
+}
+
+.avgx-status:empty {
+  display: none;
+}
+
+.avgx-status {
+  margin: 0.75rem 0 0;
+  color: #9fb0c3;
+}
+
+.avgx-status.is-error {
+  color: #ff8d8d;
+}
+
+.avgx-status.is-ok {
+  color: #8ee0b5;
+}
+
+.avgx-slot-main {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.avgx-slot-main img {
+  width: 4.5rem;
+  height: 4.5rem;
+  object-fit: cover;
+  border-radius: 0.75rem;
+}
+
+.avgx-slot-main h3,
+.avgx-heading {
+  margin: 0;
+  font-family: Teko, sans-serif;
+  font-size: 2rem;
+  letter-spacing: 0.03em;
+}
+
+.avgx-kicker,
+.avgx-metrics span,
+.avgx-field span,
+.avgx-range small {
+  display: block;
+  color: #8ea0b5;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.avgx-empty,
+.avgx-note,
+.avgx-picked,
+.avgx-yours {
+  color: #c5d0dc;
+}
+
+.avgx-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.avgx-metrics strong {
+  font-family: Teko, sans-serif;
+  font-size: 2rem;
+  color: #e8c56b;
+  font-variant-numeric: tabular-nums;
+}
+
+.avgx-table {
+  width: 100%;
+  margin-top: 1rem;
+  border-collapse: collapse;
+}
+
+.avgx-table th,
+.avgx-table td {
+  padding: 0.55rem 0.4rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-variant-numeric: tabular-nums;
+}
+
+.avgx-table th {
+  color: #8ea0b5;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.avgx-ranges {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 1rem 0;
+}
+
+.avgx-range {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.75rem;
+  border-radius: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.avgx-range strong {
+  font-family: Teko, sans-serif;
+  font-size: 1.8rem;
+  color: #7ed8ff;
+}
+
+.avgx-range.is-selected {
+  border-color: #e8c56b;
+  box-shadow: inset 0 0 0 1px #e8c56b;
+}
+
+.avgx-range.is-winner {
+  background: rgba(232, 197, 107, 0.12);
+}
+
+.avgx-bet-form,
+.avgx-actions,
+.avgx-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: end;
+}
+
+.avgx-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.avgx-bet-form.is-hidden {
+  display: none;
+}
+
+.avgx-bets {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.avgx-bets li {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr auto;
+  gap: 0.75rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.avgx-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0.5rem 0;
+}
+
+.avgx-results button,
+.avgx-editor {
+  width: 100%;
+}
+
+.avgx-results button {
+  text-align: left;
+  background: transparent;
+  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.6rem;
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+}
+
+.avgx-row {
+  margin: 0.45rem 0;
+}
+
+.avgx-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.75rem;
+  color: #8ea0b5;
+}
+
+.avgx-actions {
+  margin-top: 0.8rem;
+}
+
+@media (max-width: 720px) {
+  .avgx-ranges,
+  .avgx-metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+

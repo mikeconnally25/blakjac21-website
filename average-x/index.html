@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Bet UncCoins on the average bonus-buy multiplier." />
+  <title>Average X | BLAKJAC21</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css?v=avgx1" />
+</head>
+<body>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <header class="header" id="top">
+    <nav class="nav container">
+      <a href="/" class="logo">
+        <img src="/images/logo.png" alt="" class="logo-image" width="50" height="50" />
+        <span class="logo-text">Blakjac<span class="accent">21</span></span>
+      </a>
+
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="nav-links">
+        <li><a href="/#watch">Watch</a></li>
+        <li class="is-hidden" id="admin-nav-commands">
+          <a href="/commands/">Commands</a>
+        </li>
+        <li><a href="/#menu">Menu</a></li>
+        <li><a href="/#house-games">House Games</a></li>
+        <li><a href="/#links">Links</a></li>
+        <li class="is-hidden" id="admin-nav-accounts">
+          <a href="/accounts/">Accounts</a>
+        </li>
+        <li>
+          <div class="auth-panel" id="auth-panel">
+            <div class="auth-guest" id="auth-guest">
+              <a href="/api/auth/login" class="btn btn-sm btn-kick">Sign in with Kick</a>
+            </div>
+            <div class="auth-member is-hidden" id="auth-member">
+              <div class="auth-user">
+                <img id="auth-avatar" class="auth-avatar is-hidden" alt="" width="32" height="32" />
+                <span id="auth-username" class="auth-username"></span>
+                <span id="auth-admin-badge" class="auth-admin-badge is-hidden">Admin</span>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline" id="auth-logout">Sign out</button>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
+
+    <section class="section page-section avgx-page">
+      <div class="section-atmosphere" aria-hidden="true"></div>
+      <div class="container page-content">
+        <a href="/#menu" class="back-link">← Back to menu</a>
+
+        <div class="section-header left">
+          <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
+          <h2>Average X</h2>
+          <p>Log every bonus buy on one slot. Bet UncCoins on the range the final average multiplier lands in.</p>
+        </div>
+
+        <p class="avgx-status" id="avgx-status" role="status"></p>
+
+        <div class="bj21-panel avgx-board">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <div id="avgx-slot" class="avgx-slot">
+            <p class="avgx-empty">No slot is set yet.</p>
+          </div>
+          <div class="avgx-metrics" id="avgx-metrics"></div>
+          <div class="avgx-table-wrap" id="avgx-bonuses"></div>
+        </div>
+
+        <div class="bj21-panel avgx-bet-panel">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <h3 class="avgx-heading">Bet the average</h3>
+          <p class="avgx-note">The winning range splits the pool. If nobody is on it, every bet is refunded. A number on the line goes to the higher range, so 10.00x is 10x–25x.</p>
+          <div class="avgx-ranges" id="avgx-ranges"></div>
+          <form class="avgx-bet-form" id="avgx-bet-form">
+            <label class="avgx-field">
+              <span>UncCoins</span>
+              <input class="guess-input" id="avgx-amount" type="number" min="1" step="1" value="10" inputmode="numeric" />
+            </label>
+            <button class="btn btn-primary" id="avgx-place" type="submit">Place bet</button>
+          </form>
+          <p class="avgx-yours" id="avgx-yours"></p>
+          <ul class="avgx-bets" id="avgx-bets"></ul>
+        </div>
+
+        <div class="bj21-panel avgx-admin is-hidden" id="avgx-admin">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <h3 class="avgx-heading">Run the round</h3>
+          <label class="avgx-field">
+            <span>Slot</span>
+            <input class="guess-input" id="avgx-search" type="search" placeholder="Search the slot list" autocomplete="off" />
+          </label>
+          <div class="avgx-results" id="avgx-results"></div>
+          <p class="avgx-picked" id="avgx-picked">No slot picked.</p>
+          <div class="avgx-editor" id="avgx-editor"></div>
+          <div class="avgx-actions">
+            <button class="btn btn-outline" type="button" id="avgx-add">Add bonus</button>
+            <button class="btn btn-primary" type="button" id="avgx-save">Save round</button>
+            <button class="btn btn-outline" type="button" id="avgx-open">Open bets</button>
+            <button class="btn btn-outline" type="button" id="avgx-close">Close bets</button>
+            <button class="btn btn-outline" type="button" id="avgx-totals">Save totals</button>
+            <button class="btn btn-primary" type="button" id="avgx-settle">Settle</button>
+            <button class="btn btn-outline" type="button" id="avgx-reset">Reset</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo-text">BLAKJAC<span class="accent">21</span></span>
+        <p>Gambling entertainment stream. 18+ only.</p>
+      </div>
+      <p class="disclaimer">
+        Gambling can be addictive. Please play responsibly. This channel is for entertainment purposes only.
+        If you or someone you know has a gambling problem, call <strong>1-800-GAMBLER</strong> or visit
+        <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer">BeGambleAware.org</a>.
+      </p>
+      <p class="copyright">&copy; <span id="year"></span> BLAKJAC21. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/js/main.js?v=avgx1"></script>
+  <script src="/js/auth.js?v=claim24h"></script>
+  <script src="/js/average-x.js?v=avgx1"></script>
+</body>
+</html>

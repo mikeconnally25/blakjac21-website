@@ -18,6 +18,7 @@ data/kick-chat-archive/
 data/kick-chat-recent.json
 data/points.json
 data/daily-claims.json
+data/average-x.json
 data/points-purchases.json
 data/slot-tournament-predictions.json
 .vercel
