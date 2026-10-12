@@ -400,22 +400,85 @@ async function loadAuthState() {
   }
 }
 
+let claimReadyAt = 0;
+let claimTimer = 0;
+
 function setDailyClaimVisible(visible) {
   const button = document.getElementById("daily-claim-btn");
   if (!button) return;
   button.classList.toggle("is-hidden", !visible);
+  if (!visible) stopClaimTimer();
 }
 
-function applyDailyClaimState(claimed) {
+function formatClaimClock(ms) {
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = total % 60;
+  return [hours, minutes, seconds]
+    .map((part) => String(part).padStart(2, "0"))
+    .join(":");
+}
+
+function stopClaimTimer() {
+  if (!claimTimer) return;
+  clearInterval(claimTimer);
+  claimTimer = 0;
+}
+
+function syncClaimReadyAt(data) {
+  const nextClaimAt = Number(data?.nextClaimAt) || 0;
+  const serverNow = Number(data?.serverNow) || Date.now();
+  claimReadyAt =
+    data?.claimed && nextClaimAt > serverNow
+      ? Date.now() + (nextClaimAt - serverNow)
+      : 0;
+}
+
+function paintClaimTimer() {
+  const button = document.getElementById("daily-claim-btn");
+  if (!button) {
+    stopClaimTimer();
+    return;
+  }
+
+  const remaining = claimReadyAt - Date.now();
+  if (remaining <= 0) {
+    stopClaimTimer();
+    claimReadyAt = 0;
+    applyDailyClaimState({ claimed: false });
+    return;
+  }
+
+  const label = formatClaimClock(remaining);
+  button.textContent = label;
+  button.title = `Next claim in ${label}`;
+}
+
+function applyDailyClaimState(data) {
   const button = document.getElementById("daily-claim-btn");
   if (!button) return;
   button.classList.remove("is-hidden");
-  if (claimed) {
+  syncClaimReadyAt(data);
+
+  if (claimReadyAt > Date.now()) {
+    button.disabled = true;
+    button.classList.remove("btn-primary");
+    button.classList.add("btn-outline");
+    paintClaimTimer();
+    if (claimReadyAt > Date.now() && !claimTimer) {
+      claimTimer = setInterval(paintClaimTimer, 250);
+    }
+    return;
+  }
+
+  stopClaimTimer();
+  if (data?.claimed) {
     button.disabled = true;
     button.textContent = "Claimed";
     button.classList.remove("btn-primary");
     button.classList.add("btn-outline");
-    button.title = "Already claimed today. Resets at midnight ET.";
+    button.title = "You can claim again 24 hours after your last claim.";
     return;
   }
 
@@ -423,7 +486,7 @@ function applyDailyClaimState(claimed) {
   button.textContent = "Claim 250";
   button.classList.add("btn-primary");
   button.classList.remove("btn-outline");
-  button.title = "Claim 250 UncCoins. Resets at midnight ET.";
+  button.title = "Claim 250 UncCoins. Comes back 24 hours after you claim.";
 }
 
 function showDailyClaimToast(message, isError) {
@@ -449,7 +512,7 @@ async function refreshDailyClaim() {
       return;
     }
     const data = await response.json();
-    applyDailyClaimState(Boolean(data.claimed));
+    applyDailyClaimState(data);
   } catch {
     button.disabled = false;
   }
@@ -468,7 +531,7 @@ async function claimDailyUncCoins() {
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       if (response.status === 409) {
-        applyDailyClaimState(true);
+        applyDailyClaimState({ ...data, claimed: true });
       } else {
         button.disabled = false;
       }
@@ -476,7 +539,7 @@ async function claimDailyUncCoins() {
       return;
     }
 
-    applyDailyClaimState(true);
+    applyDailyClaimState(data);
     showDailyClaimToast(
       `Claimed ${Number(data.amount) || 250} UncCoins. Balance: ${Number(data.points) || 0}.`,
       false
@@ -501,7 +564,9 @@ function initDailyClaim() {
   button.id = "daily-claim-btn";
   button.className = "btn btn-sm btn-primary is-hidden";
   button.textContent = "Claim 250";
-  button.title = "Claim 250 UncCoins. Resets at midnight ET.";
+  button.title = "Claim 250 UncCoins. Comes back 24 hours after you claim.";
+  button.style.fontVariantNumeric = "tabular-nums";
+  button.style.minWidth = "6.4rem";
   button.addEventListener("click", () => {
     void claimDailyUncCoins();
   });
