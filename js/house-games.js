@@ -1950,6 +1950,11 @@
     }
   });
 
+  window.addEventListener("points:change", (event) => {
+    const points = Number(event.detail?.points);
+    if (Number.isFinite(points)) setBalance(points);
+  });
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
       void init();

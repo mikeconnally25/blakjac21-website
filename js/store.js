@@ -1016,6 +1016,15 @@ window.addEventListener("auth:change", async (event) => {
   await refreshStore();
 });
 
+window.addEventListener("points:change", (event) => {
+  if (!currentUser) return;
+  const points = Number(event.detail?.points);
+  if (!Number.isFinite(points)) return;
+  pointsBalance = points;
+  renderBalance();
+  renderCatalog();
+});
+
 initCatalogForm();
 initBuyForm();
 initBuyToggle();

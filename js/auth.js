@@ -329,6 +329,11 @@ function renderAuthState(user) {
     if (adminCommandsNav) adminCommandsNav.classList.add("is-hidden");
     if (stakeBadge) stakeBadge.classList.add("is-hidden");
     hideStakeLinkModal();
+    setDailyClaimVisible(false);
+  }
+
+  if (user) {
+    void refreshDailyClaim();
   }
 
   window.dispatchEvent(
@@ -395,9 +400,121 @@ async function loadAuthState() {
   }
 }
 
+function setDailyClaimVisible(visible) {
+  const button = document.getElementById("daily-claim-btn");
+  if (!button) return;
+  button.classList.toggle("is-hidden", !visible);
+}
+
+function applyDailyClaimState(claimed) {
+  const button = document.getElementById("daily-claim-btn");
+  if (!button) return;
+  button.classList.remove("is-hidden");
+  if (claimed) {
+    button.disabled = true;
+    button.textContent = "Claimed";
+    button.classList.remove("btn-primary");
+    button.classList.add("btn-outline");
+    button.title = "Already claimed today. Resets at midnight ET.";
+    return;
+  }
+
+  button.disabled = false;
+  button.textContent = "Claim 500";
+  button.classList.add("btn-primary");
+  button.classList.remove("btn-outline");
+  button.title = "Claim 500 UncCoins. Resets at midnight ET.";
+}
+
+function showDailyClaimToast(message, isError) {
+  const toast = document.getElementById("auth-toast");
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.remove("is-hidden");
+  toast.classList.toggle("is-error", Boolean(isError));
+}
+
+async function refreshDailyClaim() {
+  const button = document.getElementById("daily-claim-btn");
+  if (!button || !currentAuthUser) return;
+
+  button.classList.remove("is-hidden");
+  button.disabled = true;
+  try {
+    const response = await fetch("/api/points/daily-claim", {
+      credentials: "same-origin",
+    });
+    if (!response.ok) {
+      button.disabled = false;
+      return;
+    }
+    const data = await response.json();
+    applyDailyClaimState(Boolean(data.claimed));
+  } catch {
+    button.disabled = false;
+  }
+}
+
+async function claimDailyUncCoins() {
+  const button = document.getElementById("daily-claim-btn");
+  if (!button || button.disabled || !currentAuthUser) return;
+
+  button.disabled = true;
+  try {
+    const response = await fetch("/api/points/daily-claim", {
+      method: "POST",
+      credentials: "same-origin",
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      if (response.status === 409) {
+        applyDailyClaimState(true);
+      } else {
+        button.disabled = false;
+      }
+      showDailyClaimToast(data.error || "Could not claim UncCoins.", true);
+      return;
+    }
+
+    applyDailyClaimState(true);
+    showDailyClaimToast(
+      `Claimed 500 UncCoins. Balance: ${Number(data.points) || 0}.`,
+      false
+    );
+    window.dispatchEvent(
+      new CustomEvent("points:change", {
+        detail: { points: Number(data.points) || 0 },
+      })
+    );
+  } catch {
+    button.disabled = false;
+    showDailyClaimToast("Could not claim UncCoins.", true);
+  }
+}
+
+function initDailyClaim() {
+  const member = document.getElementById("auth-member");
+  if (!member || document.getElementById("daily-claim-btn")) return;
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.id = "daily-claim-btn";
+  button.className = "btn btn-sm btn-primary is-hidden";
+  button.textContent = "Claim 500";
+  button.title = "Claim 500 UncCoins. Resets at midnight ET.";
+  button.addEventListener("click", () => {
+    void claimDailyUncCoins();
+  });
+
+  const logout = document.getElementById("auth-logout");
+  if (logout) member.insertBefore(button, logout);
+  else member.append(button);
+}
+
 function initAuth() {
   ensureStakeLinkModal();
   initStakeBadge();
+  initDailyClaim();
 
   const returnTo = encodeURIComponent(
     `${window.location.pathname}${window.location.search}`
