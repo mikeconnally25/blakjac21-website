@@ -288,7 +288,10 @@
     }
   }
 
-  function setBlackjackActions(state) {
+  let bjControls = null;
+
+  function setBlackjackActions(state, options = {}) {
+    if (!options.keep) bjControls = state || null;
     const hit = $("hg-bj-hit");
     const stand = $("hg-bj-stand");
     const dbl = $("hg-bj-double");
@@ -297,13 +300,16 @@
     const bet = $("hg-bj-bet");
     const locked = busy || dealing;
     const playing = Boolean(
-      state && state.status === "player" && !state.result && (state.canHit || state.canStand)
+      bjControls &&
+        bjControls.status === "player" &&
+        !bjControls.result &&
+        (bjControls.canHit || bjControls.canStand)
     );
 
-    if (hit) hit.disabled = locked || !state?.canHit;
-    if (stand) stand.disabled = locked || !state?.canStand;
-    if (dbl) dbl.disabled = locked || !state?.canDouble;
-    if (split) split.disabled = locked || !state?.canSplit;
+    if (hit) hit.disabled = locked || !bjControls?.canHit;
+    if (stand) stand.disabled = locked || !bjControls?.canStand;
+    if (dbl) dbl.disabled = locked || !bjControls?.canDouble;
+    if (split) split.disabled = locked || !bjControls?.canSplit;
     if (deal) deal.disabled = locked || playing;
     if (bet) bet.disabled = locked || playing;
   }
@@ -712,11 +718,7 @@
     busy = true;
     lastPlayError = "";
     setStatus("");
-    setBlackjackActions(
-      bjSessionId
-        ? { canHit: false, canStand: false, canDouble: false }
-        : null
-    );
+    setBlackjackActions(bjControls, { keep: true });
     try {
       const response = await fetch("/api/house-games/play", {
         method: "POST",
@@ -736,6 +738,7 @@
       return null;
     } finally {
       busy = false;
+      if (!dealing) setBlackjackActions(bjControls, { keep: true });
     }
   }
 
@@ -747,6 +750,7 @@
 
   function clearBlackjackLocalState() {
     bjSessionId = null;
+    bjControls = null;
     bjSnapshot = { hands: [[]], dealer: [], activeHand: 0 };
     dealing = false;
     busy = false;
