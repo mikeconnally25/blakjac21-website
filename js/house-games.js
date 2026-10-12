@@ -753,7 +753,7 @@
 
   let lastPlayError = "";
 
-  async function play(body) {
+  async function play(body, { deferBalance = false } = {}) {
     if (busy) return null;
     busy = true;
     lastPlayError = "";
@@ -770,7 +770,7 @@
       if (!response.ok) {
         throw new Error(data.error || "Could not play.");
       }
-      applyBalance(data);
+      if (!deferBalance) applyBalance(data);
       return data;
     } catch (error) {
       lastPlayError = error.message || "Could not play.";
@@ -1578,7 +1578,7 @@
     rouletteSpinning = true;
     if (spinBtn) spinBtn.disabled = true;
 
-    const data = await play(payload);
+    const data = await play(payload, { deferBalance: true });
     if (!data) {
       rouletteSpinning = false;
       if (spinBtn) spinBtn.disabled = false;
@@ -1608,6 +1608,7 @@
         playHouseWinSound();
       }
     } finally {
+      applyBalance(data);
       rouletteSpinning = false;
       if (spinBtn) spinBtn.disabled = false;
     }
@@ -2014,6 +2015,7 @@
   });
 
   window.addEventListener("points:change", (event) => {
+    if (rouletteSpinning) return;
     const points = Number(event.detail?.points);
     if (Number.isFinite(points)) setBalance(points);
   });
