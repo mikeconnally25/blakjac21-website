@@ -15,6 +15,7 @@ const editorEl = document.getElementById("avgx-editor");
 
 let state = null;
 let catalog = [];
+let catalogLoading = false;
 let pickedSlot = null;
 let draft = [{ cost: "", win: "" }];
 let selectedRange = "";
@@ -177,6 +178,7 @@ function renderAdmin() {
   const admin = Boolean(state?.isAdmin);
   adminEl.classList.toggle("is-hidden", !admin);
   if (!admin) return;
+  loadCatalog().catch((error) => setStatus(error.message, "error"));
   if (adminEl.contains(document.activeElement)) return;
   if (state?.slot && !pickedSlot) pickedSlot = state.slot;
   if (state?.bonuses?.length && draft.length === 1 && draft[0].cost === "" && !editorEl.querySelector("[data-cost]")) {
@@ -214,11 +216,17 @@ async function post(body) {
 }
 
 async function loadCatalog() {
-  if (!state?.isAdmin || catalog.length) return;
-  const response = await fetch("/api/bonus-hunt/slots", { cache: "no-store" });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "Could not load slots.");
-  catalog = Array.isArray(data.slots) ? data.slots : [];
+  if (!state?.isAdmin || catalog.length || catalogLoading) return;
+  catalogLoading = true;
+  try {
+    const response = await fetch("/api/bonus-hunt/slots", { cache: "no-store" });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Could not load slots.");
+    catalog = Array.isArray(data.slots) ? data.slots : [];
+    if (searchEl.value.trim().length >= 2) showMatches();
+  } finally {
+    catalogLoading = false;
+  }
 }
 
 function showMatches() {
@@ -261,7 +269,9 @@ formEl.addEventListener("submit", async (event) => {
 });
 
 searchEl.addEventListener("input", () => {
-  showMatches();
+  loadCatalog()
+    .then(() => showMatches())
+    .catch((error) => setStatus(error.message, "error"));
 });
 
 resultsEl.addEventListener("click", (event) => {
