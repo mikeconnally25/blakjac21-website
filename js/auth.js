@@ -420,10 +420,10 @@ function applyDailyClaimState(claimed) {
   }
 
   button.disabled = false;
-  button.textContent = "Claim 500";
+  button.textContent = "Claim 250";
   button.classList.add("btn-primary");
   button.classList.remove("btn-outline");
-  button.title = "Claim 500 UncCoins. Resets at midnight ET.";
+  button.title = "Claim 250 UncCoins. Resets at midnight ET.";
 }
 
 function showDailyClaimToast(message, isError) {
@@ -478,7 +478,7 @@ async function claimDailyUncCoins() {
 
     applyDailyClaimState(true);
     showDailyClaimToast(
-      `Claimed 500 UncCoins. Balance: ${Number(data.points) || 0}.`,
+      `Claimed ${Number(data.amount) || 250} UncCoins. Balance: ${Number(data.points) || 0}.`,
       false
     );
     window.dispatchEvent(
@@ -500,8 +500,8 @@ function initDailyClaim() {
   button.type = "button";
   button.id = "daily-claim-btn";
   button.className = "btn btn-sm btn-primary is-hidden";
-  button.textContent = "Claim 500";
-  button.title = "Claim 500 UncCoins. Resets at midnight ET.";
+  button.textContent = "Claim 250";
+  button.title = "Claim 250 UncCoins. Resets at midnight ET.";
   button.addEventListener("click", () => {
     void claimDailyUncCoins();
   });
