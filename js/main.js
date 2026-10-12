@@ -235,7 +235,9 @@ function initMobileNav() {
 
 function ensureMenuSubnav() {
   const header = document.querySelector("header.header");
-  if (!header) return;
+  if (!header || document.getElementById("site-drawer")) return;
+
+  header.querySelector(".menu-subnav")?.remove();
 
   const tabs = [
     ["/leaderboard/", "Leaderboard"],
@@ -249,30 +251,87 @@ function ensureMenuSubnav() {
     ["/slot-tournaments/", "Tournaments"],
     ["/store/", "Store"],
   ];
-  let nav = header.querySelector(".menu-subnav");
-  if (!nav) {
-    nav = document.createElement("nav");
-    nav.className = "menu-subnav";
-    nav.id = "menu";
-    nav.setAttribute("aria-label", "Menu");
-    const row = document.createElement("div");
-    row.className = "container menu-subnav-row";
-    for (const [href, label] of tabs) {
-      const link = document.createElement("a");
-      link.href = href;
-      link.textContent = label;
-      row.appendChild(link);
-    }
-    nav.appendChild(row);
-    header.appendChild(nav);
-  }
 
+  const root = document.createElement("div");
+  root.className = "site-drawer";
+  root.id = "site-drawer";
+
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.className = "site-drawer-toggle";
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.setAttribute("aria-controls", "site-drawer-panel");
+  toggle.innerHTML =
+    '<span class="site-drawer-toggle-icon" aria-hidden="true"><span></span><span></span><span></span></span>Menu';
+
+  const backdrop = document.createElement("button");
+  backdrop.type = "button";
+  backdrop.className = "site-drawer-backdrop";
+  backdrop.tabIndex = -1;
+  backdrop.setAttribute("aria-label", "Close menu");
+
+  const panel = document.createElement("nav");
+  panel.className = "site-drawer-panel";
+  panel.id = "site-drawer-panel";
+  panel.setAttribute("aria-label", "Menu");
+  panel.setAttribute("aria-hidden", "true");
+
+  const head = document.createElement("div");
+  head.className = "site-drawer-head";
+  const title = document.createElement("p");
+  title.className = "site-drawer-title";
+  title.textContent = "Menu";
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "site-drawer-close";
+  close.textContent = "Close";
+  head.append(title, close);
+
+  const list = document.createElement("div");
+  list.className = "site-drawer-links";
   const path = window.location.pathname;
-  nav.querySelectorAll("a").forEach((link) => {
-    const href = link.getAttribute("href") || "";
-    if (href !== "/" && (path === href || path.startsWith(href))) {
+  for (const [href, label] of tabs) {
+    const link = document.createElement("a");
+    link.href = href;
+    link.textContent = label;
+    if (path === href || path.startsWith(href)) {
       link.setAttribute("aria-current", "page");
     }
+    list.appendChild(link);
+  }
+
+  panel.append(head, list);
+  root.append(toggle, backdrop, panel);
+
+  const logo = header.querySelector(".nav .logo");
+  const navBar = header.querySelector(".nav");
+  if (logo) logo.after(toggle);
+  else if (navBar) navBar.prepend(toggle);
+  else header.prepend(toggle);
+  document.body.append(backdrop, panel, root);
+
+  function setOpen(open) {
+    const wasOpen = root.classList.contains("is-open");
+    root.classList.toggle("is-open", open);
+    backdrop.classList.toggle("is-open", open);
+    panel.classList.toggle("is-open", open);
+    toggle.setAttribute("aria-expanded", String(open));
+    panel.setAttribute("aria-hidden", String(!open));
+    document.body.classList.toggle("site-drawer-open", open);
+    if (open) close.focus();
+    else if (wasOpen) toggle.focus();
+  }
+
+  toggle.addEventListener("click", () => {
+    setOpen(!root.classList.contains("is-open"));
+  });
+  close.addEventListener("click", () => setOpen(false));
+  backdrop.addEventListener("click", () => setOpen(false));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && root.classList.contains("is-open")) setOpen(false);
+  });
+  list.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
   });
 }
 
