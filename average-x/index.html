@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=avgx6" />
+  <link rel="stylesheet" href="/css/styles.css?v=avgx7" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -112,7 +112,10 @@
 
         <div class="bj21-panel avgx-board avgx-head-board">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <h3 class="avgx-heading">Head to head</h3>
+          <div class="avgx-overlay-head">
+            <h3 class="avgx-heading">Head to head</h3>
+            <a class="btn btn-sm btn-outline" href="/average-x/overlay/">OBS widget</a>
+          </div>
           <div class="avgx-versus" id="avgx-versus"></div>
           <p class="avgx-note">Higher average takes the pool. A tie refunds every bet. Chat: !h2h 100 1</p>
           <form class="avgx-bet-form" id="avgx-head-form">
@@ -151,6 +154,24 @@
             <button class="btn btn-sm btn-outline" type="button" id="avgx-head-reset">Reset</button>
           </div>
         </div>
+
+        <section class="bj21-panel avgx-overlay-board" aria-labelledby="avgx-overlay-heading">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <div class="avgx-overlay-head">
+            <h3 class="avgx-heading" id="avgx-overlay-heading">OBS overlay</h3>
+            <a class="btn btn-sm btn-outline" href="/average-x/overlay/">Open full preview</a>
+          </div>
+          <p class="avgx-note">Saving the match puts these two slots here and on the 1v1 overlay while no 1v1 is drawn. Width 960, height 360.</p>
+          <div class="avgx-overlay-preview">
+            <iframe id="avgx-overlay-frame" title="Head to head overlay preview" src="/average-x/overlay/source.html"></iframe>
+          </div>
+          <label class="guess-label" for="avgx-overlay-url">OBS browser source URL</label>
+          <div class="avgx-overlay-url">
+            <input class="guess-input" id="avgx-overlay-url" type="text" readonly />
+            <button class="btn btn-sm btn-primary" type="button" id="avgx-overlay-copy">Copy URL</button>
+          </div>
+          <p class="avgx-note" id="avgx-overlay-copy-status" role="status" aria-live="polite"></p>
+        </section>
       </div>
     </section>
   </main>
@@ -172,6 +193,6 @@
 
   <script src="/js/main.js?v=avgx1"></script>
   <script src="/js/auth.js?v=claim24h"></script>
-  <script src="/js/average-x.js?v=avgx6"></script>
+  <script src="/js/average-x.js?v=avgx7"></script>
 </body>
 </html>

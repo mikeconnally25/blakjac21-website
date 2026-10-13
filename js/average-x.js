@@ -660,6 +660,20 @@ document.getElementById("avgx-head-reset").addEventListener("click", async () =>
   }
 });
 
+const overlayUrl = document.getElementById("avgx-overlay-url");
+if (overlayUrl) overlayUrl.value = new URL("/average-x/overlay/source.html", window.location.href).href;
+
+document.getElementById("avgx-overlay-copy")?.addEventListener("click", async () => {
+  const status = document.getElementById("avgx-overlay-copy-status");
+  try {
+    await navigator.clipboard.writeText(overlayUrl?.value || "");
+  } catch {
+    overlayUrl?.select();
+    document.execCommand("copy");
+  }
+  if (status) status.textContent = "Copied to clipboard.";
+});
+
 refresh().catch((error) => setStatus(error.message, "error"));
 setInterval(() => {
   refresh().catch(() => {});

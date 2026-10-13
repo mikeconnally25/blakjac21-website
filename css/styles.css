@@ -14251,7 +14251,8 @@ button.one-v-one-name:focus-visible {
 }
 
 .avgx-page .avgx-board,
-.avgx-page .avgx-admin {
+.avgx-page .avgx-admin,
+.avgx-page .avgx-overlay-board {
   margin-top: 0.45rem;
 }
 
@@ -14527,8 +14528,49 @@ button.one-v-one-name:focus-visible {
   margin-top: 0.4rem;
 }
 
-.avgx-head-board .avgx-heading {
+.avgx-head-board .avgx-heading,
+.avgx-overlay-board .avgx-heading {
+  margin-bottom: 0;
+}
+
+.avgx-overlay-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   margin-bottom: 0.4rem;
+}
+
+.avgx-overlay-preview {
+  display: grid;
+  place-items: start center;
+  margin: 0.45rem 0 0.55rem;
+  padding: 0.45rem;
+  border-radius: 0.45rem;
+  border: 1px solid rgba(88, 201, 243, 0.12);
+  background:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  background-color: rgba(4, 8, 12, 0.55);
+}
+
+.avgx-overlay-preview iframe {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 8 / 3;
+  border: 0;
+  background: transparent;
+}
+
+.avgx-overlay-url {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.4rem;
+  align-items: center;
 }
 
 .avgx-versus {
