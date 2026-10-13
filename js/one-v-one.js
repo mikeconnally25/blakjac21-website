@@ -11,7 +11,7 @@ function renderBet(element, { number, occupied, pool, myBet, winner, signedIn, b
 
   const pot = document.createElement("p");
   pot.className = "one-v-one-pot";
-  pot.textContent = `Pool · ${formatCoins(pool)} · win pays 2x`;
+  pot.textContent = `Pool · ${formatCoins(pool)} · winners split the pot`;
   block.appendChild(pot);
 
   if (myBet?.side === number) {
@@ -424,7 +424,9 @@ function renderBetList(bets) {
 
       const amount = document.createElement("span");
       amount.className = "one-v-one-better-amount";
-      amount.textContent = (Number(bet.amount) || 0).toLocaleString();
+      const stake = (Number(bet.amount) || 0).toLocaleString();
+      amount.textContent =
+        bet.payout == null ? stake : bet.refund ? `${stake} refund` : `${stake} · paid ${Number(bet.payout).toLocaleString()}`;
 
       item.append(name, amount);
       list.append(item);
@@ -583,7 +585,13 @@ async function settleOneVOne(side) {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Could not settle the 1v1.");
     renderOneVOne(data);
-    setOneVOneNote(side === "1" ? "Team 1 wins. Winning bets paid 2x." : "Team 2 wins. Winning bets paid 2x.");
+    const winningBets = (data.bets || []).filter((bet) => Number(bet.side) === Number(side));
+    const refunded = !winningBets.length || winningBets.every((bet) => bet.refund);
+    setOneVOneNote(
+      refunded
+        ? `Team ${side} wins. Nobody bet that side, so every bet was refunded.`
+        : `Team ${side} wins. The pot was split by bet size.`
+    );
   } catch (error) {
     setOneVOneNote(error.message, true);
   }

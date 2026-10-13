@@ -58,9 +58,9 @@ function slotInitials(name) {
     .join("");
 }
 
-function formatPrize(pool) {
-  const payout = Math.max(0, Math.floor(Number(pool) || 0)) * 2;
-  return `Prize · ${payout.toLocaleString("en-US")} UncCoins`;
+function formatPrize(total) {
+  const pot = Math.max(0, Math.floor(Number(total) || 0));
+  return `Pot · ${pot.toLocaleString("en-US")} UncCoins`;
 }
 
 function formatAverage(value) {
@@ -246,8 +246,9 @@ function renderOverlay(data) {
   if (signature === overlaySignature) return;
   overlaySignature = signature;
   setTitle("1v1");
-  renderOverlaySide(document.getElementById("ovo-left"), matchup.left, "1", pools.one);
-  renderOverlaySide(document.getElementById("ovo-right"), matchup.right, "2", pools.two);
+  const pot = (Number(pools.one) || 0) + (Number(pools.two) || 0);
+  renderOverlaySide(document.getElementById("ovo-left"), matchup.left, "1", pot);
+  renderOverlaySide(document.getElementById("ovo-right"), matchup.right, "2", pot);
 }
 
 function renderHead(head) {
