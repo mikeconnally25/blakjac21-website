@@ -317,11 +317,19 @@ function renderHeadEditor(side) {
     : "No slot picked.";
 }
 
+function updateHeadActions() {
+  const status = state?.head?.status || "idle";
+  document.getElementById("avgx-head-open")?.classList.toggle("is-hidden", status === "open" || status === "locked");
+  document.getElementById("avgx-head-settle")?.classList.toggle("is-hidden", status === "idle" || status === "settled");
+  document.getElementById("avgx-head-reset")?.classList.toggle("is-hidden", status === "idle");
+}
+
 function renderHeadAdmin() {
   const admin = document.getElementById("avgx-head-admin");
   if (!admin) return;
   admin.classList.toggle("is-hidden", !state?.isAdmin);
   if (!state?.isAdmin) return;
+  updateHeadActions();
   if (admin.contains(document.activeElement)) return;
   for (const side of ["left", "right"]) {
     const saved = state.head?.[side];
@@ -604,23 +612,31 @@ for (const side of ["left", "right"]) {
   });
 }
 
-document.getElementById("avgx-head-save").addEventListener("click", async () => {
+function headSetupBody() {
   readHeadDraft("left");
   readHeadDraft("right");
-  try {
-    await post({
-      action: "head-setup",
-      left: { slot: headDraft.left.slot, bonuses: headDraft.left.rows.map((row) => ({ cost: row.cost })) },
-      right: { slot: headDraft.right.slot, bonuses: headDraft.right.rows.map((row) => ({ cost: row.cost })) },
-    });
-    setStatus("Match saved. Open head to head bets when you are ready.", "ok");
-  } catch (error) {
-    setStatus(error.message, "error");
-  }
-});
+  return {
+    left: { slot: headDraft.left.slot, bonuses: headDraft.left.rows.map((row) => ({ cost: row.cost })) },
+    right: { slot: headDraft.right.slot, bonuses: headDraft.right.rows.map((row) => ({ cost: row.cost })) },
+  };
+}
+
+function headWinGap() {
+  readHeadDraft("left");
+  readHeadDraft("right");
+  const blank = (rows) => rows.some((row) => row.win === "" || row.win == null);
+  if (blank(headDraft.left.rows)) return "Enter a win total for every bonus on slot 1.";
+  if (blank(headDraft.right.rows)) return "Enter a win total for every bonus on slot 2.";
+  const savedLeft = state?.head?.left?.bonusCount || 0;
+  const savedRight = state?.head?.right?.bonusCount || 0;
+  if (savedLeft && headDraft.left.rows.length !== savedLeft) return "Slot 1 needs the same number of bonuses that were saved.";
+  if (savedRight && headDraft.right.rows.length !== savedRight) return "Slot 2 needs the same number of bonuses that were saved.";
+  return "";
+}
 
 document.getElementById("avgx-head-open").addEventListener("click", async () => {
   try {
+    await post({ action: "head-setup", ...headSetupBody() });
     await post({ action: "head-open" });
     setStatus("Head to head bets are open.", "ok");
   } catch (error) {
@@ -628,32 +644,19 @@ document.getElementById("avgx-head-open").addEventListener("click", async () => 
   }
 });
 
-document.getElementById("avgx-head-close").addEventListener("click", async () => {
-  try {
-    await post({ action: "head-close" });
-    setStatus("Head to head bets are closed.", "ok");
-  } catch (error) {
-    setStatus(error.message, "error");
+document.getElementById("avgx-head-settle").addEventListener("click", async () => {
+  const gap = headWinGap();
+  if (gap) {
+    setStatus(gap, "error");
+    return;
   }
-});
-
-document.getElementById("avgx-head-totals").addEventListener("click", async () => {
-  readHeadDraft("left");
-  readHeadDraft("right");
   try {
+    if (state?.head?.status === "open") await post({ action: "head-close" });
     await post({
       action: "head-totals",
-      leftWins: headDraft.left.rows.map((row) => (row.win === "" ? null : row.win)),
-      rightWins: headDraft.right.rows.map((row) => (row.win === "" ? null : row.win)),
+      leftWins: headDraft.left.rows.map((row) => row.win),
+      rightWins: headDraft.right.rows.map((row) => row.win),
     });
-    setStatus("Totals saved.", "ok");
-  } catch (error) {
-    setStatus(error.message, "error");
-  }
-});
-
-document.getElementById("avgx-head-settle").addEventListener("click", async () => {
-  try {
     await post({ action: "head-settle" });
     const winner = state.head?.winner;
     const name = winner === "tie" ? "Tie" : (winner === "left" ? state.head.left : state.head.right)?.slot?.name;
