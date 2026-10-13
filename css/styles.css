@@ -14527,6 +14527,71 @@ button.one-v-one-name:focus-visible {
   margin-top: 0.4rem;
 }
 
+.avgx-head-board .avgx-heading {
+  margin-bottom: 0.4rem;
+}
+
+.avgx-versus {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 0.45rem;
+  align-items: start;
+}
+
+.avgx-vs {
+  margin: 0.8rem 0 0;
+  font-family: Teko, sans-serif;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: #e8c56b;
+}
+
+.avgx-side {
+  width: 100%;
+  padding: 0.4rem 0.45rem;
+  border-radius: 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.avgx-side strong {
+  display: block;
+  font-family: Teko, sans-serif;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: #e8c56b;
+}
+
+.avgx-side small {
+  color: #8ea0b5;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.avgx-side.is-selected {
+  border-color: #e8c56b;
+  box-shadow: inset 0 0 0 1px #e8c56b;
+}
+
+.avgx-side.is-winner {
+  background: rgba(232, 197, 107, 0.12);
+}
+
+.avgx-side .avgx-table {
+  margin-top: 0.35rem;
+}
+
+.avgx-duel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.65rem;
+  margin-top: 0.45rem;
+}
+
 @media (max-width: 720px) {
   .avgx-top,
   .avgx-admin-head {
@@ -14541,6 +14606,15 @@ button.one-v-one-name:focus-visible {
 
   .avgx-ranges {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .avgx-versus,
+  .avgx-duel {
+    grid-template-columns: 1fr;
+  }
+
+  .avgx-vs {
+    margin: 0;
   }
 }
 

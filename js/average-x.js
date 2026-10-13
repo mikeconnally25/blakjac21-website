@@ -19,6 +19,11 @@ let catalogLoading = false;
 let pickedSlot = null;
 let draft = [{ cost: "", win: "" }];
 let selectedRange = "";
+let headSide = "";
+const headDraft = {
+  left: { slot: null, rows: [{ cost: "", win: "" }] },
+  right: { slot: null, rows: [{ cost: "", win: "" }] },
+};
 
 function setStatus(message, kind) {
   statusEl.textContent = message || "";
@@ -191,9 +196,138 @@ function renderAdmin() {
   renderEditor();
 }
 
+function sideTable(bonuses) {
+  if (!bonuses?.length) return "";
+  const rows = bonuses
+    .map(
+      (bonus, index) => `<tr>
+        <td>${index + 1}</td>
+        <td>${money(bonus.cost)}</td>
+        <td>${bonus.win == null ? "—" : money(bonus.win)}</td>
+        <td>${formatX(bonus.x)}</td>
+      </tr>`
+    )
+    .join("");
+  return `<table class="avgx-table"><thead><tr><th>#</th><th>Buy</th><th>Win</th><th>X</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function renderHead() {
+  const match = state?.head;
+  const versus = document.getElementById("avgx-versus");
+  const form = document.getElementById("avgx-head-form");
+  const yours = document.getElementById("avgx-head-yours");
+  const bets = document.getElementById("avgx-head-bets");
+  if (!versus) return;
+
+  const card = (side) => {
+    if (!side) return "";
+    const selected = headSide === side.side ? " is-selected" : "";
+    const winner = match?.final && match.winner === side.side ? " is-winner" : "";
+    const name = side.slot?.name || `Slot ${side.team}`;
+    return `<div>
+      <button type="button" class="avgx-side${selected}${winner}" data-head-side="${side.side}">
+        <span>${side.team} · ${escapeHtml(name)}</span>
+        <strong>${formatX(side.averageX)}</strong>
+        <small>${side.stake || 0} in · ${side.filledCount || 0}/${side.bonusCount || 0}</small>
+      </button>
+      ${sideTable(side.bonuses)}
+    </div>`;
+  };
+
+  versus.innerHTML = `${card(match?.left)}<p class="avgx-vs">VS</p>${card(match?.right)}`;
+
+  const open = match?.status === "open" && state?.balance != null;
+  form.classList.toggle("is-hidden", !open);
+  if (state?.maxBet) document.getElementById("avgx-head-amount").max = String(state.maxBet);
+
+  const mine = match?.yourBet;
+  if (mine && !headSide) headSide = mine.side;
+  if (match?.status === "open" && state?.balance == null) {
+    yours.textContent = "Sign in with Kick to bet.";
+  } else if (mine) {
+    const name = mine.side === "left" ? match.left?.slot?.name : match.right?.slot?.name;
+    const paid = mine.payout == null ? "" : mine.refund ? " Refunded." : ` Paid ${mine.payout} UncCoins.`;
+    yours.textContent = `Your bet: ${mine.amount} on ${name || mine.side}.${paid}`;
+  } else if (match?.final) {
+    yours.textContent = match.winner === "tie"
+      ? "Tie. Every bet is refunded."
+      : `${(match.winner === "left" ? match.left : match.right)?.slot?.name || "Winner"} takes it.`;
+  } else if (match?.status === "locked") {
+    yours.textContent = "Bets are closed. Totals are going in.";
+  } else {
+    yours.textContent = "";
+  }
+
+  bets.innerHTML = (match?.bets || [])
+    .slice()
+    .reverse()
+    .slice(0, 20)
+    .map((bet) => {
+      const name = bet.side === "left" ? match.left?.slot?.name : match.right?.slot?.name;
+      return `<li><span>${escapeHtml(bet.username)}</span><span>${escapeHtml(name || bet.side)}</span><strong>${bet.amount}</strong></li>`;
+    })
+    .join("");
+}
+
+function readHeadDraft(side) {
+  const editor = document.getElementById(`avgx-head-editor-${side}`);
+  const costs = [...editor.querySelectorAll("[data-head-cost]")];
+  if (!costs.length) return;
+  const wins = [...editor.querySelectorAll("[data-head-win]")];
+  headDraft[side].rows = costs.map((input, index) => ({
+    cost: input.value,
+    win: wins[index]?.value ?? "",
+  }));
+}
+
+function renderHeadEditor(side) {
+  const editor = document.getElementById(`avgx-head-editor-${side}`);
+  const picked = document.getElementById(`avgx-head-picked-${side}`);
+  const draft = headDraft[side];
+  editor.innerHTML = draft.rows
+    .map(
+      (row, index) => `<div class="avgx-row">
+        <span>${index + 1}</span>
+        <input class="guess-input" data-head-cost type="number" min="0.01" step="0.01" value="${escapeHtml(row.cost)}" placeholder="Buy" aria-label="Slot bonus ${index + 1} buy" />
+        <input class="guess-input" data-head-win type="number" min="0" step="0.01" value="${escapeHtml(row.win)}" placeholder="Win" aria-label="Slot bonus ${index + 1} win" />
+        <button type="button" class="btn btn-sm btn-outline" data-head-remove="${index}" data-head-side="${side}">Remove</button>
+      </div>`
+    )
+    .join("");
+  picked.textContent = draft.slot
+    ? `${draft.slot.name}${draft.slot.provider ? ` · ${draft.slot.provider}` : ""}`
+    : "No slot picked.";
+}
+
+function renderHeadAdmin() {
+  const admin = document.getElementById("avgx-head-admin");
+  if (!admin) return;
+  admin.classList.toggle("is-hidden", !state?.isAdmin);
+  if (!state?.isAdmin) return;
+  if (admin.contains(document.activeElement)) return;
+  for (const side of ["left", "right"]) {
+    const saved = state.head?.[side];
+    if (saved?.slot && !headDraft[side].slot) headDraft[side].slot = saved.slot;
+    if (
+      saved?.bonuses?.length &&
+      headDraft[side].rows.length === 1 &&
+      headDraft[side].rows[0].cost === "" &&
+      !document.querySelector(`#avgx-head-editor-${side} [data-head-cost]`)
+    ) {
+      headDraft[side].rows = saved.bonuses.map((bonus) => ({
+        cost: bonus.cost ?? "",
+        win: bonus.win ?? "",
+      }));
+    }
+    renderHeadEditor(side);
+  }
+}
+
 function render() {
   renderBoard();
   renderAdmin();
+  renderHead();
+  renderHeadAdmin();
 }
 
 async function refresh() {
@@ -371,6 +505,159 @@ document.getElementById("avgx-reset").addEventListener("click", async () => {
 
 searchEl.addEventListener("focus", () => {
   loadCatalog().catch((error) => setStatus(error.message, "error"));
+});
+
+document.getElementById("avgx-versus").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-head-side]");
+  if (!button) return;
+  headSide = button.dataset.headSide;
+  renderHead();
+});
+
+document.getElementById("avgx-head-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (headSide !== "left" && headSide !== "right") {
+    setStatus("Pick a slot first.", "error");
+    return;
+  }
+  try {
+    await post({
+      action: "head-bet",
+      side: headSide,
+      amount: document.getElementById("avgx-head-amount").value,
+    });
+    setStatus("Bet placed.", "ok");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+});
+
+function showHeadMatches(side) {
+  const input = document.getElementById(`avgx-head-search-${side}`);
+  const results = document.getElementById(`avgx-head-results-${side}`);
+  const query = input.value.trim().toLowerCase();
+  if (query.length < 2) {
+    results.innerHTML = "";
+    return;
+  }
+  const matches = catalog
+    .filter((slot) => `${slot.name} ${slot.provider || ""}`.toLowerCase().includes(query))
+    .slice(0, 6);
+  results.innerHTML = matches
+    .map(
+      (slot, index) =>
+        `<button type="button" data-head-pick="${index}" data-head-side="${side}">${escapeHtml(slot.name)}${slot.provider ? ` · ${escapeHtml(slot.provider)}` : ""}</button>`
+    )
+    .join("");
+  results._matches = matches;
+}
+
+for (const side of ["left", "right"]) {
+  const input = document.getElementById(`avgx-head-search-${side}`);
+  input.addEventListener("input", () => {
+    loadCatalog()
+      .then(() => showHeadMatches(side))
+      .catch((error) => setStatus(error.message, "error"));
+  });
+  input.addEventListener("focus", () => {
+    loadCatalog().catch((error) => setStatus(error.message, "error"));
+  });
+  document.getElementById(`avgx-head-results-${side}`).addEventListener("click", (event) => {
+    const button = event.target.closest("[data-head-pick]");
+    if (!button) return;
+    const results = document.getElementById(`avgx-head-results-${side}`);
+    headDraft[side].slot = results._matches?.[Number(button.dataset.headPick)] || null;
+    input.value = headDraft[side].slot?.name || "";
+    results.innerHTML = "";
+    renderHeadEditor(side);
+  });
+  document.getElementById(`avgx-head-editor-${side}`).addEventListener("click", (event) => {
+    const button = event.target.closest("[data-head-remove]");
+    if (!button) return;
+    readHeadDraft(side);
+    headDraft[side].rows.splice(Number(button.dataset.headRemove), 1);
+    if (!headDraft[side].rows.length) headDraft[side].rows.push({ cost: "", win: "" });
+    renderHeadEditor(side);
+  });
+  document.getElementById(`avgx-head-add-${side}`).addEventListener("click", () => {
+    readHeadDraft(side);
+    headDraft[side].rows.push({ cost: "", win: "" });
+    renderHeadEditor(side);
+  });
+}
+
+document.getElementById("avgx-head-save").addEventListener("click", async () => {
+  readHeadDraft("left");
+  readHeadDraft("right");
+  try {
+    await post({
+      action: "head-setup",
+      left: { slot: headDraft.left.slot, bonuses: headDraft.left.rows.map((row) => ({ cost: row.cost })) },
+      right: { slot: headDraft.right.slot, bonuses: headDraft.right.rows.map((row) => ({ cost: row.cost })) },
+    });
+    setStatus("Match saved. Open head to head bets when you are ready.", "ok");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+});
+
+document.getElementById("avgx-head-open").addEventListener("click", async () => {
+  try {
+    await post({ action: "head-open" });
+    setStatus("Head to head bets are open.", "ok");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+});
+
+document.getElementById("avgx-head-close").addEventListener("click", async () => {
+  try {
+    await post({ action: "head-close" });
+    setStatus("Head to head bets are closed.", "ok");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+});
+
+document.getElementById("avgx-head-totals").addEventListener("click", async () => {
+  readHeadDraft("left");
+  readHeadDraft("right");
+  try {
+    await post({
+      action: "head-totals",
+      leftWins: headDraft.left.rows.map((row) => (row.win === "" ? null : row.win)),
+      rightWins: headDraft.right.rows.map((row) => (row.win === "" ? null : row.win)),
+    });
+    setStatus("Totals saved.", "ok");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+});
+
+document.getElementById("avgx-head-settle").addEventListener("click", async () => {
+  try {
+    await post({ action: "head-settle" });
+    const winner = state.head?.winner;
+    const name = winner === "tie" ? "Tie" : (winner === "left" ? state.head.left : state.head.right)?.slot?.name;
+    setStatus(winner === "tie" ? "Tie. Bets refunded." : `${name} wins.`, "ok");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+});
+
+document.getElementById("avgx-head-reset").addEventListener("click", async () => {
+  if (!window.confirm("Reset the head to head? Open bets are refunded.")) return;
+  try {
+    await post({ action: "head-reset" });
+    headDraft.left = { slot: null, rows: [{ cost: "", win: "" }] };
+    headDraft.right = { slot: null, rows: [{ cost: "", win: "" }] };
+    headSide = "";
+    setStatus("Head to head cleared.", "ok");
+    renderHeadEditor("left");
+    renderHeadEditor("right");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
 });
 
 refresh().catch((error) => setStatus(error.message, "error"));

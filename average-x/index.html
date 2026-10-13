@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=avgx4" />
+  <link rel="stylesheet" href="/css/styles.css?v=avgx6" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -109,6 +109,48 @@
             <button class="btn btn-sm btn-outline" type="button" id="avgx-reset">Reset</button>
           </div>
         </div>
+
+        <div class="bj21-panel avgx-board avgx-head-board">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <h3 class="avgx-heading">Head to head</h3>
+          <div class="avgx-versus" id="avgx-versus"></div>
+          <p class="avgx-note">Higher average takes the pool. A tie refunds every bet. Chat: !h2h 100 1</p>
+          <form class="avgx-bet-form" id="avgx-head-form">
+            <input class="guess-input" id="avgx-head-amount" type="number" min="1" step="1" value="10" inputmode="numeric" aria-label="Head to head UncCoins" />
+            <button class="btn btn-sm btn-primary" type="submit">Place bet</button>
+          </form>
+          <p class="avgx-yours" id="avgx-head-yours"></p>
+          <ul class="avgx-bets" id="avgx-head-bets"></ul>
+        </div>
+
+        <div class="bj21-panel avgx-admin is-hidden" id="avgx-head-admin">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <h3 class="avgx-heading">Run the match</h3>
+          <div class="avgx-duel">
+            <div>
+              <input class="guess-input" id="avgx-head-search-left" type="search" placeholder="Slot 1" autocomplete="off" aria-label="Slot 1" />
+              <div class="avgx-results" id="avgx-head-results-left"></div>
+              <p class="avgx-picked" id="avgx-head-picked-left">No slot picked.</p>
+              <div id="avgx-head-editor-left"></div>
+              <button class="btn btn-sm btn-outline" type="button" id="avgx-head-add-left">Add bonus</button>
+            </div>
+            <div>
+              <input class="guess-input" id="avgx-head-search-right" type="search" placeholder="Slot 2" autocomplete="off" aria-label="Slot 2" />
+              <div class="avgx-results" id="avgx-head-results-right"></div>
+              <p class="avgx-picked" id="avgx-head-picked-right">No slot picked.</p>
+              <div id="avgx-head-editor-right"></div>
+              <button class="btn btn-sm btn-outline" type="button" id="avgx-head-add-right">Add bonus</button>
+            </div>
+          </div>
+          <div class="avgx-actions">
+            <button class="btn btn-sm btn-primary" type="button" id="avgx-head-save">Save match</button>
+            <button class="btn btn-sm btn-outline" type="button" id="avgx-head-open">Open bets</button>
+            <button class="btn btn-sm btn-outline" type="button" id="avgx-head-close">Close bets</button>
+            <button class="btn btn-sm btn-outline" type="button" id="avgx-head-totals">Save totals</button>
+            <button class="btn btn-sm btn-primary" type="button" id="avgx-head-settle">Settle</button>
+            <button class="btn btn-sm btn-outline" type="button" id="avgx-head-reset">Reset</button>
+          </div>
+        </div>
       </div>
     </section>
   </main>
@@ -130,6 +172,6 @@
 
   <script src="/js/main.js?v=avgx1"></script>
   <script src="/js/auth.js?v=claim24h"></script>
-  <script src="/js/average-x.js?v=avgx5"></script>
+  <script src="/js/average-x.js?v=avgx6"></script>
 </body>
 </html>
