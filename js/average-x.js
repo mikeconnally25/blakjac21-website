@@ -258,15 +258,33 @@ function renderHead() {
     yours.textContent = "";
   }
 
-  bets.innerHTML = (match?.bets || [])
+  const betters = match?.bets || [];
+  bets.classList.toggle("is-hidden", !match);
+  bets.innerHTML = match
+    ? ["left", "right"]
+        .map((side) => headBetterColumn(match, side, betters.filter((bet) => bet.side === side)))
+        .join("")
+    : "";
+}
+
+function headBetterColumn(match, side, rows) {
+  const team = match[side];
+  const name = team?.slot?.name || `Slot ${team?.team || ""}`;
+  const mineId = match.yourBet?.kickUserId || "";
+  const people = rows
     .slice()
-    .reverse()
-    .slice(0, 20)
+    .sort((a, b) => b.amount - a.amount || String(a.username).localeCompare(String(b.username)))
     .map((bet) => {
-      const name = bet.side === "left" ? match.left?.slot?.name : match.right?.slot?.name;
-      return `<li><span>${escapeHtml(bet.username)}</span><span>${escapeHtml(name || bet.side)}</span><strong>${bet.amount}</strong></li>`;
+      const mine = bet.kickUserId && bet.kickUserId === mineId ? " is-mine" : "";
+      const result =
+        bet.payout == null ? "" : bet.refund ? " <small>refund</small>" : ` <small>paid ${bet.payout}</small>`;
+      return `<li class="avgx-better${mine}"><span>${escapeHtml(bet.username)}</span><strong>${bet.amount}${result}</strong></li>`;
     })
     .join("");
+  return `<div>
+    <p class="avgx-betters-label">${team?.team || ""} · ${escapeHtml(name)} · ${team?.stake || 0}</p>
+    ${people ? `<ul class="avgx-betters-list">${people}</ul>` : `<p class="avgx-betters-empty">No bets yet</p>`}
+  </div>`;
 }
 
 function readHeadDraft(side) {
