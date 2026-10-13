@@ -597,7 +597,14 @@ for (const side of ["left", "right"]) {
     results.innerHTML = "";
     renderHeadEditor(side);
   });
-  document.getElementById(`avgx-head-editor-${side}`).addEventListener("click", (event) => {
+  const editor = document.getElementById(`avgx-head-editor-${side}`);
+  editor.addEventListener("input", (event) => {
+    if (!event.target.matches("[data-head-cost]")) return;
+    const costs = [...editor.querySelectorAll("[data-head-cost]")];
+    if (event.target !== costs[0]) return;
+    for (const input of costs.slice(1)) input.value = event.target.value;
+  });
+  editor.addEventListener("click", (event) => {
     const button = event.target.closest("[data-head-remove]");
     if (!button) return;
     readHeadDraft(side);
@@ -607,7 +614,7 @@ for (const side of ["left", "right"]) {
   });
   document.getElementById(`avgx-head-add-${side}`).addEventListener("click", () => {
     readHeadDraft(side);
-    headDraft[side].rows.push({ cost: "", win: "" });
+    headDraft[side].rows.push({ cost: headDraft[side].rows[0]?.cost || "", win: "" });
     renderHeadEditor(side);
   });
 }
