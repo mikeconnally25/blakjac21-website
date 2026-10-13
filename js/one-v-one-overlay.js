@@ -29,6 +29,10 @@ const demoHead = {
       thumbnailUrl: "https://mediumrare.imgix.net/1cabb5679a1c6696240aad6a354d55da7c28b1823f6bd4400c0c12936d2ce688",
     },
     averageX: 2.4,
+    bonuses: [
+      { cost: 40, win: 120, x: 3 },
+      { cost: 40, win: 72, x: 1.8 },
+    ],
   },
   right: {
     slot: {
@@ -37,6 +41,10 @@ const demoHead = {
       thumbnailUrl: "https://mediumrare.imgix.net/8d65cf820966127b539cf791e750399a35d3f8d9cab99ac3c5e78ca8e0f333b1",
     },
     averageX: 1.15,
+    bonuses: [
+      { cost: 20, win: 40, x: 2 },
+      { cost: 20, win: null, x: null },
+    ],
   },
 };
 
@@ -58,6 +66,34 @@ function formatPrize(pool) {
 function formatAverage(value) {
   if (value == null || !Number.isFinite(Number(value))) return "Avg —";
   return `${Number(value).toFixed(2)}x`;
+}
+
+function formatMoney(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "—";
+  const digits = Number.isInteger(number) ? 0 : 2;
+  return `$${number.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: 2 })}`;
+}
+
+function renderHeadBuys(bonuses) {
+  if (!bonuses?.length) return null;
+  const list = document.createElement("ol");
+  list.className = "ovo-buys";
+  bonuses.forEach((bonus, index) => {
+    const row = document.createElement("li");
+    const number = document.createElement("span");
+    number.textContent = String(index + 1);
+    const cost = document.createElement("span");
+    cost.textContent = formatMoney(bonus.cost);
+    const win = document.createElement("span");
+    win.textContent = bonus.win == null ? "—" : formatMoney(bonus.win);
+    const multi = document.createElement("span");
+    multi.className = "ovo-buy-x";
+    multi.textContent = bonus.x == null ? "—" : `${Number(bonus.x).toFixed(2)}x`;
+    row.append(number, cost, win, multi);
+    list.appendChild(row);
+  });
+  return list;
 }
 
 function setTitle(text) {
@@ -83,7 +119,7 @@ function renderLogo(logo, name, thumbnailUrl) {
 
 function renderOverlaySide(element, side, seatLabel, pool) {
   if (!element) return;
-  element.classList.remove("is-winner");
+  element.classList.remove("is-winner", "has-buys");
   element.replaceChildren();
 
   const seat = document.createElement("p");
@@ -169,7 +205,10 @@ function renderHeadSide(element, side, seatLabel, isWinner) {
   average.className = "ovo-prize";
   average.textContent = formatAverage(side?.averageX);
   copy.appendChild(average);
+  const buys = renderHeadBuys(side?.bonuses);
+  element.classList.toggle("has-buys", Boolean(buys));
   element.append(logo, copy);
+  if (buys) element.appendChild(buys);
 }
 
 function matchupSignature(matchup, pools) {
@@ -180,8 +219,10 @@ function matchupSignature(matchup, pools) {
 }
 
 function headSignature(head) {
-  const sideKey = (side) =>
-    [side?.slot?.name || "", side?.slot?.provider || "", side?.slot?.thumbnailUrl || "", side?.averageX ?? ""].join("|");
+  const sideKey = (side) => {
+    const buys = (side?.bonuses || []).map((bonus) => `${bonus.cost}:${bonus.win}:${bonus.x}`).join(",");
+    return [side?.slot?.name || "", side?.slot?.provider || "", side?.averageX ?? "", buys].join("|");
+  };
   return `head:${head?.winner || ""}::${sideKey(head?.left)}::${sideKey(head?.right)}`;
 }
 

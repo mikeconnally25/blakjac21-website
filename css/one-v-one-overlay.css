@@ -205,3 +205,36 @@ body {
   border-color: rgba(232, 197, 107, 0.72);
   box-shadow: inset 0 0 0 1px rgba(232, 197, 107, 0.4);
 }
+
+.ovo-side.has-buys {
+  align-items: start;
+  align-content: start;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.ovo-buys {
+  grid-column: 1 / -1;
+  min-height: 0;
+  margin: 0.2rem 0 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.ovo-buys li {
+  display: grid;
+  grid-template-columns: 1.15rem minmax(0, 1fr) minmax(0, 1fr) 3.4rem;
+  gap: 0.35rem;
+  padding: 0.08rem 0;
+  border-top: 1px solid rgba(126, 216, 255, 0.14);
+  color: #d5e4ee;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.ovo-buy-x {
+  color: var(--accent-bright);
+  font-weight: 700;
+  text-align: right;
+}
