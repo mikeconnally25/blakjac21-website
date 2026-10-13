@@ -45,7 +45,9 @@ function escapeHtml(value) {
 }
 
 function rangeLabel(rangeId) {
-  return state?.ranges?.find((range) => range.id === rangeId)?.label || rangeId;
+  const range = state?.ranges?.find((item) => item.id === rangeId);
+  if (!range) return rangeId;
+  return range.team ? `Team ${range.team} · ${range.label}` : range.label;
 }
 
 function renderBoard() {
@@ -98,7 +100,7 @@ function renderBoard() {
       const selected = range.id === selectedRange ? " is-selected" : "";
       const winner = state?.final && range.id === state.winningRangeId ? " is-winner" : "";
       return `<button type="button" class="avgx-range${selected}${winner}" data-range="${escapeHtml(range.id)}">
-        <span>${escapeHtml(range.label)}</span>
+        <span>${range.team ? `${range.team} · ` : ""}${escapeHtml(range.label)}</span>
         <strong>${range.stake || 0}</strong>
         <small>${range.count || 0} bets</small>
       </button>`;
