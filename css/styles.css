@@ -14400,11 +14400,17 @@ button.one-v-one-name:focus-visible {
   margin: 0.5rem 0 0;
 }
 
+.avgx-range > span {
+  font-size: 0.68rem;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+}
+
 .avgx-range {
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding: 0.28rem 0.4rem;
+  padding: 0.28rem 0.35rem;
   border-radius: 0.45rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: transparent;
