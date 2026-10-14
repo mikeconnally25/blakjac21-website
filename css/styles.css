@@ -14407,7 +14407,7 @@ button.one-v-one-name:focus-visible {
   line-height: 1.15;
 }
 
-.avgx-range-x {
+.avgx-range > span.avgx-range-x {
   color: #eef6fb;
   font-size: 0.92rem;
   font-weight: 700;
