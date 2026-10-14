@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=avgx21" />
+  <link rel="stylesheet" href="/css/styles.css?v=avgx22" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -90,6 +90,7 @@
             <div class="avgx-metrics" id="avgx-metrics"></div>
           </div>
           <div class="avgx-table-wrap" id="avgx-bonuses"></div>
+          <p class="avgx-bets-timer" id="avgx-bets-timer">Bets closed</p>
           <div class="avgx-ranges" id="avgx-ranges"></div>
           <p class="avgx-note">In chat: !avgx 100 team 1. The winning team splits the pool.</p>
           <form class="avgx-bet-form" id="avgx-bet-form">
@@ -125,6 +126,12 @@
           <div class="avgx-actions">
             <button class="btn btn-sm btn-outline" type="button" id="avgx-add">Add bonus</button>
             <button class="btn btn-sm btn-primary" type="button" id="avgx-save">Save round</button>
+            <select class="one-v-one-bet-seconds" id="avgx-bet-seconds" aria-label="Bet timer length">
+              <option value="30">30s</option>
+              <option value="60" selected>60s</option>
+              <option value="90">90s</option>
+              <option value="120">2 min</option>
+            </select>
             <button class="btn btn-sm btn-outline" type="button" id="avgx-open">Open bets</button>
             <button class="btn btn-sm btn-outline" type="button" id="avgx-close">Close bets</button>
             <button class="btn btn-sm btn-outline" type="button" id="avgx-totals">Save totals</button>
@@ -223,6 +230,6 @@
 
   <script src="/js/main.js?v=avgx1"></script>
   <script src="/js/auth.js?v=claim24h"></script>
-  <script src="/js/average-x.js?v=avgx19"></script>
+  <script src="/js/average-x.js?v=avgx22"></script>
 </body>
 </html>

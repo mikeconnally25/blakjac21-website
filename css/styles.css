@@ -14456,6 +14456,20 @@ button.one-v-one-name:focus-visible {
   align-items: center;
 }
 
+.avgx-bets-timer {
+  margin: 0.45rem 0 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: var(--text-muted);
+}
+
+.avgx-bets-timer.is-live {
+  color: var(--accent-bright);
+}
+
 .avgx-bet-form {
   margin-top: 0.4rem;
 }

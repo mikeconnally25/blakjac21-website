@@ -21,6 +21,9 @@ let pickedSlot = null;
 let draft = [{ cost: "", win: "" }];
 let selectedRange = "";
 let selectedSpinRange = "";
+let betsCloseAt = 0;
+let betsWereOpen = false;
+let betDeadlineKnownAt = 0;
 let headSide = "";
 const headDraft = {
   left: { slot: null, rows: [{ cost: "", win: "" }] },
@@ -114,9 +117,8 @@ function renderBoard() {
     })
     .join("");
 
-  if (!state || state.status !== "open") {
-    formEl.classList.add("is-hidden");
-  } else if (state.balance == null) {
+  const takingBets = betsOpenNow();
+  if (!takingBets || state.balance == null) {
     formEl.classList.add("is-hidden");
   } else {
     formEl.classList.remove("is-hidden");
@@ -194,9 +196,67 @@ function renderEditor() {
     : "No slot picked.";
 }
 
+function betsOpenNow() {
+  if (state?.status !== "open") return false;
+  if (!betsCloseAt) return true;
+  return betsCloseAt > Date.now();
+}
+
+function syncBetDeadline(data, startedAt, authoritative) {
+  const serverNow = Number(data?.serverNow) || 0;
+  const closeAt = Number(data?.betsCloseAt) || 0;
+  const remaining = serverNow && closeAt ? closeAt - serverNow : 0;
+
+  if (remaining > 500) {
+    betsCloseAt = Date.now() + remaining;
+    betDeadlineKnownAt = Date.now();
+    return;
+  }
+
+  if (!authoritative && startedAt && startedAt < betDeadlineKnownAt && betsCloseAt > Date.now()) {
+    return;
+  }
+
+  betsCloseAt = 0;
+}
+
+function formatBetClock(ms) {
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const minutes = Math.floor(total / 60);
+  const seconds = String(total % 60).padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
+
+function paintBetsTimer() {
+  const el = document.getElementById("avgx-bets-timer");
+  const open = betsOpenNow();
+  if (el) {
+    el.classList.toggle("is-live", open);
+    el.textContent = open
+      ? betsCloseAt
+        ? `Bets close in ${formatBetClock(betsCloseAt - Date.now())}`
+        : "Bets open"
+      : "Bets closed";
+  }
+  if (formEl && state?.status === "open" && state.balance != null) {
+    formEl.classList.toggle("is-hidden", !open);
+  }
+  const closeBets = document.getElementById("avgx-close");
+  if (closeBets) closeBets.classList.toggle("is-hidden", state?.status !== "open");
+}
+
+function updateRoundActions() {
+  const status = state?.status || "idle";
+  const canOpen = status === "setup";
+  document.getElementById("avgx-bet-seconds")?.classList.toggle("is-hidden", !canOpen);
+  document.getElementById("avgx-open")?.classList.toggle("is-hidden", !canOpen);
+  document.getElementById("avgx-close")?.classList.toggle("is-hidden", status !== "open");
+}
+
 function renderAdmin() {
   const admin = Boolean(state?.isAdmin);
   adminEl.classList.toggle("is-hidden", !admin);
+  updateRoundActions();
   if (!admin) return;
   loadCatalog().catch((error) => setStatus(error.message, "error"));
   if (adminEl.contains(document.activeElement)) return;
@@ -468,24 +528,28 @@ function renderMode() {
   document.getElementById("avgx-mode-head")?.classList.toggle("btn-outline", mode !== "head");
 }
 
-function render() {
+function render(startedAt, authoritative) {
+  syncBetDeadline(state, startedAt, authoritative);
   renderBoard();
   renderAdmin();
   renderSpins();
   renderHead();
   renderHeadAdmin();
   renderMode();
+  paintBetsTimer();
 }
 
-async function refresh() {
+async function refresh(startedAt, authoritative) {
+  const requestedAt = startedAt || Date.now();
   const response = await fetch("/api/average-x", { cache: "no-store" });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || "Could not load Average X.");
   state = data;
-  render();
+  render(requestedAt, authoritative);
 }
 
-async function post(body) {
+async function post(body, startedAt, authoritative) {
+  const requestedAt = startedAt || Date.now();
   const response = await fetch("/api/average-x", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -494,7 +558,7 @@ async function post(body) {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || "Could not update Average X.");
   state = data;
-  render();
+  render(requestedAt, authoritative);
 }
 
 async function loadCatalog() {
@@ -699,9 +763,11 @@ document.getElementById("avgx-save").addEventListener("click", async () => {
 });
 
 document.getElementById("avgx-open").addEventListener("click", async () => {
+  const seconds = Number(document.getElementById("avgx-bet-seconds")?.value) || 60;
+  const startedAt = Date.now();
   try {
-    await post({ action: "open" });
-    setStatus("Bets are open.", "ok");
+    await post({ action: "open", seconds }, startedAt, true);
+    setStatus(`Bets are open for ${seconds} seconds.`, "ok");
   } catch (error) {
     setStatus(error.message, "error");
   }
@@ -941,3 +1007,13 @@ refresh().catch((error) => setStatus(error.message, "error"));
 setInterval(() => {
   refresh().catch(() => {});
 }, 4000);
+setInterval(() => {
+  const open = betsOpenNow();
+  paintBetsTimer();
+  if (betsWereOpen && !open) {
+    betsWereOpen = false;
+    refresh().catch(() => {});
+    return;
+  }
+  betsWereOpen = open;
+}, 250);
