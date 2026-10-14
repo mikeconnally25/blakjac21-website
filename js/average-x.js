@@ -106,7 +106,7 @@ function renderBoard() {
       const selected = range.id === selectedRange ? " is-selected" : "";
       const winner = state?.final && range.id === state.winningRangeId ? " is-winner" : "";
       return `<button type="button" class="avgx-range${selected}${winner}" data-range="${escapeHtml(range.id)}">
-        <span>${range.team ? `${range.team} · ` : ""}${escapeHtml(range.label)}</span>
+        <span>${range.team ? `${range.team} · ` : ""}${escapeHtml(range.label)} <i class="avgx-spin-eq">${escapeHtml(rangeSpins(range))}</i></span>
         <strong>${range.stake || 0}</strong>
         <small>${range.count || 0} bets</small>
       </button>`;
@@ -362,10 +362,19 @@ function renderHeadAdmin() {
   }
 }
 
+function rangeSpins(range) {
+  const low = Math.round(Number(range?.min) * 100);
+  const high = range?.max == null ? null : Math.round(Number(range.max) * 100);
+  if (!Number.isFinite(low)) return "";
+  if (high == null) return `(${low}+ spins)`;
+  if (!low) return `(under ${high} spins)`;
+  return `(${low}–${high} spins)`;
+}
+
 function spinLabel(rangeId) {
   const range = state?.spins?.ranges?.find((item) => item.id === rangeId);
   if (!range) return rangeId;
-  return range.team ? `Team ${range.team} · ${range.label}` : range.label;
+  return range.label;
 }
 
 function renderSpins() {
@@ -389,7 +398,7 @@ function renderSpins() {
       const selected = range.id === selectedSpinRange ? " is-selected" : "";
       const winner = game.final && range.id === game.winningRangeId ? " is-winner" : "";
       return `<button type="button" class="avgx-range${selected}${winner}" data-spin-range="${escapeHtml(range.id)}">
-        <span>${range.team} · ${escapeHtml(range.label)}</span>
+        <span>${escapeHtml(range.label)}</span>
         <strong>${range.stake || 0}</strong>
         <small>${range.count || 0} bets</small>
       </button>`;

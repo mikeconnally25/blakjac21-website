@@ -14407,6 +14407,13 @@ button.one-v-one-name:focus-visible {
   line-height: 1.15;
 }
 
+.avgx-spin-eq {
+  display: block;
+  color: #8ea0b5;
+  font-style: normal;
+  font-size: 0.62rem;
+}
+
 .avgx-range {
   display: flex;
   flex-direction: column;
