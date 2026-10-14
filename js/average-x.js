@@ -447,7 +447,20 @@ function renderMode() {
   document.getElementById("avgx-admin")?.classList.toggle("is-hidden", !admin || mode !== "round");
   document.getElementById("avgx-head-board")?.classList.toggle("is-hidden", mode !== "head");
   document.getElementById("avgx-head-admin")?.classList.toggle("is-hidden", !admin || mode !== "head");
-  document.getElementById("avgx-overlay-board")?.classList.toggle("is-hidden", mode !== "head");
+  const overlayPath = mode === "head" ? "/average-x/overlay/source.html" : "/average-x/round-overlay/source.html";
+  const overlayHref = new URL(overlayPath, window.location.href).href;
+  const frame = document.getElementById("avgx-overlay-frame");
+  const overlayUrl = document.getElementById("avgx-overlay-url");
+  const overlayNote = document.getElementById("avgx-overlay-note");
+  const overlayLink = document.getElementById("avgx-overlay-preview-link");
+  if (frame && frame.getAttribute("src") !== overlayPath) frame.src = overlayPath;
+  if (overlayUrl && overlayUrl.value !== overlayHref) overlayUrl.value = overlayHref;
+  if (overlayLink) overlayLink.href = mode === "head" ? "/average-x/overlay/" : "/average-x/round-overlay/";
+  if (overlayNote) {
+    overlayNote.textContent = mode === "head"
+      ? "Saving the match puts these two slots here and on the 1v1 overlay while no 1v1 is drawn. Width 960, height 360."
+      : "Selecting a slot shows it here with the bonus buys underneath. Width 480, height 560.";
+  }
   document.getElementById("avgx-mode-round")?.classList.toggle("btn-primary", mode === "round");
   document.getElementById("avgx-mode-round")?.classList.toggle("btn-outline", mode !== "round");
   document.getElementById("avgx-mode-head")?.classList.toggle("btn-primary", mode === "head");
@@ -604,13 +617,20 @@ searchEl.addEventListener("input", () => {
     .catch((error) => setStatus(error.message, "error"));
 });
 
-resultsEl.addEventListener("click", (event) => {
+resultsEl.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-pick]");
   if (!button) return;
   pickedSlot = resultsEl._matches?.[Number(button.dataset.pick)] || null;
   searchEl.value = pickedSlot?.name || "";
   resultsEl.innerHTML = "";
   renderEditor();
+  if (!pickedSlot) return;
+  try {
+    await post({ action: "select-slot", slot: pickedSlot });
+    setStatus(`${pickedSlot.name} is on the overlay.`, "ok");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
 });
 
 editorEl.addEventListener("click", (event) => {
