@@ -600,7 +600,10 @@ function storeLbGap(entry, leader) {
 }
 
 function storeLbPrize(rank) {
-  return rank === 1 ? "$100" : "—";
+  if (rank === 1) return "$100";
+  if (rank === 2) return "$50";
+  if (rank === 3) return "$25";
+  return "—";
 }
 
 function storeLbReducedMotion() {
