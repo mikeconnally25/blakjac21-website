@@ -450,7 +450,7 @@ function renderSpins() {
   const slotName = game.slot?.name || state?.slot?.name || "";
   slotLine.textContent = slotName
     ? slotName
-    : "Pick a slot above. This bets on how many bonuses hit in 100 spins.";
+    : "Pick a slot in Run the round. This bets on how many bonuses hit in 100 spins.";
 
   const mine = game.yourBet;
   if (mine && !selectedSpinRange) selectedSpinRange = mine.rangeId;
@@ -502,10 +502,13 @@ function renderSpins() {
 
 function renderMode() {
   const mode = state?.mode === "head" ? "head" : "round";
+  const spinsOn = state?.spinsOn === true;
   const admin = Boolean(state?.isAdmin);
   document.getElementById("avgx-mode")?.classList.toggle("is-hidden", !admin);
   document.getElementById("avgx-round-board")?.classList.toggle("is-hidden", mode !== "round");
   document.getElementById("avgx-admin")?.classList.toggle("is-hidden", !admin || mode !== "round");
+  document.getElementById("avgx-spins-board")?.classList.toggle("is-hidden", !spinsOn);
+  document.getElementById("avgx-spins-admin")?.classList.toggle("is-hidden", !admin || !spinsOn);
   document.getElementById("avgx-head-board")?.classList.toggle("is-hidden", mode !== "head");
   document.getElementById("avgx-head-admin")?.classList.toggle("is-hidden", !admin || mode !== "head");
   const overlayPath = mode === "head" ? "/average-x/overlay/source.html" : "/average-x/round-overlay/source.html";
@@ -526,6 +529,8 @@ function renderMode() {
   document.getElementById("avgx-mode-round")?.classList.toggle("btn-outline", mode !== "round");
   document.getElementById("avgx-mode-head")?.classList.toggle("btn-primary", mode === "head");
   document.getElementById("avgx-mode-head")?.classList.toggle("btn-outline", mode !== "head");
+  document.getElementById("avgx-mode-spins")?.classList.toggle("btn-primary", spinsOn);
+  document.getElementById("avgx-mode-spins")?.classList.toggle("btn-outline", !spinsOn);
 }
 
 function render(startedAt, authoritative) {
@@ -987,6 +992,17 @@ document.getElementById("avgx-mode-head")?.addEventListener("click", async () =>
   try {
     await post({ action: "mode", mode: "head" });
     setStatus("Head to head is on.", "ok");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+});
+
+document.getElementById("avgx-mode-spins")?.addEventListener("click", async () => {
+  const on = state?.spinsOn !== true;
+  setStatus(on ? "Turning on 100 spins..." : "Turning off 100 spins...");
+  try {
+    await post({ action: "spins-mode", on });
+    setStatus(on ? "100 spin bets are on." : "100 spin bets are off.", "ok");
   } catch (error) {
     setStatus(error.message, "error");
   }

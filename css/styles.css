@@ -14689,11 +14689,9 @@ button.one-v-one-name:focus-visible {
   margin-bottom: 0.25rem;
 }
 
-.avgx-spins,
-.avgx-spins-admin {
-  margin-top: 0.65rem;
-  padding-top: 0.55rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+.avgx-board.avgx-spins,
+.avgx-admin.avgx-spins-admin {
+  margin-top: 0.75rem;
 }
 
 .avgx-spins-slot {
