@@ -555,7 +555,7 @@ function renderMode() {
   if (modeNote) {
     modeNote.textContent = spinsOn
       ? "This tab has the slot, the averages, and the bonus count."
-      : "Run the round and head to head take turns. The slot, averages, and bonus count are on 100 spins.";
+      : "Head to head is its own section. The slot, averages, and bonus count are on 100 spins.";
   }
   const overlayPath = showHead ? "/average-x/overlay/source.html" : "/average-x/round-overlay/source.html";
   const overlayHref = new URL(overlayPath, window.location.href).href;
@@ -571,8 +571,6 @@ function renderMode() {
       ? "Saving the match puts these two slots here and on the 1v1 overlay while no 1v1 is drawn. Width 960, height 360."
       : "Selecting a slot shows it here with the bonus buys underneath. Width 480, height 560.";
   }
-  document.getElementById("avgx-mode-round")?.classList.toggle("btn-primary", mode === "round");
-  document.getElementById("avgx-mode-round")?.classList.toggle("btn-outline", mode !== "round");
   document.getElementById("avgx-mode-head")?.classList.toggle("btn-primary", mode === "head");
   document.getElementById("avgx-mode-head")?.classList.toggle("btn-outline", mode !== "head");
   document.getElementById("avgx-mode-spins")?.classList.toggle("btn-primary", spinsOn);
@@ -1033,23 +1031,12 @@ document.getElementById("avgx-head-reset").addEventListener("click", async () =>
 const overlayUrl = document.getElementById("avgx-overlay-url");
 if (overlayUrl) overlayUrl.value = new URL("/average-x/overlay/source.html", window.location.href).href;
 
-document.getElementById("avgx-mode-round")?.addEventListener("click", async () => {
-  if (state?.mode !== "head") return;
-  setStatus("Switching to the round...");
-  try {
-    await post({ action: "mode", mode: "round" });
-    setStatus("Run the round is on.", "ok");
-  } catch (error) {
-    setStatus(error.message, "error");
-  }
-});
-
 document.getElementById("avgx-mode-head")?.addEventListener("click", async () => {
-  if (state?.mode === "head") return;
-  setStatus("Switching to head to head...");
+  const leaving = state?.mode === "head";
+  setStatus(leaving ? "Turning off head to head..." : "Switching to head to head...");
   try {
-    await post({ action: "mode", mode: "head" });
-    setStatus("Head to head is on.", "ok");
+    await post({ action: "mode", mode: leaving ? "round" : "head" });
+    setStatus(leaving ? "Head to head is off." : "Head to head is on.", "ok");
   } catch (error) {
     setStatus(error.message, "error");
   }
