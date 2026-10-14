@@ -94,7 +94,7 @@ function renderBoard() {
       )
       .join("");
     bonusesEl.innerHTML = `<table class="avgx-table">
-      <thead><tr><th>#</th><th>Buy</th><th>Win</th><th>X</th></tr></thead>
+      <thead><tr><th>#</th><th>Bet</th><th>Payout</th><th>X</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
   }
@@ -170,8 +170,20 @@ function renderEditor() {
     .map(
       (row, index) => `<div class="avgx-row">
         <span>${index + 1}</span>
-        <input class="guess-input" data-cost type="number" min="0.01" step="0.01" value="${escapeHtml(row.cost)}" placeholder="Buy" aria-label="Bonus ${index + 1} buy" />
-        <input class="guess-input" data-win type="number" min="0" step="0.01" value="${escapeHtml(row.win)}" placeholder="Win" aria-label="Bonus ${index + 1} win" />
+        <label class="avgx-money">
+          <span>Bet size</span>
+          <span class="guess-input-row">
+            <span class="guess-prefix" aria-hidden="true">$</span>
+            <input class="guess-input" data-cost type="number" min="0.01" step="0.01" inputmode="decimal" value="${escapeHtml(row.cost)}" placeholder="1.00" aria-label="Bonus ${index + 1} bet size" />
+          </span>
+        </label>
+        <label class="avgx-money">
+          <span>Payout</span>
+          <span class="guess-input-row">
+            <span class="guess-prefix" aria-hidden="true">$</span>
+            <input class="guess-input" data-win type="number" min="0" step="0.01" inputmode="decimal" value="${escapeHtml(row.win)}" placeholder="0.00" aria-label="Bonus ${index + 1} payout" />
+          </span>
+        </label>
         <button type="button" class="btn btn-sm btn-outline" data-remove="${index}">Remove</button>
       </div>`
     )
