@@ -107,7 +107,7 @@ function renderBoard() {
       const selected = range.id === selectedRange ? " is-selected" : "";
       const winner = state?.final && range.id === state.winningRangeId ? " is-winner" : "";
       return `<button type="button" class="avgx-range${selected}${winner}" data-range="${escapeHtml(range.id)}">
-        <span><i class="avgx-spin-eq">${escapeHtml(rangeSpins(range))}</i>${range.team ? `${range.team} · ` : ""}${escapeHtml(range.label)}</span>
+        <span class="avgx-range-x">${escapeHtml(rangeSpins(range))}</span>
         <strong>${range.stake || 0}</strong>
         <small>${range.count || 0} bets</small>
       </button>`;
@@ -367,9 +367,9 @@ function rangeSpins(range) {
   const low = Math.round(Number(range?.min) * 100);
   const high = range?.max == null ? null : Math.round(Number(range.max) * 100);
   if (!Number.isFinite(low)) return "";
-  if (high == null) return `(${low}x+)`;
-  if (!low) return `(under ${high}x)`;
-  return `(${low}x–${high}x)`;
+  if (high == null) return `${low}x+`;
+  if (!low) return `under ${high}x`;
+  return `${low}x–${high}x`;
 }
 
 function spinLabel(rangeId) {
