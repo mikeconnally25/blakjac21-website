@@ -106,7 +106,7 @@ function renderBoard() {
       const selected = range.id === selectedRange ? " is-selected" : "";
       const winner = state?.final && range.id === state.winningRangeId ? " is-winner" : "";
       return `<button type="button" class="avgx-range${selected}${winner}" data-range="${escapeHtml(range.id)}">
-        <span>${range.team ? `${range.team} · ` : ""}${escapeHtml(range.label)} <i class="avgx-spin-eq">${escapeHtml(rangeSpins(range))}</i></span>
+        <span><i class="avgx-spin-eq">${escapeHtml(rangeSpins(range))}</i>${range.team ? `${range.team} · ` : ""}${escapeHtml(range.label)}</span>
         <strong>${range.stake || 0}</strong>
         <small>${range.count || 0} bets</small>
       </button>`;
