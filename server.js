@@ -101,6 +101,7 @@ import {
   handlePointsAwardChat,
   handlePointsCatalogGet,
   handlePointsCatalogUpsert,
+  handlePointsLeaderboard,
   handlePointsMe,
   handlePointsRedeem,
   handlePointsRedemptionCancel,
@@ -240,6 +241,9 @@ app.post("/api/users/aff-grant", (req, res) => handleUserAffGrant(req, res));
 app.post("/api/users/ban", (req, res) => handleUserBan(req, res));
 app.post("/api/users/remove", (req, res) => handleUserRemove(req, res));
 app.post("/api/users/set-stake", (req, res) => handleUserSetStake(req, res));
+app.get("/api/points/leaderboard", (req, res) =>
+  handlePointsLeaderboard(req, res)
+);
 app.get("/api/points/me", (req, res) => handlePointsMe(req, res));
 app.get("/api/points/catalog", (req, res) => handlePointsCatalogGet(req, res));
 app.post("/api/points/catalog", (req, res) => handlePointsCatalogUpsert(req, res));

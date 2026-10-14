@@ -3,6 +3,8 @@ let catalog = [];
 let myRedemptions = [];
 let pendingQueue = [];
 let pointsBalance = 0;
+let pointsLeaders = [];
+let pointsLeaderYou = null;
 let canRedeem = true;
 let buyPackages = [];
 let buyConfig = {
@@ -559,13 +561,82 @@ function renderBuyToggle() {
       : "Buy UncCoins is paused";
 }
 
+function createLeaderRow(entry, isYou) {
+  const row = document.createElement("li");
+  row.className = "store-leader-row";
+  if (entry.rank <= 3) row.classList.add(`is-rank-${entry.rank}`);
+  if (isYou) row.classList.add("is-you");
+
+  const rank = document.createElement("span");
+  rank.className = "store-leader-rank";
+  rank.textContent = String(entry.rank);
+
+  const name = document.createElement("span");
+  name.className = "store-leader-name";
+  const user = document.createElement("span");
+  user.className = "store-leader-user";
+  user.textContent = entry.username || "viewer";
+  name.append(user);
+  if (isYou) {
+    const you = document.createElement("span");
+    you.className = "store-leader-you";
+    you.textContent = "You";
+    name.append(you);
+  }
+
+  const points = document.createElement("span");
+  points.className = "store-leader-points";
+  points.textContent = Number(entry.points || 0).toLocaleString();
+
+  row.append(rank, name, points);
+  return row;
+}
+
+function renderLeaderboard() {
+  const list = document.getElementById("store-leaderboard-list");
+  const empty = document.getElementById("store-leaderboard-empty");
+  if (!list || !empty) return;
+
+  list.replaceChildren();
+  if (!pointsLeaders.length) {
+    empty.classList.remove("is-hidden");
+    list.classList.add("is-hidden");
+    empty.textContent = "No UncCoins yet.";
+    return;
+  }
+
+  empty.classList.add("is-hidden");
+  list.classList.remove("is-hidden");
+  const youRank = pointsLeaderYou?.rank;
+  pointsLeaders.forEach((entry) => {
+    list.append(createLeaderRow(entry, youRank === entry.rank));
+  });
+  if (pointsLeaderYou && !pointsLeaders.some((entry) => entry.rank === youRank)) {
+    list.append(createLeaderRow(pointsLeaderYou, true));
+  }
+}
+
 function renderAll() {
   renderBalance();
   renderBuyPackages();
   renderBuyForm();
   renderCatalog();
   renderMyRedemptions();
+  renderLeaderboard();
   renderAdmin();
+}
+
+async function loadLeaderboard() {
+  const response = await fetch("/api/points/leaderboard", {
+    credentials: "same-origin",
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    throw new Error("Could not load the UncCoins leaderboard.");
+  }
+  const data = await response.json();
+  pointsLeaders = Array.isArray(data.leaders) ? data.leaders : [];
+  pointsLeaderYou = data.you && Number(data.you.points) > 0 ? data.you : null;
 }
 
 async function loadCatalog() {
@@ -645,7 +716,13 @@ async function loadBuyPackages() {
 
 async function refreshStore() {
   try {
-    await Promise.all([loadCatalog(), loadMe(), loadQueue(), loadBuyPackages()]);
+    await Promise.all([
+      loadCatalog(),
+      loadMe(),
+      loadQueue(),
+      loadBuyPackages(),
+      loadLeaderboard(),
+    ]);
     renderAll();
   } catch (error) {
     setStoreStatus(error.message || "Could not load store.", "error");
@@ -682,6 +759,7 @@ async function redeemItem(itemId, button) {
     if (currentUser?.isAdmin) {
       await loadQueue();
     }
+    await loadLeaderboard();
     renderAll();
     setStoreStatus("Redeemed. Waiting for admin fulfill.", "success");
   } catch (error) {
@@ -1023,6 +1101,9 @@ window.addEventListener("points:change", (event) => {
   pointsBalance = points;
   renderBalance();
   renderCatalog();
+  void loadLeaderboard()
+    .then(() => renderLeaderboard())
+    .catch(() => {});
 });
 
 initCatalogForm();
