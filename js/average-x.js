@@ -439,12 +439,28 @@ function renderSpins() {
   }
 }
 
+function renderMode() {
+  const mode = state?.mode === "head" ? "head" : "round";
+  const admin = Boolean(state?.isAdmin);
+  document.getElementById("avgx-mode")?.classList.toggle("is-hidden", !admin);
+  document.getElementById("avgx-round-board")?.classList.toggle("is-hidden", mode !== "round");
+  document.getElementById("avgx-admin")?.classList.toggle("is-hidden", !admin || mode !== "round");
+  document.getElementById("avgx-head-board")?.classList.toggle("is-hidden", mode !== "head");
+  document.getElementById("avgx-head-admin")?.classList.toggle("is-hidden", !admin || mode !== "head");
+  document.getElementById("avgx-overlay-board")?.classList.toggle("is-hidden", mode !== "head");
+  document.getElementById("avgx-mode-round")?.classList.toggle("btn-primary", mode === "round");
+  document.getElementById("avgx-mode-round")?.classList.toggle("btn-outline", mode !== "round");
+  document.getElementById("avgx-mode-head")?.classList.toggle("btn-primary", mode === "head");
+  document.getElementById("avgx-mode-head")?.classList.toggle("btn-outline", mode !== "head");
+}
+
 function render() {
   renderBoard();
   renderAdmin();
   renderSpins();
   renderHead();
   renderHeadAdmin();
+  renderMode();
 }
 
 async function refresh() {
@@ -843,6 +859,28 @@ document.getElementById("avgx-head-reset").addEventListener("click", async () =>
 
 const overlayUrl = document.getElementById("avgx-overlay-url");
 if (overlayUrl) overlayUrl.value = new URL("/average-x/overlay/source.html", window.location.href).href;
+
+document.getElementById("avgx-mode-round")?.addEventListener("click", async () => {
+  if (state?.mode !== "head") return;
+  setStatus("Switching to the round...");
+  try {
+    await post({ action: "mode", mode: "round" });
+    setStatus("Run the round is on.", "ok");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+});
+
+document.getElementById("avgx-mode-head")?.addEventListener("click", async () => {
+  if (state?.mode === "head") return;
+  setStatus("Switching to head to head...");
+  try {
+    await post({ action: "mode", mode: "head" });
+    setStatus("Head to head is on.", "ok");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+});
 
 document.getElementById("avgx-overlay-copy")?.addEventListener("click", async () => {
   const status = document.getElementById("avgx-overlay-copy-status");

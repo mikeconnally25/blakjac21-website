@@ -239,3 +239,22 @@ body {
   font-weight: 700;
   text-align: right;
 }
+
+.ovo-widget.is-round .ovo-board {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.ovo-round-slot {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.7rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.ovo-round-buys {
+  min-height: 0;
+  overflow: auto;
+}

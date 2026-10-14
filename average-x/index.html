@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=avgx13" />
+  <link rel="stylesheet" href="/css/styles.css?v=avgx14" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -71,7 +71,17 @@
 
         <p class="avgx-status" id="avgx-status" role="status"></p>
 
-        <div class="bj21-panel avgx-board">
+        <div class="bj21-panel avgx-mode is-hidden" id="avgx-mode">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <h3 class="avgx-heading">Live section</h3>
+          <div class="avgx-actions">
+            <button class="btn btn-sm btn-primary" type="button" id="avgx-mode-round">Run the round</button>
+            <button class="btn btn-sm btn-outline" type="button" id="avgx-mode-head">Head to head</button>
+          </div>
+          <p class="avgx-note">Only the section that is on can take bets. Settle or reset the other one before switching.</p>
+        </div>
+
+        <div class="bj21-panel avgx-board" id="avgx-round-board">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
           <div class="avgx-top">
             <div id="avgx-slot" class="avgx-slot">
@@ -108,6 +118,7 @@
             <h3 class="avgx-heading">Run the round</h3>
             <input class="guess-input" id="avgx-search" type="search" placeholder="Search slots" autocomplete="off" aria-label="Slot" />
           </div>
+          <p class="avgx-note">OBS widget for this slot and its bonuses: <a href="/average-x/round-overlay/">open preview</a>. Width 480, height 560.</p>
           <div class="avgx-results" id="avgx-results"></div>
           <p class="avgx-picked" id="avgx-picked">No slot picked.</p>
           <div class="avgx-editor" id="avgx-editor"></div>
@@ -132,7 +143,7 @@
           </div>
         </div>
 
-        <div class="bj21-panel avgx-board avgx-head-board">
+        <div class="bj21-panel avgx-board avgx-head-board" id="avgx-head-board">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
           <div class="avgx-overlay-head">
             <h3 class="avgx-heading">Head to head</h3>
@@ -174,7 +185,7 @@
           </div>
         </div>
 
-        <section class="bj21-panel avgx-overlay-board" aria-labelledby="avgx-overlay-heading">
+        <section class="bj21-panel avgx-overlay-board" id="avgx-overlay-board" aria-labelledby="avgx-overlay-heading">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
           <div class="avgx-overlay-head">
             <h3 class="avgx-heading" id="avgx-overlay-heading">OBS overlay</h3>
@@ -212,6 +223,6 @@
 
   <script src="/js/main.js?v=avgx1"></script>
   <script src="/js/auth.js?v=claim24h"></script>
-  <script src="/js/average-x.js?v=avgx13"></script>
+  <script src="/js/average-x.js?v=avgx14"></script>
 </body>
 </html>

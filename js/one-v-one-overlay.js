@@ -226,7 +226,8 @@ function headSignature(head) {
   return `head:${head?.winner || ""}::${sideKey(head?.left)}::${sideKey(head?.right)}`;
 }
 
-function headVisible(head) {
+function headVisible(head, mode) {
+  if (mode && mode !== "head") return false;
   if (!head || head.status === "idle") return false;
   return Boolean(head.left?.slot || head.right?.slot);
 }
@@ -251,9 +252,9 @@ function renderOverlay(data) {
   renderOverlaySide(document.getElementById("ovo-right"), matchup.right, "2", pot);
 }
 
-function renderHead(head) {
+function renderHead(head, mode) {
   const widget = document.getElementById("ovo-widget");
-  if (!headVisible(head)) {
+  if (!headVisible(head, mode)) {
     if (widget) widget.hidden = true;
     overlaySignature = "";
     return;
@@ -272,11 +273,11 @@ async function loadHead() {
   const response = await fetch("/api/average-x", { cache: "no-store" });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || "Could not load Average X.");
-  if (demoMode && !headVisible(data?.head)) {
-    renderHead(demoHead);
+  if (demoMode && !headVisible(data?.head, data?.mode)) {
+    renderHead(demoHead, "head");
     return;
   }
-  renderHead(data?.head);
+  renderHead(data?.head, data?.mode);
 }
 
 async function loadOverlay() {
@@ -303,8 +304,8 @@ async function loadOverlay() {
     const averageResponse = await fetch("/api/average-x", { cache: "no-store" });
     if (averageResponse.ok) {
       const average = await averageResponse.json();
-      if (headVisible(average?.head)) {
-        renderHead(average.head);
+      if (headVisible(average?.head, average?.mode)) {
+        renderHead(average.head, average.mode);
         return;
       }
     }
