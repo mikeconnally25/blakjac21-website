@@ -14583,6 +14583,42 @@ button.one-v-one-name:focus-visible {
   cursor: pointer;
 }
 
+.avgx-slot-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.avgx-slot-option img {
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 0.35rem;
+  object-fit: cover;
+}
+
+.avgx-slot-option span {
+  display: grid;
+  min-width: 0;
+}
+
+.avgx-slot-option strong,
+.avgx-slot-option small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.avgx-slot-option strong {
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.avgx-slot-option small {
+  color: #8ea0b5;
+  font-size: 0.68rem;
+}
+
 .avgx-row {
   display: grid;
   grid-template-columns: 1.25rem minmax(0, 1fr) minmax(0, 1fr) auto;

@@ -16,6 +16,7 @@ const editorEl = document.getElementById("avgx-editor");
 let state = null;
 let catalog = [];
 let catalogLoading = false;
+let catalogLoadedAt = 0;
 let pickedSlot = null;
 let draft = [{ cost: "", win: "" }];
 let selectedRange = "";
@@ -497,33 +498,66 @@ async function post(body) {
 }
 
 async function loadCatalog() {
-  if (!state?.isAdmin || catalog.length || catalogLoading) return;
+  if (!state?.isAdmin || catalogLoading) return;
+  if (catalog.length && Date.now() - catalogLoadedAt < 20000) return;
   catalogLoading = true;
   try {
-    const response = await fetch("/api/bonus-hunt/slots", { cache: "no-store" });
+    const response = await fetch("/api/bonus-hunt/slots", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Could not load slots.");
     catalog = Array.isArray(data.slots) ? data.slots : [];
-    if (searchEl.value.trim().length >= 2) showMatches();
+    catalogLoadedAt = Date.now();
+    if (searchEl.value.trim()) showMatches();
   } finally {
     catalogLoading = false;
   }
 }
 
-function showMatches() {
-  const query = searchEl.value.trim().toLowerCase();
-  if (query.length < 2) {
-    resultsEl.innerHTML = "";
-    return;
+function matchSlots(query) {
+  const tokens = String(query || "")
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!tokens.length || !catalog.length) return [];
+  const seen = new Set();
+  const matches = [];
+  for (const slot of catalog) {
+    const slug = String(slot.slug || "").toLowerCase();
+    if (slug && seen.has(slug)) continue;
+    const haystack = [slot.name, slot.slug, slot.provider]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    if (!tokens.every((token) => haystack.includes(token))) continue;
+    if (slug) seen.add(slug);
+    matches.push(slot);
   }
-  const matches = catalog
-    .filter((slot) => `${slot.name} ${slot.provider || ""}`.toLowerCase().includes(query))
-    .slice(0, 8);
+  matches.sort((a, b) => {
+    const aName = String(a.name || "").toLowerCase();
+    const bName = String(b.name || "").toLowerCase();
+    const aStarts = tokens.some((token) => aName.startsWith(token)) ? 0 : 1;
+    const bStarts = tokens.some((token) => bName.startsWith(token)) ? 0 : 1;
+    if (aStarts !== bStarts) return aStarts - bStarts;
+    return aName.localeCompare(bName, undefined, { sensitivity: "base" });
+  });
+  return matches.slice(0, 12);
+}
+
+function slotOption(slot, attrs) {
+  const thumb = slot.thumbnailUrl
+    ? `<img src="${escapeHtml(slot.thumbnailUrl)}" alt="" />`
+    : "";
+  return `<button type="button" class="avgx-slot-option" ${attrs}>${thumb}<span><strong>${escapeHtml(slot.name)}</strong>${slot.provider ? `<small>${escapeHtml(slot.provider)}</small>` : ""}</span></button>`;
+}
+
+function showMatches() {
+  const matches = matchSlots(searchEl.value);
   resultsEl.innerHTML = matches
-    .map(
-      (slot, index) =>
-        `<button type="button" data-pick="${index}">${escapeHtml(slot.name)}${slot.provider ? ` · ${escapeHtml(slot.provider)}` : ""}</button>`
-    )
+    .map((slot, index) => slotOption(slot, `data-pick="${index}"`))
     .join("");
   resultsEl._matches = matches;
 }
@@ -750,19 +784,9 @@ document.getElementById("avgx-head-form").addEventListener("submit", async (even
 function showHeadMatches(side) {
   const input = document.getElementById(`avgx-head-search-${side}`);
   const results = document.getElementById(`avgx-head-results-${side}`);
-  const query = input.value.trim().toLowerCase();
-  if (query.length < 2) {
-    results.innerHTML = "";
-    return;
-  }
-  const matches = catalog
-    .filter((slot) => `${slot.name} ${slot.provider || ""}`.toLowerCase().includes(query))
-    .slice(0, 6);
+  const matches = matchSlots(input.value);
   results.innerHTML = matches
-    .map(
-      (slot, index) =>
-        `<button type="button" data-head-pick="${index}" data-head-side="${side}">${escapeHtml(slot.name)}${slot.provider ? ` · ${escapeHtml(slot.provider)}` : ""}</button>`
-    )
+    .map((slot, index) => slotOption(slot, `data-head-pick="${index}" data-head-side="${side}"`))
     .join("");
   results._matches = matches;
 }
