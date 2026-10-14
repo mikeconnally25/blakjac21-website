@@ -160,6 +160,24 @@
           </div>
         </div>
 
+        <section class="bj21-panel avgx-overlay-board" id="avgx-overlay-board" aria-labelledby="avgx-overlay-heading">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <div class="avgx-overlay-head">
+            <h3 class="avgx-heading" id="avgx-overlay-heading">OBS overlay</h3>
+            <a class="btn btn-sm btn-outline" id="avgx-overlay-preview-link" href="/average-x/round-overlay/">Open full preview</a>
+          </div>
+          <p class="avgx-note" id="avgx-overlay-note">Selecting a slot shows it here with the bonus buys underneath. Width 480, height 560.</p>
+          <div class="avgx-overlay-preview">
+            <iframe id="avgx-overlay-frame" title="Average X overlay preview" src="/average-x/round-overlay/source.html"></iframe>
+          </div>
+          <label class="guess-label" for="avgx-overlay-url">OBS browser source URL</label>
+          <div class="avgx-overlay-url">
+            <input class="guess-input" id="avgx-overlay-url" type="text" readonly />
+            <button class="btn btn-sm btn-primary" type="button" id="avgx-overlay-copy">Copy URL</button>
+          </div>
+          <p class="avgx-note" id="avgx-overlay-copy-status" role="status" aria-live="polite"></p>
+        </section>
+
         <div class="bj21-panel avgx-board avgx-head-board" id="avgx-head-board">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
           <div class="avgx-overlay-head">
@@ -201,24 +219,6 @@
             <button class="btn btn-sm btn-outline is-hidden" type="button" id="avgx-head-reset">Reset</button>
           </div>
         </div>
-
-        <section class="bj21-panel avgx-overlay-board" id="avgx-overlay-board" aria-labelledby="avgx-overlay-heading">
-          <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <div class="avgx-overlay-head">
-            <h3 class="avgx-heading" id="avgx-overlay-heading">OBS overlay</h3>
-            <a class="btn btn-sm btn-outline" id="avgx-overlay-preview-link" href="/average-x/round-overlay/">Open full preview</a>
-          </div>
-          <p class="avgx-note" id="avgx-overlay-note">Selecting a slot shows it here with the bonus buys underneath. Width 480, height 560.</p>
-          <div class="avgx-overlay-preview">
-            <iframe id="avgx-overlay-frame" title="Average X overlay preview" src="/average-x/round-overlay/source.html"></iframe>
-          </div>
-          <label class="guess-label" for="avgx-overlay-url">OBS browser source URL</label>
-          <div class="avgx-overlay-url">
-            <input class="guess-input" id="avgx-overlay-url" type="text" readonly />
-            <button class="btn btn-sm btn-primary" type="button" id="avgx-overlay-copy">Copy URL</button>
-          </div>
-          <p class="avgx-note" id="avgx-overlay-copy-status" role="status" aria-live="polite"></p>
-        </section>
       </div>
     </section>
   </main>
@@ -240,6 +240,6 @@
 
   <script src="/js/main.js?v=avgx1"></script>
   <script src="/js/auth.js?v=claim24h"></script>
-  <script src="/js/average-x.js?v=avgx26"></script>
+  <script src="/js/average-x.js?v=avgx27"></script>
 </body>
 </html>

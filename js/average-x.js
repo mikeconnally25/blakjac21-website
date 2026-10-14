@@ -548,6 +548,7 @@ function renderMode() {
   document.getElementById("avgx-mode-head")?.classList.toggle("is-hidden", spinsOn);
   document.getElementById("avgx-spins-board")?.classList.toggle("is-hidden", !spinsOn);
   document.getElementById("avgx-spins-admin")?.classList.toggle("is-hidden", !admin || !spinsOn);
+  document.getElementById("avgx-overlay-board")?.classList.toggle("is-hidden", !spinsOn);
   document.getElementById("avgx-head-board")?.classList.toggle("is-hidden", !showHead);
   document.getElementById("avgx-head-admin")?.classList.toggle("is-hidden", !admin || !showHead);
   const modeNote = document.getElementById("avgx-mode-note");
