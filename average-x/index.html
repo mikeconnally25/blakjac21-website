@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=avgx9" />
+  <link rel="stylesheet" href="/css/styles.css?v=avgx11" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -88,6 +88,18 @@
           </form>
           <p class="avgx-yours" id="avgx-yours"></p>
           <ul class="avgx-bets" id="avgx-bets"></ul>
+          <div class="avgx-spins" id="avgx-spins-board">
+            <h3 class="avgx-heading">100 spins</h3>
+            <p class="avgx-spins-slot" id="avgx-spins-slot"></p>
+            <div class="avgx-ranges" id="avgx-spins-ranges"></div>
+            <p class="avgx-note">Same slot as this section. Chat: !spins 100 team 1. The winning team splits the pot.</p>
+            <form class="avgx-bet-form is-hidden" id="avgx-spins-form">
+              <input class="guess-input" id="avgx-spins-amount" type="number" min="1" step="1" value="10" inputmode="numeric" aria-label="100 spins UncCoins" />
+              <button class="btn btn-sm btn-primary" type="submit">Place bet</button>
+            </form>
+            <p class="avgx-yours" id="avgx-spins-yours"></p>
+            <ul class="avgx-bets" id="avgx-spins-bets"></ul>
+          </div>
         </div>
 
         <div class="bj21-panel avgx-admin is-hidden" id="avgx-admin">
@@ -107,6 +119,16 @@
             <button class="btn btn-sm btn-outline" type="button" id="avgx-totals">Save totals</button>
             <button class="btn btn-sm btn-primary" type="button" id="avgx-settle">Settle</button>
             <button class="btn btn-sm btn-outline" type="button" id="avgx-reset">Reset</button>
+          </div>
+          <div class="avgx-spins-admin">
+            <h3 class="avgx-heading">100 spins</h3>
+            <p class="avgx-note">Uses the slot picked above. Enter the bonus count, then settle.</p>
+            <div class="avgx-actions">
+              <input class="guess-input" id="avgx-spins-count" type="number" min="0" step="1" placeholder="Bonus count" aria-label="Bonuses in 100 spins" />
+              <button class="btn btn-sm btn-primary" type="button" id="avgx-spins-open">Open bets</button>
+              <button class="btn btn-sm btn-primary is-hidden" type="button" id="avgx-spins-settle">Settle</button>
+              <button class="btn btn-sm btn-outline is-hidden" type="button" id="avgx-spins-reset">Reset</button>
+            </div>
           </div>
         </div>
 
@@ -190,6 +212,6 @@
 
   <script src="/js/main.js?v=avgx1"></script>
   <script src="/js/auth.js?v=claim24h"></script>
-  <script src="/js/average-x.js?v=avgx10"></script>
+  <script src="/js/average-x.js?v=avgx11"></script>
 </body>
 </html>

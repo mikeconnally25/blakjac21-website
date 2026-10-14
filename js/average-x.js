@@ -19,6 +19,7 @@ let catalogLoading = false;
 let pickedSlot = null;
 let draft = [{ cost: "", win: "" }];
 let selectedRange = "";
+let selectedSpinRange = "";
 let headSide = "";
 const headDraft = {
   left: { slot: null, rows: [{ cost: "", win: "" }] },
@@ -349,9 +350,78 @@ function renderHeadAdmin() {
   }
 }
 
+function spinLabel(rangeId) {
+  const range = state?.spins?.ranges?.find((item) => item.id === rangeId);
+  if (!range) return rangeId;
+  return range.team ? `Team ${range.team} · ${range.label}` : range.label;
+}
+
+function renderSpins() {
+  const game = state?.spins;
+  const slotLine = document.getElementById("avgx-spins-slot");
+  const ranges = document.getElementById("avgx-spins-ranges");
+  const form = document.getElementById("avgx-spins-form");
+  const yours = document.getElementById("avgx-spins-yours");
+  const bets = document.getElementById("avgx-spins-bets");
+  if (!ranges || !game) return;
+
+  const slotName = game.slot?.name || state?.slot?.name || "";
+  slotLine.textContent = slotName
+    ? slotName
+    : "Pick a slot above. This bets on how many bonuses hit in 100 spins.";
+
+  const mine = game.yourBet;
+  if (mine && !selectedSpinRange) selectedSpinRange = mine.rangeId;
+  ranges.innerHTML = (game.ranges || [])
+    .map((range) => {
+      const selected = range.id === selectedSpinRange ? " is-selected" : "";
+      const winner = game.final && range.id === game.winningRangeId ? " is-winner" : "";
+      return `<button type="button" class="avgx-range${selected}${winner}" data-spin-range="${escapeHtml(range.id)}">
+        <span>${range.team} · ${escapeHtml(range.label)}</span>
+        <strong>${range.stake || 0}</strong>
+        <small>${range.count || 0} bets</small>
+      </button>`;
+    })
+    .join("");
+
+  const open = game.status === "open" && state?.balance != null;
+  form.classList.toggle("is-hidden", !open);
+  if (state?.maxBet) document.getElementById("avgx-spins-amount").max = String(state.maxBet);
+
+  if (game.status === "open" && state?.balance == null) {
+    yours.textContent = "Sign in with Kick to bet.";
+  } else if (mine) {
+    const paid = mine.payout == null ? "" : mine.refund ? " Refunded." : ` Paid ${mine.payout} UncCoins.`;
+    yours.textContent = `Your bet: ${mine.amount} on ${spinLabel(mine.rangeId)} bonuses.${paid}`;
+  } else if (game.final) {
+    yours.textContent = `${game.count} bonuses · ${spinLabel(game.winningRangeId)}.`;
+  } else if (game.status === "locked") {
+    yours.textContent = "Bets are closed.";
+  } else {
+    yours.textContent = "";
+  }
+
+  bets.innerHTML = (game.bets || [])
+    .slice()
+    .reverse()
+    .slice(0, 12)
+    .map((bet) => `<li><span>${escapeHtml(bet.username)}</span><span>${escapeHtml(spinLabel(bet.rangeId))}</span><strong>${bet.amount}</strong></li>`)
+    .join("");
+
+  const status = game.status || "idle";
+  document.getElementById("avgx-spins-open")?.classList.toggle("is-hidden", status === "open" || status === "locked");
+  document.getElementById("avgx-spins-settle")?.classList.toggle("is-hidden", status === "idle" || status === "settled");
+  document.getElementById("avgx-spins-reset")?.classList.toggle("is-hidden", status === "idle");
+  const countInput = document.getElementById("avgx-spins-count");
+  if (countInput && document.activeElement !== countInput && game.count != null) {
+    countInput.value = String(game.count);
+  }
+}
+
 function render() {
   renderBoard();
   renderAdmin();
+  renderSpins();
   renderHead();
   renderHeadAdmin();
 }
@@ -413,6 +483,68 @@ rangesEl.addEventListener("click", (event) => {
   if (!button) return;
   selectedRange = button.dataset.range;
   renderBoard();
+});
+
+document.getElementById("avgx-spins-ranges")?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-spin-range]");
+  if (!button) return;
+  selectedSpinRange = button.dataset.spinRange;
+  renderSpins();
+});
+
+document.getElementById("avgx-spins-form")?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!selectedSpinRange) {
+    setStatus("Pick how many bonuses first.", "error");
+    return;
+  }
+  try {
+    await post({
+      action: "spins-bet",
+      rangeId: selectedSpinRange,
+      amount: document.getElementById("avgx-spins-amount").value,
+    });
+    setStatus("Bet placed.", "ok");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+});
+
+document.getElementById("avgx-spins-open")?.addEventListener("click", async () => {
+  try {
+    await post({ action: "spins-open", slot: pickedSlot || state?.slot || null });
+    setStatus("100 spin bets are open.", "ok");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+});
+
+document.getElementById("avgx-spins-settle")?.addEventListener("click", async () => {
+  const count = document.getElementById("avgx-spins-count")?.value;
+  if (count === "" || count == null) {
+    setStatus("Enter how many bonuses hit.", "error");
+    return;
+  }
+  try {
+    await post({ action: "spins-settle", count });
+    const game = state.spins;
+    setStatus(`${game.count} bonuses. ${spinLabel(game.winningRangeId)} takes the pot.`, "ok");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+});
+
+document.getElementById("avgx-spins-reset")?.addEventListener("click", async () => {
+  if (!window.confirm("Reset the 100 spins? Open bets are refunded.")) return;
+  try {
+    await post({ action: "spins-reset" });
+    selectedSpinRange = "";
+    const countInput = document.getElementById("avgx-spins-count");
+    if (countInput) countInput.value = "";
+    setStatus("100 spins cleared.", "ok");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
 });
 
 formEl.addEventListener("submit", async (event) => {

@@ -14595,8 +14595,25 @@ button.one-v-one-name:focus-visible {
 }
 
 .avgx-head-board .avgx-heading,
-.avgx-overlay-board .avgx-heading {
-  margin-bottom: 0;
+.avgx-overlay-board .avgx-heading,
+.avgx-spins .avgx-heading,
+.avgx-spins-admin .avgx-heading {
+  margin-bottom: 0.25rem;
+}
+
+.avgx-spins,
+.avgx-spins-admin {
+  margin-top: 0.65rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.avgx-spins-slot {
+  margin: 0 0 0.35rem;
+  color: #e8c56b;
+  font-family: Teko, sans-serif;
+  font-size: 1.35rem;
+  line-height: 1;
 }
 
 .avgx-overlay-head {
