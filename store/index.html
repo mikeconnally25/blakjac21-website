@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=storelb1" />
+  <link rel="stylesheet" href="/css/styles.css?v=storelb2" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -91,15 +91,51 @@
           <form class="store-buy-form is-hidden" id="store-buy-form" aria-hidden="true"></form>
         </section>
 
-        <section class="store-rail store-leaderboard" id="store-leaderboard" aria-labelledby="store-leaderboard-title">
-          <div class="store-section-header">
-            <h2 class="store-section-title" id="store-leaderboard-title">Leaderboard</h2>
-            <p class="store-section-copy">Who holds the most UncCoins.</p>
+        <section class="store-unc-leaderboard" id="store-leaderboard" aria-labelledby="store-unc-title">
+          <header class="lb-top">
+            <div>
+              <p class="section-eyebrow">UNC<span class="accent">COINS</span></p>
+              <h2 class="lb-title" id="store-unc-title">Leaderboard</h2>
+              <p class="lb-lede">The player with the most UncCoins at the end of 30 days gets a <strong>$100 tip</strong>.</p>
+            </div>
+            <div class="lb-meta">
+              <div class="lb-stat">
+                <span>Prize</span>
+                <strong>$100</strong>
+              </div>
+              <div class="lb-stat">
+                <span>Ends in</span>
+                <strong id="store-unc-ends">30 days</strong>
+              </div>
+              <div class="lb-stat">
+                <span>Players</span>
+                <strong id="store-unc-players">—</strong>
+              </div>
+            </div>
+          </header>
+
+          <div class="lb-podium is-hidden" id="store-unc-podium">
+            <div class="lb-podium-stage" id="store-unc-podium-stage" aria-label="Top 3 UncCoin holders"></div>
           </div>
-          <p class="store-empty" id="store-leaderboard-empty">No UncCoins yet.</p>
-          <div class="store-list-scroll store-leaderboard-scroll">
-            <ol class="store-leaderboard-list is-hidden" id="store-leaderboard-list"></ol>
-          </div>
+
+          <section class="lb-board bj21-panel" aria-labelledby="store-unc-standings">
+            <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <div class="lb-board-head">
+              <h3 class="lb-board-title" id="store-unc-standings">Standings</h3>
+              <label class="lb-search">
+                <input id="store-unc-filter" type="search" placeholder="Find a player" aria-label="Find a player" autocomplete="off" enterkeyhint="search" />
+              </label>
+            </div>
+            <div class="lb-cols is-hidden" id="store-unc-head">
+              <span>Rank</span>
+              <span>Player</span>
+              <span>UncCoins</span>
+              <span>Prize</span>
+            </div>
+            <p class="lb-empty" id="store-unc-empty">No UncCoins yet.</p>
+            <p class="lb-empty is-hidden" id="store-unc-filter-empty">No player matches that search.</p>
+            <ol class="lb-list is-hidden" id="store-unc-list"></ol>
+          </section>
         </section>
 
         <div class="store-browse-row">
@@ -251,6 +287,6 @@
 
   <script src="/js/main.js?v=avgx1"></script>
   <script src="/js/auth.js?v=claim24h"></script>
-  <script src="/js/store.js?v=storelb1"></script>
+  <script src="/js/store.js?v=storelb2"></script>
 </body>
 </html>
