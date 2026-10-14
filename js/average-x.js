@@ -24,6 +24,9 @@ let selectedSpinRange = "";
 let betsCloseAt = 0;
 let betsWereOpen = false;
 let betDeadlineKnownAt = 0;
+let spinBetsCloseAt = 0;
+let spinBetsWereOpen = false;
+let spinDeadlineKnownAt = 0;
 let headSide = "";
 const headDraft = {
   left: { slot: null, rows: [{ cost: "", win: "" }] },
@@ -202,24 +205,6 @@ function betsOpenNow() {
   return betsCloseAt > Date.now();
 }
 
-function syncBetDeadline(data, startedAt, authoritative) {
-  const serverNow = Number(data?.serverNow) || 0;
-  const closeAt = Number(data?.betsCloseAt) || 0;
-  const remaining = serverNow && closeAt ? closeAt - serverNow : 0;
-
-  if (remaining > 500) {
-    betsCloseAt = Date.now() + remaining;
-    betDeadlineKnownAt = Date.now();
-    return;
-  }
-
-  if (!authoritative && startedAt && startedAt < betDeadlineKnownAt && betsCloseAt > Date.now()) {
-    return;
-  }
-
-  betsCloseAt = 0;
-}
-
 function formatBetClock(ms) {
   const total = Math.max(0, Math.ceil(ms / 1000));
   const minutes = Math.floor(total / 60);
@@ -228,34 +213,89 @@ function formatBetClock(ms) {
 }
 
 function paintBetsTimer() {
-  const el = document.getElementById("avgx-bets-timer");
   const open = betsOpenNow();
-  if (el) {
-    el.classList.toggle("is-live", open);
-    el.textContent = open
-      ? betsCloseAt
-        ? `Bets close in ${formatBetClock(betsCloseAt - Date.now())}`
-        : "Bets open"
-      : "Bets closed";
-  }
+  paintClock("avgx-bets-timer", open, betsCloseAt);
+  const spinOpen = spinsOpenNow();
+  paintClock("avgx-spins-timer", spinOpen, spinBetsCloseAt);
   if (formEl && state?.status === "open" && state.balance != null) {
     formEl.classList.toggle("is-hidden", !open);
   }
-  const closeBets = document.getElementById("avgx-close");
-  if (closeBets) closeBets.classList.toggle("is-hidden", state?.status !== "open");
+  const spinForm = document.getElementById("avgx-spins-form");
+  if (spinForm && state?.spins?.status === "open" && state.balance != null) {
+    spinForm.classList.toggle("is-hidden", !spinOpen);
+  }
+  updateRoundActions();
+  updateSpinActions();
+}
+
+function rememberDeadline(serverNow, closeAt, startedAt, authoritative, current) {
+  const remaining = serverNow && closeAt ? closeAt - serverNow : 0;
+  if (remaining > 500) return { at: Date.now() + remaining, knownAt: Date.now() };
+  if (!authoritative && startedAt && startedAt < current.knownAt && current.at > Date.now()) return current;
+  return { at: 0, knownAt: current.knownAt };
+}
+
+function syncBetDeadline(data, startedAt, authoritative) {
+  const next = rememberDeadline(
+    Number(data?.serverNow) || 0,
+    Number(data?.betsCloseAt) || 0,
+    startedAt,
+    authoritative,
+    { at: betsCloseAt, knownAt: betDeadlineKnownAt }
+  );
+  betsCloseAt = next.at;
+  betDeadlineKnownAt = next.knownAt;
+}
+
+function syncSpinDeadline(data, startedAt, authoritative) {
+  const next = rememberDeadline(
+    Number(data?.serverNow) || 0,
+    Number(data?.spins?.betsCloseAt) || 0,
+    startedAt,
+    authoritative,
+    { at: spinBetsCloseAt, knownAt: spinDeadlineKnownAt }
+  );
+  spinBetsCloseAt = next.at;
+  spinDeadlineKnownAt = next.knownAt;
+}
+
+function spinsOpenNow() {
+  if (state?.spins?.status !== "open") return false;
+  if (!spinBetsCloseAt) return true;
+  return spinBetsCloseAt > Date.now();
+}
+
+function paintClock(id, open, closeAt) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle("is-live", open);
+  el.textContent = open
+    ? closeAt
+      ? `Bets close in ${formatBetClock(closeAt - Date.now())}`
+      : "Bets open"
+    : "Bets closed";
 }
 
 function updateRoundActions() {
   const status = state?.status || "idle";
-  const canOpen = status === "setup";
+  const canOpen = status === "setup" || status === "settled" || status === "idle";
   document.getElementById("avgx-bet-seconds")?.classList.toggle("is-hidden", !canOpen);
   document.getElementById("avgx-open")?.classList.toggle("is-hidden", !canOpen);
   document.getElementById("avgx-close")?.classList.toggle("is-hidden", status !== "open");
 }
 
+function updateSpinActions() {
+  const status = state?.spins?.status || "idle";
+  const canOpen = status === "idle" || status === "settled";
+  document.getElementById("avgx-spins-seconds")?.classList.toggle("is-hidden", !canOpen);
+  document.getElementById("avgx-spins-open")?.classList.toggle("is-hidden", !canOpen);
+  document.getElementById("avgx-spins-close")?.classList.toggle("is-hidden", status !== "open");
+}
+
 function renderAdmin() {
   const admin = Boolean(state?.isAdmin);
   updateRoundActions();
+  updateSpinActions();
   if (!admin || !adminEl) return;
   loadCatalog().catch((error) => setStatus(error.message, "error"));
   if (adminEl.contains(document.activeElement)) return;
@@ -540,6 +580,7 @@ function renderMode() {
 
 function render(startedAt, authoritative) {
   syncBetDeadline(state, startedAt, authoritative);
+  syncSpinDeadline(state, startedAt, authoritative);
   renderBoard();
   renderAdmin();
   renderSpins();
@@ -669,9 +710,20 @@ document.getElementById("avgx-spins-form")?.addEventListener("submit", async (ev
 });
 
 document.getElementById("avgx-spins-open")?.addEventListener("click", async () => {
+  const seconds = Number(document.getElementById("avgx-spins-seconds")?.value) || 60;
+  const startedAt = Date.now();
   try {
-    await post({ action: "spins-open", slot: pickedSlot || state?.slot || null });
-    setStatus("100 spin bets are open.", "ok");
+    await post({ action: "spins-open", slot: pickedSlot || state?.slot || null, seconds }, startedAt, true);
+    setStatus(`Bonus count bets are open for ${seconds} seconds.`, "ok");
+  } catch (error) {
+    setStatus(error.message, "error");
+  }
+});
+
+document.getElementById("avgx-spins-close")?.addEventListener("click", async () => {
+  try {
+    await post({ action: "spins-close" });
+    setStatus("Bonus count bets are off.", "ok");
   } catch (error) {
     setStatus(error.message, "error");
   }
@@ -1030,11 +1082,14 @@ setInterval(() => {
 }, 4000);
 setInterval(() => {
   const open = betsOpenNow();
+  const spinOpen = spinsOpenNow();
   paintBetsTimer();
-  if (betsWereOpen && !open) {
-    betsWereOpen = false;
+  if ((betsWereOpen && !open) || (spinBetsWereOpen && !spinOpen)) {
+    betsWereOpen = open;
+    spinBetsWereOpen = spinOpen;
     refresh().catch(() => {});
     return;
   }
   betsWereOpen = open;
+  spinBetsWereOpen = spinOpen;
 }, 250);

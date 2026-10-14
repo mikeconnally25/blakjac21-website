@@ -103,6 +103,7 @@
           <ul class="avgx-bets" id="avgx-bets"></ul>
           <div class="avgx-spins-count">
             <h3 class="avgx-heading">Bonus count</h3>
+            <p class="avgx-bets-timer" id="avgx-spins-timer">Bets closed</p>
             <p class="avgx-spins-slot" id="avgx-spins-slot"></p>
             <div class="avgx-ranges" id="avgx-spins-ranges"></div>
             <p class="avgx-note">Chat: !bonuses 100 0. The winning count splits the pot.</p>
@@ -128,14 +129,14 @@
           <div class="avgx-actions">
             <button class="btn btn-sm btn-outline" type="button" id="avgx-add">Add bonus</button>
             <button class="btn btn-sm btn-primary" type="button" id="avgx-save">Save round</button>
-            <select class="one-v-one-bet-seconds" id="avgx-bet-seconds" aria-label="Bet timer length">
+            <select class="one-v-one-bet-seconds" id="avgx-bet-seconds" aria-label="Average bet timer">
               <option value="30">30s</option>
               <option value="60" selected>60s</option>
               <option value="90">90s</option>
               <option value="120">2 min</option>
             </select>
-            <button class="btn btn-sm btn-outline" type="button" id="avgx-open">Open bets</button>
-            <button class="btn btn-sm btn-outline" type="button" id="avgx-close">Close bets</button>
+            <button class="btn btn-sm btn-outline" type="button" id="avgx-open">Average bets on</button>
+            <button class="btn btn-sm btn-outline" type="button" id="avgx-close">Average bets off</button>
             <button class="btn btn-sm btn-outline" type="button" id="avgx-totals">Save totals</button>
             <button class="btn btn-sm btn-primary" type="button" id="avgx-settle">Settle</button>
             <button class="btn btn-sm btn-outline" type="button" id="avgx-reset">Reset</button>
@@ -145,7 +146,14 @@
             <p class="avgx-note">Uses the slot picked here. Enter the bonus count, then settle.</p>
             <div class="avgx-actions">
               <input class="guess-input" id="avgx-spins-count" type="number" min="0" step="1" placeholder="Bonus count" aria-label="Bonuses in 100 spins" />
-              <button class="btn btn-sm btn-primary" type="button" id="avgx-spins-open">Open bets</button>
+              <select class="one-v-one-bet-seconds" id="avgx-spins-seconds" aria-label="Bonus count bet timer">
+                <option value="30">30s</option>
+                <option value="60" selected>60s</option>
+                <option value="90">90s</option>
+                <option value="120">2 min</option>
+              </select>
+              <button class="btn btn-sm btn-outline" type="button" id="avgx-spins-open">Bonus bets on</button>
+              <button class="btn btn-sm btn-outline is-hidden" type="button" id="avgx-spins-close">Bonus bets off</button>
               <button class="btn btn-sm btn-primary is-hidden" type="button" id="avgx-spins-settle">Settle</button>
               <button class="btn btn-sm btn-outline is-hidden" type="button" id="avgx-spins-reset">Reset</button>
             </div>
@@ -232,6 +240,6 @@
 
   <script src="/js/main.js?v=avgx1"></script>
   <script src="/js/auth.js?v=claim24h"></script>
-  <script src="/js/average-x.js?v=avgx25"></script>
+  <script src="/js/average-x.js?v=avgx26"></script>
 </body>
 </html>
