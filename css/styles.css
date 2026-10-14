@@ -14694,6 +14694,12 @@ button.one-v-one-name:focus-visible {
   margin-top: 0.75rem;
 }
 
+.avgx-spins-count {
+  margin-top: 0.7rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .avgx-spins-slot {
   margin: 0 0 0.35rem;
   color: #e8c56b;

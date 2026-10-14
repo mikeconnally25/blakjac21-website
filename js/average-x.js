@@ -7,7 +7,7 @@ const formEl = document.getElementById("avgx-bet-form");
 const amountEl = document.getElementById("avgx-amount");
 const yoursEl = document.getElementById("avgx-yours");
 const betsEl = document.getElementById("avgx-bets");
-const adminEl = document.getElementById("avgx-admin");
+const adminEl = document.getElementById("avgx-spins-admin");
 const searchEl = document.getElementById("avgx-search");
 const resultsEl = document.getElementById("avgx-results");
 const pickedEl = document.getElementById("avgx-picked");
@@ -255,9 +255,8 @@ function updateRoundActions() {
 
 function renderAdmin() {
   const admin = Boolean(state?.isAdmin);
-  adminEl.classList.toggle("is-hidden", !admin);
   updateRoundActions();
-  if (!admin) return;
+  if (!admin || !adminEl) return;
   loadCatalog().catch((error) => setStatus(error.message, "error"));
   if (adminEl.contains(document.activeElement)) return;
   if (state?.slot && !pickedSlot) pickedSlot = state.slot;
@@ -450,7 +449,7 @@ function renderSpins() {
   const slotName = game.slot?.name || state?.slot?.name || "";
   slotLine.textContent = slotName
     ? slotName
-    : "Pick a slot in Run the round. This bets on how many bonuses hit in 100 spins.";
+    : "Pick a slot in this section. This bets on how many bonuses hit in 100 spins.";
 
   const mine = game.yourBet;
   if (mine && !selectedSpinRange) selectedSpinRange = mine.rangeId;
@@ -505,8 +504,6 @@ function renderMode() {
   const spinsOn = state?.spinsOn === true;
   const admin = Boolean(state?.isAdmin);
   document.getElementById("avgx-mode")?.classList.toggle("is-hidden", !admin);
-  document.getElementById("avgx-round-board")?.classList.toggle("is-hidden", mode !== "round");
-  document.getElementById("avgx-admin")?.classList.toggle("is-hidden", !admin || mode !== "round");
   document.getElementById("avgx-spins-board")?.classList.toggle("is-hidden", !spinsOn);
   document.getElementById("avgx-spins-admin")?.classList.toggle("is-hidden", !admin || !spinsOn);
   document.getElementById("avgx-head-board")?.classList.toggle("is-hidden", mode !== "head");
