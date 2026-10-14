@@ -366,9 +366,9 @@ function rangeSpins(range) {
   const low = Math.round(Number(range?.min) * 100);
   const high = range?.max == null ? null : Math.round(Number(range.max) * 100);
   if (!Number.isFinite(low)) return "";
-  if (high == null) return `(${low}+ spins)`;
-  if (!low) return `(under ${high} spins)`;
-  return `(${low}–${high} spins)`;
+  if (high == null) return `(${low}x+)`;
+  if (!low) return `(under ${high}x)`;
+  return `(${low}x–${high}x)`;
 }
 
 function spinLabel(rangeId) {
