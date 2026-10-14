@@ -503,12 +503,20 @@ function renderMode() {
   const mode = state?.mode === "head" ? "head" : "round";
   const spinsOn = state?.spinsOn === true;
   const admin = Boolean(state?.isAdmin);
+  const showHead = mode === "head" && !spinsOn;
   document.getElementById("avgx-mode")?.classList.toggle("is-hidden", !admin);
+  document.getElementById("avgx-mode-head")?.classList.toggle("is-hidden", spinsOn);
   document.getElementById("avgx-spins-board")?.classList.toggle("is-hidden", !spinsOn);
   document.getElementById("avgx-spins-admin")?.classList.toggle("is-hidden", !admin || !spinsOn);
-  document.getElementById("avgx-head-board")?.classList.toggle("is-hidden", mode !== "head");
-  document.getElementById("avgx-head-admin")?.classList.toggle("is-hidden", !admin || mode !== "head");
-  const overlayPath = mode === "head" ? "/average-x/overlay/source.html" : "/average-x/round-overlay/source.html";
+  document.getElementById("avgx-head-board")?.classList.toggle("is-hidden", !showHead);
+  document.getElementById("avgx-head-admin")?.classList.toggle("is-hidden", !admin || !showHead);
+  const modeNote = document.getElementById("avgx-mode-note");
+  if (modeNote) {
+    modeNote.textContent = spinsOn
+      ? "This tab has the slot, the averages, and the bonus count."
+      : "Run the round and head to head take turns. The slot, averages, and bonus count are on 100 spins.";
+  }
+  const overlayPath = showHead ? "/average-x/overlay/source.html" : "/average-x/round-overlay/source.html";
   const overlayHref = new URL(overlayPath, window.location.href).href;
   const frame = document.getElementById("avgx-overlay-frame");
   const overlayUrl = document.getElementById("avgx-overlay-url");
@@ -516,9 +524,9 @@ function renderMode() {
   const overlayLink = document.getElementById("avgx-overlay-preview-link");
   if (frame && frame.getAttribute("src") !== overlayPath) frame.src = overlayPath;
   if (overlayUrl && overlayUrl.value !== overlayHref) overlayUrl.value = overlayHref;
-  if (overlayLink) overlayLink.href = mode === "head" ? "/average-x/overlay/" : "/average-x/round-overlay/";
+  if (overlayLink) overlayLink.href = showHead ? "/average-x/overlay/" : "/average-x/round-overlay/";
   if (overlayNote) {
-    overlayNote.textContent = mode === "head"
+    overlayNote.textContent = showHead
       ? "Saving the match puts these two slots here and on the 1v1 overlay while no 1v1 is drawn. Width 960, height 360."
       : "Selecting a slot shows it here with the bonus buys underneath. Width 480, height 560.";
   }
