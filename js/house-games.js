@@ -1546,10 +1546,13 @@
         return;
       }
       setBlackjackActions({
-        canHit: true,
-        canStand: true,
-        canDouble: action !== "double",
-        canSplit: action !== "split",
+        ...(bjControls || {}),
+        status: bjControls?.status || "player",
+        canHit: bjControls?.canHit !== false,
+        canStand: bjControls?.canStand !== false,
+        canDouble:
+          action === "double" ? false : Boolean(bjControls?.canDouble),
+        canSplit: action === "split" ? false : Boolean(bjControls?.canSplit),
       });
       return;
     }
