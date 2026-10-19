@@ -10302,7 +10302,7 @@ button.one-v-one-name:focus-visible {
 }
 
 .hg-keno-cell.is-revealing {
-  animation: hg-keno-pop 0.28s ease both;
+  animation: hg-keno-pop 0.2s ease both;
   z-index: 2;
 }
 
