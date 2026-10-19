@@ -797,19 +797,23 @@ function applyStoreLbFilter() {
 
 function paintStoreRace() {
   const ends = document.getElementById("store-unc-ends");
+  const label = document.getElementById("store-unc-ends-label");
   const players = document.getElementById("store-unc-players");
   if (players) players.textContent = pointsLeaderTotal ? String(pointsLeaderTotal) : "—";
   if (!ends) return;
   const end = Date.parse(pointsRace?.endsAt || "");
   if (!Number.isFinite(end)) {
+    if (label) label.textContent = "Ends in";
     ends.textContent = "30 days";
     return;
   }
   const ms = end - Date.now();
   if (ms <= 0) {
+    if (label) label.textContent = "Period";
     ends.textContent = "Ended";
     return;
   }
+  if (label) label.textContent = "Ends in";
   const days = Math.ceil(ms / 86400000);
   ends.textContent = days === 1 ? "1 day" : `${days} days`;
 }
