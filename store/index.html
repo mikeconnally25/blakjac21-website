@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=storelb2" />
+  <link rel="stylesheet" href="/css/styles.css?v=storeredeem1" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -270,6 +270,48 @@
     </section>
   </main>
 
+  <div class="store-redeem-modal is-hidden" id="store-redeem-modal" role="dialog" aria-modal="true" aria-labelledby="store-redeem-title">
+    <button type="button" class="store-redeem-backdrop" id="store-redeem-backdrop" aria-label="Close"></button>
+    <form class="store-redeem-dialog bj21-panel" id="store-redeem-form">
+      <span class="bj21-panel-glow" aria-hidden="true"></span>
+      <h2 class="store-redeem-title" id="store-redeem-title">Redeem reward</h2>
+      <p class="store-redeem-copy" id="store-redeem-copy">Tell us which slot you want.</p>
+      <label class="guess-label" for="store-redeem-slot">Slot</label>
+      <input
+        class="guess-input"
+        id="store-redeem-slot"
+        name="slotName"
+        type="text"
+        maxlength="80"
+        required
+        autocomplete="off"
+        placeholder="Slot name"
+      />
+      <div class="store-redeem-type is-hidden" id="store-redeem-type">
+        <p class="guess-label" id="store-redeem-type-label">Bonus type</p>
+        <div class="store-redeem-type-options" role="radiogroup" aria-labelledby="store-redeem-type-label">
+          <label class="store-redeem-type-option">
+            <input type="radio" name="bonusType" value="regular" />
+            <span>Regular</span>
+          </label>
+          <label class="store-redeem-type-option">
+            <input type="radio" name="bonusType" value="super" />
+            <span>Super</span>
+          </label>
+          <label class="store-redeem-type-option">
+            <input type="radio" name="bonusType" value="epic" />
+            <span>Epic</span>
+          </label>
+        </div>
+      </div>
+      <p class="store-redeem-error is-hidden" id="store-redeem-error" role="alert"></p>
+      <div class="store-redeem-actions">
+        <button type="button" class="btn btn-sm btn-outline" id="store-redeem-cancel">Cancel</button>
+        <button type="submit" class="btn btn-sm btn-primary" id="store-redeem-submit">Redeem</button>
+      </div>
+    </form>
+  </div>
+
   <footer class="footer">
     <div class="container footer-inner">
       <div class="footer-brand">
@@ -287,6 +329,6 @@
 
   <script src="/js/main.js?v=avgx1"></script>
   <script src="/js/auth.js?v=claim24h"></script>
-  <script src="/js/store.js?v=storelb4"></script>
+  <script src="/js/store.js?v=storeredeem1"></script>
 </body>
 </html>

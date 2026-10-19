@@ -190,6 +190,26 @@ function statusLabel(status) {
   return "Pending";
 }
 
+function itemNeedsBonusType(item) {
+  const text = `${item?.title || ""} ${item?.description || ""}`.toLowerCase();
+  return /bonus/.test(text);
+}
+
+function formatBonusType(value) {
+  const type = String(value || "").trim().toLowerCase();
+  if (type === "regular") return "Regular";
+  if (type === "super") return "Super";
+  if (type === "epic") return "Epic";
+  return "";
+}
+
+function redemptionDetailParts(entry) {
+  return [
+    entry?.slotName || "",
+    formatBonusType(entry?.bonusType),
+  ].filter(Boolean);
+}
+
 function createRowMeta(parts) {
   const meta = document.createElement("div");
   meta.className = "store-row-meta";
@@ -341,7 +361,11 @@ function renderMyRedemptions() {
 
     copy.append(
       title,
-      createRowMeta([formatPoints(entry.cost), formatWhen(entry.updatedAt || entry.createdAt)])
+      createRowMeta([
+        ...redemptionDetailParts(entry),
+        formatPoints(entry.cost),
+        formatWhen(entry.updatedAt || entry.createdAt),
+      ])
     );
     row.append(copy, createStatusPill(entry.status));
     list.append(row);
@@ -438,7 +462,11 @@ function renderQueue() {
 
     copy.append(
       title,
-      createRowMeta([entry.username, formatPoints(entry.cost)])
+      createRowMeta([
+        entry.username,
+        ...redemptionDetailParts(entry),
+        formatPoints(entry.cost),
+      ])
     );
 
     const actions = document.createElement("div");
@@ -505,6 +533,7 @@ function renderHistory() {
       title,
       createRowMeta([
         entry.username,
+        ...redemptionDetailParts(entry),
         formatPoints(entry.cost),
         formatWhen(entry.updatedAt || entry.createdAt),
       ])
@@ -956,6 +985,69 @@ async function refreshStore() {
   }
 }
 
+function setRedeemModalError(message) {
+  const error = document.getElementById("store-redeem-error");
+  if (!error) return;
+  error.textContent = message || "";
+  error.classList.toggle("is-hidden", !message);
+}
+
+function closeRedeemModal() {
+  const modal = document.getElementById("store-redeem-modal");
+  const form = document.getElementById("store-redeem-form");
+  modal?.classList.add("is-hidden");
+  setRedeemModalError("");
+  if (form) {
+    form.dataset.itemId = "";
+    form.reset();
+  }
+  document.getElementById("store-redeem-type")?.classList.add("is-hidden");
+}
+
+function openRedeemModal(item) {
+  const modal = document.getElementById("store-redeem-modal");
+  const form = document.getElementById("store-redeem-form");
+  const copy = document.getElementById("store-redeem-copy");
+  const typeWrap = document.getElementById("store-redeem-type");
+  const slot = document.getElementById("store-redeem-slot");
+  if (!modal || !form || !item) return;
+
+  form.dataset.itemId = item.id;
+  form.dataset.needsBonusType = itemNeedsBonusType(item) ? "1" : "0";
+  form.reset();
+  setRedeemModalError("");
+  if (copy) {
+    copy.textContent = itemNeedsBonusType(item)
+      ? `Redeeming ${item.title}. Enter the slot and pick Regular, Super, or Epic.`
+      : `Redeeming ${item.title}. Enter the slot you want.`;
+  }
+  typeWrap?.classList.toggle("is-hidden", !itemNeedsBonusType(item));
+  modal.classList.remove("is-hidden");
+  slot?.focus();
+}
+
+async function submitRedeemDetails({ itemId, slotName, bonusType }) {
+  const response = await fetch("/api/points/redeem", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ itemId, slotName, bonusType }),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || "Could not redeem item.");
+  }
+
+  pointsBalance = Number(data.balance?.points) || 0;
+  myRedemptions = Array.isArray(data.redemptions) ? data.redemptions : [];
+  if (currentUser?.isAdmin) {
+    await loadQueue();
+  }
+  await loadLeaderboard();
+  renderAll();
+  setStoreStatus("Redeemed. Waiting for admin fulfill.", "success");
+}
+
 async function redeemItem(itemId, button) {
   if (!currentUser) {
     setStoreStatus("Sign in with Kick to redeem.", "error");
@@ -966,34 +1058,65 @@ async function redeemItem(itemId, button) {
     return;
   }
 
-  if (button) button.disabled = true;
-  setStoreStatus("Redeeming...");
-
-  try {
-    const response = await fetch("/api/points/redeem", {
-      method: "POST",
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ itemId }),
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || "Could not redeem item.");
-    }
-
-    pointsBalance = Number(data.balance?.points) || 0;
-    myRedemptions = Array.isArray(data.redemptions) ? data.redemptions : [];
-    if (currentUser?.isAdmin) {
-      await loadQueue();
-    }
-    await loadLeaderboard();
-    renderAll();
-    setStoreStatus("Redeemed. Waiting for admin fulfill.", "success");
-  } catch (error) {
-    setStoreStatus(error.message || "Could not redeem item.", "error");
-  } finally {
-    if (button) button.disabled = false;
+  const item = catalog.find((entry) => entry.id === itemId);
+  if (!item) {
+    setStoreStatus("That reward is not available.", "error");
+    return;
   }
+
+  openRedeemModal(item);
+  if (button) button.disabled = false;
+}
+
+function initRedeemModal() {
+  const modal = document.getElementById("store-redeem-modal");
+  const form = document.getElementById("store-redeem-form");
+  if (!modal || !form) return;
+
+  document.getElementById("store-redeem-cancel")?.addEventListener("click", () => {
+    closeRedeemModal();
+  });
+  document.getElementById("store-redeem-backdrop")?.addEventListener("click", () => {
+    closeRedeemModal();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !modal.classList.contains("is-hidden")) {
+      closeRedeemModal();
+    }
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const itemId = form.dataset.itemId || "";
+    const slotName = document.getElementById("store-redeem-slot")?.value || "";
+    const needsBonusType = form.dataset.needsBonusType === "1";
+    const bonusType =
+      form.querySelector('input[name="bonusType"]:checked')?.value || "";
+    const submit = document.getElementById("store-redeem-submit");
+
+    if (!slotName.trim()) {
+      setRedeemModalError("Enter the slot you want.");
+      document.getElementById("store-redeem-slot")?.focus();
+      return;
+    }
+    if (needsBonusType && !bonusType) {
+      setRedeemModalError("Pick Regular, Super, or Epic.");
+      return;
+    }
+
+    if (submit) submit.disabled = true;
+    setRedeemModalError("");
+    setStoreStatus("Redeeming...");
+    try {
+      await submitRedeemDetails({ itemId, slotName, bonusType });
+      closeRedeemModal();
+    } catch (error) {
+      setRedeemModalError(error.message || "Could not redeem item.");
+      setStoreStatus(error.message || "Could not redeem item.", "error");
+    } finally {
+      if (submit) submit.disabled = false;
+    }
+  });
 }
 
 async function toggleCatalogItem(id, active, button) {
@@ -1337,6 +1460,7 @@ initCatalogForm();
 initBuyForm();
 initBuyToggle();
 initAwardChatForm();
+initRedeemModal();
 document.getElementById("store-unc-filter")?.addEventListener("input", (event) => {
   storeLbFilter = event.target.value || "";
   applyStoreLbFilter();
