@@ -2023,6 +2023,50 @@ function createSlotRequestThumb(slotName, thumbnailUrl) {
   return createSlotThumb(slotName, thumbnailUrl);
 }
 
+function openingPriorityForRequest(request) {
+  const slug = String(request?.slotSlug || "")
+    .trim()
+    .toLowerCase();
+  const name = String(request?.slotName || request?.slot || "")
+    .trim()
+    .toLowerCase();
+  let best = Infinity;
+  openingSlots.forEach((slot, index) => {
+    const slotSlug = String(slot?.slug || "")
+      .trim()
+      .toLowerCase();
+    const slotName = String(slot?.name || "")
+      .trim()
+      .toLowerCase();
+    if (
+      (slug && slotSlug && slug === slotSlug) ||
+      (name && slotName && name === slotName)
+    ) {
+      best = Math.min(best, index);
+    }
+  });
+  return best;
+}
+
+function sortRequestsForOpening(requests) {
+  return (Array.isArray(requests) ? requests : [])
+    .map((request, index) => ({
+      request,
+      index,
+      priority: openingPriorityForRequest(request),
+    }))
+    .sort((a, b) => {
+      const aOpen = Number.isFinite(a.priority);
+      const bOpen = Number.isFinite(b.priority);
+      if (aOpen !== bOpen) return aOpen ? -1 : 1;
+      if (aOpen && bOpen && a.priority !== b.priority) {
+        return a.priority - b.priority;
+      }
+      return a.index - b.index;
+    })
+    .map((entry) => entry.request);
+}
+
 function renderSlotRequests(requests) {
   const list = document.getElementById("slot-requests-list");
   const empty = document.getElementById("slot-requests-empty");
@@ -2031,6 +2075,7 @@ function renderSlotRequests(requests) {
   if (!list || !empty) return;
 
   const total = requests.length;
+  const ordered = sortRequestsForOpening(requests);
   empty.classList.toggle("is-hidden", total > 0);
   list.classList.toggle("is-hidden", total === 0);
   list.replaceChildren();
@@ -2059,15 +2104,17 @@ function renderSlotRequests(requests) {
     }
   }
 
-  requests.forEach((request) => {
+  ordered.forEach((request) => {
     const catalogSlot = findCatalogSlot(request);
     const provider = getSlotRequestProvider(request, catalogSlot);
     const thumbnailUrl = getSlotRequestThumbnail(request, catalogSlot);
+    const isOpening = Number.isFinite(openingPriorityForRequest(request));
 
     const item = document.createElement("li");
     item.className = "slot-request-entry";
     item.dataset.requestId = request.id;
     if (request.id === pickedRequestId) item.classList.add("is-picked");
+    if (isOpening) item.classList.add("is-opening");
 
     const thumb = createSlotRequestThumb(request.slotName, thumbnailUrl);
 
@@ -2905,6 +2952,7 @@ async function refreshOpeningList() {
   if (!response.ok) throw new Error(data.error || "Could not load overlay slots.");
   openingSlots = Array.isArray(data.slots) ? data.slots : [];
   if (!isEditingOpeningBet()) renderOpeningList();
+  if (!isEditingSlotRequestBet()) renderSlotRequests(slotRequests);
 }
 
 async function updateOpening(body) {
@@ -2921,6 +2969,7 @@ async function updateOpening(body) {
   if (epoch !== openingEpoch) return;
   openingSlots = Array.isArray(data.slots) ? data.slots : [];
   renderOpeningList();
+  if (!isEditingSlotRequestBet()) renderSlotRequests(slotRequests);
   setOpeningStatus(body.action === "clear" ? "Overlay cleared." : "Overlay updated.", "success");
 }
 

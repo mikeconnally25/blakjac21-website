@@ -7285,6 +7285,14 @@ button.one-v-one-name:focus-visible {
   box-shadow: inset 3px 0 0 #e8c56b;
 }
 
+.slot-request-entry.is-opening:not(.is-picked) {
+  margin-inline: -0.35rem;
+  padding-inline: 0.35rem;
+  border-radius: 8px;
+  background: rgba(126, 216, 255, 0.08);
+  box-shadow: inset 3px 0 0 #7ed8ff;
+}
+
 .spin-replace-modal {
   position: fixed;
   inset: 0;
