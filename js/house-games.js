@@ -1441,7 +1441,7 @@
     const drawn = Array.isArray(data.drawn) ? data.drawn : [];
     const hits = new Set(data.hits || []);
     const resultEl = $("hg-keno-result");
-    const delayMs = prefersReducedMotion() ? 0 : 180;
+    const delayMs = prefersReducedMotion() ? 0 : 50;
 
     if (prefersReducedMotion()) {
       drawn.forEach((n) => {
