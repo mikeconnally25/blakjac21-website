@@ -2113,7 +2113,9 @@ function renderSlotRequests(requests) {
     const item = document.createElement("li");
     item.className = "slot-request-entry";
     item.dataset.requestId = request.id;
-    if (request.id === pickedRequestId) item.classList.add("is-picked");
+    if (isOpening || request.id === pickedRequestId) {
+      item.classList.add("is-picked");
+    }
     if (isOpening) item.classList.add("is-opening");
 
     const thumb = createSlotRequestThumb(request.slotName, thumbnailUrl);
