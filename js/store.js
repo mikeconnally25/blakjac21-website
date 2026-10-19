@@ -22,6 +22,9 @@ let buyConfig = {
   stepPoints: 100,
 };
 let selectedBuyPackageId = null;
+let redeemSlotCatalog = [];
+let redeemSlotCatalogLoadedAt = 0;
+let selectedRedeemSlot = null;
 
 function isBuyPointsOpen() {
   return Boolean(buyConfig.configured) && buyConfig.enabled !== false;
@@ -992,46 +995,211 @@ function setRedeemModalError(message) {
   error.classList.toggle("is-hidden", !message);
 }
 
+async function loadRedeemSlotCatalog({ force = false } = {}) {
+  if (
+    !force &&
+    redeemSlotCatalog.length &&
+    Date.now() - redeemSlotCatalogLoadedAt < 60000
+  ) {
+    return redeemSlotCatalog;
+  }
+  const response = await fetch("/api/bonus-hunt/slots", {
+    credentials: "same-origin",
+    cache: "no-store",
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || "Could not load slots.");
+  }
+  redeemSlotCatalog = Array.isArray(data.slots) ? data.slots : [];
+  redeemSlotCatalogLoadedAt = Date.now();
+  return redeemSlotCatalog;
+}
+
+function matchRedeemSlots(query) {
+  const tokens = String(query || "")
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!tokens.length || !redeemSlotCatalog.length) return [];
+  const seen = new Set();
+  const matches = [];
+  for (const slot of redeemSlotCatalog) {
+    const slug = String(slot.slug || "").toLowerCase();
+    if (slug && seen.has(slug)) continue;
+    const haystack = [slot.name, slot.slug, slot.provider, slot.groupLabel]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    if (!tokens.every((token) => haystack.includes(token))) continue;
+    if (slug) seen.add(slug);
+    matches.push(slot);
+  }
+  matches.sort((a, b) => {
+    const aName = String(a.name || "").toLowerCase();
+    const bName = String(b.name || "").toLowerCase();
+    const aStarts = tokens.some((token) => aName.startsWith(token)) ? 0 : 1;
+    const bStarts = tokens.some((token) => bName.startsWith(token)) ? 0 : 1;
+    if (aStarts !== bStarts) return aStarts - bStarts;
+    return aName.localeCompare(bName, undefined, { sensitivity: "base" });
+  });
+  return matches.slice(0, 12);
+}
+
+function paintSelectedRedeemSlot() {
+  const selected = document.getElementById("store-redeem-slot-selected");
+  const name = document.getElementById("store-redeem-slot-selected-name");
+  const meta = document.getElementById("store-redeem-slot-selected-meta");
+  const search = document.getElementById("store-redeem-slot-search");
+  const results = document.getElementById("store-redeem-slot-results");
+  const empty = document.getElementById("store-redeem-slot-empty");
+  if (!selected) return;
+
+  if (!selectedRedeemSlot) {
+    selected.classList.add("is-hidden");
+    if (name) name.textContent = "";
+    if (meta) meta.textContent = "";
+    search?.classList.remove("is-hidden");
+    return;
+  }
+
+  selected.classList.remove("is-hidden");
+  if (name) name.textContent = selectedRedeemSlot.name || "Slot";
+  if (meta) {
+    meta.textContent = [selectedRedeemSlot.groupLabel, selectedRedeemSlot.provider]
+      .filter(Boolean)
+      .join(" · ");
+  }
+  if (search) {
+    search.value = "";
+    search.classList.add("is-hidden");
+  }
+  results?.classList.add("is-hidden");
+  empty?.classList.add("is-hidden");
+}
+
+function clearSelectedRedeemSlot() {
+  selectedRedeemSlot = null;
+  paintSelectedRedeemSlot();
+  document.getElementById("store-redeem-slot-search")?.focus();
+}
+
+function renderRedeemSlotResults() {
+  const results = document.getElementById("store-redeem-slot-results");
+  const empty = document.getElementById("store-redeem-slot-empty");
+  const search = document.getElementById("store-redeem-slot-search");
+  if (!results || !empty || !search || selectedRedeemSlot) return;
+
+  const query = search.value.trim();
+  results.replaceChildren();
+  if (!query) {
+    results.classList.add("is-hidden");
+    empty.classList.add("is-hidden");
+    return;
+  }
+
+  if (!redeemSlotCatalog.length) {
+    results.classList.add("is-hidden");
+    empty.classList.remove("is-hidden");
+    empty.textContent =
+      "No synced slots yet. Sync New Releases and Only on Stake on Bonus Hunt first.";
+    return;
+  }
+
+  const matches = matchRedeemSlots(query);
+  if (!matches.length) {
+    results.classList.add("is-hidden");
+    empty.classList.remove("is-hidden");
+    empty.textContent = "No matching slots in New Releases or Only on Stake.";
+    return;
+  }
+
+  empty.classList.add("is-hidden");
+  results.classList.remove("is-hidden");
+  matches.forEach((slot) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "hunt-add-slot-option";
+    button.setAttribute("role", "option");
+
+    const copy = document.createElement("span");
+    copy.className = "hunt-add-slot-option-copy";
+    const label = document.createElement("span");
+    label.className = "hunt-add-slot-option-name";
+    label.textContent = slot.name;
+    const note = document.createElement("span");
+    note.className = "hunt-add-slot-option-provider";
+    note.textContent = [slot.groupLabel, slot.provider].filter(Boolean).join(" · ");
+    copy.append(label, note);
+    button.append(copy);
+    button.addEventListener("click", () => {
+      selectedRedeemSlot = {
+        name: slot.name,
+        slug: slot.slug,
+        provider: slot.provider || "",
+        groupLabel: slot.groupLabel || "",
+      };
+      setRedeemModalError("");
+      paintSelectedRedeemSlot();
+    });
+    results.append(button);
+  });
+}
+
 function closeRedeemModal() {
   const modal = document.getElementById("store-redeem-modal");
   const form = document.getElementById("store-redeem-form");
   modal?.classList.add("is-hidden");
   setRedeemModalError("");
+  selectedRedeemSlot = null;
   if (form) {
     form.dataset.itemId = "";
     form.reset();
   }
   document.getElementById("store-redeem-type")?.classList.add("is-hidden");
+  document.getElementById("store-redeem-slot-results")?.classList.add("is-hidden");
+  document.getElementById("store-redeem-slot-empty")?.classList.add("is-hidden");
+  paintSelectedRedeemSlot();
 }
 
-function openRedeemModal(item) {
+async function openRedeemModal(item) {
   const modal = document.getElementById("store-redeem-modal");
   const form = document.getElementById("store-redeem-form");
   const copy = document.getElementById("store-redeem-copy");
   const typeWrap = document.getElementById("store-redeem-type");
-  const slot = document.getElementById("store-redeem-slot");
+  const search = document.getElementById("store-redeem-slot-search");
   if (!modal || !form || !item) return;
 
   form.dataset.itemId = item.id;
   form.dataset.needsBonusType = itemNeedsBonusType(item) ? "1" : "0";
   form.reset();
+  selectedRedeemSlot = null;
   setRedeemModalError("");
+  paintSelectedRedeemSlot();
   if (copy) {
     copy.textContent = itemNeedsBonusType(item)
-      ? `Redeeming ${item.title}. Enter the slot and pick Regular, Super, or Epic.`
-      : `Redeeming ${item.title}. Enter the slot you want.`;
+      ? `Redeeming ${item.title}. Pick a synced slot, then Regular, Super, or Epic.`
+      : `Redeeming ${item.title}. Pick a synced New Releases or Only on Stake slot.`;
   }
   typeWrap?.classList.toggle("is-hidden", !itemNeedsBonusType(item));
   modal.classList.remove("is-hidden");
-  slot?.focus();
+  search?.focus();
+
+  try {
+    await loadRedeemSlotCatalog();
+    renderRedeemSlotResults();
+  } catch (error) {
+    setRedeemModalError(error.message || "Could not load slots.");
+  }
 }
 
-async function submitRedeemDetails({ itemId, slotName, bonusType }) {
+async function submitRedeemDetails({ itemId, slotName, slotSlug, bonusType }) {
   const response = await fetch("/api/points/redeem", {
     method: "POST",
     credentials: "same-origin",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ itemId, slotName, bonusType }),
+    body: JSON.stringify({ itemId, slotName, slotSlug, bonusType }),
   });
   const data = await response.json();
   if (!response.ok) {
@@ -1064,13 +1232,18 @@ async function redeemItem(itemId, button) {
     return;
   }
 
-  openRedeemModal(item);
-  if (button) button.disabled = false;
+  if (button) button.disabled = true;
+  try {
+    await openRedeemModal(item);
+  } finally {
+    if (button) button.disabled = false;
+  }
 }
 
 function initRedeemModal() {
   const modal = document.getElementById("store-redeem-modal");
   const form = document.getElementById("store-redeem-form");
+  const search = document.getElementById("store-redeem-slot-search");
   if (!modal || !form) return;
 
   document.getElementById("store-redeem-cancel")?.addEventListener("click", () => {
@@ -1078,6 +1251,19 @@ function initRedeemModal() {
   });
   document.getElementById("store-redeem-backdrop")?.addEventListener("click", () => {
     closeRedeemModal();
+  });
+  document.getElementById("store-redeem-slot-clear")?.addEventListener("click", () => {
+    clearSelectedRedeemSlot();
+  });
+  search?.addEventListener("input", () => {
+    renderRedeemSlotResults();
+  });
+  search?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      const first = document.querySelector("#store-redeem-slot-results .hunt-add-slot-option");
+      first?.click();
+    }
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !modal.classList.contains("is-hidden")) {
@@ -1088,15 +1274,14 @@ function initRedeemModal() {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const itemId = form.dataset.itemId || "";
-    const slotName = document.getElementById("store-redeem-slot")?.value || "";
     const needsBonusType = form.dataset.needsBonusType === "1";
     const bonusType =
       form.querySelector('input[name="bonusType"]:checked')?.value || "";
     const submit = document.getElementById("store-redeem-submit");
 
-    if (!slotName.trim()) {
-      setRedeemModalError("Enter the slot you want.");
-      document.getElementById("store-redeem-slot")?.focus();
+    if (!selectedRedeemSlot?.name || !selectedRedeemSlot?.slug) {
+      setRedeemModalError("Pick a slot from New Releases or Only on Stake.");
+      search?.focus();
       return;
     }
     if (needsBonusType && !bonusType) {
@@ -1108,7 +1293,12 @@ function initRedeemModal() {
     setRedeemModalError("");
     setStoreStatus("Redeeming...");
     try {
-      await submitRedeemDetails({ itemId, slotName, bonusType });
+      await submitRedeemDetails({
+        itemId,
+        slotName: selectedRedeemSlot.name,
+        slotSlug: selectedRedeemSlot.slug,
+        bonusType,
+      });
       closeRedeemModal();
     } catch (error) {
       setRedeemModalError(error.message || "Could not redeem item.");

@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=storeredeem1" />
+  <link rel="stylesheet" href="/css/styles.css?v=storeredeem2" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -275,18 +275,29 @@
     <form class="store-redeem-dialog bj21-panel" id="store-redeem-form">
       <span class="bj21-panel-glow" aria-hidden="true"></span>
       <h2 class="store-redeem-title" id="store-redeem-title">Redeem reward</h2>
-      <p class="store-redeem-copy" id="store-redeem-copy">Tell us which slot you want.</p>
-      <label class="guess-label" for="store-redeem-slot">Slot</label>
+      <p class="store-redeem-copy" id="store-redeem-copy">Pick a slot from New Releases or Only on Stake.</p>
+      <label class="guess-label" for="store-redeem-slot-search">Slot</label>
       <input
         class="guess-input"
-        id="store-redeem-slot"
-        name="slotName"
-        type="text"
+        id="store-redeem-slot-search"
+        type="search"
         maxlength="80"
-        required
         autocomplete="off"
-        placeholder="Slot name"
+        placeholder="Search New Releases or Only on Stake…"
+        enterkeyhint="search"
       />
+      <p class="store-redeem-slot-empty is-hidden" id="store-redeem-slot-empty"></p>
+      <div class="hunt-add-slot-results is-hidden" id="store-redeem-slot-results" role="listbox" aria-label="Matching slots"></div>
+      <div class="store-redeem-slot-selected is-hidden" id="store-redeem-slot-selected">
+        <p class="store-redeem-slot-selected-label">Selected</p>
+        <div class="store-redeem-slot-selected-row">
+          <div>
+            <p class="store-redeem-slot-selected-name" id="store-redeem-slot-selected-name"></p>
+            <p class="store-redeem-slot-selected-meta" id="store-redeem-slot-selected-meta"></p>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline" id="store-redeem-slot-clear">Change</button>
+        </div>
+      </div>
       <div class="store-redeem-type is-hidden" id="store-redeem-type">
         <p class="guess-label" id="store-redeem-type-label">Bonus type</p>
         <div class="store-redeem-type-options" role="radiogroup" aria-labelledby="store-redeem-type-label">
@@ -329,6 +340,6 @@
 
   <script src="/js/main.js?v=avgx1"></script>
   <script src="/js/auth.js?v=claim24h"></script>
-  <script src="/js/store.js?v=storeredeem1"></script>
+  <script src="/js/store.js?v=storeredeem2"></script>
 </body>
 </html>

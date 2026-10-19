@@ -13013,6 +13013,52 @@ button.one-v-one-name:focus-visible {
   line-height: 1.4;
 }
 
+.store-redeem-dialog .hunt-add-slot-results {
+  max-height: min(12rem, 36vh);
+}
+
+.store-redeem-slot-empty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+}
+
+.store-redeem-slot-selected {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(232, 197, 107, 0.28);
+  background: rgba(232, 197, 107, 0.08);
+}
+
+.store-redeem-slot-selected-label {
+  margin: 0;
+  color: #f0c98e;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.store-redeem-slot-selected-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.store-redeem-slot-selected-name {
+  margin: 0;
+  font-weight: 650;
+}
+
+.store-redeem-slot-selected-meta {
+  margin: 0.15rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
 .store-redeem-type-options {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
