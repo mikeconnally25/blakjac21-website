@@ -12224,18 +12224,6 @@ button.one-v-one-name:focus-visible {
     linear-gradient(155deg, rgba(12, 26, 36, 0.9), rgba(5, 12, 18, 0.86));
 }
 
-@media (min-width: 720px) {
-  .store-buy {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 1rem 1.25rem;
-  }
-
-  .store-buy-note {
-    grid-column: 1 / -1;
-  }
-}
-
 .store-buy-copy {
   display: grid;
   gap: 0.2rem;
@@ -12258,18 +12246,22 @@ button.one-v-one-name:focus-visible {
 }
 
 .store-buy-packages {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.75rem, 1fr));
   gap: 0.55rem;
-  justify-content: flex-start;
+  width: 100%;
+  min-width: 0;
 }
 
 .store-buy-package-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  min-height: 2.75rem;
-  padding: 0.55rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.2rem;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.7rem 0.85rem;
   border-radius: calc(var(--radius-sm) + 2px);
   border: 1px solid rgba(126, 216, 255, 0.28);
   background: linear-gradient(135deg, rgba(88, 201, 243, 0.18), rgba(14, 28, 38, 0.9));
@@ -12298,15 +12290,14 @@ button.one-v-one-name:focus-visible {
 
 .store-buy-package-pts {
   font-family: var(--font-display);
-  font-size: 1.25rem;
+  font-size: 1.15rem;
+  line-height: 1.1;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .store-buy-package-sep {
-  width: 1px;
-  height: 1.1rem;
-  background: rgba(255, 255, 255, 0.18);
+  display: none;
 }
 
 .store-buy-package-usd {
