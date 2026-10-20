@@ -91,16 +91,32 @@ function renderBuyMethods() {
   const cryptoBtn = document.getElementById("store-buy-pay-crypto");
   if (!methodsEl) return;
 
-  const methods = buyPayMethods();
   const canBuy = Boolean(currentUser) && isBuyPointsOpen();
-  const showChooser =
-    canBuy && Boolean(selectedBuyPackageId) && methods.length > 1;
+  const showChooser = canBuy && Boolean(selectedBuyPackageId);
 
   methodsEl.classList.toggle("is-hidden", !showChooser);
-  cardBtn?.classList.toggle("is-hidden", !buyConfig.stripeConfigured);
-  cryptoBtn?.classList.toggle("is-hidden", !buyConfig.cryptoConfigured);
-  if (cardBtn) cardBtn.disabled = !showChooser;
-  if (cryptoBtn) cryptoBtn.disabled = !showChooser;
+
+  // Always offer both options; disable any method that is not configured yet.
+  if (cardBtn) {
+    cardBtn.classList.remove("is-hidden");
+    cardBtn.disabled = !showChooser || !buyConfig.stripeConfigured;
+    cardBtn.title = buyConfig.stripeConfigured
+      ? "Pay with card via Stripe"
+      : "Card checkout needs STRIPE_SECRET_KEY on the server";
+    cardBtn.textContent = buyConfig.stripeConfigured
+      ? "Pay with card"
+      : "Pay with card (unavailable)";
+  }
+  if (cryptoBtn) {
+    cryptoBtn.classList.remove("is-hidden");
+    cryptoBtn.disabled = !showChooser || !buyConfig.cryptoConfigured;
+    cryptoBtn.title = buyConfig.cryptoConfigured
+      ? "Pay with crypto via NOWPayments"
+      : "Crypto checkout is not configured";
+    cryptoBtn.textContent = buyConfig.cryptoConfigured
+      ? "Pay with crypto"
+      : "Pay with crypto (unavailable)";
+  }
 }
 
 function renderBuyForm() {
@@ -140,10 +156,10 @@ function renderBuyForm() {
     renderBuyMethods();
     return;
   }
-  if (selectedBuyPackageId && buyPayMethods().length > 1) {
-    note.textContent = "Choose card or crypto to continue.";
+  if (selectedBuyPackageId) {
+    note.textContent = "Choose Pay with card or Pay with crypto.";
   } else {
-    note.textContent = "Tap a package to checkout.";
+    note.textContent = "Tap a package, then choose card or crypto.";
   }
   renderBuyMethods();
 }
@@ -194,12 +210,7 @@ function renderBuyPackages() {
         .forEach((el) =>
           el.classList.toggle("is-selected", el.dataset.packageId === pkg.id)
         );
-
-      const methods = buyPayMethods();
-      if (methods.length === 1) {
-        startBuyPurchase({ packageId: pkg.id, method: methods[0] });
-        return;
-      }
+      // Always show card vs crypto — never auto-start a single method.
       renderBuyForm();
     });
     packagesEl.append(btn);
