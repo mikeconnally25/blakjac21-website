@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=houseloss1" />
+  <link rel="stylesheet" href="/css/styles.css?v=houseloss5" />
 </head>
 <body class="weekly-raffle-body">
   <div class="bg-glow" aria-hidden="true"></div>
@@ -107,10 +107,14 @@
             <p class="section-eyebrow">House games pot</p>
             <h2 class="house-loss-raffle-title">UncCoins loss raffle</h2>
             <p class="house-loss-raffle-sub">
-              Losing house-game bets feed this pool. When the week ends, a random Stake-linked
-              <strong>AFF</strong> user wins the whole pot.
+              Losing house-game bets feed this pool. When the week ends,
+              <strong>5</strong> random Stake-linked <strong>AFF</strong> users split the pot —
+              UncCoins are added to their balances automatically.
             </p>
-            <p class="house-loss-raffle-winner is-hidden" id="house-loss-winner" aria-live="polite"></p>
+            <div class="house-loss-prev is-hidden" id="house-loss-prev" aria-live="polite">
+              <p class="house-loss-prev-label">Previous week winners</p>
+              <ol class="house-loss-prev-list" id="house-loss-prev-list"></ol>
+            </div>
           </div>
           <div class="house-loss-raffle-panel">
             <div class="house-loss-raffle-pool">
@@ -221,6 +225,6 @@
 
   <script src="/js/main.js?v=avgx1"></script>
   <script src="/js/auth.js?v=claim24h"></script>
-  <script src="/js/weekly-raffles.js?v=houseloss1"></script>
+  <script src="/js/weekly-raffles.js?v=houseloss5"></script>
 </body>
 </html>

@@ -6,7 +6,7 @@
   let lastWinnerId = null;
   let drawAnimating = false;
   let houseLossPayload = null;
-  let houseLossLastWinnerId = null;
+  let houseLossLastDrawKey = null;
 
   function $(id) {
     return document.getElementById(id);
@@ -166,26 +166,39 @@
       poolEl.textContent = Number(payload?.pool || 0).toLocaleString();
     }
 
-    const winnerEl = $("house-loss-winner");
-    const winner = payload?.lastWinner;
-    if (winnerEl) {
-      if (winner?.amount) {
-        const name =
-          String(winner.stakeUsername || "").trim() ||
-          String(winner.kickUsername || "").trim() ||
-          "Winner";
-        const isNew = Boolean(winner.id && winner.id !== houseLossLastWinnerId);
-        houseLossLastWinnerId = winner.id || houseLossLastWinnerId;
-        winnerEl.textContent = `Last winner · ${name} · ${Number(
-          winner.amount || 0
-        ).toLocaleString()} UncCoins${
-          winner.revealedAt ? ` · ${formatWhen(winner.revealedAt)}` : ""
-        }`;
-        winnerEl.classList.remove("is-hidden");
-        winnerEl.classList.toggle("is-new", isNew);
+    const prev = $("house-loss-prev");
+    const prevList = $("house-loss-prev-list");
+    const winners = Array.isArray(payload?.lastWinners) ? payload.lastWinners : [];
+    if (prev && prevList) {
+      if (winners.length) {
+        const drawKey = winners.map((w) => w.id).join("|");
+        const isNew = drawKey && drawKey !== houseLossLastDrawKey;
+        houseLossLastDrawKey = drawKey || houseLossLastDrawKey;
+        prevList.replaceChildren();
+        winners.forEach((winner) => {
+          const li = document.createElement("li");
+          const name =
+            String(winner.stakeUsername || "").trim() ||
+            String(winner.kickUsername || "").trim() ||
+            "Winner";
+          const amount = Number(winner.amount || 0).toLocaleString();
+          li.innerHTML = `<span class="house-loss-prev-name">${escapeHtml(
+            name
+          )}</span><span class="house-loss-prev-amount">+${amount} UncCoins</span>`;
+          prevList.append(li);
+        });
+        const when = winners[0]?.revealedAt
+          ? ` · drawn ${formatWhen(winners[0].revealedAt)}`
+          : "";
+        const labelEl = prev.querySelector(".house-loss-prev-label");
+        if (labelEl) {
+          labelEl.textContent = `Previous week winners${when}`;
+        }
+        prev.classList.remove("is-hidden");
+        prev.classList.toggle("is-new", isNew);
       } else {
-        winnerEl.textContent = "";
-        winnerEl.classList.add("is-hidden");
+        prevList.replaceChildren();
+        prev.classList.add("is-hidden");
       }
     }
 
@@ -207,9 +220,9 @@
     const remaining = Number.isFinite(endsAt) ? endsAt - Date.now() : 0;
     if (remaining <= 0 || week.ended) {
       shell.dataset.state = "ended";
-      if (label) label.textContent = "Drawing winner";
+      if (label) label.textContent = "Drawing winners";
       if (note) {
-        note.textContent = "Week ended — picking a random AFF winner";
+        note.textContent = "Week ended — picking 5 random AFF winners";
       }
       setHouseLossDigits(0);
       return;
@@ -219,8 +232,8 @@
     if (label) label.textContent = "Draws in";
     if (note) {
       note.textContent = week.endsAt
-        ? `Closes ${formatWhen(week.endsAt)} · AFF badge required to win`
-        : "AFF badge required to win";
+        ? `Closes ${formatWhen(week.endsAt)} · 5 AFF winners split the pot`
+        : "5 AFF winners split the pot";
     }
     setHouseLossDigits(remaining);
   }
@@ -238,11 +251,31 @@
     return data;
   }
 
+  function tickHouseLossTimer() {
+    const week = houseLossPayload?.week;
+    const shell = $("house-loss-timer");
+    if (!week || !shell) return;
+    if (!week.started) {
+      shell.dataset.state = "idle";
+      setHouseLossDigits(0);
+      return;
+    }
+    const endsAt = Date.parse(week.endsAt || "");
+    const remaining = Number.isFinite(endsAt) ? endsAt - Date.now() : 0;
+    if (remaining <= 0 || week.ended) {
+      shell.dataset.state = "ended";
+      setHouseLossDigits(0);
+      return;
+    }
+    shell.dataset.state = "active";
+    setHouseLossDigits(remaining);
+  }
+
   function scheduleCountdown() {
     if (countdownTimer) clearInterval(countdownTimer);
     countdownTimer = setInterval(() => {
       if (lastPayload?.week) renderTimer(lastPayload.week);
-      if (houseLossPayload?.week) renderHouseLoss(houseLossPayload);
+      tickHouseLossTimer();
     }, 1000);
   }
 
@@ -698,15 +731,10 @@
         throw new Error(data.error || "Could not draw house pot.");
       }
       renderHouseLoss(data);
-      const name =
-        data.lastWinner?.stakeUsername ||
-        data.lastWinner?.kickUsername ||
-        "winner";
+      const count = Array.isArray(data.lastWinners) ? data.lastWinners.length : 0;
       setAdminStatus(
-        data.lastWinner
-          ? `House pot winner: ${name} (+${Number(
-              data.lastWinner.amount || 0
-            ).toLocaleString()} UncCoins)`
+        count
+          ? `House pot drawn for ${count} winners. UncCoins credited.`
           : "House pot draw complete.",
         "success"
       );

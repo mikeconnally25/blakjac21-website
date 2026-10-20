@@ -13566,14 +13566,51 @@ button.one-v-one-name:focus-visible {
   line-height: 1.5;
 }
 
-.house-loss-raffle-winner {
-  margin: 0.75rem 0 0;
-  color: #f0c36a;
-  font-weight: 600;
+.house-loss-prev {
+  margin: 0.9rem 0 0;
 }
 
-.house-loss-raffle-winner.is-hidden {
+.house-loss-prev.is-hidden {
   display: none;
+}
+
+.house-loss-prev-label {
+  margin: 0 0 0.45rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.house-loss-prev-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.house-loss-prev-list li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+  padding: 0.4rem 0.55rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(240, 195, 106, 0.18);
+  background: rgba(0, 0, 0, 0.18);
+  font-size: 0.95rem;
+}
+
+.house-loss-prev-name {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.house-loss-prev-amount {
+  color: #f0c36a;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
 }
 
 .house-loss-raffle-panel {
