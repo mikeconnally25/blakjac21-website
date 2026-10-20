@@ -3,12 +3,6 @@ let catalog = [];
 let myRedemptions = [];
 let pendingQueue = [];
 let pointsBalance = 0;
-let pointsLeaders = [];
-let pointsLeaderYou = null;
-let pointsLeaderTotal = 0;
-let pointsRace = null;
-let storeLbFilter = "";
-let storeLbFirstPaint = true;
 let canRedeem = true;
 let buyPackages = [];
 let buyConfig = {
@@ -597,305 +591,13 @@ function renderBuyToggle() {
       : "Buy UncCoins is paused";
 }
 
-function storeLbEntries() {
-  const entries = pointsLeaders.slice();
-  if (
-    pointsLeaderYou &&
-    !entries.some((entry) => entry.rank === pointsLeaderYou.rank)
-  ) {
-    entries.push(pointsLeaderYou);
-  }
-  return entries;
-}
-
-function storeLbLeader() {
-  return pointsLeaders[0] || null;
-}
-
-function storeLbIsYou(entry) {
-  return Boolean(pointsLeaderYou && entry?.rank === pointsLeaderYou.rank);
-}
-
-function storeLbShare(entry, leader) {
-  const top = Number(leader?.points) || 0;
-  if (top <= 0) return 0;
-  return (Number(entry?.points) || 0) / top * 100;
-}
-
-function storeLbGap(entry, leader) {
-  if (!leader) return "";
-  if (entry.rank === leader.rank) return "Leading the board";
-  const share = storeLbShare(entry, leader);
-  const shareText = share < 1 ? "<1% of 1st" : `${Math.round(share)}% of 1st`;
-  const gap = Math.max(0, Number(leader.points) - Number(entry.points));
-  return `${shareText} · ${gap.toLocaleString()} behind`;
-}
-
-function storeLbPrize(rank) {
-  if (rank === 1) return "$100";
-  if (rank === 2) return "$50";
-  if (rank === 3) return "$25";
-  return "—";
-}
-
-function storeLbReducedMotion() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-function storeLbPaintPoints(el, value) {
-  const amount = Number(value) || 0;
-  if (!storeLbFirstPaint || storeLbReducedMotion()) {
-    el.textContent = amount.toLocaleString();
-    return;
-  }
-  const start = performance.now();
-  const tick = (now) => {
-    const progress = Math.min(1, (now - start) / 720);
-    const eased = 1 - (1 - progress) ** 3;
-    el.textContent = Math.round(amount * eased).toLocaleString();
-    if (progress < 1) requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
-}
-
-function storeLbFillBar(bar, share) {
-  const fill = bar.querySelector("span");
-  if (!fill) return;
-  const width = share > 0 ? Math.max(share, 3) : 0;
-  if (!storeLbFirstPaint || storeLbReducedMotion()) {
-    fill.style.width = `${width}%`;
-    return;
-  }
-  fill.style.width = "0%";
-  requestAnimationFrame(() => {
-    fill.style.width = `${width}%`;
-  });
-}
-
-function storeLbFocus(rank) {
-  const item = document.getElementById(`store-unc-rank-${rank}`);
-  const row = item?.querySelector(".lb-row");
-  if (!item || !row) return;
-  item.scrollIntoView({
-    behavior: storeLbReducedMotion() ? "auto" : "smooth",
-    block: "center",
-  });
-  document.querySelectorAll("#store-unc-list .lb-row[aria-expanded='true']").forEach((open) => {
-    open.setAttribute("aria-expanded", "false");
-  });
-  row.setAttribute("aria-expanded", "true");
-  row.focus();
-}
-
-function storeLbPlace(rank) {
-  if (rank === 1) return "1st";
-  if (rank === 2) return "2nd";
-  if (rank === 3) return "3rd";
-  return `${rank}th`;
-}
-
-function createStorePodiumCard(place, entry, leader) {
-  const card = document.createElement("button");
-  card.type = "button";
-  card.className = `lb-podium-card place-${place}`;
-  if (!entry) card.disabled = true;
-  if (entry && storeLbIsYou(entry)) card.classList.add("is-you");
-  card.setAttribute(
-    "aria-label",
-    entry ? `Show ${storeLbPlace(place)} on the board` : storeLbPlace(place)
-  );
-
-  const placeEl = document.createElement("span");
-  placeEl.className = "lb-place";
-  placeEl.textContent = String(place);
-
-  const name = document.createElement("span");
-  name.className = "lb-podium-name";
-  name.textContent = entry?.username || "—";
-
-  const points = document.createElement("span");
-  points.className = "lb-podium-wager";
-  if (entry) storeLbPaintPoints(points, entry.points);
-
-  const prize = document.createElement("span");
-  prize.className = "lb-podium-prize";
-  prize.textContent = storeLbPrize(place);
-
-  const bar = document.createElement("span");
-  bar.className = "lb-bar";
-  bar.setAttribute("aria-hidden", "true");
-  bar.append(document.createElement("span"));
-
-  card.append(placeEl, name, points, prize, bar);
-  if (entry) {
-    storeLbFillBar(bar, storeLbShare(entry, leader));
-    card.addEventListener("click", () => storeLbFocus(entry.rank));
-  }
-  return card;
-}
-
-function renderStorePodium(entries, leader) {
-  const panel = document.getElementById("store-unc-podium");
-  const stage = document.getElementById("store-unc-podium-stage");
-  if (!panel || !stage) return;
-  const top = entries.filter((entry) => entry.rank <= 3).slice(0, 3);
-  panel.classList.toggle("is-hidden", top.length === 0);
-  stage.replaceChildren();
-  if (!top.length) return;
-  const byRank = new Map(top.map((entry) => [entry.rank, entry]));
-  [2, 1, 3].forEach((place) => {
-    stage.append(createStorePodiumCard(place, byRank.get(place) || null, leader));
-  });
-}
-
-function createStoreStanding(entry, leader, index) {
-  const item = document.createElement("li");
-  item.className = `lb-item place-${Math.min(entry.rank, 4)}`;
-  item.id = `store-unc-rank-${entry.rank}`;
-  item.dataset.name = String(entry.username || "").toLowerCase();
-  if (storeLbFirstPaint) {
-    item.classList.add("is-entering");
-    item.style.setProperty("--enter-delay", `${Math.min(index, 9) * 40}ms`);
-  }
-  if (storeLbIsYou(entry)) item.classList.add("is-you");
-
-  const row = document.createElement("button");
-  row.type = "button";
-  row.className = "lb-row";
-  row.setAttribute("aria-expanded", "false");
-
-  const rank = document.createElement("span");
-  rank.className = "lb-rank";
-  rank.textContent = String(entry.rank).padStart(2, "0");
-
-  const player = document.createElement("span");
-  player.className = "lb-player";
-
-  const name = document.createElement("span");
-  name.className = "lb-name";
-  name.textContent = entry.username || "viewer";
-  if (storeLbIsYou(entry)) {
-    const you = document.createElement("span");
-    you.className = "lb-you";
-    you.textContent = "You";
-    name.append(you);
-  }
-
-  const bar = document.createElement("span");
-  bar.className = "lb-bar";
-  bar.setAttribute("aria-hidden", "true");
-  bar.append(document.createElement("span"));
-
-  const gap = document.createElement("span");
-  gap.className = "lb-gap";
-  gap.textContent = storeLbGap(entry, leader);
-  player.append(name, bar, gap);
-
-  const points = document.createElement("span");
-  points.className = "lb-wager";
-  storeLbPaintPoints(points, entry.points);
-
-  const prize = document.createElement("span");
-  prize.className = "lb-prize";
-  prize.textContent = storeLbPrize(entry.rank);
-
-  row.append(rank, player, points, prize);
-  row.addEventListener("click", () => {
-    const open = row.getAttribute("aria-expanded") === "true";
-    document.querySelectorAll("#store-unc-list .lb-row[aria-expanded='true']").forEach((other) => {
-      if (other !== row) other.setAttribute("aria-expanded", "false");
-    });
-    row.setAttribute("aria-expanded", open ? "false" : "true");
-  });
-
-  item.append(row);
-  storeLbFillBar(bar, storeLbShare(entry, leader));
-  return item;
-}
-
-function applyStoreLbFilter() {
-  const query = storeLbFilter.trim().toLowerCase();
-  const items = [...document.querySelectorAll("#store-unc-list .lb-item")];
-  let shown = 0;
-  items.forEach((item) => {
-    const match = !query || String(item.dataset.name || "").includes(query);
-    item.classList.toggle("is-filtered-out", !match);
-    if (match) shown += 1;
-  });
-  document
-    .getElementById("store-unc-filter-empty")
-    ?.classList.toggle("is-hidden", !query || shown > 0 || items.length === 0);
-}
-
-function paintStoreRace() {
-  const ends = document.getElementById("store-unc-ends");
-  const label = document.getElementById("store-unc-ends-label");
-  const players = document.getElementById("store-unc-players");
-  if (players) players.textContent = pointsLeaderTotal ? String(pointsLeaderTotal) : "—";
-  if (!ends) return;
-  const end = Date.parse(pointsRace?.endsAt || "");
-  if (!Number.isFinite(end)) {
-    if (label) label.textContent = "Ends in";
-    ends.textContent = "30 days";
-    return;
-  }
-  const ms = end - Date.now();
-  if (ms <= 0) {
-    if (label) label.textContent = "Period";
-    ends.textContent = "Ended";
-    return;
-  }
-  if (label) label.textContent = "Ends in";
-  const days = Math.ceil(ms / 86400000);
-  ends.textContent = days === 1 ? "1 day" : `${days} days`;
-}
-
-function renderLeaderboard() {
-  const list = document.getElementById("store-unc-list");
-  const empty = document.getElementById("store-unc-empty");
-  const head = document.getElementById("store-unc-head");
-  if (!list || !empty) return;
-
-  const entries = storeLbEntries();
-  const leader = storeLbLeader();
-  paintStoreRace();
-  renderStorePodium(pointsLeaders, leader);
-  list.replaceChildren();
-
-  const hasEntries = entries.length > 0;
-  empty.classList.toggle("is-hidden", hasEntries);
-  head?.classList.toggle("is-hidden", !hasEntries);
-  list.classList.toggle("is-hidden", !hasEntries);
-  entries.forEach((entry, index) => {
-    list.append(createStoreStanding(entry, leader, index));
-  });
-  applyStoreLbFilter();
-  if (hasEntries) storeLbFirstPaint = false;
-}
-
 function renderAll() {
   renderBalance();
   renderBuyPackages();
   renderBuyForm();
   renderCatalog();
   renderMyRedemptions();
-  renderLeaderboard();
   renderAdmin();
-}
-
-async function loadLeaderboard() {
-  const response = await fetch("/api/points/leaderboard", {
-    credentials: "same-origin",
-    cache: "no-store",
-  });
-  if (!response.ok) {
-    throw new Error("Could not load the UncCoins leaderboard.");
-  }
-  const data = await response.json();
-  pointsLeaders = Array.isArray(data.leaders) ? data.leaders : [];
-  pointsLeaderYou = data.you && Number(data.you.points) > 0 ? data.you : null;
-  pointsLeaderTotal = Number(data.total) || pointsLeaders.length;
-  pointsRace = data.race || null;
 }
 
 async function loadCatalog() {
@@ -980,7 +682,6 @@ async function refreshStore() {
       loadMe(),
       loadQueue(),
       loadBuyPackages(),
-      loadLeaderboard(),
     ]);
     renderAll();
   } catch (error) {
@@ -1211,7 +912,6 @@ async function submitRedeemDetails({ itemId, slotName, slotSlug, bonusType }) {
   if (currentUser?.isAdmin) {
     await loadQueue();
   }
-  await loadLeaderboard();
   renderAll();
   setStoreStatus("Redeemed. Waiting for admin fulfill.", "success");
 }
@@ -1641,9 +1341,6 @@ window.addEventListener("points:change", (event) => {
   pointsBalance = points;
   renderBalance();
   renderCatalog();
-  void loadLeaderboard()
-    .then(() => renderLeaderboard())
-    .catch(() => {});
 });
 
 initCatalogForm();
@@ -1651,10 +1348,5 @@ initBuyForm();
 initBuyToggle();
 initAwardChatForm();
 initRedeemModal();
-document.getElementById("store-unc-filter")?.addEventListener("input", (event) => {
-  storeLbFilter = event.target.value || "";
-  applyStoreLbFilter();
-});
-window.setInterval(paintStoreRace, 60000);
 handlePurchaseReturnQuery();
 refreshStore();

@@ -12600,8 +12600,43 @@ button.one-v-one-name:focus-visible {
   }
 }
 
-.store-unc-leaderboard {
-  margin-bottom: 1.5rem;
+.lb-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.85rem 0 0;
+}
+
+.lb-tab {
+  appearance: none;
+  border: 1px solid rgba(88, 201, 243, 0.22);
+  background: rgba(8, 16, 28, 0.72);
+  color: rgba(226, 236, 245, 0.92);
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.lb-tab:hover,
+.lb-tab:focus-visible {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.lb-tab.is-active {
+  color: var(--text);
+  border-color: rgba(126, 216, 255, 0.7);
+  background: rgba(88, 201, 243, 0.18);
+  box-shadow: 0 0 16px rgba(88, 201, 243, 0.28);
+}
+
+.lb-panel.is-hidden {
+  display: none;
 }
 
 .store-redeem-modal {

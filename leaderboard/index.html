@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Leaderboard — top viewers and stream game standings on BLAKJAC21." />
+  <meta name="description" content="Leaderboard — Stake wagering and UncCoins standings on BLAKJAC21." />
   <title>Leaderboard | BLAKJAC21</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=menuside1" />
+  <link rel="stylesheet" href="/css/styles.css?v=lbtabs1" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -68,12 +68,16 @@
           <div>
             <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
             <h1 class="lb-title">Leaderboard</h1>
-            <p class="lb-lede">Top 10 wagered on code <strong>BLAKJAC21</strong>.</p>
+            <div class="lb-tabs" role="tablist" aria-label="Leaderboard type">
+              <button type="button" class="lb-tab is-active" role="tab" id="lb-tab-stake" data-lb-tab="stake" aria-selected="true" aria-controls="lb-panel-stake">Stake wagered</button>
+              <button type="button" class="lb-tab" role="tab" id="lb-tab-unc" data-lb-tab="unc" aria-selected="false" aria-controls="lb-panel-unc">UncCoins</button>
+            </div>
+            <p class="lb-lede" id="lb-lede">Top 10 wagered on code <strong>BLAKJAC21</strong>.</p>
             <button type="button" class="btn btn-sm btn-outline lb-rules-toggle" id="leaderboard-rules-toggle" aria-expanded="false" aria-controls="leaderboard-rules">
               Competition rules
             </button>
           </div>
-          <div class="lb-meta">
+          <div class="lb-meta" id="lb-meta-stake">
             <div class="lb-stat">
               <span>Monthly pool</span>
               <strong>$5,000</strong>
@@ -85,6 +89,20 @@
             <div class="lb-stat">
               <span>Updated</span>
               <strong id="leaderboard-updated">—</strong>
+            </div>
+          </div>
+          <div class="lb-meta is-hidden" id="lb-meta-unc">
+            <div class="lb-stat">
+              <span>Pool</span>
+              <strong>$175</strong>
+            </div>
+            <div class="lb-stat">
+              <span id="unc-ends-label">Ends in</span>
+              <strong id="unc-ends">—</strong>
+            </div>
+            <div class="lb-stat">
+              <span>Players</span>
+              <strong id="unc-players">—</strong>
             </div>
           </div>
         </header>
@@ -126,31 +144,61 @@
 
         <p class="guess-status is-hidden" id="leaderboard-status" role="status" aria-live="polite"></p>
 
-        <div class="lb-podium is-hidden" id="leaderboard-podium-panel">
-          <div class="lb-podium-stage" id="leaderboard-podium-stage" aria-label="Top 3 wagered players"></div>
+        <div class="lb-panel is-active" id="lb-panel-stake" data-lb-panel="stake" role="tabpanel" aria-labelledby="lb-tab-stake">
+          <div class="lb-podium is-hidden" id="leaderboard-podium-panel">
+            <div class="lb-podium-stage" id="leaderboard-podium-stage" aria-label="Top 3 wagered players"></div>
+          </div>
+
+          <section class="lb-board bj21-panel" aria-labelledby="leaderboard-standings-title">
+            <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <div class="lb-board-head">
+              <h2 class="lb-board-title" id="leaderboard-standings-title">Standings</h2>
+              <label class="lb-search">
+                <input id="leaderboard-filter" type="search" placeholder="Find a player" aria-label="Find a player" autocomplete="off" enterkeyhint="search" />
+              </label>
+            </div>
+
+            <div class="lb-cols is-hidden" id="leaderboard-table-head">
+              <span>Rank</span>
+              <span>Player</span>
+              <span>Wagered</span>
+              <span>Prize</span>
+            </div>
+
+            <p class="lb-empty" id="leaderboard-empty">No leaderboard entries yet.</p>
+            <p class="lb-empty is-hidden" id="leaderboard-filter-empty">No player matches that search.</p>
+
+            <ol class="lb-list is-hidden" id="leaderboard-list"></ol>
+          </section>
         </div>
 
-        <section class="lb-board bj21-panel" aria-labelledby="leaderboard-standings-title">
-          <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <div class="lb-board-head">
-            <h2 class="lb-board-title" id="leaderboard-standings-title">Standings</h2>
-            <label class="lb-search">
-              <input id="leaderboard-filter" type="search" placeholder="Find a player" aria-label="Find a player" autocomplete="off" enterkeyhint="search" />
-            </label>
+        <div class="lb-panel is-hidden" id="lb-panel-unc" data-lb-panel="unc" role="tabpanel" aria-labelledby="lb-tab-unc" hidden>
+          <div class="lb-podium is-hidden" id="unc-podium-panel">
+            <div class="lb-podium-stage" id="unc-podium-stage" aria-label="Top 3 UncCoin holders"></div>
           </div>
 
-          <div class="lb-cols is-hidden" id="leaderboard-table-head">
-            <span>Rank</span>
-            <span>Player</span>
-            <span>Wagered</span>
-            <span>Prize</span>
-          </div>
+          <section class="lb-board bj21-panel" aria-labelledby="unc-standings-title">
+            <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <div class="lb-board-head">
+              <h2 class="lb-board-title" id="unc-standings-title">Standings</h2>
+              <label class="lb-search">
+                <input id="unc-filter" type="search" placeholder="Find a player" aria-label="Find a player" autocomplete="off" enterkeyhint="search" />
+              </label>
+            </div>
 
-          <p class="lb-empty" id="leaderboard-empty">No leaderboard entries yet.</p>
-          <p class="lb-empty is-hidden" id="leaderboard-filter-empty">No player matches that search.</p>
+            <div class="lb-cols is-hidden" id="unc-table-head">
+              <span>Rank</span>
+              <span>Player</span>
+              <span>UncCoins</span>
+              <span>Prize</span>
+            </div>
 
-          <ol class="lb-list is-hidden" id="leaderboard-list"></ol>
-        </section>
+            <p class="lb-empty" id="unc-empty">No UncCoins yet.</p>
+            <p class="lb-empty is-hidden" id="unc-filter-empty">No player matches that search.</p>
+
+            <ol class="lb-list is-hidden" id="unc-list"></ol>
+          </section>
+        </div>
       </div>
     </section>
   </main>
@@ -172,6 +220,6 @@
 
   <script src="/js/main.js?v=avgx1"></script>
   <script src="/js/auth.js?v=claim24h"></script>
-  <script src="/js/leaderboard.js?v=lbrules1"></script>
+  <script src="/js/leaderboard.js?v=lbtabs1"></script>
 </body>
 </html>
