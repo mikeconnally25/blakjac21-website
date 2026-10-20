@@ -120,6 +120,7 @@ import {
   handlePointsBuyIpn,
   handlePointsBuyPackages,
   handlePointsBuySettings,
+  handlePointsBuyStripeWebhook,
 } from "./lib/points-buy-handlers.js";
 import {
   handleSlotTournamentAffiliatesOnly,
@@ -157,6 +158,11 @@ app.post(
   "/api/kick/webhook",
   express.raw({ type: "application/json" }),
   (req, res) => handleKickWebhook(req, res)
+);
+app.post(
+  "/api/points/buy/stripe-webhook",
+  express.raw({ type: "application/json" }),
+  (req, res) => handlePointsBuyStripeWebhook(req, res)
 );
 
 app.use(express.json());

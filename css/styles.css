@@ -12306,6 +12306,49 @@ button.one-v-one-name:focus-visible {
   font-weight: 700;
 }
 
+.store-buy-methods {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: 0.55rem;
+  width: 100%;
+}
+
+.store-buy-methods.is-hidden {
+  display: none;
+}
+
+.store-buy-method-btn {
+  min-height: 2.75rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(126, 216, 255, 0.3);
+  background: linear-gradient(135deg, rgba(88, 201, 243, 0.2), rgba(14, 28, 38, 0.92));
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+}
+
+.store-buy-method-btn:hover:not(:disabled) {
+  border-color: rgba(126, 216, 255, 0.55);
+  transform: translateY(-1px);
+}
+
+.store-buy-method-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.store-buy-method-btn.is-crypto {
+  border-color: rgba(157, 255, 115, 0.28);
+  background: linear-gradient(135deg, rgba(157, 255, 115, 0.14), rgba(14, 28, 38, 0.92));
+}
+
+.store-buy-method-btn.is-hidden {
+  display: none;
+}
+
 .store-buy-note {
   margin: 0;
   color: var(--text-muted);

@@ -7,6 +7,8 @@ let canRedeem = true;
 let buyPackages = [];
 let buyConfig = {
   configured: false,
+  stripeConfigured: false,
+  cryptoConfigured: false,
   enabled: true,
   rate: 100,
   minUsd: 1,
@@ -21,7 +23,27 @@ let redeemSlotCatalogLoadedAt = 0;
 let selectedRedeemSlot = null;
 
 function isBuyPointsOpen() {
-  return Boolean(buyConfig.configured) && buyConfig.enabled !== false;
+  return (
+    (Boolean(buyConfig.stripeConfigured) ||
+      Boolean(buyConfig.cryptoConfigured) ||
+      Boolean(buyConfig.configured)) &&
+    buyConfig.enabled !== false
+  );
+}
+
+function buyPayMethods() {
+  const methods = [];
+  if (buyConfig.stripeConfigured) methods.push("stripe");
+  if (buyConfig.cryptoConfigured) methods.push("crypto");
+  return methods;
+}
+
+function buyMethodLabel() {
+  const methods = buyPayMethods();
+  if (methods.length === 2) return "card or crypto";
+  if (methods[0] === "stripe") return "card";
+  if (methods[0] === "crypto") return "crypto";
+  return "card or crypto";
 }
 
 function setStoreStatus(message, tone = "") {
@@ -63,40 +85,67 @@ function formatUsd(value) {
   return `$${n % 1 === 0 ? String(n) : n.toFixed(2)}`;
 }
 
+function renderBuyMethods() {
+  const methodsEl = document.getElementById("store-buy-methods");
+  const cardBtn = document.getElementById("store-buy-pay-card");
+  const cryptoBtn = document.getElementById("store-buy-pay-crypto");
+  if (!methodsEl) return;
+
+  const methods = buyPayMethods();
+  const canBuy = Boolean(currentUser) && isBuyPointsOpen();
+  const showChooser =
+    canBuy && Boolean(selectedBuyPackageId) && methods.length > 1;
+
+  methodsEl.classList.toggle("is-hidden", !showChooser);
+  cardBtn?.classList.toggle("is-hidden", !buyConfig.stripeConfigured);
+  cryptoBtn?.classList.toggle("is-hidden", !buyConfig.cryptoConfigured);
+  if (cardBtn) cardBtn.disabled = !showChooser;
+  if (cryptoBtn) cryptoBtn.disabled = !showChooser;
+}
+
 function renderBuyForm() {
   const packagesEl = document.getElementById("store-buy-packages");
   const note = document.getElementById("store-buy-note");
   const copy = document.getElementById("store-buy-copy");
   if (!note) return;
 
+  const methodLabel = buyMethodLabel();
   const pkg = buyPackages[0];
   if (copy) {
     if (buyPackages.length > 1) {
-      copy.textContent = "Choose a package · pay with crypto";
+      copy.textContent = `Choose a package · ${methodLabel}`;
     } else if (pkg) {
-      copy.textContent = `${Number(pkg.points).toLocaleString()} UncCoins for ${formatUsd(pkg.usd)} · pay with crypto`;
+      copy.textContent = `${Number(pkg.points).toLocaleString()} UncCoins for ${formatUsd(pkg.usd)} · ${methodLabel}`;
     } else {
-      copy.textContent = "2,000 UncCoins for $15 · pay with crypto";
+      copy.textContent = `Choose a package · ${methodLabel}`;
     }
   }
 
   const canBuy = Boolean(currentUser) && isBuyPointsOpen();
   packagesEl?.classList.toggle("is-disabled", !canBuy);
 
-  if (!buyConfig.configured) {
+  if (!isBuyPointsOpen() && buyConfig.enabled !== false) {
     note.textContent =
-      "Crypto purchases are not configured yet. Add NOWPAYMENTS_API_KEY and NOWPAYMENTS_IPN_SECRET on Vercel, then redeploy.";
+      "Purchases are not configured yet. Add STRIPE_SECRET_KEY (card) and/or NOWPAYMENTS_API_KEY + NOWPAYMENTS_IPN_SECRET (crypto) on Vercel, then redeploy.";
+    renderBuyMethods();
     return;
   }
   if (buyConfig.enabled === false) {
     note.textContent = "Buying UncCoins is paused right now. Check back later.";
+    renderBuyMethods();
     return;
   }
   if (!currentUser) {
     note.textContent = "Sign in with Kick to buy UncCoins.";
+    renderBuyMethods();
     return;
   }
-  note.textContent = "Tap a package to checkout.";
+  if (selectedBuyPackageId && buyPayMethods().length > 1) {
+    note.textContent = "Choose card or crypto to continue.";
+  } else {
+    note.textContent = "Tap a package to checkout.";
+  }
+  renderBuyMethods();
 }
 
 function renderBuyPackages() {
@@ -130,8 +179,8 @@ function renderBuyPackages() {
     btn.addEventListener("click", () => {
       if (!currentUser || !isBuyPointsOpen()) {
         setStoreStatus(
-          !buyConfig.configured
-            ? "Crypto purchases are not configured yet."
+          !isBuyPointsOpen() && buyConfig.enabled !== false
+            ? "Purchases are not configured yet."
             : buyConfig.enabled === false
               ? "Buying UncCoins is paused right now."
               : "Sign in with Kick to buy UncCoins.",
@@ -145,18 +194,34 @@ function renderBuyPackages() {
         .forEach((el) =>
           el.classList.toggle("is-selected", el.dataset.packageId === pkg.id)
         );
-      startBuyPurchase({ packageId: pkg.id });
+
+      const methods = buyPayMethods();
+      if (methods.length === 1) {
+        startBuyPurchase({ packageId: pkg.id, method: methods[0] });
+        return;
+      }
+      renderBuyForm();
     });
     packagesEl.append(btn);
   });
+  renderBuyMethods();
 }
 
 async function startBuyPurchase(payload) {
   const packageButtons = document.querySelectorAll(".store-buy-package-btn");
+  const methodButtons = document.querySelectorAll(".store-buy-method-btn");
   packageButtons.forEach((btn) => {
     btn.disabled = true;
   });
-  setStoreStatus("Opening crypto checkout...");
+  methodButtons.forEach((btn) => {
+    btn.disabled = true;
+  });
+  const method = payload.method || "stripe";
+  setStoreStatus(
+    method === "crypto"
+      ? "Opening crypto checkout..."
+      : "Opening card checkout..."
+  );
   try {
     const response = await fetch("/api/points/buy", {
       method: "POST",
@@ -168,10 +233,11 @@ async function startBuyPurchase(payload) {
     if (!response.ok) {
       throw new Error(data.error || "Could not start purchase.");
     }
-    if (!data.invoiceUrl) {
+    const checkoutUrl = data.checkoutUrl || data.invoiceUrl;
+    if (!checkoutUrl) {
       throw new Error("Checkout URL missing.");
     }
-    window.location.href = data.invoiceUrl;
+    window.location.href = checkoutUrl;
   } catch (error) {
     setStoreStatus(error.message || "Could not start purchase.", "error");
     renderBuyForm();
@@ -658,13 +724,19 @@ async function loadBuyPackages() {
   if (!response.ok) {
     buyPackages = [];
     buyConfig.configured = false;
+    buyConfig.stripeConfigured = false;
+    buyConfig.cryptoConfigured = false;
     buyConfig.enabled = true;
     return;
   }
   const data = await response.json().catch(() => ({}));
   buyPackages = Array.isArray(data.packages) ? data.packages : [];
+  const stripeConfigured = Boolean(data.stripeConfigured);
+  const cryptoConfigured = Boolean(data.cryptoConfigured);
   buyConfig = {
-    configured: Boolean(data.configured),
+    configured: Boolean(data.configured) || stripeConfigured || cryptoConfigured,
+    stripeConfigured,
+    cryptoConfigured,
     enabled: data.enabled !== false,
     rate: Number(data.rate) || 100,
     minUsd: Number(data.minUsd) || 1,
@@ -1216,10 +1288,21 @@ function setAwardChatStatus(message, tone = "") {
 
 function initBuyForm() {
   const form = document.getElementById("store-buy-form");
-  if (!form) return;
+  if (form) {
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+    });
+  }
 
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
+  const cardBtn = document.getElementById("store-buy-pay-card");
+  const cryptoBtn = document.getElementById("store-buy-pay-crypto");
+  cardBtn?.addEventListener("click", () => {
+    if (!selectedBuyPackageId) return;
+    startBuyPurchase({ packageId: selectedBuyPackageId, method: "stripe" });
+  });
+  cryptoBtn?.addEventListener("click", () => {
+    if (!selectedBuyPackageId) return;
+    startBuyPurchase({ packageId: selectedBuyPackageId, method: "crypto" });
   });
 }
 
@@ -1228,9 +1311,12 @@ function handlePurchaseReturnQuery() {
   const purchase = params.get("purchase");
   if (!purchase) return;
 
+  const provider = String(params.get("provider") || "").toLowerCase();
   if (purchase === "success") {
     setStoreStatus(
-      "Payment received. UncCoins credit after the crypto payment confirms — refresh in a moment if your balance has not updated yet.",
+      provider === "stripe"
+        ? "Payment received. UncCoins credit shortly — refresh if your balance has not updated yet."
+        : "Payment received. UncCoins credit after the crypto payment confirms — refresh in a moment if your balance has not updated yet.",
       "success"
     );
   } else if (purchase === "cancel") {
@@ -1238,6 +1324,7 @@ function handlePurchaseReturnQuery() {
   }
 
   params.delete("purchase");
+  params.delete("provider");
   const next = params.toString();
   const url = `${window.location.pathname}${next ? `?${next}` : ""}${window.location.hash || ""}`;
   window.history.replaceState({}, "", url);

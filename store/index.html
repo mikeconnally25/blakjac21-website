@@ -69,7 +69,7 @@
           <div class="store-hero">
             <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
             <h1 class="store-heading">Store</h1>
-            <p class="store-lede">Redeem UncCoins for rewards. Buy more anytime with crypto.</p>
+            <p class="store-lede">Redeem UncCoins for rewards. Buy more anytime with card or crypto.</p>
           </div>
 
           <aside class="store-balance" id="store-balance-panel" aria-live="polite">
@@ -84,9 +84,17 @@
         <section class="store-buy" aria-labelledby="store-buy-title">
           <div class="store-buy-copy">
             <h2 class="store-buy-title" id="store-buy-title">Buy UncCoins</h2>
-            <p class="store-buy-subtitle" id="store-buy-copy">Choose a package · pay with crypto</p>
+            <p class="store-buy-subtitle" id="store-buy-copy">Choose a package · card or crypto</p>
           </div>
           <div class="store-buy-packages" id="store-buy-packages" role="group" aria-label="UncCoins package"></div>
+          <div class="store-buy-methods is-hidden" id="store-buy-methods" role="group" aria-label="Payment method">
+            <button type="button" class="store-buy-method-btn is-card" id="store-buy-pay-card">
+              Pay with card
+            </button>
+            <button type="button" class="store-buy-method-btn is-crypto" id="store-buy-pay-crypto">
+              Pay with crypto
+            </button>
+          </div>
           <p class="store-buy-note" id="store-buy-note">Sign in with Kick to buy UncCoins.</p>
           <form class="store-buy-form is-hidden" id="store-buy-form" aria-hidden="true"></form>
         </section>
