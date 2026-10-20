@@ -5,6 +5,8 @@
   let lastPayload = null;
   let lastWinnerId = null;
   let drawAnimating = false;
+  let houseLossPayload = null;
+  let houseLossLastWinnerId = null;
 
   function $(id) {
     return document.getElementById(id);
@@ -141,11 +143,106 @@
     setDigits(remaining);
   }
 
+  function setHouseLossDigits(remainingMs) {
+    const total = Math.max(0, Math.floor(remainingMs / 1000));
+    const days = Math.floor(total / 86400);
+    const hours = Math.floor((total % 86400) / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+    const d = $("house-loss-d");
+    const h = $("house-loss-h");
+    const m = $("house-loss-m");
+    const s = $("house-loss-s");
+    if (d) d.textContent = pad2(days);
+    if (h) h.textContent = pad2(hours);
+    if (m) m.textContent = pad2(minutes);
+    if (s) s.textContent = pad2(seconds);
+  }
+
+  function renderHouseLoss(payload) {
+    houseLossPayload = payload || null;
+    const poolEl = $("house-loss-pool");
+    if (poolEl) {
+      poolEl.textContent = Number(payload?.pool || 0).toLocaleString();
+    }
+
+    const winnerEl = $("house-loss-winner");
+    const winner = payload?.lastWinner;
+    if (winnerEl) {
+      if (winner?.amount) {
+        const name =
+          String(winner.stakeUsername || "").trim() ||
+          String(winner.kickUsername || "").trim() ||
+          "Winner";
+        const isNew = Boolean(winner.id && winner.id !== houseLossLastWinnerId);
+        houseLossLastWinnerId = winner.id || houseLossLastWinnerId;
+        winnerEl.textContent = `Last winner · ${name} · ${Number(
+          winner.amount || 0
+        ).toLocaleString()} UncCoins${
+          winner.revealedAt ? ` · ${formatWhen(winner.revealedAt)}` : ""
+        }`;
+        winnerEl.classList.remove("is-hidden");
+        winnerEl.classList.toggle("is-new", isNew);
+      } else {
+        winnerEl.textContent = "";
+        winnerEl.classList.add("is-hidden");
+      }
+    }
+
+    const shell = $("house-loss-timer");
+    const label = $("house-loss-timer-label");
+    const note = $("house-loss-timer-note");
+    const week = payload?.week;
+    if (!shell) return;
+
+    if (!week?.started) {
+      shell.dataset.state = "idle";
+      if (label) label.textContent = "Starting soon";
+      if (note) note.textContent = "Week opens automatically";
+      setHouseLossDigits(0);
+      return;
+    }
+
+    const endsAt = Date.parse(week.endsAt || "");
+    const remaining = Number.isFinite(endsAt) ? endsAt - Date.now() : 0;
+    if (remaining <= 0 || week.ended) {
+      shell.dataset.state = "ended";
+      if (label) label.textContent = "Drawing winner";
+      if (note) {
+        note.textContent = "Week ended — picking a random AFF winner";
+      }
+      setHouseLossDigits(0);
+      return;
+    }
+
+    shell.dataset.state = "active";
+    if (label) label.textContent = "Draws in";
+    if (note) {
+      note.textContent = week.endsAt
+        ? `Closes ${formatWhen(week.endsAt)} · AFF badge required to win`
+        : "AFF badge required to win";
+    }
+    setHouseLossDigits(remaining);
+  }
+
+  async function loadHouseLossStatus() {
+    const response = await fetch("/api/house-loss-raffle/status", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Could not load house games raffle.");
+    }
+    renderHouseLoss(data);
+    return data;
+  }
+
   function scheduleCountdown() {
     if (countdownTimer) clearInterval(countdownTimer);
     countdownTimer = setInterval(() => {
-      if (!lastPayload?.week) return;
-      renderTimer(lastPayload.week);
+      if (lastPayload?.week) renderTimer(lastPayload.week);
+      if (houseLossPayload?.week) renderHouseLoss(houseLossPayload);
     }, 1000);
   }
 
@@ -446,6 +543,11 @@
     }
     applyPayload(data);
     setPageStatus("");
+    try {
+      await loadHouseLossStatus();
+    } catch {
+      /* house pot is secondary */
+    }
   }
 
   async function postAction(url, label) {
@@ -570,6 +672,75 @@
       setAdminStatus("Winner cleared.", "success");
     } catch (error) {
       setAdminStatus(error.message || "Could not clear winner.", "error");
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $("house-loss-draw-btn")?.addEventListener("click", async () => {
+    if (
+      !window.confirm(
+        "Force-draw the house games UncCoins pot now and start a new week?"
+      )
+    ) {
+      return;
+    }
+    const button = $("house-loss-draw-btn");
+    button.disabled = true;
+    try {
+      setAdminStatus("Drawing house pot…");
+      const response = await fetch("/api/house-loss-raffle/reveal", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "Could not draw house pot.");
+      }
+      renderHouseLoss(data);
+      const name =
+        data.lastWinner?.stakeUsername ||
+        data.lastWinner?.kickUsername ||
+        "winner";
+      setAdminStatus(
+        data.lastWinner
+          ? `House pot winner: ${name} (+${Number(
+              data.lastWinner.amount || 0
+            ).toLocaleString()} UncCoins)`
+          : "House pot draw complete.",
+        "success"
+      );
+    } catch (error) {
+      setAdminStatus(error.message || "House pot draw failed.", "error");
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $("house-loss-reset-btn")?.addEventListener("click", async () => {
+    if (
+      !window.confirm(
+        "Restart the house games raffle week timer? The current pot stays."
+      )
+    ) {
+      return;
+    }
+    const button = $("house-loss-reset-btn");
+    button.disabled = true;
+    try {
+      setAdminStatus("Restarting house week…");
+      const response = await fetch("/api/house-loss-raffle/reset-week", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "Could not restart house week.");
+      }
+      renderHouseLoss(data);
+      setAdminStatus("House games week restarted. Pot kept.", "success");
+    } catch (error) {
+      setAdminStatus(error.message || "Could not restart house week.", "error");
     } finally {
       button.disabled = false;
     }

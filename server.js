@@ -87,6 +87,11 @@ import {
   handleWeeklyRaffleStatus,
 } from "./lib/weekly-raffle-handlers.js";
 import {
+  handleHouseLossRaffleResetWeek,
+  handleHouseLossRaffleReveal,
+  handleHouseLossRaffleStatus,
+} from "./lib/house-loss-raffle-handlers.js";
+import {
   handleChatList,
   handleChatRemove,
   handleChatSend,
@@ -368,6 +373,15 @@ app.post("/api/weekly-raffles/reveal", (req, res) =>
 );
 app.post("/api/weekly-raffles/clear-winner", (req, res) =>
   handleWeeklyRaffleClearWinner(req, res)
+);
+app.get("/api/house-loss-raffle/status", (req, res) =>
+  handleHouseLossRaffleStatus(req, res)
+);
+app.post("/api/house-loss-raffle/reveal", (req, res) =>
+  handleHouseLossRaffleReveal(req, res)
+);
+app.post("/api/house-loss-raffle/reset-week", (req, res) =>
+  handleHouseLossRaffleResetWeek(req, res)
 );
 app.get("/api/chat", (req, res) => handleChatList(req, res));
 app.post("/api/chat", (req, res) => handleChatSend(req, res));

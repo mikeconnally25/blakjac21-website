@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=menuside1" />
+  <link rel="stylesheet" href="/css/styles.css?v=houseloss1" />
 </head>
 <body class="weekly-raffle-body">
   <div class="bg-glow" aria-hidden="true"></div>
@@ -102,6 +102,35 @@
           <p class="weekly-raffle-period is-hidden" id="raffle-period"></p>
         </header>
 
+        <section class="house-loss-raffle" id="house-loss-raffle" aria-label="House games UncCoins raffle">
+          <div class="house-loss-raffle-copy">
+            <p class="section-eyebrow">House games pot</p>
+            <h2 class="house-loss-raffle-title">UncCoins loss raffle</h2>
+            <p class="house-loss-raffle-sub">
+              Losing house-game bets feed this pool. When the week ends, a random Stake-linked
+              <strong>AFF</strong> user wins the whole pot.
+            </p>
+            <p class="house-loss-raffle-winner is-hidden" id="house-loss-winner" aria-live="polite"></p>
+          </div>
+          <div class="house-loss-raffle-panel">
+            <div class="house-loss-raffle-pool">
+              <span class="house-loss-raffle-pool-label">Prize pool</span>
+              <span class="house-loss-raffle-pool-value" id="house-loss-pool">0</span>
+              <span class="house-loss-raffle-pool-unit">UncCoins</span>
+            </div>
+            <div class="house-loss-raffle-timer" id="house-loss-timer" data-state="idle">
+              <p class="house-loss-raffle-timer-label" id="house-loss-timer-label">Week status</p>
+              <div class="house-loss-raffle-timer-digits" aria-live="polite">
+                <span><span id="house-loss-d">00</span><small>d</small></span>
+                <span><span id="house-loss-h">00</span><small>h</small></span>
+                <span><span id="house-loss-m">00</span><small>m</small></span>
+                <span><span id="house-loss-s">00</span><small>s</small></span>
+              </div>
+              <p class="house-loss-raffle-timer-note" id="house-loss-timer-note">Loading…</p>
+            </div>
+          </div>
+        </section>
+
         <div class="admin-panel weekly-raffle-admin is-hidden" id="raffle-admin-panel">
           <p class="admin-panel-label">Admin week + draw</p>
           <p class="admin-panel-text">
@@ -120,6 +149,12 @@
             </button>
             <button type="button" class="btn btn-sm btn-outline" id="raffle-clear-btn">
               Clear winner
+            </button>
+            <button type="button" class="btn btn-sm btn-primary" id="house-loss-draw-btn">
+              Draw house pot
+            </button>
+            <button type="button" class="btn btn-sm btn-outline" id="house-loss-reset-btn">
+              Restart house week
             </button>
           </div>
           <p class="guess-status is-hidden" id="raffle-admin-status" role="status" aria-live="polite"></p>
@@ -186,6 +221,6 @@
 
   <script src="/js/main.js?v=avgx1"></script>
   <script src="/js/auth.js?v=claim24h"></script>
-  <script src="/js/weekly-raffles.js?v=stakecopy1"></script>
+  <script src="/js/weekly-raffles.js?v=houseloss1"></script>
 </body>
 </html>

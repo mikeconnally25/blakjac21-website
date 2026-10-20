@@ -13500,6 +13500,135 @@ button.one-v-one-name:focus-visible {
   line-height: 1.55;
 }
 
+.house-loss-raffle {
+  display: grid;
+  gap: 1.25rem;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  border-radius: calc(var(--radius) + 6px);
+  border: 1px solid rgba(240, 195, 106, 0.28);
+  background:
+    linear-gradient(120deg, rgba(240, 195, 106, 0.1), transparent 42%),
+    rgba(4, 18, 28, 0.55);
+}
+
+.house-loss-raffle-copy {
+  max-width: 40rem;
+}
+
+.house-loss-raffle-title {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.house-loss-raffle-sub {
+  margin: 0.55rem 0 0;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.house-loss-raffle-winner {
+  margin: 0.75rem 0 0;
+  color: #f0c36a;
+  font-weight: 600;
+}
+
+.house-loss-raffle-winner.is-hidden {
+  display: none;
+}
+
+.house-loss-raffle-panel {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 720px) {
+  .house-loss-raffle-panel {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+}
+
+.house-loss-raffle-pool {
+  display: grid;
+  align-content: center;
+  gap: 0.2rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(126, 216, 255, 0.22);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.house-loss-raffle-pool-label,
+.house-loss-raffle-timer-label {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.house-loss-raffle-pool-value {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 6vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  color: #f0c36a;
+}
+
+.house-loss-raffle-pool-unit {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.house-loss-raffle-timer {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.house-loss-raffle-timer-digits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 0.85rem;
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
+.house-loss-raffle-timer-digits small {
+  margin-left: 0.15rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.house-loss-raffle-timer-note {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.house-loss-raffle-timer[data-state="active"] .house-loss-raffle-timer-digits {
+  color: #7ed8ff;
+}
+
+.house-loss-raffle-timer[data-state="ended"] .house-loss-raffle-timer-digits {
+  color: #f0c36a;
+}
+
 .weekly-raffle-countdown {
   position: relative;
   z-index: 1;
