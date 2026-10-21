@@ -14867,3 +14867,341 @@ button.one-v-one-name:focus-visible {
   }
 }
 
+
+/* —— Slot League —— */
+.league-page .page-content {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.league-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, 16rem);
+  gap: 1rem;
+  align-items: start;
+}
+
+.league-heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 0.95;
+}
+
+.league-lede {
+  margin: 0.45rem 0 0;
+  color: var(--text-muted);
+  max-width: 36rem;
+}
+
+.league-status-card,
+.league-panel {
+  position: relative;
+  overflow: hidden;
+  padding: 1rem 1.1rem;
+}
+
+.league-status-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.league-panel-label {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.league-panel-title {
+  margin: 0.2rem 0 0.75rem;
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.league-status-value {
+  margin: 0.55rem 0 0.2rem;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.league-status-meta,
+.league-copy {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.league-banner {
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(88, 201, 243, 0.2);
+  background: rgba(8, 18, 26, 0.75);
+}
+
+.league-banner.is-error {
+  border-color: rgba(255, 110, 110, 0.35);
+  color: #ffb4b4;
+}
+
+.league-banner.is-success {
+  border-color: rgba(157, 255, 115, 0.3);
+  color: #c8ffad;
+}
+
+.league-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.league-meta dt {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.league-meta dd {
+  margin: 0.2rem 0 0;
+  font-weight: 700;
+}
+
+.league-join-form,
+.league-admin-form {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+  max-width: 28rem;
+}
+
+.league-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.league-field span {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.league-field input,
+.league-field select {
+  width: 100%;
+  min-height: 2.6rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(126, 216, 255, 0.22);
+  background: rgba(5, 12, 18, 0.85);
+  color: var(--text);
+}
+
+.league-spots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
+  gap: 0.65rem;
+}
+
+.league-spot {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.65rem 0.7rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(88, 201, 243, 0.14);
+  background: rgba(6, 14, 20, 0.72);
+}
+
+.league-spot.is-filled {
+  border-color: rgba(126, 216, 255, 0.28);
+}
+
+.league-spot-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.league-spot-thumb.is-empty {
+  border: 1px dashed rgba(126, 216, 255, 0.25);
+}
+
+.league-spot-index {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.league-spot-name,
+.league-spot-slot {
+  margin: 0.1rem 0 0;
+  font-size: 0.92rem;
+  line-height: 1.25;
+}
+
+.league-spot-slot {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.league-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.league-group {
+  padding: 0.75rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(88, 201, 243, 0.14);
+  background: rgba(5, 12, 18, 0.55);
+}
+
+.league-group-title {
+  margin: 0 0 0.55rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.league-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.league-table th,
+.league-table td {
+  padding: 0.35rem 0.25rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.league-table th {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.league-matches,
+.league-knockout {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.league-match {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.65rem 0.75rem;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1px solid rgba(88, 201, 243, 0.12);
+  background: rgba(5, 12, 18, 0.55);
+}
+
+.league-match.is-done {
+  border-color: rgba(157, 255, 115, 0.22);
+}
+
+.league-match-stage {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.league-match-names {
+  margin: 0.15rem 0 0;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.league-match-names span {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.league-match-scores {
+  display: grid;
+  gap: 0.2rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: #9dff73;
+  text-align: right;
+}
+
+.league-match-winner {
+  margin: 0;
+  min-width: 5rem;
+  text-align: right;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.league-knockout-round {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.league-champion {
+  margin: 0.85rem 0 0;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #e8c56b;
+}
+
+.league-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.league-admin-score {
+  margin-top: 0.5rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 820px) {
+  .league-top {
+    grid-template-columns: 1fr;
+  }
+
+  .league-match {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .league-match-scores,
+  .league-match-winner {
+    text-align: left;
+  }
+}

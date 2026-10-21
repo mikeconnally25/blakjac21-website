@@ -144,6 +144,22 @@ import {
   handleSlotTournamentToggle,
 } from "./lib/slot-tournament-handlers.js";
 import {
+  handleSlotLeagueEntriesBots,
+  handleSlotLeagueEntriesClear,
+  handleSlotLeagueEntryRemove,
+  handleSlotLeagueGenerateGroups,
+  handleSlotLeagueGenerateKnockout,
+  handleSlotLeagueJoin,
+  handleSlotLeagueMatchScore,
+  handleSlotLeaguePhase,
+  handleSlotLeagueReset,
+  handleSlotLeagueSettings,
+  handleSlotLeagueSpotAssign,
+  handleSlotLeagueSpotSlot,
+  handleSlotLeagueStatus,
+  handleSlotLeagueToggle,
+} from "./lib/slot-league-handlers.js";
+import {
   handleHouseGamesBalance,
   handleHouseGamesPlay,
   handleHouseGamesSelfCredit,
@@ -351,6 +367,48 @@ app.post("/api/slot-tournaments/results", (req, res) =>
 );
 app.post("/api/slot-tournaments/join", (req, res) =>
   handleSlotTournamentJoin(req, res)
+);
+app.get("/api/slot-league/status", (req, res) =>
+  handleSlotLeagueStatus(req, res)
+);
+app.post("/api/slot-league/toggle", (req, res) =>
+  handleSlotLeagueToggle(req, res)
+);
+app.post("/api/slot-league/settings", (req, res) =>
+  handleSlotLeagueSettings(req, res)
+);
+app.post("/api/slot-league/phase", (req, res) =>
+  handleSlotLeaguePhase(req, res)
+);
+app.post("/api/slot-league/join", (req, res) =>
+  handleSlotLeagueJoin(req, res)
+);
+app.post("/api/slot-league/reset", (req, res) =>
+  handleSlotLeagueReset(req, res)
+);
+app.post("/api/slot-league/entries/bots", (req, res) =>
+  handleSlotLeagueEntriesBots(req, res)
+);
+app.post("/api/slot-league/entries/remove", (req, res) =>
+  handleSlotLeagueEntryRemove(req, res)
+);
+app.post("/api/slot-league/entries/clear", (req, res) =>
+  handleSlotLeagueEntriesClear(req, res)
+);
+app.post("/api/slot-league/spots/assign", (req, res) =>
+  handleSlotLeagueSpotAssign(req, res)
+);
+app.post("/api/slot-league/spots/slot", (req, res) =>
+  handleSlotLeagueSpotSlot(req, res)
+);
+app.post("/api/slot-league/groups/generate", (req, res) =>
+  handleSlotLeagueGenerateGroups(req, res)
+);
+app.post("/api/slot-league/knockout/generate", (req, res) =>
+  handleSlotLeagueGenerateKnockout(req, res)
+);
+app.post("/api/slot-league/matches/score", (req, res) =>
+  handleSlotLeagueMatchScore(req, res)
 );
 app.get("/api/giveaways/status", (req, res) => handleGiveawayStatus(req, res));
 app.post("/api/giveaways/toggle", (req, res) => handleGiveawayToggle(req, res));

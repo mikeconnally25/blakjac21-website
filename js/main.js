@@ -250,6 +250,7 @@ function ensureMenuSubnav() {
     ["/slot-stats/", "Slot Stats"],
     ["/one-v-one/", "1v1"],
     ["/slot-tournaments/", "Tournaments"],
+    ["/league/", "League"],
     ["/store/", "Store"],
   ];
 

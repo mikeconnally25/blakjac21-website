@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Slot League — NBA Cup style groups and knockout on BLAKJAC21." />
+  <title>Slot League | BLAKJAC21</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css?v=league1" />
+</head>
+<body>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <header class="header" id="top">
+    <nav class="nav container">
+      <a href="/" class="logo">
+        <img src="/images/logo.png" alt="" class="logo-image" width="50" height="50" />
+        <span class="logo-text">Blakjac<span class="accent">21</span></span>
+      </a>
+
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="nav-links">
+        <li><a href="/#watch">Watch</a></li>
+        <li class="is-hidden" id="admin-nav-commands">
+          <a href="/commands/">Commands</a>
+        </li>
+        <li><a href="/#menu">Menu</a></li>
+        <li><a href="/#house-games">House Games</a></li>
+        <li><a href="/#links">Links</a></li>
+        <li class="is-hidden" id="admin-nav-accounts">
+          <a href="/accounts/">Accounts</a>
+        </li>
+        <li>
+          <div class="auth-panel" id="auth-panel">
+            <div class="auth-guest" id="auth-guest">
+              <a href="/api/auth/login" class="btn btn-sm btn-kick">Sign in with Kick</a>
+            </div>
+            <div class="auth-member is-hidden" id="auth-member">
+              <div class="auth-user">
+                <img id="auth-avatar" class="auth-avatar is-hidden" alt="" width="32" height="32" />
+                <span id="auth-username" class="auth-username"></span>
+                <span id="auth-admin-badge" class="auth-admin-badge is-hidden">Admin</span>
+                <button type="button" id="auth-stake-badge" class="auth-stake-badge is-hidden"></button>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline" id="auth-logout">Sign out</button>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <div class="auth-toast is-hidden" id="auth-toast" role="status" aria-live="polite"></div>
+
+    <section class="section page-section league-page">
+      <div class="section-atmosphere" aria-hidden="true"></div>
+      <div class="container page-content league-shell">
+        <a href="/#house-games" class="back-link">← Back</a>
+
+        <header class="league-top">
+          <div class="league-hero">
+            <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
+            <h1 class="league-heading">Slot League</h1>
+            <p class="league-lede" id="league-lede">
+              16 spots. 4 groups. Knockout of 8 — NBA Cup style.
+            </p>
+          </div>
+          <div class="league-status-card bj21-panel theme-surface" id="league-status-card" data-phase="closed">
+            <span class="bj21-panel-glow" aria-hidden="true"></span>
+            <div class="league-status-head">
+              <p class="league-panel-label">Status</p>
+              <label class="toggle league-status-toggle is-hidden" id="league-status-toggle-wrap" title="Open or close signups">
+                <input type="checkbox" id="league-status-toggle" aria-label="Open or close league signups" />
+                <span class="toggle-slider" aria-hidden="true"></span>
+              </label>
+            </div>
+            <p class="league-status-value" id="league-status-value">Closed</p>
+            <p class="league-status-meta" id="league-status-meta">No active league.</p>
+          </div>
+        </header>
+
+        <p class="league-banner is-hidden" id="league-banner" role="status"></p>
+
+        <section class="league-panel bj21-panel theme-surface" aria-labelledby="league-info-title">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <p class="league-panel-label">Season</p>
+          <h2 class="league-panel-title" id="league-info-title">League</h2>
+          <dl class="league-meta">
+            <div>
+              <dt>Title</dt>
+              <dd id="league-title">—</dd>
+            </div>
+            <div>
+              <dt>Buy-in</dt>
+              <dd id="league-buyin">—</dd>
+            </div>
+            <div>
+              <dt>Filled</dt>
+              <dd id="league-filled">0 / 16</dd>
+            </div>
+            <div>
+              <dt>Phase</dt>
+              <dd id="league-phase">closed</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="league-panel bj21-panel theme-surface" id="league-join-panel" aria-labelledby="league-join-title">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <p class="league-panel-label">Signup</p>
+          <h2 class="league-panel-title" id="league-join-title">Claim a spot</h2>
+          <p class="league-copy" id="league-join-copy">Sign in with Kick when signups open, pick a Stake slot, and take one of 16 spots.</p>
+          <form class="league-join-form" id="league-join-form">
+            <label class="league-field">
+              <span>Stake slot</span>
+              <input list="league-slot-catalog" id="league-join-slot" name="slot" placeholder="Search catalog…" autocomplete="off" required />
+              <datalist id="league-slot-catalog"></datalist>
+            </label>
+            <button type="submit" class="btn btn-primary" id="league-join-btn">Join league</button>
+          </form>
+        </section>
+
+        <section class="league-panel bj21-panel theme-surface" aria-labelledby="league-spots-title">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <p class="league-panel-label">Roster</p>
+          <h2 class="league-panel-title" id="league-spots-title">16 spots</h2>
+          <div class="league-spots-grid" id="league-spots-grid"></div>
+        </section>
+
+        <section class="league-panel bj21-panel theme-surface" aria-labelledby="league-groups-title">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <p class="league-panel-label">Group stage</p>
+          <h2 class="league-panel-title" id="league-groups-title">Groups A–D</h2>
+          <p class="league-copy">Round robin in each group. Top of each group + 4 wildcards advance.</p>
+          <div class="league-groups" id="league-groups"></div>
+        </section>
+
+        <section class="league-panel bj21-panel theme-surface" aria-labelledby="league-matches-title">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <p class="league-panel-label">Schedule</p>
+          <h2 class="league-panel-title" id="league-matches-title">Matches</h2>
+          <div class="league-matches" id="league-matches"></div>
+        </section>
+
+        <section class="league-panel bj21-panel theme-surface" aria-labelledby="league-knockout-title">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <p class="league-panel-label">Knockout</p>
+          <h2 class="league-panel-title" id="league-knockout-title">Quarterfinals → Final</h2>
+          <div class="league-knockout" id="league-knockout"></div>
+          <p class="league-champion is-hidden" id="league-champion"></p>
+        </section>
+
+        <section class="league-panel bj21-panel theme-surface is-hidden" id="league-admin" aria-labelledby="league-admin-title">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <p class="league-panel-label">Admin</p>
+          <h2 class="league-panel-title" id="league-admin-title">Controls</h2>
+
+          <form class="league-admin-form" id="league-settings-form">
+            <label class="league-field">
+              <span>Title</span>
+              <input type="text" id="league-admin-title-input" maxlength="80" />
+            </label>
+            <label class="league-field">
+              <span>Buy-in</span>
+              <input type="text" id="league-admin-buyin" maxlength="40" placeholder="e.g. $50" />
+            </label>
+            <button type="submit" class="btn btn-sm btn-primary">Save settings</button>
+          </form>
+
+          <div class="league-admin-actions">
+            <button type="button" class="btn btn-sm btn-primary" id="league-admin-groups">Generate groups</button>
+            <button type="button" class="btn btn-sm btn-outline" id="league-admin-groups-force">Force rebuild groups</button>
+            <button type="button" class="btn btn-sm btn-primary" id="league-admin-knockout">Generate knockout</button>
+            <button type="button" class="btn btn-sm btn-outline" id="league-admin-knockout-force">Force rebuild knockout</button>
+            <button type="button" class="btn btn-sm btn-outline" id="league-admin-bots">Fill bots to 16</button>
+            <button type="button" class="btn btn-sm btn-outline" id="league-admin-clear">Clear entries</button>
+            <button type="button" class="btn btn-sm btn-outline" id="league-admin-reset">Reset season</button>
+          </div>
+
+          <div class="league-admin-score" id="league-admin-score">
+            <p class="league-panel-label">Score a match</p>
+            <form class="league-admin-form" id="league-score-form">
+              <label class="league-field">
+                <span>Match</span>
+                <select id="league-score-match"></select>
+              </label>
+              <label class="league-field">
+                <span>Score A</span>
+                <input type="text" id="league-score-a" placeholder="125.5x" />
+              </label>
+              <label class="league-field">
+                <span>Score B</span>
+                <input type="text" id="league-score-b" placeholder="98.2x" />
+              </label>
+              <button type="submit" class="btn btn-sm btn-primary">Save score</button>
+            </form>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/js/main.js?v=league1"></script>
+  <script type="module" src="/js/slot-league.js?v=league1"></script>
+</body>
+</html>
