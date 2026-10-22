@@ -148,6 +148,17 @@ body {
   font-weight: 700;
 }
 
+.ss-byline {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--accent-bright, #7ed8ff);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
 .ss-left {
   flex-shrink: 0;
   color: var(--accent-bright);

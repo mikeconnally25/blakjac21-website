@@ -2389,7 +2389,12 @@ async function pushPickedRequestToOpening(request) {
     await updateOpening({ action: "remove", id: removeId });
   }
 
-  await updateOpening({ action: "add", slug, name });
+  await updateOpening({
+    action: "add",
+    slug,
+    name,
+    requestedBy: String(request.username || "").trim() || undefined,
+  });
   document.getElementById("spin-overlay-board")?.scrollIntoView({
     block: "nearest",
     behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
@@ -2860,9 +2865,21 @@ function renderOpeningList() {
     const item = document.createElement("li");
     item.className = "spin-open-row";
 
+    const copy = document.createElement("div");
+    copy.className = "spin-open-copy";
+
     const name = document.createElement("span");
     name.className = "spin-open-name";
     name.textContent = slot.name;
+    copy.append(name);
+
+    const requester = String(slot.requestedBy || "").trim();
+    if (requester) {
+      const byline = document.createElement("span");
+      byline.className = "spin-open-requester";
+      byline.textContent = `by ${requester}`;
+      copy.append(byline);
+    }
 
     const add = document.createElement("div");
     add.className = "spin-open-add";
@@ -2911,9 +2928,37 @@ function renderOpeningList() {
         setOpeningStatus(error.message, "error");
       });
     });
-    item.append(name, add, remove);
+    item.append(copy, add, remove);
     list.append(item);
   }
+}
+
+function findRequesterForOpeningSlot(slot) {
+  const stored = String(slot?.requestedBy || "").trim();
+  if (stored) return stored;
+
+  const slug = String(slot?.slug || "")
+    .trim()
+    .toLowerCase();
+  const name = String(slot?.name || "")
+    .trim()
+    .toLowerCase();
+  const matches = (Array.isArray(slotRequests) ? slotRequests : []).filter((request) => {
+    const requestSlug = String(request?.slotSlug || "")
+      .trim()
+      .toLowerCase();
+    const requestName = String(request?.slotName || request?.slot || "")
+      .trim()
+      .toLowerCase();
+    return (
+      (slug && requestSlug && slug === requestSlug) ||
+      (name && requestName && name === requestName)
+    );
+  });
+  if (matches.length === 1) {
+    return String(matches[0].username || "").trim() || "";
+  }
+  return "";
 }
 
 async function addOpeningSlotBonus(slot, betInput, button) {
@@ -2937,13 +2982,19 @@ async function addOpeningSlotBonus(slot, betInput, button) {
     slotSlug: slot.slug,
     thumbnailUrl: catalogSlot?.thumbnailUrl || slot.thumbnailUrl,
     provider: catalogSlot?.provider || slot.provider,
+    requestedBy: findRequesterForOpeningSlot(slot),
   });
   if (button) button.disabled = false;
 
   if (!bonus) return;
   openingBetDrafts.delete(slot.id);
   if (betInput) betInput.value = "";
-  setOpeningStatus("Bonus added.", "success");
+  setOpeningStatus(
+    bonus.requestedBy
+      ? `Bonus added for ${bonus.requestedBy}.`
+      : "Bonus added.",
+    "success"
+  );
 }
 
 async function refreshOpeningList() {
@@ -3035,7 +3086,13 @@ function renderOpeningSearch() {
       const input = document.getElementById("spin-open-search");
       if (input) input.value = "";
       renderOpeningSearch();
-      updateOpening({ action: "add", slug: slot.slug, name: slot.name }).catch((error) => {
+      const requestedBy = findRequesterForOpeningSlot(slot);
+      updateOpening({
+        action: "add",
+        slug: slot.slug,
+        name: slot.name,
+        requestedBy: requestedBy || undefined,
+      }).catch((error) => {
         setOpeningStatus(error.message, "error");
       });
     });

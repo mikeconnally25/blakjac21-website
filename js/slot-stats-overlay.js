@@ -9,6 +9,7 @@ const DEMO_SLOTS = [
     biggestWin: 1240,
     biggestX: 48.2,
     bonusCount: 6,
+    requestedBy: "viewerone",
   },
   {
     name: "Sweet Fiesta",
@@ -18,6 +19,7 @@ const DEMO_SLOTS = [
     biggestWin: 860.5,
     biggestX: 12.5,
     bonusCount: 3,
+    requestedBy: "chattertwo",
   },
 ];
 
@@ -115,6 +117,14 @@ function renderLiveSlots({ slots = [], hiddenCount = 0 } = {}) {
       nameRow.append(left);
     }
 
+    const requesterName = String(slot.requestedBy || "").trim();
+    let byline = null;
+    if (requesterName) {
+      byline = document.createElement("p");
+      byline.className = "ss-byline";
+      byline.textContent = `by ${requesterName}`;
+    }
+
     const stats = document.createElement("div");
     stats.className = "ss-stats";
     for (const [label, value] of [
@@ -132,7 +142,9 @@ function renderLiveSlots({ slots = [], hiddenCount = 0 } = {}) {
       stats.append(stat);
     }
 
-    copy.append(nameRow, stats);
+    copy.append(nameRow);
+    if (byline) copy.append(byline);
+    copy.append(stats);
     row.append(thumb, copy);
     list.append(row);
   }

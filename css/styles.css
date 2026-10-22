@@ -6684,13 +6684,28 @@ button.one-v-one-name:focus-visible {
   gap: 0.55rem;
 }
 
-.spin-open-name {
+.spin-open-copy {
   min-width: 0;
   flex: 1;
+  display: grid;
+  gap: 0.1rem;
+}
+
+.spin-open-name {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 600;
+}
+
+.spin-open-requester {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted, #8ba4b6);
+  font-size: 0.8rem;
 }
 
 .spin-open-add {
@@ -6718,7 +6733,7 @@ button.one-v-one-name:focus-visible {
     flex-wrap: wrap;
   }
 
-  .spin-open-name {
+  .spin-open-copy {
     flex-basis: 100%;
   }
 }
