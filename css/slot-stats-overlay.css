@@ -153,10 +153,13 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--accent-bright, #7ed8ff);
-  font-size: 0.78rem;
+  color: #f0c98e;
+  font-family: "Teko", "Inter", sans-serif;
+  font-size: 1.05rem;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.1;
 }
 
 .ss-left {

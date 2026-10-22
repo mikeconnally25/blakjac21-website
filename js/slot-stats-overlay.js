@@ -39,6 +39,13 @@ function formatX(value) {
     : `${Number(value).toLocaleString("en-US")}x`;
 }
 
+function normalizeName(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
 function initials(name) {
   return (
     String(name || "")
@@ -72,6 +79,40 @@ function renderThumb(container, slot) {
 
 function signature(slots, hiddenCount) {
   return JSON.stringify({ slots, hiddenCount });
+}
+
+function requesterFromRequests(slot, requests) {
+  const stored = String(slot?.requestedBy || "").trim();
+  if (stored) return stored;
+
+  const slug = String(slot?.slug || "")
+    .trim()
+    .toLowerCase();
+  const name = normalizeName(slot?.name);
+  const matches = (Array.isArray(requests) ? requests : []).filter((request) => {
+    const requestSlug = String(request?.slotSlug || "")
+      .trim()
+      .toLowerCase();
+    const requestName = normalizeName(request?.slotName || request?.slot);
+    return (
+      (slug && requestSlug && slug === requestSlug) ||
+      (name && requestName && name === requestName)
+    );
+  });
+  if (!matches.length) return "";
+  matches.sort(
+    (a, b) =>
+      new Date(a.requestedAt || 0).getTime() -
+      new Date(b.requestedAt || 0).getTime()
+  );
+  return String(matches[0]?.username || "").trim();
+}
+
+function withRequesters(slots, requests) {
+  return (Array.isArray(slots) ? slots : []).map((slot) => ({
+    ...slot,
+    requestedBy: requesterFromRequests(slot, requests) || null,
+  }));
 }
 
 function renderLiveSlots({ slots = [], hiddenCount = 0 } = {}) {
@@ -122,7 +163,7 @@ function renderLiveSlots({ slots = [], hiddenCount = 0 } = {}) {
     if (requesterName) {
       byline = document.createElement("p");
       byline.className = "ss-byline";
-      byline.textContent = `by ${requesterName}`;
+      byline.textContent = requesterName;
     }
 
     const stats = document.createElement("div");
@@ -151,10 +192,25 @@ function renderLiveSlots({ slots = [], hiddenCount = 0 } = {}) {
 }
 
 async function refreshLiveSlots() {
-  const response = await fetch("/api/slot-stats-live", { cache: "no-store" });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "Could not load spinning slots.");
-  renderLiveSlots(data);
+  const [liveResponse, requestsResponse] = await Promise.all([
+    fetch("/api/slot-stats-live", { cache: "no-store" }),
+    fetch("/api/bonus-hunt/requests", { cache: "no-store" }).catch(() => null),
+  ]);
+  const data = await liveResponse.json();
+  if (!liveResponse.ok) {
+    throw new Error(data.error || "Could not load spinning slots.");
+  }
+
+  let requests = [];
+  if (requestsResponse?.ok) {
+    const requestData = await requestsResponse.json().catch(() => ({}));
+    requests = Array.isArray(requestData.requests) ? requestData.requests : [];
+  }
+
+  renderLiveSlots({
+    slots: withRequesters(data.slots, requests),
+    hiddenCount: data.hiddenCount || 0,
+  });
 }
 
 function startLiveSlots() {
