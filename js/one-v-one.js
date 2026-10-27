@@ -355,43 +355,19 @@ function renderOneVOne(data, startedAt = 0, authoritative = false) {
   if (newOpponent) newOpponent.disabled = !settled;
   if (openBets) openBets.disabled = settled || !bothSeated;
   paintBetsTimer();
-  renderBetList(betsFromKickChat(data?.chat, data?.bets));
+  // Only confirmed UncCoin bets — never merge Kick !bet chat (failed bets still appear in chat).
+  renderBetList(Array.isArray(data?.bets) ? data.bets : []);
   renderKickChat(data?.chat, data?.matchup);
 }
 
 function parseChatBet(text) {
-  const match = String(text || "").trim().match(/^!bet\s+(\d+)\s+team\s*([12])\s*$/i);
+  const match = String(text || "")
+    .trim()
+    .match(/^!bet\s+(\d+)\s+team\s*([12])\s*$/i);
   if (!match) return null;
   const amount = Number(match[1]);
   if (!Number.isFinite(amount) || amount < 1) return null;
   return { amount, side: Number(match[2]) };
-}
-
-function betsFromKickChat(messages, stored) {
-  const merged = new Map();
-  for (const message of Array.isArray(messages) ? messages : []) {
-    const parsed = parseChatBet(message.text);
-    if (!parsed) continue;
-    const username = message.username || "viewer";
-    const key = username.toLowerCase();
-    const existing = merged.get(key);
-    if (existing && existing.side === parsed.side) existing.amount += parsed.amount;
-    else if (!existing) {
-      merged.set(key, { username, side: parsed.side, amount: parsed.amount, mine: false });
-    }
-  }
-
-  for (const bet of Array.isArray(stored) ? stored : []) {
-    const username = bet.username || "viewer";
-    merged.set(username.toLowerCase(), {
-      username,
-      side: Number(bet.side),
-      amount: Number(bet.amount) || 0,
-      mine: Boolean(bet.mine),
-    });
-  }
-
-  return [...merged.values()];
 }
 
 function renderBetList(bets) {
