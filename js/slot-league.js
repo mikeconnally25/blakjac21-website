@@ -201,26 +201,14 @@ function renderSpots() {
   });
 }
 
-function renderTable() {
-  const wrap = $("league-table-wrap");
-  const champ = $("league-champion");
-  const league = leaguePayload?.league;
-  if (!wrap || !league) return;
-
-  const table = Array.isArray(league.table) ? league.table : [];
-  if (!table.length) {
-    wrap.innerHTML = `<p class="league-copy">Table appears once the season schedule is generated.</p>`;
-    champ?.classList.add("is-hidden");
-    return;
-  }
-
-  const leaderId = league.leaderSpotId || table[0]?.spotId || null;
-  const rows = table
+function renderGroupTableRows(rows, { winnerIds = new Set(), champId = null } = {}) {
+  return rows
     .map((row) => {
       const spot = spotById(row.spotId);
-      const isLeader = row.spotId === leaderId;
-      const isChamp = league.championSpotId && row.spotId === league.championSpotId;
-      return `<tr class="${isChamp ? "is-champion" : isLeader ? "is-leader" : ""}">
+      const isLeader = row.position === 1;
+      const isChamp = champId && row.spotId === champId;
+      const isWinner = winnerIds.has(row.spotId);
+      return `<tr class="${isChamp ? "is-champion" : isLeader || isWinner ? "is-leader" : ""}">
         <td class="league-pos">${row.position}</td>
         <td class="league-club">
           <span class="league-club-name">${escapeHtml(spot?.username || "Player")}</span>
@@ -237,32 +225,69 @@ function renderTable() {
       </tr>`;
     })
     .join("");
+}
 
-  wrap.innerHTML = `<table class="league-table league-prem-table">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Player</th>
-        <th>P</th>
-        <th>W</th>
-        <th>D</th>
-        <th>L</th>
-        <th>PF</th>
-        <th>PA</th>
-        <th>GD</th>
-        <th>Pts</th>
-      </tr>
-    </thead>
-    <tbody>${rows}</tbody>
-  </table>`;
+function renderTable() {
+  const root = $("league-groups");
+  const champ = $("league-champion");
+  const league = leaguePayload?.league;
+  if (!root || !league) return;
+
+  const standings = league.standings || {};
+  const hasGroups = ["A", "B", "C", "D"].some(
+    (id) => Array.isArray(standings[id]) && standings[id].length
+  );
+  if (!hasGroups) {
+    root.innerHTML = `<p class="league-copy">Tables appear once groups are generated.</p>`;
+    champ?.classList.add("is-hidden");
+    return;
+  }
+
+  const winnerIds = new Set(league.groupWinners || []);
+  root.replaceChildren();
+  ["A", "B", "C", "D"].forEach((groupId) => {
+    const rows = standings[groupId] || [];
+    const panel = document.createElement("div");
+    panel.className = "league-group";
+    panel.innerHTML = `
+      <h3 class="league-group-title">Group ${groupId}</h3>
+      <div class="league-table-wrap">
+        <table class="league-table league-prem-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Player</th>
+              <th>P</th>
+              <th>W</th>
+              <th>D</th>
+              <th>L</th>
+              <th>PF</th>
+              <th>PA</th>
+              <th>GD</th>
+              <th>Pts</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${renderGroupTableRows(rows, {
+              winnerIds,
+              champId: league.championSpotId,
+            })}
+          </tbody>
+        </table>
+      </div>
+    `;
+    root.append(panel);
+  });
 
   if (league.championSpotId && champ) {
     const winner = spotById(league.championSpotId);
-    champ.textContent = `Champion: ${winner?.username || "Unknown"} (${winner?.slot?.name || "slot"})`;
+    champ.textContent = `Overall: ${winner?.username || "Unknown"} (${winner?.slot?.name || "slot"})`;
     champ.classList.remove("is-hidden");
-  } else if (leaderId && champ && (league.matchesPlayed || 0) > 0) {
-    const leader = spotById(leaderId);
-    champ.textContent = `Table leaders: ${leader?.username || "Unknown"}`;
+  } else if ((league.groupWinners || []).length && champ) {
+    const names = league.groupWinners
+      .map((id) => spotById(id)?.username || "?")
+      .join(", ");
+    champ.textContent = `Group leaders: ${names}`;
     champ.classList.remove("is-hidden");
   } else {
     champ?.classList.add("is-hidden");
@@ -272,7 +297,8 @@ function renderTable() {
 function matchTitle(match) {
   const a = spotLabel(spotById(match.spotAId));
   const b = spotLabel(spotById(match.spotBId));
-  return `MD${match.round}: ${a} vs ${b}`;
+  const group = match.group ? `G${match.group} ` : "";
+  return `${group}MD${match.round}: ${a} vs ${b}`;
 }
 
 function matchResultLabel(match) {
@@ -297,7 +323,7 @@ function renderMatches() {
   root.replaceChildren();
 
   if (!matches.length) {
-    root.innerHTML = `<p class="league-copy">No fixtures yet. Generate the season when all 16 spots are filled.</p>`;
+    root.innerHTML = `<p class="league-copy">No fixtures yet. Generate groups when all 16 spots are filled.</p>`;
   } else {
     const byRound = new Map();
     matches.forEach((match) => {
@@ -318,7 +344,7 @@ function renderMatches() {
           row.className = `league-match${played ? " is-done" : ""}`;
           row.innerHTML = `
             <div class="league-match-main">
-              <p class="league-match-stage">MD ${match.round}</p>
+              <p class="league-match-stage">Group ${escapeHtml(match.group || "?")} · MD ${match.round}</p>
               <p class="league-match-names">${escapeHtml(spotLabel(spotById(match.spotAId)))} <span>vs</span> ${escapeHtml(
                 spotLabel(spotById(match.spotBId))
               )}</p>

@@ -15126,7 +15126,11 @@ button.one-v-one-name:focus-visible {
 }
 
 .league-prem-table {
-  min-width: 36rem;
+  min-width: 28rem;
+}
+
+.league-group .league-table-wrap {
+  margin-top: 0;
 }
 
 .league-prem-table th:not(:nth-child(2)),
