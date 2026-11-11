@@ -154,6 +154,7 @@ import {
   handleSlotLeagueMatchScore,
   handleSlotLeaguePhase,
   handleSlotLeagueReset,
+  handleSlotLeagueRosterReset,
   handleSlotLeagueSettings,
   handleSlotLeagueSpotAssign,
   handleSlotLeagueSpotSlot,
@@ -395,6 +396,9 @@ app.post("/api/slot-league/entries/remove", (req, res) =>
 );
 app.post("/api/slot-league/entries/clear", (req, res) =>
   handleSlotLeagueEntriesClear(req, res)
+);
+app.post("/api/slot-league/roster/reset", (req, res) =>
+  handleSlotLeagueRosterReset(req, res)
 );
 app.post("/api/slot-league/spots/assign", (req, res) =>
   handleSlotLeagueSpotAssign(req, res)

@@ -528,6 +528,25 @@ function bindEvents() {
     }
     postAdmin("/api/slot-league/entries/bots", { count: need });
   });
+  $("league-admin-roster-reset")?.addEventListener("click", async () => {
+    if (
+      !window.confirm(
+        "Reset the roster? This clears all spots, groups, and fixtures, then reopens signups for new slots."
+      )
+    ) {
+      return;
+    }
+    try {
+      leaguePayload = await api("/api/slot-league/roster/reset", {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      setBanner("Roster reset. Signups are open for new slots.", "success");
+      renderAll();
+    } catch (error) {
+      setBanner(error.message, "error");
+    }
+  });
   $("league-admin-clear")?.addEventListener("click", () =>
     postAdmin("/api/slot-league/entries/clear")
   );
