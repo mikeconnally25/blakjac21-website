@@ -15120,6 +15120,69 @@ button.one-v-one-name:focus-visible {
   font-weight: 600;
 }
 
+.league-table-wrap {
+  margin-top: 0.75rem;
+  overflow-x: auto;
+}
+
+.league-prem-table {
+  min-width: 36rem;
+}
+
+.league-prem-table th:not(:nth-child(2)),
+.league-prem-table td:not(:nth-child(2)) {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.league-prem-table .league-pos {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.league-prem-table .league-club {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 8rem;
+}
+
+.league-prem-table .league-club-name {
+  font-weight: 600;
+}
+
+.league-prem-table .league-club-slot {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.league-prem-table .league-pts {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #9dff73;
+}
+
+.league-prem-table tr.is-leader td:first-child,
+.league-prem-table tr.is-champion td:first-child {
+  color: #e8c56b;
+}
+
+.league-prem-table tr.is-leader {
+  background: rgba(88, 201, 243, 0.08);
+}
+
+.league-prem-table tr.is-champion {
+  background: rgba(232, 197, 107, 0.12);
+}
+
+.league-matchday {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+}
+
 .league-matches,
 .league-knockout {
   display: grid;

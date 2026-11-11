@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Slot League — NBA Cup style groups and knockout on BLAKJAC21." />
+  <meta name="description" content="Slot League — Premier League style table season on BLAKJAC21." />
   <title>Slot League | BLAKJAC21</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=league1" />
+  <link rel="stylesheet" href="/css/styles.css?v=league2" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -70,7 +70,7 @@
             <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
             <h1 class="league-heading">Slot League</h1>
             <p class="league-lede" id="league-lede">
-              16 spots. 4 groups. Knockout of 8 — NBA Cup style.
+              16 spots. Full season table. 3 points for a win, 1 for a draw — Premier League style.
             </p>
           </div>
           <div class="league-status-card bj21-panel theme-surface" id="league-status-card" data-phase="closed">
@@ -110,6 +110,10 @@
               <dt>Phase</dt>
               <dd id="league-phase">closed</dd>
             </div>
+            <div>
+              <dt>Fixtures</dt>
+              <dd id="league-fixtures-meta">0 / 0</dd>
+            </div>
           </dl>
         </section>
 
@@ -135,27 +139,22 @@
           <div class="league-spots-grid" id="league-spots-grid"></div>
         </section>
 
-        <section class="league-panel bj21-panel theme-surface" aria-labelledby="league-groups-title">
+        <section class="league-panel bj21-panel theme-surface" aria-labelledby="league-table-title">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <p class="league-panel-label">Group stage</p>
-          <h2 class="league-panel-title" id="league-groups-title">Groups A–D</h2>
-          <p class="league-copy">Round robin in each group. Top of each group + 4 wildcards advance.</p>
-          <div class="league-groups" id="league-groups"></div>
+          <p class="league-panel-label">Table</p>
+          <h2 class="league-panel-title" id="league-table-title">League standings</h2>
+          <p class="league-copy">Ranked by points, then multiplier difference, then multipliers scored. Equal scores are draws.</p>
+          <div class="league-table-wrap" id="league-table-wrap">
+            <p class="league-copy">Table appears once the season schedule is generated.</p>
+          </div>
+          <p class="league-champion is-hidden" id="league-champion"></p>
         </section>
 
         <section class="league-panel bj21-panel theme-surface" aria-labelledby="league-matches-title">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <p class="league-panel-label">Schedule</p>
-          <h2 class="league-panel-title" id="league-matches-title">Matches</h2>
+          <p class="league-panel-label">Fixtures</p>
+          <h2 class="league-panel-title" id="league-matches-title">Matchdays</h2>
           <div class="league-matches" id="league-matches"></div>
-        </section>
-
-        <section class="league-panel bj21-panel theme-surface" aria-labelledby="league-knockout-title">
-          <span class="bj21-panel-glow" aria-hidden="true"></span>
-          <p class="league-panel-label">Knockout</p>
-          <h2 class="league-panel-title" id="league-knockout-title">Quarterfinals → Final</h2>
-          <div class="league-knockout" id="league-knockout"></div>
-          <p class="league-champion is-hidden" id="league-champion"></p>
         </section>
 
         <section class="league-panel bj21-panel theme-surface is-hidden" id="league-admin" aria-labelledby="league-admin-title">
@@ -176,10 +175,8 @@
           </form>
 
           <div class="league-admin-actions">
-            <button type="button" class="btn btn-sm btn-primary" id="league-admin-groups">Generate groups</button>
-            <button type="button" class="btn btn-sm btn-outline" id="league-admin-groups-force">Force rebuild groups</button>
-            <button type="button" class="btn btn-sm btn-primary" id="league-admin-knockout">Generate knockout</button>
-            <button type="button" class="btn btn-sm btn-outline" id="league-admin-knockout-force">Force rebuild knockout</button>
+            <button type="button" class="btn btn-sm btn-primary" id="league-admin-season">Generate season</button>
+            <button type="button" class="btn btn-sm btn-outline" id="league-admin-season-force">Force rebuild season</button>
             <button type="button" class="btn btn-sm btn-outline" id="league-admin-bots">Fill bots to 16</button>
             <button type="button" class="btn btn-sm btn-outline" id="league-admin-clear">Clear entries</button>
             <button type="button" class="btn btn-sm btn-outline" id="league-admin-reset">Reset season</button>
@@ -208,7 +205,7 @@
     </section>
   </main>
 
-  <script type="module" src="/js/main.js?v=league1"></script>
-  <script type="module" src="/js/slot-league.js?v=league1"></script>
+  <script type="module" src="/js/main.js?v=league2"></script>
+  <script type="module" src="/js/slot-league.js?v=league2"></script>
 </body>
 </html>

@@ -149,6 +149,7 @@ import {
   handleSlotLeagueEntryRemove,
   handleSlotLeagueGenerateGroups,
   handleSlotLeagueGenerateKnockout,
+  handleSlotLeagueGenerateSeason,
   handleSlotLeagueJoin,
   handleSlotLeagueMatchScore,
   handleSlotLeaguePhase,
@@ -403,6 +404,9 @@ app.post("/api/slot-league/spots/slot", (req, res) =>
 );
 app.post("/api/slot-league/groups/generate", (req, res) =>
   handleSlotLeagueGenerateGroups(req, res)
+);
+app.post("/api/slot-league/season/generate", (req, res) =>
+  handleSlotLeagueGenerateSeason(req, res)
 );
 app.post("/api/slot-league/knockout/generate", (req, res) =>
   handleSlotLeagueGenerateKnockout(req, res)

@@ -27,11 +27,20 @@ function phaseLabel(phase, open) {
   const map = {
     closed: "Closed",
     signup: "Signups closed",
-    groups: "Group stage",
-    knockout: "Knockout",
-    results: "Results",
+    season: "Season in play",
+    groups: "Season in play",
+    knockout: "Season in play",
+    results: "Season complete",
   };
   return map[phase] || phase || "Closed";
+}
+
+function formatMultiplier(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "0";
+  return number.toLocaleString(undefined, {
+    maximumFractionDigits: 1,
+  });
 }
 
 async function api(path, options = {}) {
@@ -62,6 +71,12 @@ function spotById(id) {
   return (leaguePayload?.league?.spots || []).find((s) => s.id === id) || null;
 }
 
+function isMatchPlayed(match) {
+  const a = String(match?.scoreA ?? "").trim();
+  const b = String(match?.scoreB ?? "").trim();
+  return Boolean(a) && Boolean(b);
+}
+
 function renderStatus() {
   const league = leaguePayload?.league;
   if (!league) return;
@@ -75,11 +90,15 @@ function renderStatus() {
   if (card) card.dataset.phase = league.phase || "closed";
   if (value) value.textContent = phaseLabel(league.phase, league.open);
   if (meta) {
-    meta.textContent = league.open
-      ? `${league.filled || 0} / ${league.capacity || 16} spots claimed`
-      : league.championSpotId
-        ? "Champion crowned"
-        : "Admin can open signups or advance the bracket.";
+    if (league.open) {
+      meta.textContent = `${league.filled || 0} / ${league.capacity || 16} spots claimed`;
+    } else if (league.championSpotId) {
+      meta.textContent = "Champion crowned";
+    } else if (league.matchCount) {
+      meta.textContent = `${league.matchesPlayed || 0} / ${league.matchCount} fixtures played`;
+    } else {
+      meta.textContent = "Admin can open signups or generate the season.";
+    }
   }
   if (toggleWrap) toggleWrap.classList.toggle("is-hidden", !isAdmin);
   if (toggle) toggle.checked = Boolean(league.open);
@@ -89,6 +108,10 @@ function renderStatus() {
   $("league-filled").textContent = `${league.filled || 0} / ${league.capacity || 16}`;
   $("league-phase").textContent = league.phase || "closed";
   $("league-info-title").textContent = league.title || "League";
+  const fixturesMeta = $("league-fixtures-meta");
+  if (fixturesMeta) {
+    fixturesMeta.textContent = `${league.matchesPlayed || 0} / ${league.matchCount || 0}`;
+  }
 
   const admin = $("league-admin");
   admin?.classList.toggle("is-hidden", !isAdmin);
@@ -159,53 +182,91 @@ function renderSpots() {
   });
 }
 
-function renderGroups() {
-  const root = $("league-groups");
+function renderTable() {
+  const wrap = $("league-table-wrap");
+  const champ = $("league-champion");
   const league = leaguePayload?.league;
-  if (!root || !league) return;
-  root.replaceChildren();
-  const standings = league.standings || {};
-  ["A", "B", "C", "D"].forEach((groupId) => {
-    const rows = standings[groupId] || [];
-    const panel = document.createElement("div");
-    panel.className = "league-group";
-    const body =
-      rows.length === 0
-        ? `<p class="league-copy">Groups not generated yet.</p>`
-        : `<table class="league-table">
-            <thead><tr><th>#</th><th>Player</th><th>W</th><th>L</th><th>Diff</th></tr></thead>
-            <tbody>
-              ${rows
-                .map((row, i) => {
-                  const spot = spotById(row.spotId);
-                  return `<tr>
-                    <td>${i + 1}</td>
-                    <td>${escapeHtml(spot?.username || row.spotId)}</td>
-                    <td>${row.wins}</td>
-                    <td>${row.losses}</td>
-                    <td>${Number(row.diff).toFixed(1)}</td>
-                  </tr>`;
-                })
-                .join("")}
-            </tbody>
-          </table>`;
-    panel.innerHTML = `<h3 class="league-group-title">Group ${groupId}</h3>${body}`;
-    root.append(panel);
-  });
+  if (!wrap || !league) return;
+
+  const table = Array.isArray(league.table) ? league.table : [];
+  if (!table.length) {
+    wrap.innerHTML = `<p class="league-copy">Table appears once the season schedule is generated.</p>`;
+    champ?.classList.add("is-hidden");
+    return;
+  }
+
+  const leaderId = league.leaderSpotId || table[0]?.spotId || null;
+  const rows = table
+    .map((row) => {
+      const spot = spotById(row.spotId);
+      const isLeader = row.spotId === leaderId;
+      const isChamp = league.championSpotId && row.spotId === league.championSpotId;
+      return `<tr class="${isChamp ? "is-champion" : isLeader ? "is-leader" : ""}">
+        <td class="league-pos">${row.position}</td>
+        <td class="league-club">
+          <span class="league-club-name">${escapeHtml(spot?.username || "Player")}</span>
+          <span class="league-club-slot">${escapeHtml(spot?.slot?.name || "—")}</span>
+        </td>
+        <td>${row.played}</td>
+        <td>${row.wins}</td>
+        <td>${row.draws}</td>
+        <td>${row.losses}</td>
+        <td>${formatMultiplier(row.pointsFor)}</td>
+        <td>${formatMultiplier(row.pointsAgainst)}</td>
+        <td>${formatMultiplier(row.diff)}</td>
+        <td class="league-pts">${row.points}</td>
+      </tr>`;
+    })
+    .join("");
+
+  wrap.innerHTML = `<table class="league-table league-prem-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Player</th>
+        <th>P</th>
+        <th>W</th>
+        <th>D</th>
+        <th>L</th>
+        <th>PF</th>
+        <th>PA</th>
+        <th>GD</th>
+        <th>Pts</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  if (league.championSpotId && champ) {
+    const winner = spotById(league.championSpotId);
+    champ.textContent = `Champion: ${winner?.username || "Unknown"} (${winner?.slot?.name || "slot"})`;
+    champ.classList.remove("is-hidden");
+  } else if (leaderId && champ && (league.matchesPlayed || 0) > 0) {
+    const leader = spotById(leaderId);
+    champ.textContent = `Table leaders: ${leader?.username || "Unknown"}`;
+    champ.classList.remove("is-hidden");
+  } else {
+    champ?.classList.add("is-hidden");
+  }
 }
 
 function matchTitle(match) {
   const a = spotLabel(spotById(match.spotAId));
   const b = spotLabel(spotById(match.spotBId));
-  const stage =
-    match.stage === "group"
-      ? `Group ${match.group}`
-      : match.stage === "qf"
-        ? "QF"
-        : match.stage === "sf"
-          ? "SF"
-          : "Final";
-  return `${stage}: ${a} vs ${b}`;
+  return `MD${match.round}: ${a} vs ${b}`;
+}
+
+function matchResultLabel(match) {
+  if (!isMatchPlayed(match)) return "—";
+  const scoreA = Number(String(match.scoreA).replace(/,/g, "").replace(/x$/i, ""));
+  const scoreB = Number(String(match.scoreB).replace(/,/g, "").replace(/x$/i, ""));
+  if (Number.isFinite(scoreA) && Number.isFinite(scoreB) && scoreA === scoreB) {
+    return "Draw";
+  }
+  if (match.winnerSpotId) {
+    return spotById(match.winnerSpotId)?.username || "Winner";
+  }
+  return "Draw";
 }
 
 function renderMatches() {
@@ -217,31 +278,42 @@ function renderMatches() {
   root.replaceChildren();
 
   if (!matches.length) {
-    root.innerHTML = `<p class="league-copy">No matches yet. Generate groups when all 16 spots are filled.</p>`;
+    root.innerHTML = `<p class="league-copy">No fixtures yet. Generate the season when all 16 spots are filled.</p>`;
   } else {
+    const byRound = new Map();
     matches.forEach((match) => {
-      const row = document.createElement("div");
-      row.className = `league-match${match.winnerSpotId ? " is-done" : ""}`;
-      const winner = match.winnerSpotId
-        ? spotById(match.winnerSpotId)?.username || "Winner"
-        : "—";
-      row.innerHTML = `
-        <div class="league-match-main">
-          <p class="league-match-stage">${escapeHtml(
-            match.stage === "group" ? `Group ${match.group}` : match.stage.toUpperCase()
-          )}</p>
-          <p class="league-match-names">${escapeHtml(spotLabel(spotById(match.spotAId)))} <span>vs</span> ${escapeHtml(
-            spotLabel(spotById(match.spotBId))
-          )}</p>
-        </div>
-        <div class="league-match-scores">
-          <span>${escapeHtml(match.scoreA || "—")}</span>
-          <span>${escapeHtml(match.scoreB || "—")}</span>
-        </div>
-        <p class="league-match-winner">${escapeHtml(winner)}</p>
-      `;
-      root.append(row);
+      const round = match.round || 1;
+      if (!byRound.has(round)) byRound.set(round, []);
+      byRound.get(round).push(match);
     });
+
+    [...byRound.keys()]
+      .sort((a, b) => a - b)
+      .forEach((round) => {
+        const block = document.createElement("div");
+        block.className = "league-matchday";
+        block.innerHTML = `<h3 class="league-group-title">Matchday ${round}</h3>`;
+        byRound.get(round).forEach((match) => {
+          const row = document.createElement("div");
+          const played = isMatchPlayed(match);
+          row.className = `league-match${played ? " is-done" : ""}`;
+          row.innerHTML = `
+            <div class="league-match-main">
+              <p class="league-match-stage">MD ${match.round}</p>
+              <p class="league-match-names">${escapeHtml(spotLabel(spotById(match.spotAId)))} <span>vs</span> ${escapeHtml(
+                spotLabel(spotById(match.spotBId))
+              )}</p>
+            </div>
+            <div class="league-match-scores">
+              <span>${escapeHtml(match.scoreA || "—")}</span>
+              <span>${escapeHtml(match.scoreB || "—")}</span>
+            </div>
+            <p class="league-match-winner">${escapeHtml(matchResultLabel(match))}</p>
+          `;
+          block.append(row);
+        });
+        root.append(block);
+      });
   }
 
   if (select) {
@@ -255,62 +327,12 @@ function renderMatches() {
   }
 }
 
-function renderKnockout() {
-  const root = $("league-knockout");
-  const champ = $("league-champion");
-  const league = leaguePayload?.league;
-  if (!root || !league) return;
-  const knockout = (league.matches || []).filter((m) =>
-    ["qf", "sf", "final"].includes(m.stage)
-  );
-  root.replaceChildren();
-  if (!knockout.length) {
-    root.innerHTML = `<p class="league-copy">Knockout unlocks after group stage (4 winners + 4 wildcards).</p>`;
-    champ?.classList.add("is-hidden");
-    return;
-  }
-
-  ["qf", "sf", "final"].forEach((stage) => {
-    const list = knockout.filter((m) => m.stage === stage);
-    if (!list.length) return;
-    const block = document.createElement("div");
-    block.className = "league-knockout-round";
-    const title =
-      stage === "qf" ? "Quarterfinals" : stage === "sf" ? "Semifinals" : "Final";
-    block.innerHTML = `<h3 class="league-group-title">${title}</h3>`;
-    list.forEach((match) => {
-      const item = document.createElement("div");
-      item.className = "league-match";
-      item.innerHTML = `
-        <p class="league-match-names">${escapeHtml(spotLabel(spotById(match.spotAId)))} <span>vs</span> ${escapeHtml(
-          spotLabel(spotById(match.spotBId))
-        )}</p>
-        <div class="league-match-scores">
-          <span>${escapeHtml(match.scoreA || "—")}</span>
-          <span>${escapeHtml(match.scoreB || "—")}</span>
-        </div>
-      `;
-      block.append(item);
-    });
-    root.append(block);
-  });
-
-  if (league.championSpotId && champ) {
-    const winner = spotById(league.championSpotId);
-    champ.textContent = `Champion: ${winner?.username || "Unknown"} (${winner?.slot?.name || "slot"})`;
-    champ.classList.remove("is-hidden");
-  } else {
-    champ?.classList.add("is-hidden");
-  }
-}
-
 function renderAll() {
   renderStatus();
   renderJoin();
   renderSpots();
-  renderGroups();
+  renderTable();
   renderMatches();
-  renderKnockout();
 }
 
 async function refresh() {
@@ -417,17 +439,11 @@ function bindEvents() {
     }
   }
 
-  $("league-admin-groups")?.addEventListener("click", () =>
-    postAdmin("/api/slot-league/groups/generate")
+  $("league-admin-season")?.addEventListener("click", () =>
+    postAdmin("/api/slot-league/season/generate")
   );
-  $("league-admin-groups-force")?.addEventListener("click", () =>
-    postAdmin("/api/slot-league/groups/generate", { force: true })
-  );
-  $("league-admin-knockout")?.addEventListener("click", () =>
-    postAdmin("/api/slot-league/knockout/generate")
-  );
-  $("league-admin-knockout-force")?.addEventListener("click", () =>
-    postAdmin("/api/slot-league/knockout/generate", { force: true })
+  $("league-admin-season-force")?.addEventListener("click", () =>
+    postAdmin("/api/slot-league/season/generate", { force: true })
   );
   $("league-admin-bots")?.addEventListener("click", () => {
     const filled = leaguePayload?.league?.filled || 0;
