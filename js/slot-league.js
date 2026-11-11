@@ -193,8 +193,8 @@ function renderSpots() {
       ${thumb}
       <div class="league-spot-copy">
         <p class="league-spot-index">Spot ${spot.index}</p>
-        <p class="league-spot-name">${escapeHtml(spot.username || "Open")}</p>
-        <p class="league-spot-slot">${escapeHtml(spot.slot?.name || "No slot yet")}</p>
+        <p class="league-spot-name">${escapeHtml(spot.slot?.name || "No slot yet")}</p>
+        <p class="league-spot-slot">${escapeHtml(spot.username || "Open")}</p>
       </div>
     `;
     grid.append(card);
@@ -211,8 +211,8 @@ function renderGroupTableRows(rows, { winnerIds = new Set(), champId = null } = 
       return `<tr class="${isChamp ? "is-champion" : isLeader || isWinner ? "is-leader" : ""}">
         <td class="league-pos">${row.position}</td>
         <td class="league-club">
-          <span class="league-club-name">${escapeHtml(spot?.username || "Player")}</span>
-          <span class="league-club-slot">${escapeHtml(spot?.slot?.name || "—")}</span>
+          <span class="league-club-name">${escapeHtml(spot?.slot?.name || "—")}</span>
+          <span class="league-club-slot">${escapeHtml(spot?.username || "Player")}</span>
         </td>
         <td>${row.played}</td>
         <td>${row.wins}</td>
