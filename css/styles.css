@@ -15187,6 +15187,26 @@ button.one-v-one-name:focus-visible {
   margin-top: 0.85rem;
 }
 
+.league-playoff-seeds {
+  margin: 0.75rem 0 1rem;
+}
+
+.league-seed-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.league-seed-list span {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.league-admin-week-field {
+  min-width: 8rem;
+}
+
 .league-matches,
 .league-knockout {
   display: grid;

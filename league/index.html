@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=league6" />
+  <link rel="stylesheet" href="/css/styles.css?v=league7" />
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -70,7 +70,7 @@
             <p class="section-eyebrow">BLAKJAC<span class="accent">21</span></p>
             <h1 class="league-heading">Slot League</h1>
             <p class="league-lede" id="league-lede">
-              16 spots. 4 tables of 4. 3 points for a win, 1 for a draw, 0 for a loss.
+              16 spots · 4 tables of 4 · 10 weeks of random cross-group matchups · top 2 from each group make the playoffs.
             </p>
           </div>
           <div class="league-status-card bj21-panel theme-surface" id="league-status-card" data-phase="closed">
@@ -153,8 +153,18 @@
         <section class="league-panel bj21-panel theme-surface" aria-labelledby="league-matches-title">
           <span class="bj21-panel-glow" aria-hidden="true"></span>
           <p class="league-panel-label">Fixtures</p>
-          <h2 class="league-panel-title" id="league-matches-title">Matchdays</h2>
+          <h2 class="league-panel-title" id="league-matches-title">Weekly matchups</h2>
+          <p class="league-copy">Each week randomizes pairings across all groups. Results still count on each player’s group table.</p>
           <div class="league-matches" id="league-matches"></div>
+        </section>
+
+        <section class="league-panel bj21-panel theme-surface" aria-labelledby="league-playoffs-title">
+          <span class="bj21-panel-glow" aria-hidden="true"></span>
+          <p class="league-panel-label">Playoffs</p>
+          <h2 class="league-panel-title" id="league-playoffs-title">Top 2 from each group</h2>
+          <p class="league-copy" id="league-playoffs-copy">After 10 weeks, the top 2 in each group qualify. Seeds 1–8 are ranked by points.</p>
+          <div class="league-playoff-seeds" id="league-playoff-seeds"></div>
+          <div class="league-knockout" id="league-knockout"></div>
         </section>
 
         <section class="league-panel bj21-panel theme-surface is-hidden" id="league-admin" aria-labelledby="league-admin-title">
@@ -175,8 +185,16 @@
           </form>
 
           <div class="league-admin-actions">
-            <button type="button" class="btn btn-sm btn-primary" id="league-admin-season">Generate groups</button>
-            <button type="button" class="btn btn-sm btn-outline" id="league-admin-season-force">Force rebuild groups</button>
+            <button type="button" class="btn btn-sm btn-primary" id="league-admin-season">Start 10-week season</button>
+            <button type="button" class="btn btn-sm btn-outline" id="league-admin-season-force">Force rebuild season</button>
+            <label class="league-field league-admin-week-field">
+              <span>Randomize week</span>
+              <select id="league-admin-week"></select>
+            </label>
+            <button type="button" class="btn btn-sm btn-outline" id="league-admin-randomize-week">Randomize week matchups</button>
+            <button type="button" class="btn btn-sm btn-outline" id="league-admin-randomize-week-force">Force re-roll week</button>
+            <button type="button" class="btn btn-sm btn-primary" id="league-admin-playoffs">Generate playoffs</button>
+            <button type="button" class="btn btn-sm btn-outline" id="league-admin-playoffs-force">Force rebuild playoffs</button>
             <button type="button" class="btn btn-sm btn-outline" id="league-admin-bots">Fill bots to 16</button>
             <button type="button" class="btn btn-sm btn-primary" id="league-admin-roster-reset">Reset roster</button>
             <button type="button" class="btn btn-sm btn-outline" id="league-admin-clear">Clear entries</button>
@@ -206,7 +224,7 @@
     </section>
   </main>
 
-  <script type="module" src="/js/main.js?v=league6"></script>
-  <script type="module" src="/js/slot-league.js?v=league6"></script>
+  <script type="module" src="/js/main.js?v=league7"></script>
+  <script type="module" src="/js/slot-league.js?v=league7"></script>
 </body>
 </html>

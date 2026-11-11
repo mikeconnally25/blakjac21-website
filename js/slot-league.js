@@ -29,12 +29,25 @@ function phaseLabel(phase, open) {
   const map = {
     closed: "Closed",
     signup: "Signups closed",
-    season: "Season in play",
-    groups: "Season in play",
-    knockout: "Season in play",
-    results: "Season complete",
+    season: "Regular season",
+    groups: "Regular season",
+    playoffs: "Playoffs",
+    knockout: "Playoffs",
+    results: "Complete",
   };
   return map[phase] || phase || "Closed";
+}
+
+function groupOf(spotId) {
+  return spotById(spotId)?.group || null;
+}
+
+function spotLabelWithGroup(spot) {
+  if (!spot) return "TBD";
+  const group = spot.group ? ` [G${spot.group}]` : "";
+  const slot = spot.slot?.name || "No slot";
+  const user = spot.username || "Open";
+  return `${slot}${group} · ${user}`;
 }
 
 function formatMultiplier(value) {
@@ -96,10 +109,12 @@ function renderStatus() {
       meta.textContent = `${league.filled || 0} / ${league.capacity || 16} spots claimed`;
     } else if (league.championSpotId) {
       meta.textContent = "Champion crowned";
-    } else if (league.matchCount) {
-      meta.textContent = `${league.matchesPlayed || 0} / ${league.matchCount} fixtures played`;
+    } else if (league.phase === "playoffs") {
+      meta.textContent = "Playoffs in progress";
+    } else if (league.weekMatches?.length) {
+      meta.textContent = `Week ${league.weeksPlayed || 0} / ${league.regularWeeks || 10} complete`;
     } else {
-      meta.textContent = "Admin can open signups or generate the season.";
+      meta.textContent = "Admin can open signups or start the 10-week season.";
     }
   }
   if (toggleWrap) toggleWrap.classList.toggle("is-hidden", !isAdmin);
@@ -120,6 +135,19 @@ function renderStatus() {
   if (isAdmin) {
     $("league-admin-title-input").value = league.title || "";
     $("league-admin-buyin").value = league.buyIn || "";
+    const weekSelect = $("league-admin-week");
+    if (weekSelect) {
+      const current = weekSelect.value;
+      const weeks = league.regularWeeks || 10;
+      weekSelect.replaceChildren();
+      for (let week = 1; week <= weeks; week += 1) {
+        const opt = document.createElement("option");
+        opt.value = String(week);
+        opt.textContent = `Week ${week}`;
+        weekSelect.append(opt);
+      }
+      if (current) weekSelect.value = current;
+    }
   }
 }
 
@@ -295,10 +323,12 @@ function renderTable() {
 }
 
 function matchTitle(match) {
-  const a = spotLabel(spotById(match.spotAId));
-  const b = spotLabel(spotById(match.spotBId));
-  const group = match.group ? `G${match.group} ` : "";
-  return `${group}MD${match.round}: ${a} vs ${b}`;
+  const a = spotLabelWithGroup(spotById(match.spotAId));
+  const b = spotLabelWithGroup(spotById(match.spotBId));
+  if (match.stage === "qf") return `QF: ${a} vs ${b}`;
+  if (match.stage === "sf") return `SF: ${a} vs ${b}`;
+  if (match.stage === "final") return `Final: ${a} vs ${b}`;
+  return `Week ${match.round}: ${a} vs ${b}`;
 }
 
 function matchResultLabel(match) {
@@ -319,14 +349,15 @@ function renderMatches() {
   const select = $("league-score-match");
   const league = leaguePayload?.league;
   if (!root || !league) return;
-  const matches = league.matches || [];
+  const weekMatches = league.weekMatches || [];
+  const allMatches = league.matches || [];
   root.replaceChildren();
 
-  if (!matches.length) {
-    root.innerHTML = `<p class="league-copy">No fixtures yet. Generate groups when all 16 spots are filled.</p>`;
+  if (!weekMatches.length) {
+    root.innerHTML = `<p class="league-copy">No fixtures yet. Start the 10-week season when all 16 spots are filled.</p>`;
   } else {
     const byRound = new Map();
-    matches.forEach((match) => {
+    weekMatches.forEach((match) => {
       const round = match.round || 1;
       if (!byRound.has(round)) byRound.set(round, []);
       byRound.get(round).push(match);
@@ -337,17 +368,17 @@ function renderMatches() {
       .forEach((round) => {
         const block = document.createElement("div");
         block.className = "league-matchday";
-        block.innerHTML = `<h3 class="league-group-title">Matchday ${round}</h3>`;
+        block.innerHTML = `<h3 class="league-group-title">Week ${round}</h3>`;
         byRound.get(round).forEach((match) => {
           const row = document.createElement("div");
           const played = isMatchPlayed(match);
+          const a = spotById(match.spotAId);
+          const b = spotById(match.spotBId);
           row.className = `league-match${played ? " is-done" : ""}`;
           row.innerHTML = `
             <div class="league-match-main">
-              <p class="league-match-stage">Group ${escapeHtml(match.group || "?")} · MD ${match.round}</p>
-              <p class="league-match-names">${escapeHtml(spotLabel(spotById(match.spotAId)))} <span>vs</span> ${escapeHtml(
-                spotLabel(spotById(match.spotBId))
-              )}</p>
+              <p class="league-match-stage">Week ${match.round} · G${escapeHtml(groupOf(match.spotAId) || "?")} vs G${escapeHtml(groupOf(match.spotBId) || "?")}</p>
+              <p class="league-match-names">${escapeHtml(spotLabelWithGroup(a))} <span>vs</span> ${escapeHtml(spotLabelWithGroup(b))}</p>
             </div>
             <div class="league-match-scores">
               <span>${escapeHtml(match.scoreA || "—")}</span>
@@ -363,7 +394,7 @@ function renderMatches() {
 
   if (select) {
     select.replaceChildren();
-    matches.forEach((match) => {
+    allMatches.forEach((match) => {
       const opt = document.createElement("option");
       opt.value = match.id;
       opt.textContent = matchTitle(match);
@@ -372,12 +403,77 @@ function renderMatches() {
   }
 }
 
+function renderPlayoffs() {
+  const seedsRoot = $("league-playoff-seeds");
+  const bracketRoot = $("league-knockout");
+  const copy = $("league-playoffs-copy");
+  const league = leaguePayload?.league;
+  if (!league) return;
+
+  const seeds = league.playoffSeeds || [];
+  const playoffs = league.playoffMatches || [];
+
+  if (copy) {
+    if (league.seasonComplete) {
+      copy.textContent =
+        "Regular season complete. Top 2 from each group qualify; seeds 1–8 are ranked by points.";
+    } else {
+      copy.textContent = `After ${league.regularWeeks || 10} weeks, the top 2 in each group qualify. Seeds 1–8 are ranked by points.`;
+    }
+  }
+
+  if (seedsRoot) {
+    if (!seeds.length) {
+      seedsRoot.innerHTML = `<p class="league-copy">Playoff seeds appear when the regular season is complete.</p>`;
+    } else {
+      seedsRoot.innerHTML = `<ol class="league-seed-list">${seeds
+        .map((seed) => {
+          const spot = spotById(seed.spotId);
+          return `<li><strong>#${seed.seed}</strong> ${escapeHtml(spot?.slot?.name || "—")} · ${escapeHtml(spot?.username || "?")} <span>(G${escapeHtml(seed.group || spot?.group || "?")} · ${seed.points} pts)</span></li>`;
+        })
+        .join("")}</ol>`;
+    }
+  }
+
+  if (!bracketRoot) return;
+  bracketRoot.replaceChildren();
+  if (!playoffs.length) {
+    bracketRoot.innerHTML = `<p class="league-copy">Playoff bracket unlocks after week ${league.regularWeeks || 10}.</p>`;
+    return;
+  }
+
+  ["qf", "sf", "final"].forEach((stage) => {
+    const list = playoffs.filter((m) => m.stage === stage);
+    if (!list.length) return;
+    const block = document.createElement("div");
+    block.className = "league-knockout-round";
+    const title =
+      stage === "qf" ? "Quarterfinals" : stage === "sf" ? "Semifinals" : "Final";
+    block.innerHTML = `<h3 class="league-group-title">${title}</h3>`;
+    list.forEach((match) => {
+      const item = document.createElement("div");
+      item.className = `league-match${isMatchPlayed(match) ? " is-done" : ""}`;
+      item.innerHTML = `
+        <p class="league-match-names">${escapeHtml(spotLabelWithGroup(spotById(match.spotAId)))} <span>vs</span> ${escapeHtml(spotLabelWithGroup(spotById(match.spotBId)))}</p>
+        <div class="league-match-scores">
+          <span>${escapeHtml(match.scoreA || "—")}</span>
+          <span>${escapeHtml(match.scoreB || "—")}</span>
+        </div>
+        <p class="league-match-winner">${escapeHtml(matchResultLabel(match))}</p>
+      `;
+      block.append(item);
+    });
+    bracketRoot.append(block);
+  });
+}
+
 function renderAll() {
   renderStatus();
   renderJoin();
   renderSpots();
   renderTable();
   renderMatches();
+  renderPlayoffs();
 }
 
 async function refreshSlotCatalog() {
@@ -518,6 +614,20 @@ function bindEvents() {
   );
   $("league-admin-season-force")?.addEventListener("click", () =>
     postAdmin("/api/slot-league/season/generate", { force: true })
+  );
+  $("league-admin-randomize-week")?.addEventListener("click", () => {
+    const week = Number($("league-admin-week")?.value || 1);
+    postAdmin("/api/slot-league/week/randomize", { week });
+  });
+  $("league-admin-randomize-week-force")?.addEventListener("click", () => {
+    const week = Number($("league-admin-week")?.value || 1);
+    postAdmin("/api/slot-league/week/randomize", { week, force: true });
+  });
+  $("league-admin-playoffs")?.addEventListener("click", () =>
+    postAdmin("/api/slot-league/knockout/generate")
+  );
+  $("league-admin-playoffs-force")?.addEventListener("click", () =>
+    postAdmin("/api/slot-league/knockout/generate", { force: true })
   );
   $("league-admin-bots")?.addEventListener("click", () => {
     const filled = leaguePayload?.league?.filled || 0;

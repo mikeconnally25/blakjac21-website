@@ -151,6 +151,7 @@ import {
   handleSlotLeagueGenerateKnockout,
   handleSlotLeagueGenerateSeason,
   handleSlotLeagueJoin,
+  handleSlotLeagueRandomizeWeek,
   handleSlotLeagueMatchScore,
   handleSlotLeaguePhase,
   handleSlotLeagueReset,
@@ -414,6 +415,9 @@ app.post("/api/slot-league/season/generate", (req, res) =>
 );
 app.post("/api/slot-league/knockout/generate", (req, res) =>
   handleSlotLeagueGenerateKnockout(req, res)
+);
+app.post("/api/slot-league/week/randomize", (req, res) =>
+  handleSlotLeagueRandomizeWeek(req, res)
 );
 app.post("/api/slot-league/matches/score", (req, res) =>
   handleSlotLeagueMatchScore(req, res)
