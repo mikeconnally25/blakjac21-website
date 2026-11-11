@@ -1,5 +1,7 @@
 let leaguePayload = null;
 let currentUser = null;
+let slotCatalog = [];
+let slotCatalogUpdatedAt = null;
 
 function $(id) {
   return document.getElementById(id);
@@ -121,6 +123,18 @@ function renderStatus() {
   }
 }
 
+function applyCatalogFromPayload(payload) {
+  if (Array.isArray(payload?.catalog)) {
+    slotCatalog = payload.catalog;
+    slotCatalogUpdatedAt = payload.catalogUpdatedAt || null;
+    return;
+  }
+  if (Array.isArray(payload?.slots)) {
+    slotCatalog = payload.slots;
+    slotCatalogUpdatedAt = payload.updatedAt || null;
+  }
+}
+
 function renderJoin() {
   const league = leaguePayload?.league;
   const form = $("league-join-form");
@@ -129,10 +143,9 @@ function renderJoin() {
   const list = $("league-slot-catalog");
   if (!league || !form) return;
 
-  const catalog = Array.isArray(leaguePayload.catalog) ? leaguePayload.catalog : [];
   if (list) {
     list.replaceChildren(
-      ...catalog.map((item) => {
+      ...slotCatalog.map((item) => {
         const opt = document.createElement("option");
         opt.value = item.name;
         return opt;
@@ -143,6 +156,9 @@ function renderJoin() {
   const signedIn = Boolean(currentUser);
   const entered = Boolean(leaguePayload.viewerEntered);
   const open = Boolean(league.open);
+  const catalogNote = slotCatalog.length
+    ? ` ${slotCatalog.length} synced slots available.`
+    : " Sync Allowed slots on Bonus Hunt first.";
 
   if (!signedIn) {
     copy.textContent = "Sign in with Kick to claim a spot.";
@@ -153,8 +169,11 @@ function renderJoin() {
   } else if (!open) {
     copy.textContent = "Signups are closed.";
     btn.disabled = true;
+  } else if (!slotCatalog.length) {
+    copy.textContent = `Pick a Stake slot after syncing the Allowed list on Bonus Hunt.`;
+    btn.disabled = true;
   } else {
-    copy.textContent = "Pick a Stake slot and claim one of the 16 spots.";
+    copy.textContent = `Pick a Stake slot and claim one of the 16 spots.${catalogNote}`;
     btn.disabled = false;
   }
 }
@@ -335,8 +354,37 @@ function renderAll() {
   renderMatches();
 }
 
+async function refreshSlotCatalog() {
+  try {
+    const response = await fetch("/api/bonus-hunt/slots", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+    if (!response.ok) return false;
+    const data = await response.json();
+    const nextUpdatedAt = data.updatedAt || null;
+    const nextSlots = Array.isArray(data.slots) ? data.slots : [];
+    const changed =
+      nextUpdatedAt !== slotCatalogUpdatedAt ||
+      nextSlots.length !== slotCatalog.length;
+    applyCatalogFromPayload(data);
+    return changed;
+  } catch {
+    return false;
+  }
+}
+
 async function refresh() {
-  leaguePayload = await api("/api/slot-league/status");
+  const [status] = await Promise.all([
+    api("/api/slot-league/status"),
+    refreshSlotCatalog(),
+  ]);
+  leaguePayload = status;
+  // Prefer the live bonus-hunt catalog (same source as Sync slots).
+  // Fall back to whatever the league status embedded if BH slots failed.
+  if (!slotCatalog.length) {
+    applyCatalogFromPayload(status);
+  }
   renderAll();
 }
 
