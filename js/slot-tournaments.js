@@ -2,6 +2,7 @@ let currentUser = null;
 let pollTimer = null;
 let slotCatalog = [];
 let slotGroups = [];
+let slotCatalogUpdatedAt = null;
 let assignSaveTimer = null;
 let assignDirty = false;
 let pickerOpen = false;
@@ -813,7 +814,46 @@ function resolveSlotThumbnail(slot) {
   );
 }
 
+function applyCatalogFromPayload(data) {
+  if (!data || typeof data !== "object") return false;
+  // Prefer tournament status `catalog`, else Bonus Hunt `/api/bonus-hunt/slots`.
+  const fromBonusHunt = Array.isArray(data.slots) && Array.isArray(data.groups);
+  const nextSlots = Array.isArray(data.catalog)
+    ? data.catalog
+    : fromBonusHunt
+      ? data.slots
+      : null;
+  if (!nextSlots) return false;
+
+  const filtered = nextSlots.filter((slot) =>
+    CLAIM_SLOT_GROUPS.some((group) => slotBelongsToGroup(slot, group.slug))
+  );
+  const nextUpdatedAt = data.catalogUpdatedAt || data.updatedAt || null;
+  const changed =
+    nextUpdatedAt !== slotCatalogUpdatedAt ||
+    filtered.length !== slotCatalog.length;
+  slotCatalog = filtered;
+  slotCatalogUpdatedAt = nextUpdatedAt;
+  const groups = Array.isArray(data.catalogGroups)
+    ? data.catalogGroups
+    : Array.isArray(data.groups)
+      ? data.groups
+      : [];
+  slotGroups = groups.filter((group) =>
+    CLAIM_SLOT_GROUPS.some((allowed) => allowed.slug === group.slug)
+  );
+  if (!slotGroups.length) {
+    slotGroups = [...CLAIM_SLOT_GROUPS];
+  }
+  return changed;
+}
+
 function applyState(data) {
+  const catalogChanged = applyCatalogFromPayload(data);
+  if (catalogChanged) {
+    renderSlotPickerOptions();
+    renderClaimSlotPickerOptions();
+  }
   if (assignDirty) {
     state = {
       ...state,
@@ -1635,16 +1675,46 @@ function renderAll() {
   renderAdminForm();
 }
 
+async function refreshBonusHuntCatalog() {
+  try {
+    const response = await fetch("/api/bonus-hunt/slots", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+    if (!response.ok) return false;
+    const data = await response.json();
+    const changed = applyCatalogFromPayload(data);
+    if (changed) {
+      renderSlotPickerOptions();
+      renderClaimSlotPickerOptions();
+      if (currentUser?.isAdmin) {
+        renderAssignPanel();
+        renderEntries();
+      }
+    }
+    return changed;
+  } catch {
+    return false;
+  }
+}
+
 async function refreshStatus() {
-  const response = await fetch("/api/slot-tournaments/status", {
-    credentials: "same-origin",
-    cache: "no-store",
-  });
+  const [response] = await Promise.all([
+    fetch("/api/slot-tournaments/status", {
+      credentials: "same-origin",
+      cache: "no-store",
+    }),
+    refreshBonusHuntCatalog(),
+  ]);
   if (!response.ok) {
     throw new Error("Could not load tournament board.");
   }
   const data = await response.json();
   applyState(data);
+  // Prefer the live Bonus Hunt synced list; fall back to status catalog.
+  if (!slotCatalog.length) {
+    applyCatalogFromPayload(data);
+  }
 }
 
 async function postJson(url, body) {
@@ -1972,22 +2042,18 @@ async function loadSlotCatalog({ force = false } = {}) {
         throw new Error(data.error || "Could not load slot catalog.");
       }
       const data = await response.json();
-      const rawSlots = Array.isArray(data.slots) ? data.slots : [];
-      slotCatalog = rawSlots.filter((slot) =>
-        CLAIM_SLOT_GROUPS.some((group) => slotBelongsToGroup(slot, group.slug))
-      );
-      slotGroups = (Array.isArray(data.groups) ? data.groups : []).filter(
-        (group) =>
-          CLAIM_SLOT_GROUPS.some((allowed) => allowed.slug === group.slug)
-      );
-      if (!slotGroups.length) {
-        slotGroups = [...CLAIM_SLOT_GROUPS];
-      }
+      applyCatalogFromPayload(data);
       renderSlotPickerOptions();
       renderClaimSlotPickerOptions();
       if (currentUser?.isAdmin) {
         renderAssignPanel();
         renderEntries();
+      }
+      const metaEl = document.getElementById("st-assign-catalog-meta");
+      if (metaEl) {
+        metaEl.textContent = slotCatalog.length
+          ? `${slotCatalog.length} synced Bonus Hunt slots`
+          : "No synced slots yet — sync Allowed slots on Bonus Hunt.";
       }
       return slotCatalog;
     } catch (error) {
