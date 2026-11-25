@@ -6,6 +6,8 @@ let latestData = null;
 let currentUser = null;
 let filterQuery = "";
 let activeTab = "stake";
+let periodEndsAt = null;
+let periodCountdownTimer = null;
 
 let uncLeaders = [];
 let uncYou = null;
@@ -15,6 +17,8 @@ let uncFilterQuery = "";
 let uncFirstPaint = true;
 let uncLoadedOnce = false;
 let uncLastSignature = "";
+
+const PERIOD_LENGTH_MS = 30 * 24 * 60 * 60 * 1000;
 
 const PRIZE_BY_RANK = {
   1: 2000,
@@ -115,14 +119,61 @@ function parseSheetDate(value) {
   return new Date(2000 + Number(match[3]), month, Number(match[1]));
 }
 
-function formatPeriod(start, end) {
-  const from = parseSheetDate(start);
-  const to = parseSheetDate(end);
-  if (!from || !to) {
-    return start && end ? `${start} – ${end}` : "—";
+function resolvePeriodDeadline(periodStart) {
+  const from = parseSheetDate(periodStart);
+  if (from && Number.isFinite(from.getTime())) {
+    return from.getTime() + PERIOD_LENGTH_MS;
   }
-  const day = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
-  return `${day.format(from)} – ${day.format(to)}`;
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  return monthStart + PERIOD_LENGTH_MS;
+}
+
+function formatCountdown(ms) {
+  if (!Number.isFinite(ms)) return "—";
+  if (ms <= 0) return "Ended";
+  const totalSec = Math.floor(ms / 1000);
+  const days = Math.floor(totalSec / 86400);
+  const hours = Math.floor((totalSec % 86400) / 3600);
+  const mins = Math.floor((totalSec % 3600) / 60);
+  const secs = totalSec % 60;
+  if (days > 0) {
+    return `${days}d ${hours}h ${mins}m`;
+  }
+  if (hours > 0) {
+    return `${hours}h ${mins}m ${secs}s`;
+  }
+  return `${mins}m ${secs}s`;
+}
+
+function paintPeriodCountdown() {
+  const period = document.getElementById("leaderboard-period");
+  const label = document.getElementById("leaderboard-period-label");
+  if (!period) return;
+  if (!Number.isFinite(periodEndsAt)) {
+    if (label) label.textContent = "Ends in";
+    period.textContent = "—";
+    return;
+  }
+  const remaining = periodEndsAt - Date.now();
+  if (remaining <= 0) {
+    if (label) label.textContent = "Period";
+    period.textContent = "Ended";
+    return;
+  }
+  if (label) label.textContent = "Ends in";
+  period.textContent = formatCountdown(remaining);
+}
+
+function startPeriodCountdown(periodStart) {
+  periodEndsAt = resolvePeriodDeadline(periodStart);
+  paintPeriodCountdown();
+  if (periodCountdownTimer) {
+    clearInterval(periodCountdownTimer);
+  }
+  periodCountdownTimer = setInterval(() => {
+    paintPeriodCountdown();
+  }, 1000);
 }
 
 function formatUpdated(iso) {
@@ -380,14 +431,13 @@ function leaderboardSignature(data) {
 function renderLeaderboard(data) {
   const entries = Array.isArray(data.entries) ? data.entries : [];
   const empty = document.getElementById("leaderboard-empty");
-  const period = document.getElementById("leaderboard-period");
   const updated = document.getElementById("leaderboard-updated");
   const board = document.querySelector("#lb-panel-stake .lb-board");
   if (!empty) return;
 
   empty.classList.toggle("is-hidden", entries.length > 0);
   board?.classList.toggle("is-empty", entries.length === 0);
-  if (period) period.textContent = formatPeriod(data.periodStart, data.periodEnd);
+  startPeriodCountdown(data.periodStart);
   if (updated) updated.textContent = formatUpdated(data.updatedAt);
 
   const leader = entries[0] || null;
@@ -417,6 +467,7 @@ async function loadLeaderboard({ quiet = false } = {}) {
       lastSignature = signature;
       renderLeaderboard(data);
     } else {
+      startPeriodCountdown(data.periodStart);
       const updated = document.getElementById("leaderboard-updated");
       if (updated) updated.textContent = formatUpdated(data.updatedAt);
     }
