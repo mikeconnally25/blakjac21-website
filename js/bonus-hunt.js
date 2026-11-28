@@ -3790,7 +3790,7 @@ function initAdminForm() {
     }
   };
 
-  const uploadViaOpener = (slots) =>
+  const uploadViaOpener = (slots, done = true) =>
     new Promise((resolve, reject) => {
       if (!window.opener || window.opener.closed) {
         reject(new Error("no opener"));
@@ -3806,26 +3806,54 @@ function initAdminForm() {
       window.addEventListener("message", onAck);
       const target = pickOpenerTarget();
       window.opener.postMessage(
-        { source: "bh-slot-sync", token, groupSlug, slots },
+        { source: "bh-slot-sync", token, groupSlug, slots, done: !!done },
         target
       );
       setTimeout(() => {
         window.removeEventListener("message", onAck);
         reject(new Error("Bonus Hunt did not acknowledge upload (keep the Bonus Hunt tab open)."));
-      }, 120000);
+      }, 300000);
     });
 
-  const uploadViaFetch = async (slots) => {
+  const uploadViaFetch = async (slots, done = true) => {
     const response = await fetch(importUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, payload: { slots }, done: true }),
+      body: JSON.stringify({ token, payload: { slots }, done: !!done }),
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       throw new Error(data.error || "Upload failed");
     }
     return data;
+  };
+
+  const uploadSlotsChunked = async (slots) => {
+    const chunkSize = 400;
+    let last = null;
+    for (let i = 0; i < slots.length; i += chunkSize) {
+      const chunk = slots.slice(i, i + chunkSize);
+      const done = i + chunkSize >= slots.length;
+      reportProgress(
+        "Uploading " +
+          Math.min(i + chunk.length, slots.length) +
+          "/" +
+          slots.length +
+          " ${label} slots…",
+        Math.min(i + chunk.length, slots.length)
+      );
+      try {
+        last = await uploadViaOpener(chunk, done);
+      } catch (openerError) {
+        console.warn(
+          "Opener upload unavailable (" +
+            (openerError.message || openerError) +
+            "). Trying direct fetch…"
+        );
+        last = await uploadViaFetch(chunk, done);
+      }
+    }
+    return last || { ok: true, count: slots.length };
   };
 
   console.log("Syncing ${label} to Bonus Hunt (full group load + logos)...");
@@ -4062,32 +4090,33 @@ function initAdminForm() {
     };
   };
 
+  // Stake's live schema uses popular7d (not popular) and no language args.
   const QUERY_VARIANTS = [
     {
       name: "SlugKuratorGroup",
+      operationName: "SlugKuratorGroup",
       query:
-        "query SlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!, $sort: GameKuratorGroupGameSortEnum = popular, $language: LanguageEnum = en) {" +
+        "query SlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!, $sort: GameKuratorGroupGameSortEnum = popular7d) {" +
         " slugKuratorGroup(slug: $slug) {" +
-        " name slug" +
-        " gameCount(language: $language)" +
-        " groupGamesList(limit: $limit, offset: $offset, sort: $sort, language: $language) {" +
+        " name slug gameCount" +
+        " groupGamesList(limit: $limit, offset: $offset, sort: $sort) {" +
         " game { name slug thumbnailUrl groupGames { group { translation type slug } } }" +
         " } } }",
       variables: (offset, limit) => ({
         slug: groupSlug,
         limit,
         offset,
-        sort: "popular",
-        language: "en",
+        sort: "popular7d",
       }),
     },
     {
-      name: "SlugKuratorGroupLite",
+      name: "SlugKuratorGroupPopular",
+      operationName: "SlugKuratorGroup",
       query:
-        "query theSlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!) {" +
+        "query SlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!) {" +
         " slugKuratorGroup(slug: $slug) {" +
         " name slug gameCount" +
-        " groupGamesList(limit: $limit, offset: $offset, sort: popular) {" +
+        " groupGamesList(limit: $limit, offset: $offset, sort: popular7d) {" +
         " game { name slug thumbnailUrl groupGames { group { translation type slug } } }" +
         " } } }",
       variables: (offset, limit) => ({
@@ -4107,11 +4136,11 @@ function initAdminForm() {
         accept: "application/json",
         "content-type": "application/json",
         "x-language": "en",
-        "x-operation-name": variant.name,
+        "x-operation-name": variant.operationName || variant.name,
         "x-operation-type": "query",
       },
       body: JSON.stringify({
-        operationName: variant.name === "SlugKuratorGroupLite" ? "theSlugKuratorGroup" : variant.name,
+        operationName: variant.operationName || variant.name,
         query: variant.query,
         variables: variant.variables(offset, pageSize),
       }),
@@ -4126,8 +4155,10 @@ function initAdminForm() {
   };
 
   const loadGroupFromApi = async () => {
+    // Stake caps groupGamesList limit at 50.
     const pageSize = 50;
     let activeVariant = null;
+    let firstPage = null;
 
     for (const variant of QUERY_VARIANTS) {
       try {
@@ -4140,41 +4171,32 @@ function initAdminForm() {
           continue;
         }
         activeVariant = variant;
+        firstPage = probe;
         break;
       } catch (error) {
         console.warn("Stake list request failed (" + variant.name + ").", error);
       }
     }
 
-    if (!activeVariant) return null;
+    if (!activeVariant || !firstPage) return null;
 
     const collected = new Map();
     let rawCount = 0;
     let gameCount = 0;
     let stalledPages = 0;
 
-    for (let offset = 0; offset < 8000; offset += pageSize) {
-      let data;
-      try {
-        data = await fetchGroupPage(activeVariant, offset, pageSize);
-      } catch (error) {
-        console.warn("Stake list page failed at offset " + offset + ".", error);
-        break;
-      }
-
+    const ingestPage = (data) => {
       const group = parseGroupPage(data);
       if (!group) {
         const apiMessage =
           data && data.errors && data.errors[0] && data.errors[0].message;
         console.warn("Stake list query failed.", apiMessage || data);
-        break;
+        return { ok: false, listLen: 0, added: 0 };
       }
 
       const counted = Number(group.gameCount);
       if (Number.isFinite(counted) && counted > 0) gameCount = counted;
       const list = Array.isArray(group.groupGamesList) ? group.groupGamesList : [];
-      if (!list.length) break;
-
       let added = 0;
       for (const entry of list) {
         rawCount += 1;
@@ -4183,18 +4205,51 @@ function initAdminForm() {
         collected.set(mapped.slug, mapped);
         added += 1;
       }
+      return { ok: true, listLen: list.length, added };
+    };
 
-      reportProgress(collected.size + " games from Stake", collected.size);
+    let offset = 0;
+    let pageResult = ingestPage(firstPage);
+    reportProgress(
+      collected.size +
+        " games from Stake" +
+        (gameCount ? " / " + gameCount : ""),
+      collected.size
+    );
 
+    while (pageResult.ok) {
       if (gameCount && collected.size >= gameCount) break;
       if (gameCount && rawCount >= gameCount) break;
-      if (list.length < pageSize) break;
-      if (!added) {
+      if (pageResult.listLen < pageSize) break;
+      if (!pageResult.added) {
         stalledPages += 1;
         if (stalledPages >= 2) break;
-        continue;
+      } else {
+        stalledPages = 0;
       }
-      stalledPages = 0;
+
+      offset += pageSize;
+      if (offset >= 20000) break;
+
+      let data;
+      try {
+        data = await fetchGroupPage(activeVariant, offset, pageSize);
+      } catch (error) {
+        console.warn("Stake list page failed at offset " + offset + ".", error);
+        break;
+      }
+
+      pageResult = ingestPage(data);
+      if (offset % 250 === 0 || !pageResult.ok) {
+        reportProgress(
+          collected.size +
+            " games from Stake" +
+            (gameCount ? " / " + gameCount : ""),
+          collected.size
+        );
+      } else if (offset % 50 === 0) {
+        reportProgress(collected.size + " games from Stake", collected.size);
+      }
     }
 
     if (!collected.size) return null;
@@ -4311,15 +4366,14 @@ function initAdminForm() {
     slots.length
   );
   try {
-    let data;
-    try {
-      data = await uploadViaOpener(slots);
-      console.log("Uploaded via Bonus Hunt tab (bypasses Stake CSP).");
-    } catch (openerError) {
-      console.warn("Opener upload unavailable (" + (openerError.message || openerError) + "). Trying direct fetch…");
-      data = await uploadViaFetch(slots);
-    }
-    console.log("Done. Uploaded " + slots.length + " ${label} slots (" + (data.withThumbnails || withLogos) + " logos). Return to Bonus Hunt.");
+    const data = await uploadSlotsChunked(slots);
+    console.log(
+      "Done. Uploaded " +
+        slots.length +
+        " ${label} slots (" +
+        (data.withThumbnails || withLogos) +
+        " logos). Return to Bonus Hunt."
+    );
   } catch (error) {
     notifyFailure(error);
     throw error;
@@ -4405,9 +4459,12 @@ function initAdminForm() {
       }
 
       void (async () => {
+        const done = data.done !== false;
         try {
           setCatalogSyncStatus(
-            `Receiving ${data.slots.length} slots from Stake…`
+            done
+              ? `Importing ${data.slots.length} slots from Stake…`
+              : `Receiving sync chunk (${data.slots.length} slots)…`
           );
           const response = await fetch("/api/bonus-hunt/slots/import-sync", {
             method: "POST",
@@ -4416,12 +4473,32 @@ function initAdminForm() {
             body: JSON.stringify({
               token: data.token,
               payload: { slots: data.slots },
-              done: true,
+              done,
             }),
           });
           const result = await response.json().catch(() => ({}));
           if (!response.ok) {
             throw new Error(result.error || "Could not import slots.");
+          }
+
+          event.source?.postMessage(
+            {
+              source: "bh-slot-sync-ack",
+              token: data.token,
+              ok: true,
+              done: result.done !== false,
+              count: result.count,
+              buffered: result.buffered,
+              withThumbnails: result.withThumbnails,
+            },
+            event.origin
+          );
+
+          if (!done || result.done === false) {
+            setCatalogSyncStatus(
+              `Buffered ${result.buffered || result.count || 0} slots from Stake…`
+            );
+            return;
           }
 
           // Refresh Allowed slots immediately — don't wait for the poll loop.
@@ -4430,17 +4507,6 @@ function initAdminForm() {
           setCatalogSyncStatus(
             `Imported ${result.unique || result.count || data.slots.length} slots. ${formatCatalogCountSummary()}`,
             "success"
-          );
-
-          event.source?.postMessage(
-            {
-              source: "bh-slot-sync-ack",
-              token: data.token,
-              ok: true,
-              count: result.count,
-              withThumbnails: result.withThumbnails,
-            },
-            event.origin
           );
           resolveSyncCompletion(data.token, {
             complete: true,

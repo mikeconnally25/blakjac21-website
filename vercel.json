@@ -3,6 +3,12 @@
   "functions": {
     "api/**/*.js": {
       "maxDuration": 10
+    },
+    "api/bonus-hunt/slots/import-sync.js": {
+      "maxDuration": 60
+    },
+    "api/bonus-hunt/slots/import.js": {
+      "maxDuration": 60
     }
   },
   "crons": [
