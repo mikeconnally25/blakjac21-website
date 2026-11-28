@@ -4090,42 +4090,106 @@ function initAdminForm() {
     };
   };
 
-  // Stake's live schema uses popular7d (not popular) and no language args.
-  const QUERY_VARIANTS = [
-    {
-      name: "SlugKuratorGroup",
-      operationName: "SlugKuratorGroup",
-      query:
-        "query SlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!, $sort: GameKuratorGroupGameSortEnum = popular7d) {" +
-        " slugKuratorGroup(slug: $slug) {" +
-        " name slug gameCount" +
-        " groupGamesList(limit: $limit, offset: $offset, sort: $sort) {" +
-        " game { name slug thumbnailUrl groupGames { group { translation type slug } } }" +
-        " } } }",
-      variables: (offset, limit) => ({
-        slug: groupSlug,
-        limit,
-        offset,
-        sort: "popular7d",
-      }),
-    },
-    {
-      name: "SlugKuratorGroupPopular",
-      operationName: "SlugKuratorGroup",
-      query:
-        "query SlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!) {" +
-        " slugKuratorGroup(slug: $slug) {" +
-        " name slug gameCount" +
-        " groupGamesList(limit: $limit, offset: $offset, sort: popular7d) {" +
-        " game { name slug thumbnailUrl groupGames { group { translation type slug } } }" +
-        " } } }",
-      variables: (offset, limit) => ({
-        slug: groupSlug,
-        limit,
-        offset,
-      }),
-    },
-  ];
+  // Prefer the original no-sort query (same as the old working sync).
+  // popular7d is only a fallback. Only on Stake is filtered to the Slots
+  // category so bonus-hunt gets exclusive slots, not live/table junk.
+  const buildQueryVariants = (filterIds) => {
+    const hasFilters = Array.isArray(filterIds) && filterIds.length > 0;
+    const filterArgDecl = hasFilters ? ", $filterIds: [String!]" : "";
+    const filterArg = hasFilters ? ", filterIds: $filterIds" : "";
+    const gameCountArgs = hasFilters ? "(filterIds: $filterIds)" : "";
+    const withFilters = (offset, limit) => {
+      const vars = { slug: groupSlug, limit, offset };
+      if (hasFilters) vars.filterIds = filterIds;
+      return vars;
+    };
+
+    return [
+      {
+        name: "SlugKuratorGroup",
+        operationName: "SlugKuratorGroup",
+        query:
+          "query SlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!" +
+          filterArgDecl +
+          ") {" +
+          " slugKuratorGroup(slug: $slug) {" +
+          " name slug gameCount" +
+          gameCountArgs +
+          " groupGamesList(limit: $limit, offset: $offset" +
+          filterArg +
+          ") {" +
+          " game { name slug thumbnailUrl groupGames { group { translation type slug } } }" +
+          " } } }",
+        variables: withFilters,
+      },
+      {
+        name: "SlugKuratorGroupPopular7d",
+        operationName: "SlugKuratorGroup",
+        query:
+          "query SlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!, $sort: GameKuratorGroupGameSortEnum = popular7d" +
+          filterArgDecl +
+          ") {" +
+          " slugKuratorGroup(slug: $slug) {" +
+          " name slug gameCount" +
+          gameCountArgs +
+          " groupGamesList(limit: $limit, offset: $offset, sort: $sort" +
+          filterArg +
+          ") {" +
+          " game { name slug thumbnailUrl groupGames { group { translation type slug } } }" +
+          " } } }",
+        variables: (offset, limit) => ({
+          ...withFilters(offset, limit),
+          sort: "popular7d",
+        }),
+      },
+    ];
+  };
+
+  const resolveSlotsFilterId = async () => {
+    if (groupSlug !== "only-on-stake") return null;
+    const endpoint = location.origin.replace(/\\/$/, "") + "/_api/graphql";
+    const query =
+      "query SlugKuratorGroupFilters($slug: String!) {" +
+      " slugKuratorGroup(slug: $slug) {" +
+      " filters(type: category) { count group { id translation slug } }" +
+      " } }";
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+          "x-language": "en",
+          "x-operation-name": "SlugKuratorGroupFilters",
+          "x-operation-type": "query",
+        },
+        body: JSON.stringify({
+          operationName: "SlugKuratorGroupFilters",
+          query,
+          variables: { slug: groupSlug },
+        }),
+      });
+      const data = await response.json().catch(() => null);
+      const filters =
+        data &&
+        data.data &&
+        data.data.slugKuratorGroup &&
+        data.data.slugKuratorGroup.filters;
+      if (!Array.isArray(filters)) return null;
+      const slots = filters.find((entry) => {
+        const slug = String((entry && entry.group && entry.group.slug) || "")
+          .trim()
+          .toLowerCase();
+        return slug === "slots";
+      });
+      const id = slots && slots.group && slots.group.id;
+      return id ? String(id) : null;
+    } catch (error) {
+      console.warn("Could not resolve Slots filter.", error);
+      return null;
+    }
+  };
 
   const fetchGroupPage = async (variant, offset, pageSize) => {
     const endpoint = location.origin.replace(/\\/$/, "") + "/_api/graphql";
@@ -4154,15 +4218,41 @@ function initAdminForm() {
     return response.json();
   };
 
+  const fetchGroupPageWithRetry = async (variant, offset, pageSize) => {
+    let lastError = null;
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      try {
+        const data = await fetchGroupPage(variant, offset, pageSize);
+        if (data && data.errors && data.errors.length && !parseGroupPage(data)) {
+          throw new Error(
+            (data.errors[0] && data.errors[0].message) || "Stake GraphQL error"
+          );
+        }
+        return data;
+      } catch (error) {
+        lastError = error;
+        await sleep(250 * (attempt + 1));
+      }
+    }
+    throw lastError || new Error("Stake list request failed");
+  };
+
   const loadGroupFromApi = async () => {
     // Stake caps groupGamesList limit at 50.
     const pageSize = 50;
+    const slotsFilterId = await resolveSlotsFilterId();
+    const filterIds = slotsFilterId ? [slotsFilterId] : null;
+    if (slotsFilterId) {
+      reportProgress("Loading Only on Stake slots…", 0);
+    }
+
+    const QUERY_VARIANTS = buildQueryVariants(filterIds);
     let activeVariant = null;
     let firstPage = null;
 
     for (const variant of QUERY_VARIANTS) {
       try {
-        const probe = await fetchGroupPage(variant, 0, pageSize);
+        const probe = await fetchGroupPageWithRetry(variant, 0, pageSize);
         const group = parseGroupPage(probe);
         if (!group) {
           const apiMessage =
@@ -4223,19 +4313,20 @@ function initAdminForm() {
       if (pageResult.listLen < pageSize) break;
       if (!pageResult.added) {
         stalledPages += 1;
-        if (stalledPages >= 2) break;
+        if (stalledPages >= 3) break;
       } else {
         stalledPages = 0;
       }
 
       offset += pageSize;
-      if (offset >= 20000) break;
+      if (offset >= 25000) break;
 
       let data;
       try {
-        data = await fetchGroupPage(activeVariant, offset, pageSize);
+        data = await fetchGroupPageWithRetry(activeVariant, offset, pageSize);
       } catch (error) {
         console.warn("Stake list page failed at offset " + offset + ".", error);
+        // Soft-fail: keep what we have instead of discarding the whole sync.
         break;
       }
 
@@ -4247,19 +4338,19 @@ function initAdminForm() {
             (gameCount ? " / " + gameCount : ""),
           collected.size
         );
-      } else if (offset % 50 === 0) {
+      } else if (offset % 100 === 0) {
         reportProgress(collected.size + " games from Stake", collected.size);
       }
     }
 
     if (!collected.size) return null;
-    if (gameCount && collected.size < Math.floor(gameCount * 0.85)) {
+    if (gameCount && collected.size < Math.floor(gameCount * 0.9)) {
       console.warn(
         "Stake list incomplete (" +
           collected.size +
           "/" +
           gameCount +
-          "). Keeping API results — page scroll usually misses most games."
+          "). Keeping API results and uploading what loaded."
       );
     }
     return [...collected.values()];
@@ -4675,7 +4766,11 @@ function initAdminForm() {
 
     setCatalogSyncStatus(
       copied
-        ? `${label} script copied. Keep this Bonus Hunt tab open. On Stake: wait for the page to load, then F12 → Console → paste → Enter.`
+        ? `${label} script copied. Keep this Bonus Hunt tab open. On Stake: wait for the page to load, then F12 → Console → paste → Enter.${
+            groupSlug === "only-on-stake"
+              ? " Full slots list can take 1–2 minutes."
+              : ""
+          }`
         : `${label}: clipboard blocked — copy the script from the box below, then paste in the Stake console.`
     );
 
