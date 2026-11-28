@@ -4022,101 +4022,190 @@ function initAdminForm() {
     if (btn) btn.scrollIntoView({ block: "center", behavior: "auto" });
   };
 
-  const loadGroupFromApi = async () => {
+  const parseGroupPage = (data) => {
+    const root = data && data.data;
+    if (!root) return null;
+    return (
+      root.slugKuratorGroup ||
+      root.kuratorGroup ||
+      root.gameKuratorGroup ||
+      null
+    );
+  };
+
+  const mapGroupEntry = (entry) => {
+    const game = (entry && entry.game) || entry || {};
+    const slug = String(game.slug || "").trim().toLowerCase();
+    if (!slug || skip.has(slug)) return null;
+    const providerGroup = (game.groupGames || []).find((item) => {
+      const type = String((item && item.group && item.group.type) || "").toLowerCase();
+      return type === "provider" || type === "gameprovider";
+    });
+    const provider = String(
+      (providerGroup && providerGroup.group && providerGroup.group.translation) ||
+        game.providerName ||
+        (game.provider && game.provider.name) ||
+        ""
+    ).trim();
+    const thumb =
+      game.thumbnailUrl ||
+      game.thumbnailsUrl ||
+      game.thumbnail ||
+      game.thumb ||
+      "";
+    return {
+      name: String(game.name || slug).replace(/\\s+/g, " ").trim() || slug,
+      slug,
+      groupSlug,
+      provider: provider || undefined,
+      thumbnailUrl: thumb ? String(thumb) : undefined,
+    };
+  };
+
+  const QUERY_VARIANTS = [
+    {
+      name: "SlugKuratorGroup",
+      query:
+        "query SlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!, $sort: GameKuratorGroupGameSortEnum = popular, $language: LanguageEnum = en) {" +
+        " slugKuratorGroup(slug: $slug) {" +
+        " name slug" +
+        " gameCount(language: $language)" +
+        " groupGamesList(limit: $limit, offset: $offset, sort: $sort, language: $language) {" +
+        " game { name slug thumbnailUrl groupGames { group { translation type slug } } }" +
+        " } } }",
+      variables: (offset, limit) => ({
+        slug: groupSlug,
+        limit,
+        offset,
+        sort: "popular",
+        language: "en",
+      }),
+    },
+    {
+      name: "SlugKuratorGroupLite",
+      query:
+        "query theSlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!) {" +
+        " slugKuratorGroup(slug: $slug) {" +
+        " name slug gameCount" +
+        " groupGamesList(limit: $limit, offset: $offset, sort: popular) {" +
+        " game { name slug thumbnailUrl groupGames { group { translation type slug } } }" +
+        " } } }",
+      variables: (offset, limit) => ({
+        slug: groupSlug,
+        limit,
+        offset,
+      }),
+    },
+  ];
+
+  const fetchGroupPage = async (variant, offset, pageSize) => {
     const endpoint = location.origin.replace(/\\/$/, "") + "/_api/graphql";
-    const query =
-      "query SlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!) {" +
-      " slugKuratorGroup(slug: $slug) {" +
-      " name slug gameCount" +
-      " groupGamesList(limit: $limit, offset: $offset) {" +
-      " game { name slug thumbnailUrl groupGames { group { translation type slug } } }" +
-      " } } }";
-    const pageSize = 40;
+    const response = await fetch(endpoint, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        "x-language": "en",
+        "x-operation-name": variant.name,
+        "x-operation-type": "query",
+      },
+      body: JSON.stringify({
+        operationName: variant.name === "SlugKuratorGroupLite" ? "theSlugKuratorGroup" : variant.name,
+        query: variant.query,
+        variables: variant.variables(offset, pageSize),
+      }),
+    });
+    const contentType = response.headers.get("content-type") || "";
+    if (!response.ok || contentType.indexOf("json") === -1) {
+      const err = new Error("Stake list unavailable (" + response.status + ")");
+      err.status = response.status;
+      throw err;
+    }
+    return response.json();
+  };
+
+  const loadGroupFromApi = async () => {
+    const pageSize = 50;
+    let activeVariant = null;
+
+    for (const variant of QUERY_VARIANTS) {
+      try {
+        const probe = await fetchGroupPage(variant, 0, pageSize);
+        const group = parseGroupPage(probe);
+        if (!group) {
+          const apiMessage =
+            probe && probe.errors && probe.errors[0] && probe.errors[0].message;
+          console.warn("Stake list query failed (" + variant.name + ").", apiMessage || probe);
+          continue;
+        }
+        activeVariant = variant;
+        break;
+      } catch (error) {
+        console.warn("Stake list request failed (" + variant.name + ").", error);
+      }
+    }
+
+    if (!activeVariant) return null;
+
     const collected = new Map();
     let rawCount = 0;
     let gameCount = 0;
+    let stalledPages = 0;
 
     for (let offset = 0; offset < 8000; offset += pageSize) {
-      let response;
+      let data;
       try {
-        response = await fetch(endpoint, {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            accept: "application/json",
-            "content-type": "application/json",
-            "x-language": "en",
-            "x-operation-name": "SlugKuratorGroup",
-            "x-operation-type": "query",
-          },
-          body: JSON.stringify({
-            query,
-            variables: { slug: groupSlug, limit: pageSize, offset },
-          }),
-        });
+        data = await fetchGroupPage(activeVariant, offset, pageSize);
       } catch (error) {
-        console.warn("Stake list request failed.", error);
-        return null;
+        console.warn("Stake list page failed at offset " + offset + ".", error);
+        break;
       }
 
-      const contentType = response.headers.get("content-type") || "";
-      if (!response.ok || contentType.indexOf("json") === -1) {
-        console.warn("Stake list unavailable.", response.status);
-        return null;
-      }
-
-      const data = await response.json().catch(() => null);
-      const group = data && data.data && data.data.slugKuratorGroup;
+      const group = parseGroupPage(data);
       if (!group) {
         const apiMessage =
           data && data.errors && data.errors[0] && data.errors[0].message;
         console.warn("Stake list query failed.", apiMessage || data);
-        return null;
+        break;
       }
 
-      gameCount = Number(group.gameCount) || gameCount;
+      const counted = Number(group.gameCount);
+      if (Number.isFinite(counted) && counted > 0) gameCount = counted;
       const list = Array.isArray(group.groupGamesList) ? group.groupGamesList : [];
       if (!list.length) break;
 
       let added = 0;
       for (const entry of list) {
         rawCount += 1;
-        const game = (entry && entry.game) || entry || {};
-        const slug = String(game.slug || "").trim().toLowerCase();
-        if (!slug || skip.has(slug) || collected.has(slug)) continue;
-        const providerGroup = (game.groupGames || []).find((item) => {
-          const type = String((item && item.group && item.group.type) || "").toLowerCase();
-          return type === "provider" || type === "gameprovider";
-        });
-        const provider = String(
-          (providerGroup && providerGroup.group && providerGroup.group.translation) || ""
-        ).trim();
-        collected.set(slug, {
-          name: String(game.name || slug).replace(/\\s+/g, " ").trim() || slug,
-          slug,
-          groupSlug,
-          provider: provider || undefined,
-          thumbnailUrl: game.thumbnailUrl ? String(game.thumbnailUrl) : undefined,
-        });
+        const mapped = mapGroupEntry(entry);
+        if (!mapped || collected.has(mapped.slug)) continue;
+        collected.set(mapped.slug, mapped);
         added += 1;
       }
 
       reportProgress(collected.size + " games from Stake", collected.size);
 
+      if (gameCount && collected.size >= gameCount) break;
       if (gameCount && rawCount >= gameCount) break;
       if (list.length < pageSize) break;
       if (!added) {
-        console.warn("Stake list pagination stalled. Scrolling the page instead.");
-        return null;
+        stalledPages += 1;
+        if (stalledPages >= 2) break;
+        continue;
       }
+      stalledPages = 0;
     }
 
     if (!collected.size) return null;
-    if (gameCount && rawCount < gameCount) {
+    if (gameCount && collected.size < Math.floor(gameCount * 0.85)) {
       console.warn(
-        "Stake list stopped at " + rawCount + " of " + gameCount + ". Scrolling the page instead."
+        "Stake list incomplete (" +
+          collected.size +
+          "/" +
+          gameCount +
+          "). Keeping API results — page scroll usually misses most games."
       );
-      return null;
     }
     return [...collected.values()];
   };
@@ -4205,6 +4294,16 @@ function initAdminForm() {
     );
     notifyFailure(empty);
     throw empty;
+  }
+
+  if (!apiSlots && slots.length < 40) {
+    const thin = new Error(
+      "Only found " +
+        slots.length +
+        " games from the page (Stake virtualizes the list). Wait for the group to finish loading, pass Cloudflare if shown, then paste the script again so the full API list can load."
+    );
+    notifyFailure(thin);
+    throw thin;
   }
 
   reportProgress(
