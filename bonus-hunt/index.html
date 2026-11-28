@@ -332,20 +332,21 @@
                   <div class="slot-catalog-section is-hidden" id="slot-catalog-section">
                     <p class="admin-panel-label">Allowed slots</p>
                     <p class="admin-panel-text">
-                      Sync
+                      One sync pulls both
                       <a href="https://stake.com/casino/group/new-releases" target="_blank" rel="noopener noreferrer">New Releases</a>
                       and
                       <a href="https://stake.com/casino/group/only-on-stake" target="_blank" rel="noopener noreferrer">Only on Stake</a>
                       for hunt search and Kick <code>!s</code>.
-                      Click Sync → allow the Stake popup → wait for that group page to load → F12 Console → paste → Enter.
-                      Keep this Bonus Hunt tab open. The script loads the full group, then this page saves it. Syncing a group replaces that group’s list. Do both groups.
                     </p>
+                    <ol class="slot-sync-steps">
+                      <li>Click <strong>Sync Allowed Slots</strong> (allow the Stake popup).</li>
+                      <li>On Stake, wait until the casino page finishes loading.</li>
+                      <li>Press <kbd>F12</kbd> → <strong>Console</strong> → paste → <kbd>Enter</kbd>.</li>
+                      <li>Keep this Bonus Hunt tab open until it says synced.</li>
+                    </ol>
                     <div class="slot-catalog-script-actions">
-                      <button type="button" class="btn btn-sm btn-primary" id="slot-sync-new-releases">
-                        Sync New Releases
-                      </button>
-                      <button type="button" class="btn btn-sm btn-primary" id="slot-sync-only-on-stake">
-                        Sync Only on Stake
+                      <button type="button" class="btn btn-sm btn-primary" id="slot-sync-allowed">
+                        Sync Allowed Slots
                       </button>
                     </div>
                     <p class="guess-status is-hidden" id="slot-catalog-import-status" role="status" aria-live="polite"></p>
@@ -617,6 +618,6 @@
 
   <script src="/js/main.js?v=avgx1"></script>
   <script src="/js/auth.js?v=claim24h"></script>
-  <script src="/js/bonus-hunt.js?v=spinreq1"></script>
+  <script src="/js/bonus-hunt.js?v=slotsync2"></script>
 </body>
 </html>

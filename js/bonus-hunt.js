@@ -3645,129 +3645,71 @@ function initAdminForm() {
     }
   });
 
-  function buildDirectSyncScript({ groupSlug, token, apiBase, openerOrigins }) {
-    const label =
-      groupSlug === "only-on-stake" ? "Only on Stake" : "New Releases";
+  function buildCatalogSyncScript({ token, apiBase, openerOrigins }) {
     const importUrl = `${apiBase}/api/bonus-hunt/slots/import-sync`;
     const allowedOpeners = Array.isArray(openerOrigins)
       ? openerOrigins
       : [openerOrigins].filter(Boolean);
+    const groups = [
+      { slug: "new-releases", label: "New Releases", slotsOnly: false },
+      { slug: "only-on-stake", label: "Only on Stake", slotsOnly: true },
+    ];
+
     return `(async () => {
-  const groupSlug = ${JSON.stringify(groupSlug)};
   const token = ${JSON.stringify(token)};
   const importUrl = ${JSON.stringify(importUrl)};
   const openerOrigins = ${JSON.stringify(allowedOpeners)};
+  const groups = ${JSON.stringify(groups)};
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-  const lockKey = "__bhSlotSyncLock_" + groupSlug + "_" + token.slice(0, 12);
+  const lockKey = "__bhSlotSyncLock_" + token.slice(0, 12);
   if (window[lockKey]) {
-    console.warn("Sync already running for this token — ignore duplicate paste.");
+    console.warn("Sync already running — ignore duplicate paste.");
     return;
   }
   window[lockKey] = true;
 
-  const buttonLabel = (el) =>
-    (el.innerText || el.textContent || el.getAttribute("aria-label") || "")
-      .replace(/\\s+/g, " ")
-      .trim();
+  const host = String(location.hostname || "").toLowerCase().replace(/^www\\./, "");
+  const onStake = /(^|\\.)stake\\.(com|bet|us|ac|games)$/.test(host);
+  if (!onStake) {
+    const err = new Error("Open stake.com first, wait for it to load, then paste this script again.");
+    console.error(err.message);
+    window[lockKey] = false;
+    throw err;
+  }
 
-  const findLoadMore = () => {
-    const nodes = [
-      ...document.querySelectorAll("button, a[role='button'], [role='button'], a.button"),
-    ];
-    return nodes.find((el) => {
-      if (el.disabled || el.getAttribute("aria-disabled") === "true") return false;
-      const text = buttonLabel(el);
-      return /^(load|show)\\s*more$/i.test(text);
-    });
+  const ensureHud = () => {
+    let hud = document.getElementById("__bhSlotSyncHud");
+    if (hud) return hud;
+    hud = document.createElement("div");
+    hud.id = "__bhSlotSyncHud";
+    hud.setAttribute("style", [
+      "position:fixed",
+      "z-index:2147483647",
+      "right:16px",
+      "bottom:16px",
+      "max-width:min(420px,calc(100vw - 32px))",
+      "padding:14px 16px",
+      "border-radius:12px",
+      "background:rgba(8,12,18,0.94)",
+      "color:#f8fafc",
+      "font:600 13px/1.45 system-ui,sans-serif",
+      "box-shadow:0 12px 40px rgba(0,0,0,0.45)",
+      "border:1px solid rgba(148,163,184,0.35)",
+    ].join(";"));
+    document.documentElement.appendChild(hud);
+    return hud;
   };
 
-  const isScrollable = (el) => {
-    if (!el || el === document.body || el === document.documentElement) return false;
-    try {
-      const style = window.getComputedStyle(el);
-      const overflowY = style.overflowY || style.overflow || "";
-      if (!/(auto|scroll|overlay)/i.test(overflowY)) return false;
-      return el.scrollHeight > el.clientHeight + 40;
-    } catch {
-      return false;
-    }
-  };
-
-  let scrollRootCache = null;
-  const findScrollRoot = () => {
-    if (scrollRootCache && document.contains(scrollRootCache)) return scrollRootCache;
-    const sample =
-      document.querySelector('a[href*="/casino/games/"]') ||
-      document.querySelector("main") ||
-      document.body;
-    let el = sample;
-    for (let depth = 0; el && depth < 14; depth += 1) {
-      if (isScrollable(el)) {
-        scrollRootCache = el;
-        return el;
-      }
-      el = el.parentElement;
-    }
-    const candidates = [...document.querySelectorAll("main, [role='main'], div, section")];
-    let best = null;
-    let bestScore = 0;
-    for (const node of candidates) {
-      if (!isScrollable(node)) continue;
-      const score = node.scrollHeight - node.clientHeight;
-      if (score > bestScore) {
-        best = node;
-        bestScore = score;
-      }
-    }
-    scrollRootCache = best;
-    return best;
-  };
-
-  const scrollToBottom = () => {
-    const root = findScrollRoot();
-    if (root) {
-      root.scrollTop = root.scrollHeight;
-      root.dispatchEvent(new Event("scroll", { bubbles: true }));
-    }
-    const top = Math.max(
-      document.body.scrollHeight,
-      document.documentElement.scrollHeight,
-      document.body.offsetHeight,
-      document.documentElement.offsetHeight
-    );
-    window.scrollTo(0, top);
-    document.documentElement.scrollTop = top;
-    document.body.scrollTop = top;
-    const btn = findLoadMore();
-    if (btn) btn.scrollIntoView({ block: "end", behavior: "auto" });
-  };
-
-  const revealTile = async (anchor) => {
-    try {
-      anchor.scrollIntoView({ block: "center", inline: "nearest", behavior: "auto" });
-    } catch {
-      /* ignore */
-    }
-    await sleep(40);
-  };
-
-  const pickThumbnail = (anchor) => {
-    const img =
-      anchor.querySelector("img[src], img[srcset], img[data-src]") ||
-      anchor.querySelector("img");
-    if (!img) return null;
-    let url =
-      img.currentSrc ||
-      img.getAttribute("src") ||
-      img.getAttribute("data-src") ||
-      "";
-    if (!url && img.srcset) {
-      url = String(img.srcset).split(",")[0].trim().split(/\\s+/)[0] || "";
-    }
-    if (!url) return null;
-    if (url.startsWith("//")) url = "https:" + url;
-    if (url.startsWith("/")) url = location.origin + url;
-    return url;
+  const setHud = (title, detail, tone) => {
+    const hud = ensureHud();
+    const color =
+      tone === "error" ? "#fca5a5" : tone === "success" ? "#86efac" : "#e2e8f0";
+    hud.innerHTML =
+      '<div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">BLAKJAC21 slot sync</div>' +
+      '<div style="color:' + color + '">' + title + "</div>" +
+      (detail
+        ? '<div style="margin-top:6px;color:#94a3b8;font-weight:500">' + detail + "</div>"
+        : "");
   };
 
   const pickOpenerTarget = () => {
@@ -3778,6 +3720,7 @@ function initAdminForm() {
   const notifyFailure = (error) => {
     window[lockKey] = false;
     const message = (error && error.message) || String(error || "Sync failed");
+    setHud("Sync failed", message, "error");
     console.error("Sync failed:", message);
     try {
       if (!window.opener || window.opener.closed) return;
@@ -3790,7 +3733,26 @@ function initAdminForm() {
     }
   };
 
-  const uploadViaOpener = (slots, done = true) =>
+  const reportProgress = (message, count) => {
+    setHud(message, count ? count + " slots so far" : "");
+    console.log(message);
+    try {
+      if (!window.opener || window.opener.closed) return;
+      window.opener.postMessage(
+        {
+          source: "bh-slot-sync-progress",
+          token,
+          message,
+          count: count || 0,
+        },
+        pickOpenerTarget()
+      );
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const uploadViaOpener = (slots, done) =>
     new Promise((resolve, reject) => {
       if (!window.opener || window.opener.closed) {
         reject(new Error("no opener"));
@@ -3804,266 +3766,75 @@ function initAdminForm() {
         else reject(new Error(event.data.error || "Upload failed"));
       };
       window.addEventListener("message", onAck);
-      const target = pickOpenerTarget();
       window.opener.postMessage(
-        { source: "bh-slot-sync", token, groupSlug, slots, done: !!done },
-        target
+        {
+          source: "bh-slot-sync",
+          token,
+          slots,
+          done: !!done,
+        },
+        pickOpenerTarget()
       );
       setTimeout(() => {
         window.removeEventListener("message", onAck);
-        reject(new Error("Bonus Hunt did not acknowledge upload (keep the Bonus Hunt tab open)."));
+        reject(
+          new Error(
+            "Bonus Hunt did not acknowledge upload (keep the Bonus Hunt tab open)."
+          )
+        );
       }, 300000);
     });
 
-  const uploadViaFetch = async (slots, done = true) => {
+  const uploadViaFetch = async (slots, done) => {
     const response = await fetch(importUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token, payload: { slots }, done: !!done }),
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      throw new Error(data.error || "Upload failed");
-    }
+    if (!response.ok) throw new Error(data.error || "Upload failed");
     return data;
   };
 
-  const uploadSlotsChunked = async (slots) => {
-    const chunkSize = 400;
-    let last = null;
-    for (let i = 0; i < slots.length; i += chunkSize) {
-      const chunk = slots.slice(i, i + chunkSize);
-      const done = i + chunkSize >= slots.length;
-      reportProgress(
-        "Uploading " +
-          Math.min(i + chunk.length, slots.length) +
-          "/" +
-          slots.length +
-          " ${label} slots…",
-        Math.min(i + chunk.length, slots.length)
-      );
-      try {
-        last = await uploadViaOpener(chunk, done);
-      } catch (openerError) {
-        console.warn(
-          "Opener upload unavailable (" +
-            (openerError.message || openerError) +
-            "). Trying direct fetch…"
-        );
-        last = await uploadViaFetch(chunk, done);
-      }
-    }
-    return last || { ok: true, count: slots.length };
-  };
-
-  console.log("Syncing ${label} to Bonus Hunt (full group load + logos)...");
-
-  const path = String(location.pathname || "").toLowerCase();
-  const expectedPath = "/casino/group/" + groupSlug;
-  if (!path.includes(expectedPath) && !path.includes("/casino")) {
-    const wrongPage = new Error(
-      "Open https://stake.com" +
-        expectedPath +
-        " , wait for it to load, then paste this script again."
-    );
-    notifyFailure(wrongPage);
-    throw wrongPage;
-  }
-
-  const skip = new Set(["poker", "roulette", "blackjack", "baccarat", "dice", "mines", "plinko", "limbo", "keno", "wheel", "hilo", "crash"]);
-  const linked = new Map();
-
-  const gameAnchors = () => {
-    const root =
-      document.querySelector("main") ||
-      document.querySelector("[role='main']") ||
-      document.body;
-    const candidates = [
-      ...root.querySelectorAll(
-        'a[href*="/casino/games/"], a[href*="casino/games/"]'
-      ),
-    ].filter((a) => {
-      if (
-        a.closest(
-          "header, footer, nav, [role='navigation'], [role='banner'], [role='contentinfo']"
-        )
-      ) {
-        return false;
-      }
-      const rect = a.getBoundingClientRect();
-      if (rect.width > 0 && rect.width < 48) return false;
-      return true;
-    });
-
-    if (candidates.length < 8) return candidates;
-
-    const parentCounts = new Map();
-    for (const a of candidates) {
-      let el = a.parentElement;
-      for (let depth = 0; el && depth < 8; depth += 1) {
-        if (el === root || el === document.body || el === document.documentElement) {
-          break;
-        }
-        const prev = parentCounts.get(el) || { count: 0, depth };
-        parentCounts.set(el, { count: prev.count + 1, depth });
-        el = el.parentElement;
-      }
-    }
-
-    let best = null;
-    let bestScore = 0;
-    const minCount = Math.max(8, Math.floor(candidates.length * 0.55));
-    for (const [el, info] of parentCounts) {
-      if (info.count < minCount) continue;
-      const score = info.count * 10 + info.depth;
-      if (score > bestScore) {
-        best = el;
-        bestScore = score;
-      }
-    }
-
-    if (best) {
-      return candidates.filter((a) => best.contains(a));
-    }
-    return candidates;
-  };
-
-  const slugFromAnchor = (a) => {
+  const uploadChunk = async (slots, done) => {
     try {
-      return new URL(a.href, location.origin).pathname.split("/").filter(Boolean).pop() || "";
-    } catch {
-      return String(a.getAttribute("href") || "").split("/").filter(Boolean).pop() || "";
-    }
-  };
-
-  const scrapeVisible = () => {
-    let added = 0;
-    let logosFilled = 0;
-    for (const a of gameAnchors()) {
-      const slug = slugFromAnchor(a);
-      if (!slug || skip.has(slug)) continue;
-      const thumbnailUrl = pickThumbnail(a);
-      const existing = linked.get(slug);
-      if (existing) {
-        if (!existing.thumbnailUrl && thumbnailUrl) {
-          existing.thumbnailUrl = thumbnailUrl;
-          logosFilled += 1;
-        }
-        continue;
-      }
-      const nameEl =
-        a.querySelector(".edge-typography-body-md-strong") ||
-        a.querySelector("[class*='typography'][class*='strong']") ||
-        a.querySelector(".game-info-wrap:not(.game-group) span") ||
-        a.querySelector("img[alt]");
-      const providerEl =
-        a.querySelector(".game-group") ||
-        a.querySelector("[class*='provider']") ||
-        a.querySelector("[class*='game-group']");
-      let name = (nameEl?.alt || nameEl?.textContent || "")
-        .replace(/\\s+/g, " ")
-        .trim();
-      const provider = (providerEl?.textContent || "").replace(/\\s+/g, " ").trim() || undefined;
-      if (!name) {
-        const raw = (a.textContent || "").replace(/\\s+/g, " ").trim();
-        name = raw.replace(/\\s+\\d+\\s*playing.*$/i, "").trim();
-        if (provider && name.toLowerCase().endsWith(provider.toLowerCase())) {
-          name = name.slice(0, -provider.length).trim();
-        }
-      }
-      linked.set(slug, {
-        name: name || slug,
-        slug,
-        groupSlug,
-        provider,
-        thumbnailUrl: thumbnailUrl || undefined,
-        _el: a,
-      });
-      added += 1;
-    }
-    return { added, logosFilled, total: linked.size };
-  };
-
-  const reportProgress = (message, count) => {
-    console.log(message);
-    try {
-      if (!window.opener || window.opener.closed) return;
-      const target = pickOpenerTarget();
-      window.opener.postMessage(
-        {
-          source: "bh-slot-sync-progress",
-          token,
-          groupSlug,
-          message,
-          count: count || linked.size,
-        },
-        target
+      return await uploadViaOpener(slots, done);
+    } catch (openerError) {
+      console.warn(
+        "Opener upload unavailable (" +
+          (openerError.message || openerError) +
+          "). Trying direct fetch…"
       );
-    } catch {
-      /* ignore */
+      return uploadViaFetch(slots, done);
     }
   };
 
-  const hydrateMissingLogos = async () => {
-    scrollToBottom();
-    await sleep(120);
-    scrapeVisible();
-  };
-
-  const scrollMetrics = () => {
-    const root = findScrollRoot();
-    if (root) {
-      return {
-        root,
-        pos: root.scrollTop,
-        view: root.clientHeight,
-        height: root.scrollHeight,
-      };
-    }
-    return {
-      root: null,
-      pos: window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0,
-      view: window.innerHeight,
-      height: Math.max(
-        document.body.scrollHeight,
-        document.documentElement.scrollHeight
-      ),
-    };
-  };
-
-  const isAtBottom = (metrics) =>
-    metrics.pos + metrics.view >= metrics.height - 48;
-
-  const stepTowardEnd = () => {
-    const metrics = scrollMetrics();
-    const step = Math.max(280, Math.floor(metrics.view * 0.8));
-    const next = metrics.pos + step;
-    if (metrics.root) {
-      metrics.root.scrollTop = next;
-      metrics.root.dispatchEvent(new Event("scroll", { bubbles: true }));
-    } else {
-      window.scrollTo(0, next);
-      document.documentElement.scrollTop = next;
-      document.body.scrollTop = next;
-    }
-    const btn = findLoadMore();
-    if (btn) btn.scrollIntoView({ block: "center", behavior: "auto" });
-  };
+  const skip = new Set([
+    "poker",
+    "roulette",
+    "blackjack",
+    "baccarat",
+    "dice",
+    "mines",
+    "plinko",
+    "limbo",
+    "keno",
+    "wheel",
+    "hilo",
+    "crash",
+  ]);
 
   const parseGroupPage = (data) => {
     const root = data && data.data;
     if (!root) return null;
-    return (
-      root.slugKuratorGroup ||
-      root.kuratorGroup ||
-      root.gameKuratorGroup ||
-      null
-    );
+    return root.slugKuratorGroup || root.kuratorGroup || null;
   };
 
-  const mapGroupEntry = (entry) => {
+  const mapGroupEntry = (entry, groupSlug) => {
     const game = (entry && entry.game) || entry || {};
-    const slug = String(game.slug || "").trim().toLowerCase();
+    const slug = String(game.slug || "")
+      .trim()
+      .toLowerCase();
     if (!slug || skip.has(slug)) return null;
     const providerGroup = (game.groupGames || []).find((item) => {
       const type = String((item && item.group && item.group.type) || "").toLowerCase();
@@ -4071,16 +3842,9 @@ function initAdminForm() {
     });
     const provider = String(
       (providerGroup && providerGroup.group && providerGroup.group.translation) ||
-        game.providerName ||
-        (game.provider && game.provider.name) ||
         ""
     ).trim();
-    const thumb =
-      game.thumbnailUrl ||
-      game.thumbnailsUrl ||
-      game.thumbnail ||
-      game.thumb ||
-      "";
+    const thumb = game.thumbnailUrl || game.thumbnail || game.thumb || "";
     return {
       name: String(game.name || slug).replace(/\\s+/g, " ").trim() || slug,
       slug,
@@ -4090,68 +3854,12 @@ function initAdminForm() {
     };
   };
 
-  // Prefer the original no-sort query (same as the old working sync).
-  // popular7d is only a fallback. Only on Stake is filtered to the Slots
-  // category so bonus-hunt gets exclusive slots, not live/table junk.
-  const buildQueryVariants = (filterIds) => {
-    const hasFilters = Array.isArray(filterIds) && filterIds.length > 0;
-    const filterArgDecl = hasFilters ? ", $filterIds: [String!]" : "";
-    const filterArg = hasFilters ? ", filterIds: $filterIds" : "";
-    const gameCountArgs = hasFilters ? "(filterIds: $filterIds)" : "";
-    const withFilters = (offset, limit) => {
-      const vars = { slug: groupSlug, limit, offset };
-      if (hasFilters) vars.filterIds = filterIds;
-      return vars;
-    };
-
-    return [
-      {
-        name: "SlugKuratorGroup",
-        operationName: "SlugKuratorGroup",
-        query:
-          "query SlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!" +
-          filterArgDecl +
-          ") {" +
-          " slugKuratorGroup(slug: $slug) {" +
-          " name slug gameCount" +
-          gameCountArgs +
-          " groupGamesList(limit: $limit, offset: $offset" +
-          filterArg +
-          ") {" +
-          " game { name slug thumbnailUrl groupGames { group { translation type slug } } }" +
-          " } } }",
-        variables: withFilters,
-      },
-      {
-        name: "SlugKuratorGroupPopular7d",
-        operationName: "SlugKuratorGroup",
-        query:
-          "query SlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!, $sort: GameKuratorGroupGameSortEnum = popular7d" +
-          filterArgDecl +
-          ") {" +
-          " slugKuratorGroup(slug: $slug) {" +
-          " name slug gameCount" +
-          gameCountArgs +
-          " groupGamesList(limit: $limit, offset: $offset, sort: $sort" +
-          filterArg +
-          ") {" +
-          " game { name slug thumbnailUrl groupGames { group { translation type slug } } }" +
-          " } } }",
-        variables: (offset, limit) => ({
-          ...withFilters(offset, limit),
-          sort: "popular7d",
-        }),
-      },
-    ];
-  };
-
   const resolveSlotsFilterId = async () => {
-    if (groupSlug !== "only-on-stake") return null;
     const endpoint = location.origin.replace(/\\/$/, "") + "/_api/graphql";
     const query =
       "query SlugKuratorGroupFilters($slug: String!) {" +
       " slugKuratorGroup(slug: $slug) {" +
-      " filters(type: category) { count group { id translation slug } }" +
+      " filters(type: category) { count group { id slug } }" +
       " } }";
     try {
       const response = await fetch(endpoint, {
@@ -4167,7 +3875,7 @@ function initAdminForm() {
         body: JSON.stringify({
           operationName: "SlugKuratorGroupFilters",
           query,
-          variables: { slug: groupSlug },
+          variables: { slug: "only-on-stake" },
         }),
       });
       const data = await response.json().catch(() => null);
@@ -4177,58 +3885,86 @@ function initAdminForm() {
         data.data.slugKuratorGroup &&
         data.data.slugKuratorGroup.filters;
       if (!Array.isArray(filters)) return null;
-      const slots = filters.find((entry) => {
-        const slug = String((entry && entry.group && entry.group.slug) || "")
-          .trim()
-          .toLowerCase();
-        return slug === "slots";
-      });
-      const id = slots && slots.group && slots.group.id;
-      return id ? String(id) : null;
-    } catch (error) {
-      console.warn("Could not resolve Slots filter.", error);
+      const slots = filters.find(
+        (entry) =>
+          String((entry && entry.group && entry.group.slug) || "").toLowerCase() ===
+          "slots"
+      );
+      return slots && slots.group && slots.group.id
+        ? String(slots.group.id)
+        : null;
+    } catch {
       return null;
     }
   };
 
-  const fetchGroupPage = async (variant, offset, pageSize) => {
-    const endpoint = location.origin.replace(/\\/$/, "") + "/_api/graphql";
-    const response = await fetch(endpoint, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        accept: "application/json",
-        "content-type": "application/json",
-        "x-language": "en",
-        "x-operation-name": variant.operationName || variant.name,
-        "x-operation-type": "query",
+  const buildQueries = (filterIds) => {
+    const hasFilters = Array.isArray(filterIds) && filterIds.length > 0;
+    const filterDecl = hasFilters ? ", $filterIds: [String!]" : "";
+    const filterArg = hasFilters ? ", filterIds: $filterIds" : "";
+    const gameCountArgs = hasFilters ? "(filterIds: $filterIds)" : "";
+    const vars = (slug, offset, limit) => {
+      const out = { slug, limit, offset };
+      if (hasFilters) out.filterIds = filterIds;
+      return out;
+    };
+    return [
+      {
+        operationName: "SlugKuratorGroup",
+        query:
+          "query SlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!" +
+          filterDecl +
+          ") { slugKuratorGroup(slug: $slug) { name slug gameCount" +
+          gameCountArgs +
+          " groupGamesList(limit: $limit, offset: $offset" +
+          filterArg +
+          ") { game { name slug thumbnailUrl groupGames { group { translation type slug } } } } } }",
+        variables: vars,
       },
-      body: JSON.stringify({
-        operationName: variant.operationName || variant.name,
-        query: variant.query,
-        variables: variant.variables(offset, pageSize),
-      }),
-    });
-    const contentType = response.headers.get("content-type") || "";
-    if (!response.ok || contentType.indexOf("json") === -1) {
-      const err = new Error("Stake list unavailable (" + response.status + ")");
-      err.status = response.status;
-      throw err;
-    }
-    return response.json();
+      {
+        operationName: "SlugKuratorGroup",
+        query:
+          "query SlugKuratorGroup($slug: String!, $limit: Int!, $offset: Int!, $sort: GameKuratorGroupGameSortEnum = popular7d" +
+          filterDecl +
+          ") { slugKuratorGroup(slug: $slug) { name slug gameCount" +
+          gameCountArgs +
+          " groupGamesList(limit: $limit, offset: $offset, sort: $sort" +
+          filterArg +
+          ") { game { name slug thumbnailUrl groupGames { group { translation type slug } } } } } }",
+        variables: (slug, offset, limit) => ({
+          ...vars(slug, offset, limit),
+          sort: "popular7d",
+        }),
+      },
+    ];
   };
 
-  const fetchGroupPageWithRetry = async (variant, offset, pageSize) => {
+  const fetchPage = async (variant, slug, offset, pageSize) => {
+    const endpoint = location.origin.replace(/\\/$/, "") + "/_api/graphql";
     let lastError = null;
     for (let attempt = 0; attempt < 4; attempt += 1) {
       try {
-        const data = await fetchGroupPage(variant, offset, pageSize);
-        if (data && data.errors && data.errors.length && !parseGroupPage(data)) {
-          throw new Error(
-            (data.errors[0] && data.errors[0].message) || "Stake GraphQL error"
-          );
+        const response = await fetch(endpoint, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            accept: "application/json",
+            "content-type": "application/json",
+            "x-language": "en",
+            "x-operation-name": variant.operationName,
+            "x-operation-type": "query",
+          },
+          body: JSON.stringify({
+            operationName: variant.operationName,
+            query: variant.query,
+            variables: variant.variables(slug, offset, pageSize),
+          }),
+        });
+        const contentType = response.headers.get("content-type") || "";
+        if (!response.ok || contentType.indexOf("json") === -1) {
+          throw new Error("Stake list unavailable (" + response.status + ")");
         }
-        return data;
+        return response.json();
       } catch (error) {
         lastError = error;
         await sleep(250 * (attempt + 1));
@@ -4237,60 +3973,42 @@ function initAdminForm() {
     throw lastError || new Error("Stake list request failed");
   };
 
-  const loadGroupFromApi = async () => {
-    // Stake caps groupGamesList limit at 50.
+  const loadGroup = async (group, slotsFilterId) => {
     const pageSize = 50;
-    const slotsFilterId = await resolveSlotsFilterId();
-    const filterIds = slotsFilterId ? [slotsFilterId] : null;
-    if (slotsFilterId) {
-      reportProgress("Loading Only on Stake slots…", 0);
-    }
+    const filterIds =
+      group.slotsOnly && slotsFilterId ? [slotsFilterId] : null;
+    const variants = buildQueries(filterIds);
+    let active = null;
+    let first = null;
 
-    const QUERY_VARIANTS = buildQueryVariants(filterIds);
-    let activeVariant = null;
-    let firstPage = null;
-
-    for (const variant of QUERY_VARIANTS) {
+    for (const variant of variants) {
       try {
-        const probe = await fetchGroupPageWithRetry(variant, 0, pageSize);
-        const group = parseGroupPage(probe);
-        if (!group) {
-          const apiMessage =
-            probe && probe.errors && probe.errors[0] && probe.errors[0].message;
-          console.warn("Stake list query failed (" + variant.name + ").", apiMessage || probe);
-          continue;
-        }
-        activeVariant = variant;
-        firstPage = probe;
+        const probe = await fetchPage(variant, group.slug, 0, pageSize);
+        if (!parseGroupPage(probe)) continue;
+        active = variant;
+        first = probe;
         break;
       } catch (error) {
-        console.warn("Stake list request failed (" + variant.name + ").", error);
+        console.warn(group.label + " probe failed", error);
       }
     }
-
-    if (!activeVariant || !firstPage) return null;
+    if (!active || !first) {
+      throw new Error("Could not load " + group.label + " from Stake.");
+    }
 
     const collected = new Map();
-    let rawCount = 0;
     let gameCount = 0;
-    let stalledPages = 0;
+    let stalled = 0;
 
-    const ingestPage = (data) => {
-      const group = parseGroupPage(data);
-      if (!group) {
-        const apiMessage =
-          data && data.errors && data.errors[0] && data.errors[0].message;
-        console.warn("Stake list query failed.", apiMessage || data);
-        return { ok: false, listLen: 0, added: 0 };
-      }
-
-      const counted = Number(group.gameCount);
+    const ingest = (data) => {
+      const g = parseGroupPage(data);
+      if (!g) return { ok: false, listLen: 0, added: 0 };
+      const counted = Number(g.gameCount);
       if (Number.isFinite(counted) && counted > 0) gameCount = counted;
-      const list = Array.isArray(group.groupGamesList) ? group.groupGamesList : [];
+      const list = Array.isArray(g.groupGamesList) ? g.groupGamesList : [];
       let added = 0;
       for (const entry of list) {
-        rawCount += 1;
-        const mapped = mapGroupEntry(entry);
+        const mapped = mapGroupEntry(entry, group.slug);
         if (!mapped || collected.has(mapped.slug)) continue;
         collected.set(mapped.slug, mapped);
         added += 1;
@@ -4299,172 +4017,88 @@ function initAdminForm() {
     };
 
     let offset = 0;
-    let pageResult = ingestPage(firstPage);
+    let page = ingest(first);
     reportProgress(
-      collected.size +
-        " games from Stake" +
-        (gameCount ? " / " + gameCount : ""),
+      group.label + ": " + collected.size + (gameCount ? " / " + gameCount : ""),
       collected.size
     );
 
-    while (pageResult.ok) {
+    while (page.ok) {
       if (gameCount && collected.size >= gameCount) break;
-      if (gameCount && rawCount >= gameCount) break;
-      if (pageResult.listLen < pageSize) break;
-      if (!pageResult.added) {
-        stalledPages += 1;
-        if (stalledPages >= 3) break;
+      if (page.listLen < pageSize) break;
+      if (!page.added) {
+        stalled += 1;
+        if (stalled >= 3) break;
       } else {
-        stalledPages = 0;
+        stalled = 0;
       }
-
       offset += pageSize;
       if (offset >= 25000) break;
-
-      let data;
       try {
-        data = await fetchGroupPageWithRetry(activeVariant, offset, pageSize);
+        page = ingest(await fetchPage(active, group.slug, offset, pageSize));
       } catch (error) {
-        console.warn("Stake list page failed at offset " + offset + ".", error);
-        // Soft-fail: keep what we have instead of discarding the whole sync.
+        console.warn(group.label + " stopped at offset " + offset, error);
         break;
       }
-
-      pageResult = ingestPage(data);
-      if (offset % 250 === 0 || !pageResult.ok) {
+      if (offset % 200 === 0) {
         reportProgress(
-          collected.size +
-            " games from Stake" +
+          group.label +
+            ": " +
+            collected.size +
             (gameCount ? " / " + gameCount : ""),
           collected.size
         );
-      } else if (offset % 100 === 0) {
-        reportProgress(collected.size + " games from Stake", collected.size);
       }
     }
 
-    if (!collected.size) return null;
-    if (gameCount && collected.size < Math.floor(gameCount * 0.9)) {
-      console.warn(
-        "Stake list incomplete (" +
-          collected.size +
-          "/" +
-          gameCount +
-          "). Keeping API results and uploading what loaded."
-      );
+    if (!collected.size) {
+      throw new Error(group.label + " returned no games.");
     }
     return [...collected.values()];
   };
 
-  let apiSlots = null;
   try {
-    reportProgress("Loading the full ${label} list from Stake…", 0);
-    apiSlots = await loadGroupFromApi();
-  } catch (error) {
-    console.warn("Stake list sync failed. Scrolling the page instead.", error);
-    apiSlots = null;
-  }
+    setHud("Starting…", "Loading New Releases + Only on Stake");
+    reportProgress("Preparing sync…", 0);
 
-  if (apiSlots) {
-    for (const slot of apiSlots) linked.set(slot.slug, slot);
-    reportProgress(linked.size + " games loaded from Stake", linked.size);
-  } else {
-  if (!path.includes(expectedPath)) {
-    const wrongPage = new Error(
-      "Stake's list did not load. Open https://stake.com" +
-        expectedPath +
-        " , wait for the games to appear, then paste this script again."
-    );
-    notifyFailure(wrongPage);
-    throw wrongPage;
-  }
-  let lastCount = -1;
-  let lastHeight = -1;
-  let endStreak = 0;
+    const slotsFilterId = await resolveSlotsFilterId();
+    const allSlots = [];
 
-  for (let i = 0; i < 800; i++) {
-    stepTowardEnd();
-    const btn = findLoadMore();
-    if (btn) {
-      endStreak = 0;
-      btn.click();
-      await sleep(220);
-    } else if (isAtBottom(scrollMetrics())) {
-      await sleep(350);
-    } else {
-      await sleep(80);
-    }
-
-    const { total } = scrapeVisible();
-    const metrics = scrollMetrics();
-    const grew = total !== lastCount || metrics.height > lastHeight + 12;
-    const parkedAtEnd = isAtBottom(metrics) && !findLoadMore();
-
-    if (i % 4 === 0) {
+    for (const group of groups) {
+      reportProgress("Loading " + group.label + "…", allSlots.length);
+      const slots = await loadGroup(group, slotsFilterId);
+      allSlots.push(...slots);
       reportProgress(
-        total +
-          " games linked" +
-          (parkedAtEnd ? " · confirming the end" : " · scrolling"),
-        total
+        group.label + " loaded (" + slots.length + ")",
+        allSlots.length
       );
     }
 
-    if (!parkedAtEnd || grew) {
-      endStreak = 0;
-    } else {
-      endStreak += 1;
+    if (!allSlots.length) {
+      throw new Error("No games found from Stake.");
     }
-    lastCount = total;
-    lastHeight = metrics.height;
 
-    if (endStreak >= 8) break;
-  }
+    const chunkSize = 400;
+    let last = null;
+    for (let i = 0; i < allSlots.length; i += chunkSize) {
+      const chunk = allSlots.slice(i, i + chunkSize);
+      const done = i + chunkSize >= allSlots.length;
+      reportProgress(
+        "Uploading " +
+          Math.min(i + chunk.length, allSlots.length) +
+          "/" +
+          allSlots.length,
+        Math.min(i + chunk.length, allSlots.length)
+      );
+      last = await uploadChunk(chunk, done);
+    }
 
-  scrollToBottom();
-  await sleep(200);
-  scrapeVisible();
-  await hydrateMissingLogos();
-  }
-
-  const slots = [];
-  let withLogos = 0;
-  for (const entry of linked.values()) {
-    const { _el, ...slot } = entry;
-    if (slot.thumbnailUrl) withLogos += 1;
-    slots.push(slot);
-  }
-
-  if (!slots.length) {
-    const empty = new Error(
-      "No games found. Wait for Stake to finish loading (pass Cloudflare if shown), then paste the script again."
+    setHud(
+      "Synced " + allSlots.length + " slots",
+      "Return to the Bonus Hunt tab.",
+      "success"
     );
-    notifyFailure(empty);
-    throw empty;
-  }
-
-  if (!apiSlots && slots.length < 40) {
-    const thin = new Error(
-      "Only found " +
-        slots.length +
-        " games from the page (Stake virtualizes the list). Wait for the group to finish loading, pass Cloudflare if shown, then paste the script again so the full API list can load."
-    );
-    notifyFailure(thin);
-    throw thin;
-  }
-
-  reportProgress(
-    "Uploading " + slots.length + " ${label} slots (" + withLogos + " with logos)…",
-    slots.length
-  );
-  try {
-    const data = await uploadSlotsChunked(slots);
-    console.log(
-      "Done. Uploaded " +
-        slots.length +
-        " ${label} slots (" +
-        (data.withThumbnails || withLogos) +
-        " logos). Return to Bonus Hunt."
-    );
+    console.log("Done. Synced " + allSlots.length + " slots.", last);
   } catch (error) {
     notifyFailure(error);
     throw error;
@@ -4712,21 +4346,17 @@ function initAdminForm() {
       await new Promise((r) => setTimeout(r, 1000));
     }
     throw new Error(
-      "Timed out waiting for Stake sync. On the Stake tab: F12 → Console → paste the copied script → Enter. Keep this Bonus Hunt tab open."
+      "Timed out waiting for Stake sync. On Stake: F12 → Console → paste → Enter. Keep this Bonus Hunt tab open."
     );
   }
 
-  async function startDirectGroupSync(groupSlug) {
-    const label =
-      groupSlug === "only-on-stake" ? "Only on Stake" : "New Releases";
-    const stakeUrl =
-      groupSlug === "only-on-stake"
-        ? "https://stake.com/casino/group/only-on-stake"
-        : "https://stake.com/casino/group/new-releases";
+  async function startAllowedSlotsSync() {
+    const label = "Allowed Slots";
+    const stakeUrl = "https://stake.com/casino";
 
     ensureStakeSyncMessageListener();
     hideSyncScriptFallback();
-    setCatalogSyncStatus(`Preparing ${label} sync…`);
+    setCatalogSyncStatus("Preparing Allowed Slots sync…");
 
     const tokenResponse = await fetch("/api/bonus-hunt/slots/sync-token", {
       method: "POST",
@@ -4740,8 +4370,7 @@ function initAdminForm() {
       );
     }
 
-    const script = buildDirectSyncScript({
-      groupSlug,
+    const script = buildCatalogSyncScript({
       token: tokenData.token,
       apiBase: resolveSyncApiBase(),
       openerOrigins: resolveOpenerOrigins(),
@@ -4752,7 +4381,7 @@ function initAdminForm() {
     if (!stakeWindow) {
       showSyncScriptFallback(script, label);
       throw new Error(
-        "Popup blocked. Allow popups for this site, open Stake manually, then copy the script below into the Stake console."
+        "Popup blocked. Allow popups for this site, open stake.com/casino, then copy the script below into the Stake console."
       );
     }
 
@@ -4766,12 +4395,8 @@ function initAdminForm() {
 
     setCatalogSyncStatus(
       copied
-        ? `${label} script copied. Keep this Bonus Hunt tab open. On Stake: wait for the page to load, then F12 → Console → paste → Enter.${
-            groupSlug === "only-on-stake"
-              ? " Full slots list can take 1–2 minutes."
-              : ""
-          }`
-        : `${label}: clipboard blocked — copy the script from the box below, then paste in the Stake console.`
+        ? "Script copied. On Stake: wait for casino to load → F12 → Console → paste → Enter. Keep this tab open (1–2 min)."
+        : "Clipboard blocked — copy the script from the box below, then paste in the Stake console."
     );
 
     const timeoutMs = 25 * 60 * 1000;
@@ -4791,30 +4416,18 @@ function initAdminForm() {
         ? ` · ${status.withThumbnails} with logos`
         : "";
     setCatalogSyncStatus(
-      `${label} synced. ${formatCatalogCountSummary()}${logoNote}`,
+      `Allowed slots synced. ${formatCatalogCountSummary()}${logoNote}`,
       "success"
     );
   }
 
-  document.getElementById("slot-sync-new-releases")?.addEventListener("click", async (event) => {
+  document.getElementById("slot-sync-allowed")?.addEventListener("click", async (event) => {
     const button = event.currentTarget;
     button.disabled = true;
     try {
-      await startDirectGroupSync("new-releases");
+      await startAllowedSlotsSync();
     } catch (error) {
-      setCatalogSyncStatus(error.message || "Could not sync New Releases.", "error");
-    } finally {
-      button.disabled = false;
-    }
-  });
-
-  document.getElementById("slot-sync-only-on-stake")?.addEventListener("click", async (event) => {
-    const button = event.currentTarget;
-    button.disabled = true;
-    try {
-      await startDirectGroupSync("only-on-stake");
-    } catch (error) {
-      setCatalogSyncStatus(error.message || "Could not sync Only on Stake.", "error");
+      setCatalogSyncStatus(error.message || "Could not sync Allowed slots.", "error");
     } finally {
       button.disabled = false;
     }
