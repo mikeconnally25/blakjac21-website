@@ -1049,7 +1049,7 @@ function updateSlotCatalogNote() {
   const note = document.getElementById("slot-catalog-note");
   const summary = slotCatalog.length
     ? formatCatalogCountSummary()
-    : "No slots loaded yet. Use Sync New Releases and Sync Only on Stake above.";
+    : "No slots loaded yet. Use Sync Allowed Slots above.";
 
   if (note && isHuntAdmin()) {
     note.textContent = summary;

@@ -172,7 +172,7 @@ async function loadSlotStats() {
     }
     if (empty) {
       empty.textContent = data.catalogEmpty
-        ? "No slots loaded yet. Sync New Releases and Only on Stake from Bonus Hunt."
+        ? "No slots loaded yet. Sync Allowed Slots from Bonus Hunt."
         : "No matching slots.";
     }
     renderSlotStatsMatches();

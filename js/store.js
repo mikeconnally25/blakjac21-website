@@ -887,7 +887,7 @@ function renderRedeemSlotResults() {
     results.classList.add("is-hidden");
     empty.classList.remove("is-hidden");
     empty.textContent =
-      "No synced slots yet. Sync New Releases and Only on Stake on Bonus Hunt first.";
+      "No synced slots yet. Sync Allowed Slots on Bonus Hunt first.";
     return;
   }
 
